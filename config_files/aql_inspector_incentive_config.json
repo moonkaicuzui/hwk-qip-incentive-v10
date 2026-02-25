@@ -1,0 +1,278 @@
+{
+  "description": "TYPE-1 AQL Inspector 인센티브 계산 설정",
+  "parts": {
+    "part1": {
+      "name": "AQL Inspection Evaluation Result",
+      "description": "AQL 검사 평가 결과에 따른 인센티브",
+      "condition": "Rejection rate by adidas/T1QM/3rd Party < 3%",
+      "incentive_table": {
+        "sustained_performance": {
+          "description": "Level-A evaluation result more than 2 months",
+          "amounts": {
+            "1": 150000,
+            "2": 250000,
+            "3": 300000,
+            "4": 350000,
+            "5": 400000,
+            "6": 450000,
+            "7": 500000,
+            "8": 650000,
+            "9": 750000,
+            "10": 850000,
+            "11": 950000,
+            "12": 1000000,
+            "13": 1000000,
+            "14": 1000000,
+            "15": 1000000
+          }
+        },
+        "not_sustained_performance": {
+          "description": "Level-A evaluation result for 1 month only",
+          "amount": 150000
+        }
+      }
+    },
+    "part2": {
+      "name": "CFA Certificate Incentive",
+      "description": "CFA 자격증 보유에 대한 인센티브",
+      "condition": "Valid adidas-approved AQL certificate",
+      "amount": 700000
+    },
+    "part3": {
+      "name": "HWK Claim Prevention Incentive",
+      "description": "HWK 클레임 방지 인센티브",
+      "condition": "No HWK complaints",
+      "incentive_table": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 300000,
+        "5": 300000,
+        "6": 300000,
+        "7": 500000,
+        "8": 500000,
+        "9": 500000,
+        "10": 700000,
+        "11": 700000,
+        "12": 700000,
+        "13": 900000,
+        "14": 900000,
+        "15": 900000
+      }
+    }
+  },
+  "aql_inspectors": {
+    "618110077": {
+      "name": "LÊ NGỌC LÂM MỸ HUỲNH",
+      "cfa_certified": true,
+      "september_2025_incentive": {
+        "part1_months": 11,
+        "part3_months": 11,
+        "total": 2350000
+      },
+      "october_2025_incentive": {
+        "part1_months": 12,
+        "part3_months": 12,
+        "total": 2400000
+      },
+      "november_2025_incentive": {
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
+      },
+      "december_2025_incentive": {
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
+      },
+      "january_2026_incentive": {
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
+      },
+      "february_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      }
+    },
+    "619100307": {
+      "name": "DANH THÁI",
+      "cfa_certified": true,
+      "september_2025_incentive": {
+        "part1_months": 11,
+        "part3_months": 11,
+        "total": 2350000
+      },
+      "october_2025_incentive": {
+        "part1_months": 12,
+        "part3_months": 12,
+        "total": 2400000
+      },
+      "november_2025_incentive": {
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
+      },
+      "december_2025_incentive": {
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
+      },
+      "january_2026_incentive": {
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
+      },
+      "february_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      }
+    },
+    "620020923": {
+      "name": "BÙI TRƯƠNG NGỌC NHỨT",
+      "cfa_certified": true,
+      "september_2025_incentive": {
+        "part1_months": 11,
+        "part3_months": 11,
+        "total": 2350000
+      },
+      "october_2025_incentive": {
+        "part1_months": 12,
+        "part3_months": 12,
+        "total": 2400000
+      },
+      "november_2025_incentive": {
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
+      },
+      "december_2025_incentive": {
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
+      },
+      "january_2026_incentive": {
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
+      },
+      "february_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      }
+    },
+    "620120306": {
+      "name": "NGUYỄN NGÔ TUYẾT NGÂN",
+      "cfa_certified": true,
+      "september_2025_incentive": {
+        "part1_months": 6,
+        "part3_months": 6,
+        "total": 1650000
+      },
+      "october_2025_incentive": {
+        "part1_months": 7,
+        "part3_months": 7,
+        "total": 1700000
+      },
+      "november_2025_incentive": {
+        "part1_months": 8,
+        "part3_months": 8,
+        "total": 1850000
+      },
+      "december_2025_incentive": {
+        "part1_months": 9,
+        "part3_months": 9,
+        "total": 1950000
+      },
+      "january_2026_incentive": {
+        "part1_months": 10,
+        "part3_months": 10,
+        "total": 2250000
+      },
+      "february_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      }
+    },
+    "621110376": {
+      "name": "ĐOÀN PHAN NHI",
+      "cfa_certified": true,
+      "september_2025_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      },
+      "october_2025_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      },
+      "november_2025_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      },
+      "december_2025_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      },
+      "january_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      },
+      "february_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      }
+    },
+    "622030225": {
+      "name": "NGUYỄN THỊ TƯỜNG VY",
+      "cfa_certified": true,
+      "september_2025_incentive": {
+        "part1_months": 6,
+        "part3_months": 6,
+        "total": 1650000
+      },
+      "october_2025_incentive": {
+        "part1_months": 7,
+        "part3_months": 7,
+        "total": 1700000
+      },
+      "november_2025_incentive": {
+        "part1_months": 8,
+        "part3_months": 8,
+        "total": 1850000
+      },
+      "december_2025_incentive": {
+        "part1_months": 9,
+        "part3_months": 9,
+        "total": 1950000
+      },
+      "january_2026_incentive": {
+        "part1_months": 10,
+        "part3_months": 10,
+        "total": 2250000
+      },
+      "february_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
+      }
+    }
+  },
+  "notes": {
+    "calculation_method": "총 인센티브 = Part1 + Part2 + Part3",
+    "part1_note": "AQL 검사 평가 결과 기반, 연속 달성 개월에 따라 차등",
+    "part2_note": "CFA 자격증 보유 시 매월 700,000 VND",
+    "part3_note": "HWK 클레임 없을 시, 4개월부터 지급 시작",
+    "data_source": "2026-01-05: November 데이터는 사용자 스크린샷 기반으로 수정, December는 November+1로 계산"
+  }
+}

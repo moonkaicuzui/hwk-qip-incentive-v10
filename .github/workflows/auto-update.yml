@@ -1,0 +1,238 @@
+name: Auto Update Dashboard
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
+  workflow_dispatch:  # Manual trigger from admin page
+
+permissions:
+  contents: write
+
+jobs:
+  update-dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ========== Step 1: Checkout ==========
+      - name: "Step 1: Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      # ========== Step 2: Setup Python ==========
+      - name: "Step 2: Setup Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: "Step 2.1: Install dependencies"
+        run: |
+          pip install pandas openpyxl numpy gspread google-auth google-auth-oauthlib firebase-admin
+
+      # ========== Step 3: Download from Google Drive ==========
+      - name: "Step 3: Download data from Google Drive"
+        env:
+          GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+        run: |
+          echo "📥 Downloading latest data from Google Drive..."
+          python scripts/download_from_gdrive.py
+          echo "✅ Google Drive download complete"
+
+      # ========== Step 4: Sync Thresholds from Firestore ==========
+      - name: "Step 4: Sync thresholds from Firestore"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "🔄 Syncing thresholds from Firestore..."
+          # Determine current month/year
+          CURRENT_MONTH=$(python3 -c "
+          import datetime
+          months = ['january','february','march','april','may','june','july','august','september','october','november','december']
+          print(months[datetime.datetime.now().month - 1])
+          ")
+          CURRENT_YEAR=$(date +%Y)
+          echo "Current period: $CURRENT_MONTH $CURRENT_YEAR"
+          python scripts/sync_thresholds.py --month "$CURRENT_MONTH" --year "$CURRENT_YEAR" || echo "⚠️ Threshold sync failed, using local config"
+          echo "✅ Threshold sync complete"
+
+      # ========== Step 5: Enhanced Download with Config ==========
+      - name: "Step 5: Enhanced download with config update"
+        env:
+          GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+        run: |
+          echo "📋 Running enhanced download with config..."
+          python scripts/enhanced_download.py || echo "⚠️ Enhanced download skipped"
+          echo "✅ Config update complete"
+
+      # ========== Step 6: Convert Attendance Data ==========
+      - name: "Step 6: Convert attendance data"
+        run: |
+          echo "📊 Converting attendance data..."
+          LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
+          if [ -n "$LATEST_CONFIG" ]; then
+            MONTH=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('month', ''))")
+            YEAR=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('year', ''))")
+            if [ -n "$MONTH" ] && [ -n "$YEAR" ]; then
+              echo "Converting for $MONTH $YEAR"
+              python src/convert_attendance_data.py "$MONTH" "$YEAR"
+            else
+              echo "⚠️ Month/year not found in config, running without params"
+              python src/convert_attendance_data.py
+            fi
+          else
+            echo "⚠️ No config file found"
+            python src/convert_attendance_data.py
+          fi
+          echo "✅ Attendance conversion complete"
+
+      # ========== Step 6.5: Validate Schema ==========
+      - name: "Step 6.5: Validate attendance schema"
+        run: |
+          echo "🔍 Validating attendance schema..."
+          if [ -f "scripts/validate_attendance_schema.py" ]; then
+            LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
+            MONTH=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('month', ''))" 2>/dev/null)
+            YEAR=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('year', ''))" 2>/dev/null)
+            if [ -n "$MONTH" ] && [ -n "$YEAR" ]; then
+              python scripts/validate_attendance_schema.py "$MONTH" "$YEAR" || {
+                echo "❌ Schema validation failed! Stopping pipeline."
+                exit 1
+              }
+            fi
+          else
+            echo "⚠️ Schema validation script not found, skipping"
+          fi
+          echo "✅ Schema validation passed"
+
+      # ========== Step 7: Calculate Incentives ==========
+      - name: "Step 7: Calculate incentives"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "🧮 Calculating incentives..."
+          LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
+          if [ -n "$LATEST_CONFIG" ]; then
+            echo "Using config: $LATEST_CONFIG"
+            python src/step1_인센티브_계산.py --config "$LATEST_CONFIG"
+          else
+            echo "❌ No config file found!"
+            exit 1
+          fi
+          echo "✅ Incentive calculation complete"
+
+      # ========== Step 7.5: Update AQL Inspector Config ==========
+      - name: "Step 7.5: Update AQL Inspector config"
+        run: |
+          echo "🔄 Updating AQL Inspector config..."
+          if [ -f "scripts/auto_update_aql_config.py" ]; then
+            LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
+            MONTH=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('month', ''))" 2>/dev/null)
+            YEAR=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('year', ''))" 2>/dev/null)
+            python scripts/auto_update_aql_config.py "$MONTH" "$YEAR" || echo "⚠️ AQL config update skipped"
+          fi
+          echo "✅ AQL config update complete"
+
+      # ========== Step 8: Upload to Firestore (NEW - CORE!) ==========
+      - name: "Step 8: Upload results to Firestore"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "🔥 Uploading calculation results to Firestore..."
+          LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
+          MONTH=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('month', ''))" 2>/dev/null)
+          YEAR=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('year', ''))" 2>/dev/null)
+          if [ -n "$MONTH" ] && [ -n "$YEAR" ]; then
+            python scripts/upload_to_firestore.py --month "$MONTH" --year "$YEAR"
+          else
+            echo "❌ Cannot determine month/year for Firestore upload"
+            exit 1
+          fi
+          echo "✅ Firestore upload complete"
+
+      # ========== Step 9: Update System Status ==========
+      - name: "Step 9: Update system status in Firestore"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "📊 Updating system status..."
+          python3 -c "
+          import os, json, datetime
+          import firebase_admin
+          from firebase_admin import credentials, firestore
+
+          # Initialize Firebase
+          sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '')
+          if sa_json:
+              sa_dict = json.loads(sa_json)
+              cred = credentials.Certificate(sa_dict)
+              if not firebase_admin._apps:
+                  firebase_admin.initialize_app(cred)
+              db = firestore.client()
+              db.collection('system').document('status').set({
+                  'last_run_at': datetime.datetime.utcnow().isoformat() + 'Z',
+                  'status': 'success',
+                  'last_data_update': datetime.datetime.utcnow().isoformat() + 'Z',
+                  'run_type': 'github_actions',
+                  'commit': os.environ.get('GITHUB_SHA', 'unknown')[:8]
+              }, merge=True)
+              print('✅ System status updated')
+          else:
+              print('⚠️ FIREBASE_SERVICE_ACCOUNT not set, skipping status update')
+          "
+
+      # ========== Step 10: Generate Selector Page ==========
+      - name: "Step 10: Generate selector page"
+        run: |
+          echo "📄 Generating selector page..."
+          if [ -f "scripts/create_month_selector.py" ]; then
+            python scripts/create_month_selector.py || echo "⚠️ Selector generation skipped"
+          fi
+          echo "✅ Selector generation complete"
+
+      # ========== Step 11: Deploy to GitHub Pages ==========
+      - name: "Step 11: Commit and deploy"
+        run: |
+          echo "🚀 Deploying to GitHub Pages..."
+
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stash any local changes, sync with remote
+          git stash push -m "auto-update-stash" 2>/dev/null || true
+          git fetch origin main
+          git reset --hard origin/main
+          git stash pop 2>/dev/null || true
+
+          # Stage web files and configs (NOT output_files or input_files)
+          git add web/ config_files/ scripts/ src/ .github/ || true
+
+          # Check if there are changes to commit
+          if git diff --cached --quiet; then
+            echo "ℹ️ No changes to commit"
+          else
+            TIMESTAMP=$(TZ='Asia/Ho_Chi_Minh' date '+%Y-%m-%d %H:%M:%S')
+            git commit -m "🔄 Auto update dashboard + Firestore sync $TIMESTAMP"
+
+            # Push with retry (max 3 attempts)
+            for i in 1 2 3; do
+              if git push origin main; then
+                echo "✅ Push successful (attempt $i)"
+                break
+              else
+                echo "⚠️ Push failed (attempt $i), retrying..."
+                git fetch origin main
+                git rebase origin/main --strategy-option=theirs || {
+                  git rebase --abort 2>/dev/null
+                  git reset --hard origin/main
+                  git stash pop 2>/dev/null || true
+                  git add web/ config_files/ scripts/ src/ .github/ || true
+                  git commit -m "🔄 Auto update dashboard $TIMESTAMP (retry $i)" || true
+                }
+                sleep 5
+              fi
+            done
+          fi
+          echo "✅ Deployment complete"

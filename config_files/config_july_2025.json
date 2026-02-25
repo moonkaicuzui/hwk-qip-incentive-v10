@@ -1,0 +1,21 @@
+{
+  "year": 2025,
+  "month": "july",
+  "working_days": 27,
+  "previous_months": [
+    "may",
+    "june"
+  ],
+  "file_paths": {
+    "basic_manpower": "input_files/basic manpower data july.csv",
+    "attendance": "input_files/attendance/converted/attendance data july_converted.csv",
+    "5prs": "input_files/5prs data july.csv",
+    "aql_current": "input_files/AQL history/1.HSRG AQL REPORT-JULY.2025.csv",
+    "previous_incentive": "output_files/output_QIP_incentive_june_2025_Complete_V9.1_Complete.csv"
+  },
+  "output_prefix": "output_QIP_incentive_july_2025",
+  "working_days_source": "attendance_data",
+  "working_days_updated_at": "2025-11-21T12:54:38.637525",
+  "data_source": "google_drive",
+  "last_updated": "2025-11-21T12:54:38.637544"
+}

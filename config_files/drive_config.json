@@ -1,0 +1,105 @@
+{
+  "google_drive": {
+    "root_folder_id": "1PwmT0di7w2_iz-iA8Llza_h0oT4l4Q9D",
+    "folder_structure": {
+      "monthly_data": {
+        "id": "1yFbEIjfpLgPKB7CQhTWyrdKLkn55NlXv",
+        "naming_pattern": "{year}_{month:02d}"
+      },
+      "aql_history": {
+        "id": "18yWygciJczt7fnEKjzGCAC21VVPWmlVi",
+        "file_pattern": "AQL_REPORT_{month}_{year}.csv"
+      },
+      "configs": {
+        "id": "1rQ0atIZ-8FxY7fW9wZGBQ7us2-oJl67S"
+      }
+    }
+  },
+  "sync_settings": {
+    "auto_sync_enabled": true,
+    "sync_interval_minutes": 60,
+    "retry_attempts": 3,
+    "cache_duration_hours": 24,
+    "validate_after_sync": true
+  },
+  "local_paths": {
+    "data_root": "./input_files",
+    "cache_dir": "./.cache/drive_sync",
+    "logs_dir": "./logs/drive_sync"
+  },
+  "file_mappings": [
+    {
+      "drive_pattern": "monthly_data/{year}_{month:02d}/basic_manpower_data.csv",
+      "local_path": "input_files/basic manpower data {month}.csv",
+      "required": true
+    },
+    {
+      "drive_pattern": "monthly_data/{year}_{month:02d}/attendance_data.csv",
+      "local_path": "input_files/attendance/original/attendance data {month}.csv",
+      "required": true,
+      "post_sync_action": "convert_attendance"
+    },
+    {
+      "drive_pattern": "monthly_data/{year}_{month:02d}/5prs_data.csv",
+      "local_path": "input_files/5prs data {month}.csv",
+      "required": true
+    },
+    {
+      "drive_pattern": "aql_history/AQL_REPORT_{MONTH}_{year}.csv",
+      "local_path": "input_files/AQL history/1.HSRG AQL REPORT-{MONTH}.{year}.csv",
+      "required": true,
+      "months_to_sync": 3
+    },
+    {
+      "drive_pattern": "configs/auditor_trainer_area_mapping.json",
+      "local_path": "auditor_trainer_area_mapping.json",
+      "required": false
+    },
+    {
+      "drive_pattern": "configs/type2_position_mapping.json",
+      "local_path": "type2_position_mapping.json",
+      "required": false
+    },
+    {
+      "drive_pattern": "monthly_data/{year}_{month:02d}/{year}년 {month}월 인센티브 지급 세부 정보.csv",
+      "local_path": "input_files/{year}년 {month}월 인센티브 지급 세부 정보.csv",
+      "required": false,
+      "description": "Current month incentive data"
+    },
+    {
+      "drive_pattern": "monthly_data/{prev_year}_{prev_month:02d}/{prev_year}년 {prev_month}월 인센티브 지급 세부 정보.csv",
+      "local_path": "input_files/{prev_year}년 {prev_month}월 인센티브 지급 세부 정보.csv",
+      "required": false,
+      "description": "Previous month incentive data for calculation"
+    },
+    {
+      "drive_pattern": "monthly_data/{prev_year}_{prev_month:02d}/Final {prev_month_name} incentive.xlsx",
+      "local_path": "input_files/final_incentive/Final_{prev_month_name}_{prev_year}_incentive.xlsx",
+      "required": true,
+      "description": "Final payroll incentive data - Single Source of Truth for Previous_Incentive",
+      "priority": "highest"
+    }
+  ],
+  "validation_rules": {
+    "csv_files": {
+      "max_size_mb": 50,
+      "encoding": "utf-8",
+      "required_columns": {
+        "basic_manpower": ["EMPLOYEE_ID", "NAME", "POSITION", "TYPE"],
+        "attendance": ["EMPLOYEE_ID", "WORKING_DAYS", "ABSENCE_DAYS"],
+        "5prs": ["EMPLOYEE_ID", "5PRS_PASS"],
+        "aql": ["AREA", "PASS", "FAIL"]
+      }
+    },
+    "json_files": {
+      "max_size_mb": 10,
+      "validate_schema": true
+    }
+  },
+  "notifications": {
+    "enabled": false,
+    "email_on_error": "",
+    "email_on_success": "",
+    "slack_webhook": ""
+  }
+}

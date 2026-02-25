@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HWK QIP Incentive Dashboard - Month Selection</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-dark: #0d253f;
+            --primary: #1e3a5f;
+            --primary-light: #2d5a87;
+            --primary-lighter: #3a7cb8;
+            --accent: #f59e0b;
+            --surface: #f8fafc;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.14);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--surface);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ============ Header ============ */
+        .top-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
+            color: #fff;
+            padding: 0;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-logo {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .header-subtitle {
+            font-size: 0.78rem;
+            opacity: 0.65;
+            margin-top: 1px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .user-email {
+            font-size: 0.82rem;
+            opacity: 0.8;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Language toggle in header */
+        .lang-toggle-header {
+            display: flex;
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 2px;
+        }
+
+        .lang-btn-sm {
+            padding: 0.2rem 0.55rem;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .lang-btn-sm:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .lang-btn-sm.active {
+            background: rgba(255, 255, 255, 0.22);
+            color: #fff;
+        }
+
+        .btn-logout {
+            padding: 0.35rem 0.85rem;
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            background: transparent;
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .btn-admin {
+            padding: 0.35rem 0.85rem;
+            border: 1.5px solid var(--accent);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+        .btn-admin:hover {
+            background: var(--accent);
+            color: var(--primary-dark);
+        }
+
+        /* ============ Main Content ============ */
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .page-description {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        /* ============ Month Cards Grid ============ */
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 992px) {
+            .months-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 576px) {
+            .months-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-inner {
+                padding: 0.75rem 1rem;
+            }
+            .main-content {
+                padding: 1.25rem 1rem;
+            }
+        }
+
+        /* ============ Month Card ============ */
+        .month-card {
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.25s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .month-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--card-shadow-hover);
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .month-card:active {
+            transform: translateY(-2px);
+        }
+
+        .card-gradient {
+            padding: 1.25rem 1.5rem 1rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Gradient variations by month order */
+        .card-gradient-0 { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); }
+        .card-gradient-1 { background: linear-gradient(135deg, #0f4c75 0%, #3282b8 100%); }
+        .card-gradient-2 { background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%); }
+        .card-gradient-3 { background: linear-gradient(135deg, #154360 0%, #1f618d 100%); }
+        .card-gradient-4 { background: linear-gradient(135deg, #1b2631 0%, #2e4053 100%); }
+        .card-gradient-5 { background: linear-gradient(135deg, #0b3d5c 0%, #1a6fa0 100%); }
+
+        .card-gradient::after {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -20%;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 50%;
+        }
+
+        .card-month-name {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 0.15rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-year {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-stats {
+            padding: 1rem 1.5rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .stat-divider {
+            width: 1px;
+            background: #e2e8f0;
+            align-self: stretch;
+        }
+
+        /* ============ Empty State ============ */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #94a3b8;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        /* ============ Loading State ============ */
+        .loading-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .loading-state .spinner-border {
+            width: 2.5rem;
+            height: 2.5rem;
+            color: var(--primary-light);
+        }
+
+        .loading-state p {
+            margin-top: 1rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* ============ Footer ============ */
+        .page-footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: #94a3b8;
+            font-size: 0.78rem;
+            border-top: 1px solid #e2e8f0;
+            margin-top: auto;
+        }
+
+        /* ============ Auth loading overlay ============ */
+        .auth-loading {
+            position: fixed;
+            inset: 0;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .auth-loading .spinner-border {
+            width: 2.5rem;
+            height: 2.5rem;
+            color: var(--primary-light);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Auth loading overlay (shown until authentication confirmed) -->
+    <div class="auth-loading" id="auth-loading">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- ============ Header ============ -->
+    <header class="top-header">
+        <div class="header-inner">
+            <div class="header-left">
+                <div class="header-logo">&#9881;</div>
+                <div>
+                    <div class="header-title">HWK QIP Incentive Dashboard</div>
+                    <div class="header-subtitle" id="header-subtitle">월별 인센티브 현황</div>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <!-- Language Toggle -->
+                <div class="lang-toggle-header">
+                    <button class="lang-btn-sm active" data-lang="ko" onclick="switchLang('ko')">KO</button>
+                    <button class="lang-btn-sm" data-lang="en" onclick="switchLang('en')">EN</button>
+                    <button class="lang-btn-sm" data-lang="vn" onclick="switchLang('vn')">VN</button>
+                </div>
+
+                <!-- Admin Link (hidden by default) -->
+                <a href="admin.html" class="btn-admin" id="admin-link" style="display: none;">
+                    <span id="admin-text">Admin</span>
+                </a>
+
+                <!-- User Email -->
+                <span class="user-email" id="user-email"></span>
+
+                <!-- Logout Button -->
+                <button class="btn-logout" id="btn-logout" onclick="handleLogout()">
+                    <span id="logout-text">&#x23FB; 로그아웃</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============ Main Content ============ -->
+    <main class="main-content">
+        <h2 class="page-title" id="page-title">대시보드 월 선택</h2>
+        <p class="page-description" id="page-description">조회할 월을 선택하세요. 최신 데이터가 맨 위에 표시됩니다.</p>
+
+        <!-- Loading State -->
+        <div class="loading-state" id="loading-state">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p id="loading-text">데이터를 불러오는 중...</p>
+        </div>
+
+        <!-- Month Cards Grid (populated dynamically) -->
+        <div class="months-grid" id="months-grid" style="display: none;"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-icon">&#128203;</div>
+            <h3 id="empty-title">데이터 없음</h3>
+            <p id="empty-description">등록된 대시보드 데이터가 없습니다.</p>
+        </div>
+    </main>
+
+    <!-- ============ Footer ============ -->
+    <footer class="page-footer">
+        Version 10.0 - Firestore Secure Architecture
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase v10.7.1 compat SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- Project modules -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard-data.js"></script>
+
+    <script>
+        // =====================================================================
+        // Multi-language translations
+        // =====================================================================
+        var i18n = {
+            ko: {
+                headerSubtitle: '월별 인센티브 현황',
+                pageTitle: '대시보드 월 선택',
+                pageDescription: '조회할 월을 선택하세요. 최신 데이터가 맨 위에 표시됩니다.',
+                logout: '\u23FB 로그아웃',
+                loading: '데이터를 불러오는 중...',
+                emptyTitle: '데이터 없음',
+                emptyDescription: '등록된 대시보드 데이터가 없습니다.',
+                employees: '직원 수',
+                totalIncentive: '총 인센티브',
+                recipients: '수령자',
+                months: {
+                    january: '1월', february: '2월', march: '3월',
+                    april: '4월', may: '5월', june: '6월',
+                    july: '7월', august: '8월', september: '9월',
+                    october: '10월', november: '11월', december: '12월'
+                },
+                yearSuffix: '년'
+            },
+            en: {
+                headerSubtitle: 'Monthly Incentive Overview',
+                pageTitle: 'Select Dashboard Month',
+                pageDescription: 'Choose a month to view. Newest data appears first.',
+                logout: '\u23FB Logout',
+                loading: 'Loading data...',
+                emptyTitle: 'No Data Available',
+                emptyDescription: 'No dashboard data has been registered yet.',
+                employees: 'Employees',
+                totalIncentive: 'Total Incentive',
+                recipients: 'Recipients',
+                months: {
+                    january: 'January', february: 'February', march: 'March',
+                    april: 'April', may: 'May', june: 'June',
+                    july: 'July', august: 'August', september: 'September',
+                    october: 'October', november: 'November', december: 'December'
+                },
+                yearSuffix: ''
+            },
+            vn: {
+                headerSubtitle: 'T\u1ED5ng quan Th\u01B0\u1EDFng h\u00E0ng th\u00E1ng',
+                pageTitle: 'Ch\u1ECDn th\u00E1ng Dashboard',
+                pageDescription: 'Ch\u1ECDn th\u00E1ng \u0111\u1EC3 xem. D\u1EEF li\u1EC7u m\u1EDBi nh\u1EA5t hi\u1EC3n th\u1ECB tr\u01B0\u1EDBc.',
+                logout: '\u23FB \u0110\u0103ng xu\u1EA5t',
+                loading: '\u0110ang t\u1EA3i d\u1EEF li\u1EC7u...',
+                emptyTitle: 'Kh\u00F4ng c\u00F3 d\u1EEF li\u1EC7u',
+                emptyDescription: 'Ch\u01B0a c\u00F3 d\u1EEF li\u1EC7u dashboard n\u00E0o \u0111\u01B0\u1EE3c \u0111\u0103ng k\u00FD.',
+                employees: 'Nh\u00E2n vi\u00EAn',
+                totalIncentive: 'T\u1ED5ng th\u01B0\u1EDFng',
+                recipients: 'Ng\u01B0\u1EDDi nh\u1EADn',
+                months: {
+                    january: 'Th\u00E1ng 1', february: 'Th\u00E1ng 2', march: 'Th\u00E1ng 3',
+                    april: 'Th\u00E1ng 4', may: 'Th\u00E1ng 5', june: 'Th\u00E1ng 6',
+                    july: 'Th\u00E1ng 7', august: 'Th\u00E1ng 8', september: 'Th\u00E1ng 9',
+                    october: 'Th\u00E1ng 10', november: 'Th\u00E1ng 11', december: 'Th\u00E1ng 12'
+                },
+                yearSuffix: ''
+            }
+        };
+
+        var currentLang = 'ko';
+
+        // =====================================================================
+        // Language switching
+        // =====================================================================
+        function switchLang(lang) {
+            currentLang = lang;
+            var t = i18n[lang];
+
+            // Update active button state
+            document.querySelectorAll('.lang-btn-sm').forEach(function(btn) {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+            });
+
+            // Update static text
+            document.getElementById('header-subtitle').textContent = t.headerSubtitle;
+            document.getElementById('page-title').textContent = t.pageTitle;
+            document.getElementById('page-description').textContent = t.pageDescription;
+            document.getElementById('logout-text').innerHTML = t.logout;
+            document.getElementById('loading-text').textContent = t.loading;
+            document.getElementById('empty-title').textContent = t.emptyTitle;
+            document.getElementById('empty-description').textContent = t.emptyDescription;
+
+            // Update HTML lang attribute
+            document.documentElement.lang = lang === 'vn' ? 'vi' : lang;
+
+            // Re-render month cards if data is loaded
+            if (window._monthsData && window._monthsData.length > 0) {
+                renderMonthCards(window._monthsData, window._summaryData);
+            }
+        }
+
+        // =====================================================================
+        // Format number with locale
+        // =====================================================================
+        function formatNumber(num) {
+            if (num === undefined || num === null || isNaN(num)) return '0';
+            return Number(num).toLocaleString('en-US');
+        }
+
+        function formatVND(amount) {
+            if (amount === undefined || amount === null || isNaN(amount)) return '0';
+            var num = Number(amount);
+            if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(0) + 'K';
+            return formatNumber(num);
+        }
+
+        // =====================================================================
+        // Render month cards
+        // =====================================================================
+        function renderMonthCards(months, summaryMap) {
+            var grid = document.getElementById('months-grid');
+            var t = i18n[currentLang];
+            grid.innerHTML = '';
+
+            months.forEach(function(m, index) {
+                var summary = summaryMap[m.month_year] || {};
+                var monthDisplayName = t.months[m.month] || m.month;
+
+                var yearDisplay = currentLang === 'ko'
+                    ? m.year + t.yearSuffix + ' ' + monthDisplayName
+                    : monthDisplayName + ' ' + m.year;
+
+                var totalEmployees = summary.total_employees || summary.totalEmployees || 0;
+                var totalIncentive = summary.total_incentive || summary.totalIncentive || 0;
+                var recipients = summary.recipients || summary.receiving_count || 0;
+
+                var gradientClass = 'card-gradient-' + (index % 6);
+
+                var card = document.createElement('a');
+                card.href = 'dashboard.html?month=' + encodeURIComponent(m.month) + '&year=' + m.year;
+                card.className = 'month-card';
+                card.innerHTML =
+                    '<div class="card-gradient ' + gradientClass + '">' +
+                        '<div class="card-month-name">' + yearDisplay + '</div>' +
+                        '<div class="card-year">' + m.month_year.replace('_', ' ').toUpperCase() + '</div>' +
+                    '</div>' +
+                    '<div class="card-stats">' +
+                        '<div class="stat-item">' +
+                            '<div class="stat-value">' + formatNumber(totalEmployees) + '</div>' +
+                            '<div class="stat-label">' + t.employees + '</div>' +
+                        '</div>' +
+                        '<div class="stat-divider"></div>' +
+                        '<div class="stat-item">' +
+                            '<div class="stat-value">' + formatVND(totalIncentive) + '</div>' +
+                            '<div class="stat-label">' + t.totalIncentive + '</div>' +
+                        '</div>' +
+                        '<div class="stat-divider"></div>' +
+                        '<div class="stat-item">' +
+                            '<div class="stat-value">' + formatNumber(recipients) + '</div>' +
+                            '<div class="stat-label">' + t.recipients + '</div>' +
+                        '</div>' +
+                    '</div>';
+
+                grid.appendChild(card);
+            });
+        }
+
+        // =====================================================================
+        // Logout handler
+        // =====================================================================
+        function handleLogout() {
+            // Clear DashboardData cache before signing out
+            if (typeof DashboardData !== 'undefined' && DashboardData.clearCache) {
+                DashboardData.clearCache();
+            }
+            signOut();
+        }
+
+        // =====================================================================
+        // Initialize page
+        // =====================================================================
+        function initSelector() {
+            // Check authentication
+            checkAuth()
+                .then(function(user) {
+                    // Hide auth loading overlay
+                    document.getElementById('auth-loading').style.display = 'none';
+
+                    // Show user email
+                    document.getElementById('user-email').textContent = user.email;
+
+                    // Show admin link if admin
+                    if (isAdmin(user)) {
+                        document.getElementById('admin-link').style.display = 'inline-block';
+                    }
+
+                    // Load available months from Firestore
+                    return loadMonthData();
+                })
+                .catch(function(error) {
+                    // checkAuth redirects to auth.html if not authenticated
+                    console.error('[Selector] Auth check failed:', error);
+                });
+        }
+
+        // =====================================================================
+        // Load month data from Firestore
+        // =====================================================================
+        function loadMonthData() {
+            console.log('[Selector] Loading available months...');
+
+            return DashboardData.getAvailableMonths()
+                .then(function(months) {
+                    // Hide loading state
+                    document.getElementById('loading-state').style.display = 'none';
+
+                    if (!months || months.length === 0) {
+                        // Show empty state
+                        document.getElementById('empty-state').style.display = 'block';
+                        return;
+                    }
+
+                    // Load summary data for each month to get stats
+                    var summaryPromises = months.map(function(m) {
+                        return db.collection('dashboard_summary')
+                            .doc(m.month_year)
+                            .get()
+                            .then(function(doc) {
+                                return {
+                                    key: m.month_year,
+                                    data: doc.exists ? doc.data() : {}
+                                };
+                            })
+                            .catch(function() {
+                                return { key: m.month_year, data: {} };
+                            });
+                    });
+
+                    return Promise.all(summaryPromises)
+                        .then(function(summaries) {
+                            // Build summary map
+                            var summaryMap = {};
+                            summaries.forEach(function(s) {
+                                summaryMap[s.key] = s.data;
+                            });
+
+                            // Store data globally for language re-render
+                            window._monthsData = months;
+                            window._summaryData = summaryMap;
+
+                            // Render cards
+                            renderMonthCards(months, summaryMap);
+
+                            // Show grid
+                            document.getElementById('months-grid').style.display = 'grid';
+                        });
+                })
+                .catch(function(error) {
+                    console.error('[Selector] Failed to load months:', error);
+                    document.getElementById('loading-state').style.display = 'none';
+                    document.getElementById('empty-state').style.display = 'block';
+                });
+        }
+
+        // =====================================================================
+        // Start initialization on DOM ready
+        // =====================================================================
+        document.addEventListener('DOMContentLoaded', initSelector);
+    </script>
+</body>
+</html>

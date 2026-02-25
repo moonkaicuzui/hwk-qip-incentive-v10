@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HWK QIP Incentive - Admin Panel</title>
+
+    <!-- Bootstrap 5.3.2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome 6.4.0 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-dark: #1a237e;
+            --primary: #283593;
+            --primary-light: #3949ab;
+            --accent: #f59e0b;
+            --surface: #f4f6f9;
+            --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            --card-shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--surface);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ============ Header ============ */
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
+            color: #fff;
+            padding: 0;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-logo {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .header-subtitle {
+            font-size: 0.78rem;
+            opacity: 0.65;
+            margin-top: 1px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-email {
+            font-size: 0.82rem;
+            opacity: 0.8;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.55rem;
+            background: var(--accent);
+            color: #1a1a1a;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .btn-back {
+            padding: 0.35rem 0.85rem;
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            background: transparent;
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.6);
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .btn-logout {
+            padding: 0.35rem 0.85rem;
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            background: transparent;
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* ============ Main Content ============ */
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            width: 100%;
+        }
+
+        /* ============ Admin Cards Grid ============ */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 992px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-inner {
+                padding: 0.75rem 1rem;
+            }
+            .main-content {
+                padding: 1rem;
+            }
+        }
+
+        /* ============ Panel Cards ============ */
+        .panel-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .panel-card:hover {
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .panel-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e8edf2;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .panel-icon {
+            font-size: 1.25rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            flex-shrink: 0;
+        }
+
+        .panel-icon.settings { background: #ede9fe; color: #7c3aed; }
+        .panel-icon.history  { background: #e0f2fe; color: #0284c7; }
+        .panel-icon.status   { background: #dcfce7; color: #16a34a; }
+        .panel-icon.calendar { background: #fef3c7; color: #d97706; }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .panel-body {
+            padding: 1.25rem;
+        }
+
+        /* ============ Form Styles ============ */
+        .form-label-sm {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-control-admin {
+            border: 1.5px solid #d0d5dd;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-control-admin:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(40, 53, 147, 0.12);
+        }
+
+        .form-select-admin {
+            border: 1.5px solid #d0d5dd;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-select-admin:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(40, 53, 147, 0.12);
+        }
+
+        .month-year-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: end;
+        }
+
+        .month-year-row .form-group {
+            flex: 1;
+        }
+
+        .month-year-row .btn {
+            flex-shrink: 0;
+            height: 38px;
+        }
+
+        /* ============ Buttons ============ */
+        .btn-primary-admin {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            border: none;
+            color: #fff;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary-admin:hover {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(26, 35, 126, 0.25);
+            color: #fff;
+        }
+
+        .btn-primary-admin:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline-admin {
+            background: transparent;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-outline-admin:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-danger-admin {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            border: none;
+            color: #fff;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-danger-admin:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-success-admin {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            border: none;
+            color: #fff;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-success-admin:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            color: #fff;
+        }
+
+        /* ============ Threshold Grid ============ */
+        .threshold-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 576px) {
+            .threshold-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .threshold-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .threshold-item .input-group-text {
+            font-size: 0.78rem;
+            background: #f1f5f9;
+            border-color: #d0d5dd;
+            min-width: 36px;
+            justify-content: center;
+        }
+
+        /* ============ History Table ============ */
+        .history-table-wrapper {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .history-table {
+            font-size: 0.82rem;
+            margin-bottom: 0;
+        }
+
+        .history-table thead th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .history-table tbody td {
+            vertical-align: middle;
+            color: #334155;
+            padding: 0.5rem 0.6rem;
+        }
+
+        .history-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        /* ============ Status Panel ============ */
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .status-row:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-size: 0.82rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .status-value {
+            font-size: 0.88rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.success {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-badge.failure {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .status-badge.unknown {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        /* ============ Message Alerts ============ */
+        .message-area {
+            margin-top: 0.75rem;
+        }
+
+        .message-area .alert {
+            font-size: 0.85rem;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0;
+        }
+
+        /* ============ Auth Loading Overlay ============ */
+        .auth-loading {
+            position: fixed;
+            inset: 0;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .auth-loading .spinner-border {
+            width: 2.5rem;
+            height: 2.5rem;
+            color: var(--primary);
+        }
+
+        .auth-loading p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* ============ Footer ============ */
+        .page-footer {
+            text-align: center;
+            padding: 1.25rem;
+            color: #94a3b8;
+            font-size: 0.78rem;
+            border-top: 1px solid #e2e8f0;
+            margin-top: auto;
+        }
+
+        /* ============ Spinner in buttons ============ */
+        .btn .spinner-border-sm {
+            width: 0.9rem;
+            height: 0.9rem;
+            border-width: 2px;
+            margin-right: 0.35rem;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Auth loading overlay -->
+    <div class="auth-loading" id="auth-loading">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Verifying admin access...</p>
+    </div>
+
+    <!-- ============ Header ============ -->
+    <header class="admin-header">
+        <div class="header-inner">
+            <div class="header-left">
+                <div class="header-logo"><i class="fa-solid fa-shield-halved"></i></div>
+                <div>
+                    <div class="header-title">HWK QIP Incentive - Admin Panel</div>
+                    <div class="header-subtitle">System Configuration & Management</div>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <a href="selector.html" class="btn-back">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+                </a>
+
+                <div class="user-info">
+                    <span class="admin-badge"><i class="fa-solid fa-crown"></i> Admin</span>
+                    <span class="user-email" id="user-email"></span>
+                </div>
+
+                <button class="btn-logout" id="btn-logout" onclick="AdminPage.handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============ Main Content ============ -->
+    <main class="main-content">
+        <div class="admin-grid">
+
+            <!-- ===== Panel 1: Threshold Settings ===== -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-icon settings"><i class="fa-solid fa-sliders"></i></div>
+                    <div class="panel-title">Threshold Settings</div>
+                </div>
+                <div class="panel-body">
+                    <!-- Month/Year Selector -->
+                    <div class="month-year-row mb-3">
+                        <div class="form-group">
+                            <label class="form-label-sm">Month</label>
+                            <select class="form-select form-select-admin" id="threshold-month">
+                                <option value="january">January</option>
+                                <option value="february">February</option>
+                                <option value="march">March</option>
+                                <option value="april">April</option>
+                                <option value="may">May</option>
+                                <option value="june">June</option>
+                                <option value="july">July</option>
+                                <option value="august">August</option>
+                                <option value="september">September</option>
+                                <option value="october">October</option>
+                                <option value="november">November</option>
+                                <option value="december">December</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label-sm">Year</label>
+                            <select class="form-select form-select-admin" id="threshold-year">
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-outline-admin" id="btn-load-thresholds" onclick="AdminPage.loadThresholds()">
+                            <i class="fa-solid fa-download"></i> Load
+                        </button>
+                    </div>
+
+                    <!-- Threshold Inputs -->
+                    <div class="threshold-grid">
+                        <div class="threshold-item">
+                            <label class="form-label-sm">Attendance Rate (%)</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control form-control-admin" id="th-attendance-rate"
+                                       min="0" max="100" step="1" placeholder="88">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+
+                        <div class="threshold-item">
+                            <label class="form-label-sm">Unapproved Absence (days)</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control form-control-admin" id="th-unapproved-absence"
+                                       min="0" max="10" step="1" placeholder="2">
+                                <span class="input-group-text">days</span>
+                            </div>
+                        </div>
+
+                        <div class="threshold-item">
+                            <label class="form-label-sm">Minimum Working Days</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control form-control-admin" id="th-minimum-working-days"
+                                       min="0" max="31" step="1" placeholder="12">
+                                <span class="input-group-text">days</span>
+                            </div>
+                        </div>
+
+                        <div class="threshold-item">
+                            <label class="form-label-sm">Area Reject Rate (%)</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control form-control-admin" id="th-area-reject-rate"
+                                       min="0" max="100" step="0.1" placeholder="3.0">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+
+                        <div class="threshold-item">
+                            <label class="form-label-sm">5PRS Pass Rate (%)</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control form-control-admin" id="th-5prs-pass-rate"
+                                       min="0" max="100" step="1" placeholder="95">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+
+                        <div class="threshold-item">
+                            <label class="form-label-sm">5PRS Inspection Qty</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control form-control-admin" id="th-5prs-min-qty"
+                                       min="0" max="1000" step="10" placeholder="100">
+                                <span class="input-group-text">prs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="d-flex justify-content-end mt-3">
+                        <button class="btn btn-primary-admin" id="btn-save-thresholds" onclick="AdminPage.saveThresholds()">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Thresholds
+                        </button>
+                    </div>
+
+                    <!-- Message Area -->
+                    <div class="message-area" id="threshold-message"></div>
+                </div>
+            </div>
+
+            <!-- ===== Panel 2: Change History ===== -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-icon history"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div class="panel-title">Change History</div>
+                </div>
+                <div class="panel-body" style="padding: 0;">
+                    <div class="history-table-wrapper">
+                        <table class="table history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date/Time</th>
+                                    <th>Changed By</th>
+                                    <th>Month</th>
+                                    <th>Field</th>
+                                    <th>Old</th>
+                                    <th>New</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fa-solid fa-spinner fa-spin me-1"></i> Loading history...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== Panel 3: System Status ===== -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-icon status"><i class="fa-solid fa-server"></i></div>
+                    <div class="panel-title">System Status</div>
+                </div>
+                <div class="panel-body">
+                    <div class="status-row">
+                        <span class="status-label">Last Pipeline Run</span>
+                        <span class="status-value" id="status-last-run">--</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Status</span>
+                        <span id="status-badge-area">
+                            <span class="status-badge unknown"><i class="fa-solid fa-circle-question"></i> Loading...</span>
+                        </span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Last Data Update</span>
+                        <span class="status-value" id="status-last-data-update">--</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Current Month</span>
+                        <span class="status-value" id="status-current-month">--</span>
+                    </div>
+
+                    <div class="mt-3">
+                        <button class="btn btn-success-admin w-100" id="btn-run-pipeline" onclick="AdminPage.triggerPipeline()">
+                            <i class="fa-solid fa-play me-1"></i> Run Pipeline Now
+                        </button>
+                    </div>
+
+                    <!-- Message Area -->
+                    <div class="message-area" id="pipeline-message"></div>
+                </div>
+            </div>
+
+            <!-- ===== Panel 4: Working Days Override ===== -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-icon calendar"><i class="fa-solid fa-calendar-days"></i></div>
+                    <div class="panel-title">Working Days Override</div>
+                </div>
+                <div class="panel-body">
+                    <p class="text-muted" style="font-size: 0.82rem; margin-bottom: 1rem;">
+                        Override the automatically calculated working days for a specific month.
+                        Uses the same month/year selected in Threshold Settings.
+                    </p>
+
+                    <div class="status-row">
+                        <span class="status-label">Selected Period</span>
+                        <span class="status-value" id="wd-selected-period">--</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Current Working Days</span>
+                        <span class="status-value" id="wd-current-value">--</span>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label-sm">Override Value</label>
+                        <div class="input-group input-group-sm">
+                            <input type="number" class="form-control form-control-admin" id="wd-override-value"
+                                   min="0" max="31" step="1" placeholder="Enter working days">
+                            <span class="input-group-text">days</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <button class="btn btn-primary-admin" id="btn-update-working-days" onclick="AdminPage.updateWorkingDays()">
+                            <i class="fa-solid fa-pen-to-square me-1"></i> Update Working Days
+                        </button>
+                    </div>
+
+                    <!-- Message Area -->
+                    <div class="message-area" id="working-days-message"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ============ Footer ============ -->
+    <footer class="page-footer">
+        Version 10.0 - Admin Panel - Firestore Secure Architecture
+    </footer>
+
+    <!-- Bootstrap 5.3.2 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase v10.7.1 compat SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <!-- Project modules -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+
+</body>
+</html>

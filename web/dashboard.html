@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HWK QIP Incentive Dashboard</title>
+
+    <!-- CDN: Bootstrap 5.3.2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- CDN: Font Awesome 6.4.0 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* ===== Global & Reset ===== */
+        :root {
+            --header-dark: #1a237e;
+            --header-light: #283593;
+            --accent: #448aff;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --bg-light: #f5f7fa;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-light); color: var(--text-primary); margin: 0; }
+
+        /* ===== Loading Overlay ===== */
+        #loading-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(255,255,255,0.92);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .spinner { width: 48px; height: 48px; border: 5px solid #e0e0e0; border-top-color: var(--header-dark); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loading-overlay p { margin-top: 16px; font-size: 1.1rem; color: var(--text-secondary); }
+
+        /* ===== Error Message ===== */
+        #error-message { display: none; max-width: 600px; margin: 80px auto; padding: 24px; background: #fff; border-left: 4px solid var(--danger); border-radius: 8px; box-shadow: var(--card-shadow); }
+        #error-message h4 { color: var(--danger); margin: 0 0 8px; }
+
+        /* ===== Header ===== */
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--header-dark), var(--header-light));
+            color: #fff; padding: 16px 24px;
+            display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+        }
+        .dashboard-header .title-section { flex: 1; min-width: 200px; }
+        .dashboard-header h1 { font-size: 1.35rem; margin: 0; font-weight: 700; }
+        .dashboard-header .meta { font-size: 0.8rem; opacity: 0.85; margin-top: 2px; }
+        .header-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .lang-btn { padding: 4px 10px; border: 1px solid rgba(255,255,255,0.5); border-radius: 4px; background: transparent; color: #fff; cursor: pointer; font-size: 0.75rem; transition: background 0.2s; }
+        .lang-btn:hover, .lang-btn.active { background: rgba(255,255,255,0.25); }
+        .header-link { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.8rem; padding: 4px 8px; }
+        .header-link:hover { color: #fff; }
+        .btn-logout { padding: 4px 12px; border: 1px solid rgba(255,255,255,0.5); border-radius: 4px; background: transparent; color: #fff; cursor: pointer; font-size: 0.78rem; }
+        .btn-logout:hover { background: rgba(255,255,255,0.2); }
+        .user-email { font-size: 0.75rem; opacity: 0.8; }
+
+        /* ===== Tab Navigation ===== */
+        .tabs {
+            display: flex; overflow-x: auto; background: #fff;
+            border-bottom: 2px solid #e0e0e0; padding: 0 16px;
+            -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab {
+            padding: 12px 18px; cursor: pointer; white-space: nowrap;
+            font-size: 0.88rem; color: var(--text-secondary);
+            border-bottom: 3px solid transparent; transition: all 0.2s;
+            user-select: none;
+        }
+        .tab:hover { color: var(--header-dark); background: #f0f4ff; }
+        .tab.active { color: var(--header-dark); border-bottom-color: var(--header-dark); font-weight: 600; }
+
+        /* ===== Tab Content ===== */
+        .tab-content { display: none; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .tab-content.active-tab { display: block; }
+
+        /* ===== KPI Cards ===== */
+        .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+        .kpi-card {
+            background: #fff; border-radius: 12px; padding: 20px;
+            box-shadow: var(--card-shadow); text-align: center; position: relative; overflow: hidden;
+        }
+        .kpi-card .kpi-label { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 6px; }
+        .kpi-card .kpi-value { font-size: 2rem; font-weight: 700; color: var(--header-dark); }
+        .kpi-card .kpi-trend { font-size: 0.78rem; margin-top: 4px; }
+        .kpi-card .kpi-trend.up { color: var(--success); }
+        .kpi-card .kpi-trend.down { color: var(--danger); }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--header-dark), var(--accent)); }
+
+        /* ===== Validation KPI Grid ===== */
+        .validation-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+        .validation-kpi-card {
+            background: #fff; border-radius: 10px; padding: 16px;
+            box-shadow: var(--card-shadow); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+            text-align: center; border: 1px solid #eee;
+        }
+        .validation-kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+        .validation-kpi-card .vkpi-icon { font-size: 1.6rem; margin-bottom: 6px; }
+        .validation-kpi-card .vkpi-title { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .validation-kpi-card .vkpi-count { font-size: 1.6rem; font-weight: 700; }
+
+        /* ===== Tables ===== */
+        .table-container { background: #fff; border-radius: 10px; box-shadow: var(--card-shadow); overflow: hidden; margin-bottom: 20px; }
+        .table-container table { width: 100%; border-collapse: collapse; }
+        .table-container th {
+            background: var(--header-dark); color: #fff; padding: 10px 14px;
+            font-size: 0.82rem; font-weight: 600; text-align: left;
+            position: sticky; top: 0; z-index: 2;
+        }
+        .table-container td { padding: 9px 14px; font-size: 0.84rem; border-bottom: 1px solid #f0f0f0; }
+        .table-container tr:hover td { background: #f8f9ff; }
+        .table-container tr:nth-child(even) td { background: #fafbfc; }
+        .table-container tr:nth-child(even):hover td { background: #f0f3ff; }
+
+        /* ===== Filter Row ===== */
+        .filter-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: center; }
+        .filter-row input, .filter-row select {
+            padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px;
+            font-size: 0.85rem; background: #fff;
+        }
+        .filter-row input { min-width: 220px; }
+        .filter-row select { min-width: 150px; }
+
+        /* ===== Pagination ===== */
+        .pagination-container { display: flex; justify-content: center; gap: 4px; margin-top: 14px; }
+        .pagination-container button {
+            padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px;
+            background: #fff; cursor: pointer; font-size: 0.82rem;
+        }
+        .pagination-container button.active { background: var(--header-dark); color: #fff; border-color: var(--header-dark); }
+        .pagination-container button:hover:not(.active) { background: #f0f4ff; }
+
+        /* ===== Org Chart ===== */
+        #orgChartContainer { min-height: 600px; background: #fff; border-radius: 10px; box-shadow: var(--card-shadow); padding: 16px; overflow: auto; }
+        .org-action-btns { display: flex; gap: 8px; margin-top: 12px; }
+        .org-action-btns button {
+            padding: 6px 14px; border: 1px solid #ddd; border-radius: 6px;
+            background: #fff; cursor: pointer; font-size: 0.82rem;
+        }
+        .org-action-btns button:hover { background: #f0f4ff; }
+        #buildingSummaryCards { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+
+        /* ===== Section Cards ===== */
+        .section-card { background: #fff; border-radius: 10px; box-shadow: var(--card-shadow); padding: 20px; margin-bottom: 20px; }
+        .section-card h3 { font-size: 1.05rem; margin: 0 0 14px; color: var(--header-dark); }
+
+        /* ===== Badges ===== */
+        .badge-pass { background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .badge-fail { background: #ffebee; color: #c62828; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .badge-na { background: #f5f5f5; color: #9e9e9e; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; }
+        .badge-type { padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
+        .badge-type1 { background: #e3f2fd; color: #1565c0; }
+        .badge-type2 { background: #fff3e0; color: #e65100; }
+        .badge-type3 { background: #f3e5f5; color: #7b1fa2; }
+
+        /* ===== Attendance Lookup ===== */
+        .lookup-input-row { display: flex; gap: 10px; margin-bottom: 16px; max-width: 500px; }
+        .lookup-input-row input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; }
+        .lookup-input-row button { padding: 10px 20px; background: var(--header-dark); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
+        .lookup-input-row button:hover { background: var(--header-light); }
+
+        /* ===== Footer ===== */
+        .dashboard-footer { text-align: center; padding: 16px; font-size: 0.75rem; color: var(--text-secondary); border-top: 1px solid #eee; margin-top: 20px; }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 992px) {
+            .kpi-row { grid-template-columns: 1fr; }
+            .validation-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .dashboard-header { padding: 12px 16px; }
+            .tab-content { padding: 14px; }
+        }
+        @media (max-width: 576px) {
+            .validation-kpi-grid { grid-template-columns: 1fr; }
+            .dashboard-header h1 { font-size: 1.1rem; }
+            .filter-row { flex-direction: column; }
+            .filter-row input, .filter-row select { min-width: 100%; }
+        }
+
+        /* ===== Print ===== */
+        @media print {
+            .dashboard-header, .tabs, .filter-row, .org-action-btns, .pagination-container, .dashboard-footer, .btn-logout, .header-controls { display: none !important; }
+            .tab-content { display: block !important; padding: 0; }
+            .kpi-card, .validation-kpi-card, .section-card, .table-container { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+            body { background: #fff; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- LOADING OVERLAY                                              -->
+<!-- ============================================================ -->
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <p data-i18n="loading">데이터를 불러오는 중...</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- ERROR MESSAGE                                                -->
+<!-- ============================================================ -->
+<div id="error-message">
+    <h4><i class="fas fa-exclamation-triangle"></i> <span data-i18n="errorTitle">오류 발생</span></h4>
+    <p id="error-text"></p>
+</div>
+
+<!-- ============================================================ -->
+<!-- HEADER                                                       -->
+<!-- ============================================================ -->
+<header class="dashboard-header">
+    <div class="title-section">
+        <h1>HWK QIP Incentive Dashboard</h1>
+        <div class="meta">
+            <span id="dashboard-month-year">--</span>
+            <span style="margin: 0 6px;">|</span>
+            <span data-i18n="lastUpdated">최종 업데이트:</span>
+            <span id="last-updated">--</span>
+        </div>
+    </div>
+    <div class="header-controls">
+        <button class="lang-btn active" onclick="switchLanguage('ko')">KO</button>
+        <button class="lang-btn" onclick="switchLanguage('en')">EN</button>
+        <button class="lang-btn" onclick="switchLanguage('vn')">VN</button>
+        <a href="selector.html" class="header-link" data-i18n="backToSelector"><i class="fas fa-arrow-left"></i> 월 선택</a>
+        <span class="user-email" id="userEmail"></span>
+        <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">로그아웃</span></button>
+    </div>
+</header>
+
+<!-- ============================================================ -->
+<!-- TAB NAVIGATION                                               -->
+<!-- ============================================================ -->
+<div class="tabs" id="mainTabs">
+    <div class="tab active" data-tab="summary" onclick="showTab('summary')"><span data-i18n="tab.summary">요약</span></div>
+    <div class="tab" data-tab="position" onclick="showTab('position')"><span data-i18n="tab.position">직급별 상세</span></div>
+    <div class="tab" data-tab="detail" onclick="showTab('detail')"><span data-i18n="tab.detail">개인별 상세</span></div>
+    <div class="tab" data-tab="criteria" onclick="showTab('criteria')"><span data-i18n="tab.criteria">인센티브 기준</span></div>
+    <div class="tab" data-tab="orgchart" onclick="showTab('orgchart')"><span data-i18n="tab.orgchart">조직도</span></div>
+    <div class="tab" data-tab="team" onclick="showTab('team')"><span data-i18n="tab.team">팀 관리</span></div>
+    <div class="tab" data-tab="validation" onclick="showTab('validation')"><span data-i18n="tab.validation">요약 및 시스템 검증</span></div>
+    <div class="tab" data-tab="attendance-lookup" onclick="showTab('attendance-lookup')"><i class="fas fa-search"></i> <span data-i18n="tab.attendanceLookup">개인 출결 조회</span></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: SUMMARY                                                 -->
+<!-- ============================================================ -->
+<div class="tab-content active-tab" id="summary" style="display: block;">
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <div class="kpi-label" data-i18n="kpi.recipients">수령 직원</div>
+            <div class="kpi-value" id="recipientsCountValue">--</div>
+            <div class="kpi-trend" id="recipientsTrend"></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label" data-i18n="kpi.paymentRate">지급률</div>
+            <div class="kpi-value" id="paymentRateValue">--</div>
+            <div class="kpi-trend" id="paymentRateTrend"></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label" data-i18n="kpi.totalAmount">총 지급액</div>
+            <div class="kpi-value" id="totalAmountValue">--</div>
+            <div class="kpi-trend" id="totalAmountTrend"></div>
+        </div>
+    </div>
+
+    <!-- TYPE Table -->
+    <div class="section-card">
+        <h3 data-i18n="summary.typeOverview">TYPE별 현황</h3>
+        <div id="typeTableContainer"></div>
+    </div>
+
+    <!-- Condition Summary Charts -->
+    <div class="section-card">
+        <h3 data-i18n="summary.conditionCharts">조건별 충족 현황</h3>
+        <div id="conditionChartsContainer"></div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: POSITION DETAIL                                         -->
+<!-- ============================================================ -->
+<div class="tab-content" id="position">
+    <div id="positionTables">
+        <p class="text-muted" data-i18n="loading">데이터를 불러오는 중...</p>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: INDIVIDUAL DETAIL                                       -->
+<!-- ============================================================ -->
+<div class="tab-content" id="detail">
+    <!-- Filters -->
+    <div class="filter-row">
+        <input type="text" id="employeeSearch" placeholder="사번 또는 이름 검색" data-i18n-placeholder="filter.searchPlaceholder">
+        <select id="positionFilter">
+            <option value="" data-i18n="filter.allPositions">전체 직급</option>
+        </select>
+        <select id="buildingFilter">
+            <option value="" data-i18n="filter.allBuildings">전체 Building</option>
+        </select>
+        <select id="incentiveFilter">
+            <option value="" data-i18n="filter.all">전체</option>
+            <option value="received" data-i18n="filter.received">수령</option>
+            <option value="not-received" data-i18n="filter.notReceived">미수령</option>
+        </select>
+    </div>
+
+    <!-- Employee Table -->
+    <div class="table-container" style="max-height: 600px; overflow-y: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th data-i18n="table.no">번호</th>
+                    <th data-i18n="table.empNo">사번</th>
+                    <th data-i18n="table.name">이름</th>
+                    <th data-i18n="table.position">직급</th>
+                    <th data-i18n="table.building">Building</th>
+                    <th data-i18n="table.type">TYPE</th>
+                    <th data-i18n="table.attendanceRate">출근율</th>
+                    <th data-i18n="table.aql">AQL</th>
+                    <th data-i18n="table.fivePrs">5PRS</th>
+                    <th data-i18n="table.incentive">인센티브</th>
+                    <th data-i18n="table.detail">상세</th>
+                </tr>
+            </thead>
+            <tbody id="employeeTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" id="tablePagination"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: CRITERIA                                                -->
+<!-- ============================================================ -->
+<div class="tab-content" id="criteria">
+    <!-- 10 Conditions Overview -->
+    <div class="section-card">
+        <h3 data-i18n="criteria.conditionsTitle">10가지 조건 개요</h3>
+        <div id="conditionsOverview">
+            <p class="text-muted" data-i18n="loading">데이터를 불러오는 중...</p>
+        </div>
+    </div>
+
+    <!-- TYPE Calculation Methods -->
+    <div class="section-card">
+        <h3 data-i18n="criteria.typeCalcTitle">TYPE별 인센티브 계산 방법</h3>
+        <div id="typeCalculationMethods">
+            <p class="text-muted" data-i18n="loading">데이터를 불러오는 중...</p>
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section-card">
+        <h3 data-i18n="criteria.faqTitle">자주 묻는 질문 (FAQ)</h3>
+        <div id="faqSection">
+            <p class="text-muted" data-i18n="loading">데이터를 불러오는 중...</p>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: ORG CHART                                               -->
+<!-- ============================================================ -->
+<div class="tab-content" id="orgchart">
+    <h3 id="orgChartTitle" data-i18n="orgchart.title">조직도 - 인센티브 구조</h3>
+
+    <!-- Org Filters -->
+    <div class="filter-row">
+        <select id="orgIncentiveFilter">
+            <option value="" data-i18n="filter.all">전체</option>
+            <option value="paid" data-i18n="filter.paid">수령</option>
+            <option value="unpaid" data-i18n="filter.unpaid">미수령</option>
+        </select>
+        <select id="orgBuildingFilter">
+            <option value="" data-i18n="filter.allBuildings">전체 Building</option>
+        </select>
+    </div>
+
+    <!-- Building Summary Cards -->
+    <div id="buildingSummaryCards"></div>
+
+    <!-- D3 Org Chart Container -->
+    <div id="orgChartContainer"></div>
+
+    <!-- Action Buttons -->
+    <div class="org-action-btns">
+        <button onclick="expandAllNodes()"><i class="fas fa-expand-arrows-alt"></i> <span data-i18n="orgchart.expandAll">전체 펼치기</span></button>
+        <button onclick="collapseAllNodes()"><i class="fas fa-compress-arrows-alt"></i> <span data-i18n="orgchart.collapseAll">전체 접기</span></button>
+        <button onclick="findMyNode()"><i class="fas fa-crosshairs"></i> <span data-i18n="orgchart.findMe">내 위치 찾기</span></button>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: TEAM                                                    -->
+<!-- ============================================================ -->
+<div class="tab-content" id="team">
+    <div id="teamSummaryCards" style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;"></div>
+    <div id="teamTableContainer">
+        <p class="text-muted" data-i18n="loading">데이터를 불러오는 중...</p>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: VALIDATION                                              -->
+<!-- ============================================================ -->
+<div class="tab-content" id="validation">
+    <!-- 12 KPI Cards -->
+    <div class="validation-kpi-grid">
+        <div class="validation-kpi-card" onclick="showValidationDetail('totalWorkingDays')">
+            <div class="vkpi-icon"><i class="fas fa-calendar-check" style="color: #1976d2;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.totalWorkingDays">총 근무일</div>
+            <div class="vkpi-count" id="kpiTotalWorkingDays">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('absentWithoutInform')">
+            <div class="vkpi-icon"><i class="fas fa-user-slash" style="color: #e65100;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.absentWithoutInform">무단결근</div>
+            <div class="vkpi-count" id="kpiAbsentWithoutInform">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('zeroWorkingDays')">
+            <div class="vkpi-icon"><i class="fas fa-ban" style="color: #c62828;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.zeroWorkingDays">근무일 0일</div>
+            <div class="vkpi-count" id="kpiZeroWorkingDays">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('minimumDaysNotMet')">
+            <div class="vkpi-icon"><i class="fas fa-calendar-minus" style="color: #f57c00;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.minimumDaysNotMet">최소 근무일 미달</div>
+            <div class="vkpi-count" id="kpiMinimumDaysNotMet">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('attendanceBelow88')">
+            <div class="vkpi-icon"><i class="fas fa-percentage" style="color: #d32f2f;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.attendanceBelow">출근율 미달</div>
+            <div class="vkpi-count" id="kpiAttendanceBelow88">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('aqlFail')">
+            <div class="vkpi-icon"><i class="fas fa-search-minus" style="color: #b71c1c;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.aqlFail">AQL 불합격</div>
+            <div class="vkpi-count" id="kpiAqlFail">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('consecutiveAqlFail')">
+            <div class="vkpi-icon"><i class="fas fa-exclamation-triangle" style="color: #ff6f00;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.consecutiveAqlFail">연속 AQL 실패</div>
+            <div class="vkpi-count" id="kpiConsecutiveAqlFail">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('areaRejectRate')">
+            <div class="vkpi-icon"><i class="fas fa-chart-bar" style="color: #e64a19;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.areaRejectRate">Area Reject Rate 초과</div>
+            <div class="vkpi-count" id="kpiAreaRejectRate">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('lowPassRate')">
+            <div class="vkpi-icon"><i class="fas fa-clipboard-check" style="color: #6a1b9a;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.lowPassRate">5PRS 통과율 미달</div>
+            <div class="vkpi-count" id="kpiLowPassRate">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('lowInspectionQty')">
+            <div class="vkpi-icon"><i class="fas fa-boxes" style="color: #4527a0;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.lowInspectionQty">5PRS 검사량 미달</div>
+            <div class="vkpi-count" id="kpiLowInspectionQty">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('buildingReviewTotal')">
+            <div class="vkpi-icon"><i class="fas fa-building" style="color: #ff9800;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.crossBuilding">교차 Building 검토</div>
+            <div class="vkpi-count" id="kpiBuildingReviewTotal">--</div>
+        </div>
+        <div class="validation-kpi-card" onclick="showValidationDetail('lineLeaderNotAssigned')">
+            <div class="vkpi-icon"><i class="fas fa-user-tie" style="color: #455a64;"></i></div>
+            <div class="vkpi-title" data-i18n="validation.lineLeaderNotAssigned">LINE LEADER 미배정</div>
+            <div class="vkpi-count" id="kpiLineLeaderNotAssigned">--</div>
+        </div>
+    </div>
+
+    <!-- Attendance Calendar -->
+    <div class="section-card">
+        <h3 data-i18n="validation.attendanceCalendar">출근 캘린더</h3>
+        <div id="attendanceCalendarSection"></div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: ATTENDANCE LOOKUP                                       -->
+<!-- ============================================================ -->
+<div class="tab-content" id="attendance-lookup">
+    <div class="section-card">
+        <h3 data-i18n="attendanceLookup.title">개인 출결 조회</h3>
+        <div class="lookup-input-row">
+            <input type="text" id="attendanceLookupInput" placeholder="사번 입력" data-i18n-placeholder="attendanceLookup.placeholder">
+            <button onclick="searchAttendance()"><i class="fas fa-search"></i> <span data-i18n="attendanceLookup.search">조회</span></button>
+        </div>
+        <div id="attendanceLookupResult"></div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODALS                                                       -->
+<!-- ============================================================ -->
+
+<!-- Employee Detail Modal -->
+<div class="modal fade" id="employeeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--header-dark), var(--header-light)); color: #fff;">
+                <h5 class="modal-title" id="employeeModalTitle" data-i18n="modal.employeeDetail">직원 상세 정보</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="employeeModalBody"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Position Detail Modal -->
+<div class="modal fade" id="positionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--header-dark), var(--header-light)); color: #fff;">
+                <h5 class="modal-title" id="positionModalTitle" data-i18n="modal.positionDetail">직급별 상세 정보</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="positionModalBody"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FOOTER                                                       -->
+<!-- ============================================================ -->
+<footer class="dashboard-footer">
+    <span>HWK QIP Incentive Dashboard v10.0</span>
+    <span style="margin: 0 8px;">|</span>
+    <span data-i18n="footer.dataSource">Data source: Firestore</span>
+    <span style="margin: 0 8px;">|</span>
+    <span id="footerTimestamp"></span>
+</footer>
+
+<!-- ============================================================ -->
+<!-- CDN: JS Dependencies (before closing body)                   -->
+<!-- ============================================================ -->
+<!-- CDN: Bootstrap 5.3.2 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- CDN: Chart.js 4.4.0 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- CDN: D3.js v7 -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<!-- CDN: Firebase v10.7.1 compat -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<!-- ============================================================ -->
+<!-- Local JS Modules (load order matters)                        -->
+<!-- ============================================================ -->
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard-data.js"></script>
+<script src="js/dashboard-i18n.js"></script>
+<script src="js/dashboard-charts.js"></script>
+<script src="js/dashboard-filters.js"></script>
+<script src="js/dashboard-modals.js"></script>
+
+<!-- ============================================================ -->
+<!-- Initialization                                               -->
+<!-- ============================================================ -->
+<script>
+    /**
+     * Show a specific tab and hide all others.
+     * @param {string} tabName - The data-tab value of the tab to show.
+     */
+    function showTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(function(c) {
+            c.style.display = 'none';
+        });
+        document.querySelectorAll('.tab').forEach(function(t) {
+            t.classList.remove('active');
+        });
+        var content = document.getElementById(tabName);
+        if (content) content.style.display = 'block';
+        var tab = document.querySelector('.tab[data-tab="' + tabName + '"]');
+        if (tab) tab.classList.add('active');
+    }
+
+    /**
+     * Switch UI language.
+     * @param {string} lang - Language code: 'ko', 'en', or 'vn'.
+     */
+    function switchLanguage(lang) {
+        document.querySelectorAll('.lang-btn').forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        var activeBtn = document.querySelector('.lang-btn[onclick*="' + lang + '"]');
+        if (activeBtn) activeBtn.classList.add('active');
+        if (typeof DashboardI18n !== 'undefined' && DashboardI18n.switchTo) {
+            DashboardI18n.switchTo(lang);
+        }
+    }
+
+    /**
+     * Handle user logout.
+     */
+    function handleLogout() {
+        if (typeof logout === 'function') {
+            logout();
+        } else if (typeof firebase !== 'undefined') {
+            firebase.auth().signOut().then(function() {
+                window.location.href = 'auth.html';
+            });
+        }
+    }
+
+    /**
+     * Hide loading overlay and show content.
+     */
+    function hideLoading() {
+        var overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+
+    /**
+     * Show error message to user.
+     * @param {string} message - The error text to display.
+     */
+    function showError(message) {
+        hideLoading();
+        var errorDiv = document.getElementById('error-message');
+        var errorText = document.getElementById('error-text');
+        if (errorDiv && errorText) {
+            errorText.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    /* Placeholder functions for org chart actions (implemented by dashboard-charts.js) */
+    function expandAllNodes() {
+        if (typeof DashboardCharts !== 'undefined' && DashboardCharts.expandAll) DashboardCharts.expandAll();
+    }
+    function collapseAllNodes() {
+        if (typeof DashboardCharts !== 'undefined' && DashboardCharts.collapseAll) DashboardCharts.collapseAll();
+    }
+    function findMyNode() {
+        if (typeof DashboardCharts !== 'undefined' && DashboardCharts.findMe) DashboardCharts.findMe();
+    }
+
+    /* Placeholder for validation detail click handler (implemented by dashboard-modals.js) */
+    function showValidationDetail(type) {
+        if (typeof DashboardModals !== 'undefined' && DashboardModals.showValidation) {
+            DashboardModals.showValidation(type);
+        }
+    }
+
+    /* Placeholder for attendance lookup (implemented by dashboard-data.js or dashboard-filters.js) */
+    function searchAttendance() {
+        var input = document.getElementById('attendanceLookupInput');
+        if (!input) return;
+        var empId = input.value.trim();
+        if (!empId) return;
+        if (typeof DashboardFilters !== 'undefined' && DashboardFilters.searchAttendance) {
+            DashboardFilters.searchAttendance(empId);
+        }
+    }
+
+    /**
+     * Main initialization — runs after DOM is ready.
+     */
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            // 1. Check authentication
+            var user = null;
+            if (typeof checkAuth === 'function') {
+                user = await checkAuth();
+            }
+            if (!user) {
+                hideLoading();
+                return;
+            }
+
+            // Display user email
+            var emailEl = document.getElementById('userEmail');
+            if (emailEl && user.email) emailEl.textContent = user.email;
+
+            // 2. Get month/year from URL params
+            var params = new URLSearchParams(window.location.search);
+            var month = params.get('month') || 'february';
+            var year = parseInt(params.get('year')) || 2026;
+
+            // 3. Update page title with month/year
+            var monthYearEl = document.getElementById('dashboard-month-year');
+            if (monthYearEl) {
+                monthYearEl.textContent = month.charAt(0).toUpperCase() + month.slice(1) + ' ' + year;
+            }
+
+            // 4. Load all data from Firestore
+            var data = null;
+            if (typeof DashboardData !== 'undefined' && DashboardData.loadAll) {
+                data = await DashboardData.loadAll(month, year);
+            }
+
+            if (!data) {
+                showError('Failed to load dashboard data. Please try again.');
+                return;
+            }
+
+            // 5. Initialize all dashboard components
+            if (typeof DashboardCharts !== 'undefined' && DashboardCharts.init) DashboardCharts.init(data);
+            if (typeof DashboardFilters !== 'undefined' && DashboardFilters.init) DashboardFilters.init(data);
+            if (typeof DashboardModals !== 'undefined' && DashboardModals.init) DashboardModals.init(data);
+            if (typeof DashboardI18n !== 'undefined' && DashboardI18n.init) DashboardI18n.init();
+
+            // 6. Update last-updated and footer timestamp
+            var lastUpdatedEl = document.getElementById('last-updated');
+            if (lastUpdatedEl && data.metadata && data.metadata.lastUpdated) {
+                lastUpdatedEl.textContent = data.metadata.lastUpdated;
+            }
+            var footerTs = document.getElementById('footerTimestamp');
+            if (footerTs) {
+                footerTs.textContent = new Date().toLocaleString();
+            }
+
+            // 7. Show default tab and hide loading
+            showTab('summary');
+            hideLoading();
+
+        } catch (err) {
+            console.error('Dashboard initialization failed:', err);
+            showError('Dashboard initialization failed: ' + (err.message || err));
+        }
+    });
+</script>
+
+</body>
+</html>

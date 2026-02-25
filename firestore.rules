@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Authenticated user
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: Admin user (specific email)
+    function isAdmin() {
+      return request.auth != null &&
+             request.auth.token.email == 'ksmoon@hsvina.com';
+    }
+
+    // Employee data: auth read, admin write
+    match /employees/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Dashboard summary: auth read, admin write
+    match /dashboard_summary/{document} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Threshold settings: auth read, admin write
+    match /thresholds/{document} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Threshold change history: auth read, admin create only (immutable audit trail)
+    match /threshold_history/{document} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+    }
+
+    // System config: admin only
+    match /system/{document} {
+      allow read, write: if isAdmin();
+    }
+
+    // Default: deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
