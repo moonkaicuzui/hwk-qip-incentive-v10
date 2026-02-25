@@ -472,6 +472,31 @@ def main():
     print("\n📋 Step 1: CSV 데이터 로드")
     df = load_csv(month, year)
 
+    # 1.5. 퇴사자 필터링 (계산월 시작일 이전 퇴사자 제외)
+    print(f"\n🔍 Step 1.5: 퇴사자 필터링")
+    total_before = len(df)
+    if "Stop working Date" in df.columns:
+        # 월 시작일 계산
+        month_names = {
+            "january": 1, "february": 2, "march": 3, "april": 4,
+            "may": 5, "june": 6, "july": 7, "august": 8,
+            "september": 9, "october": 10, "november": 11, "december": 12
+        }
+        month_num = month_names.get(month, 1)
+        month_start = pd.Timestamp(year=year, month=month_num, day=1)
+
+        # Stop working Date가 비어있으면 재직 중
+        swd = df["Stop working Date"].copy()
+        swd_parsed = pd.to_datetime(swd, errors="coerce")
+
+        # 퇴사일이 있고 계산월 시작일 이전인 직원 제외
+        resigned_before = swd_parsed.notna() & (swd_parsed < month_start)
+        resigned_count = resigned_before.sum()
+        df = df[~resigned_before].reset_index(drop=True)
+        print(f"   전체: {total_before}명 → 퇴사자 {resigned_count}명 제외 → 활성: {len(df)}명")
+    else:
+        print(f"   Stop working Date 컬럼 없음 — 필터링 건너뜀 ({total_before}명 유지)")
+
     # 2. Firebase 초기화
     print("\n🔑 Step 2: Firebase 초기화")
     db = init_firestore(dry_run=dry_run)
@@ -494,11 +519,20 @@ def main():
 
     print(f"   변환 완료: {len(employees)}명 성공, {error_count}건 실패")
 
-    # 4. Working days 추출
+    # 4. Working days 추출 (config 우선, CSV fallback)
     working_days = 0
-    if "Total Working Days" in df.columns:
+    config_path = f"config_files/config_{month}_{year}.json"
+    if os.path.exists(config_path):
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+            working_days = config.get("working_days", 0)
+            print(f"   총 근무일: {working_days} (config 파일)")
+        except Exception:
+            pass
+    if working_days == 0 and "Total Working Days" in df.columns:
         working_days = safe_int(df["Total Working Days"].dropna().iloc[0] if len(df) > 0 else 0)
-    print(f"   총 근무일: {working_days}")
+        print(f"   총 근무일: {working_days} (CSV fallback)")
 
     # 5. 요약 데이터 생성
     print(f"\n📊 Step 4: 대시보드 요약 생성")

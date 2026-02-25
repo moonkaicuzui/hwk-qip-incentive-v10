@@ -60,6 +60,10 @@ var DashboardCharts = {
         this.renderSummaryKPIs(data);
         this.renderTypeTable(data);
         this.renderConditionCharts(data);
+        this.renderPositionTables(data);
+        this.renderCriteriaTab(data);
+        this.renderTeamTab(data);
+        this.renderOrgChartPlaceholder(data);
         this.renderValidationKPIs(data);
 
         console.log('[DashboardCharts] Initialization complete');
@@ -425,6 +429,469 @@ var DashboardCharts = {
     },
 
     // ------------------------------------------------------------------
+    // Position Tab: Position-grouped summary tables
+    // ------------------------------------------------------------------
+
+    /**
+     * Populate #positionTables with position-grouped employee summary.
+     * Groups employees by position, shows count/receiving/amount per position.
+     * Each row is clickable to open the position detail modal.
+     *
+     * @param {Object} data - { employees, summary, thresholds }
+     */
+    renderPositionTables: function (data) {
+        var container = document.getElementById('positionTables');
+        if (!container) return;
+
+        var employees = data.employees || [];
+        if (employees.length === 0) {
+            container.innerHTML = '<p style="color: #757575; text-align: center; padding: 40px;">No data available</p>';
+            return;
+        }
+
+        // Group employees by position
+        var positionMap = {};
+        employees.forEach(function (emp) {
+            var pos = String(emp.position || emp.Position || emp['Position Name'] || 'Unknown').trim();
+            if (!positionMap[pos]) {
+                positionMap[pos] = [];
+            }
+            positionMap[pos].push(emp);
+        });
+
+        // Sort positions by employee count (descending)
+        var positions = Object.keys(positionMap).sort(function (a, b) {
+            return positionMap[b].length - positionMap[a].length;
+        });
+
+        var self = this;
+        var html = '<h4 style="margin-bottom: 16px; color: var(--header-dark);">Position Summary (' + positions.length + ' positions)</h4>';
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr>';
+        html += '<th>Position</th>';
+        html += '<th style="text-align:center;">TYPE</th>';
+        html += '<th style="text-align:right;">Total</th>';
+        html += '<th style="text-align:right;">Receiving</th>';
+        html += '<th style="text-align:right;">Rate (%)</th>';
+        html += '<th style="text-align:right;">Total Amount (VND)</th>';
+        html += '<th style="text-align:right;">Avg (Receiving)</th>';
+        html += '</tr></thead><tbody>';
+
+        var grandTotal = 0, grandReceiving = 0, grandAmount = 0;
+
+        positions.forEach(function (pos) {
+            var emps = positionMap[pos];
+            var total = emps.length;
+            var receiving = 0;
+            var amount = 0;
+
+            // Determine predominant TYPE
+            var typeCounts = {};
+            emps.forEach(function (emp) {
+                var incentive = window.employeeHelpers
+                    ? window.employeeHelpers.getIncentive(emp, 'current')
+                    : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
+                if (incentive > 0) {
+                    receiving++;
+                    amount += incentive;
+                }
+                var t = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
+                if (t.indexOf('TYPE-1') !== -1 || t === '1') t = 'TYPE-1';
+                else if (t.indexOf('TYPE-2') !== -1 || t === '2') t = 'TYPE-2';
+                else if (t.indexOf('TYPE-3') !== -1 || t === '3') t = 'TYPE-3';
+                else t = 'N/A';
+                typeCounts[t] = (typeCounts[t] || 0) + 1;
+            });
+
+            var mainType = 'N/A';
+            var maxCount = 0;
+            for (var t in typeCounts) {
+                if (typeCounts[t] > maxCount) { maxCount = typeCounts[t]; mainType = t; }
+            }
+
+            var rate = total > 0 ? ((receiving / total) * 100) : 0;
+            var avgReceiving = receiving > 0 ? (amount / receiving) : 0;
+            var rateColor = rate >= 80 ? self.colors.green : (rate >= 50 ? self.colors.yellow : self.colors.red);
+
+            var badgeClass = mainType === 'TYPE-1' ? 'badge-type1' : (mainType === 'TYPE-2' ? 'badge-type2' : 'badge-type3');
+
+            html += '<tr style="cursor: pointer;" onclick="if(typeof DashboardModals!==\'undefined\' && DashboardModals.showPositionDetail) DashboardModals.showPositionDetail(\'' + self._escapeAttr(pos) + '\')">';
+            html += '<td style="font-weight:600; color: var(--header-dark);">' + self._escapeHtml(pos) + ' <i class="fas fa-external-link-alt" style="font-size:0.7rem; opacity:0.5;"></i></td>';
+            html += '<td style="text-align:center;"><span class="badge-type ' + badgeClass + '">' + mainType + '</span></td>';
+            html += '<td style="text-align:right;">' + total + '</td>';
+            html += '<td style="text-align:right;">' + receiving + '</td>';
+            html += '<td style="text-align:right; color:' + rateColor + '; font-weight:600;">' + self.formatPercent(rate) + '%</td>';
+            html += '<td style="text-align:right;">' + self.formatVND(amount) + '</td>';
+            html += '<td style="text-align:right;">' + self.formatVND(avgReceiving) + '</td>';
+            html += '</tr>';
+
+            grandTotal += total;
+            grandReceiving += receiving;
+            grandAmount += amount;
+        });
+
+        // Grand total row
+        var grandRate = grandTotal > 0 ? ((grandReceiving / grandTotal) * 100) : 0;
+        var grandAvgReceiving = grandReceiving > 0 ? (grandAmount / grandReceiving) : 0;
+
+        html += '<tr style="font-weight: 700; background: #f0f4ff;">';
+        html += '<td>Total (' + positions.length + ' positions)</td>';
+        html += '<td></td>';
+        html += '<td style="text-align:right;">' + self._formatNumber(grandTotal) + '</td>';
+        html += '<td style="text-align:right;">' + self._formatNumber(grandReceiving) + '</td>';
+        html += '<td style="text-align:right;">' + self.formatPercent(grandRate) + '%</td>';
+        html += '<td style="text-align:right;">' + self.formatVND(grandAmount) + '</td>';
+        html += '<td style="text-align:right;">' + self.formatVND(grandAvgReceiving) + '</td>';
+        html += '</tr>';
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+
+        console.log('[DashboardCharts] Position tables rendered: ' + positions.length + ' positions');
+    },
+
+    // ------------------------------------------------------------------
+    // Criteria Tab: 10 Conditions Overview + Thresholds
+    // ------------------------------------------------------------------
+
+    /**
+     * Populate #conditionsOverview with the 10 conditions, thresholds, and descriptions.
+     * Also renders the progressive incentive table and TYPE-2 calculation methods.
+     *
+     * @param {Object} data - { employees, summary, thresholds }
+     */
+    renderCriteriaTab: function (data) {
+        var container = document.getElementById('conditionsOverview');
+        if (!container) return;
+
+        var thresholds = data.thresholds || window.thresholds || {};
+        var employees = data.employees || [];
+
+        var thAttendanceRate = parseFloat(thresholds.attendance_rate) || 88;
+        var thUnapprovedAbsence = parseFloat(thresholds.unapproved_absence) || 2;
+        var thMinimumWorkingDays = parseFloat(thresholds.minimum_working_days) || 12;
+        var thAreaRejectRate = parseFloat(thresholds.area_reject_rate) || 3.0;
+        var th5prsPassRate = parseFloat(thresholds['5prs_pass_rate']) || 95;
+        var th5prsMinQty = parseFloat(thresholds['5prs_min_qty']) || 100;
+        var thConsecutiveAql = parseFloat(thresholds.consecutive_aql_months) || 3;
+
+        var conditions = [
+            { num: 1, category: 'Attendance', name: 'Attendance Rate', threshold: '>= ' + thAttendanceRate + '%', desc: 'Monthly attendance rate must meet minimum' },
+            { num: 2, category: 'Attendance', name: 'Unapproved Absence', threshold: '<= ' + thUnapprovedAbsence + ' days', desc: 'Maximum unexcused absences allowed' },
+            { num: 3, category: 'Attendance', name: 'Actual Working Days', threshold: '> 0', desc: 'Employee must have worked at least 1 day' },
+            { num: 4, category: 'Attendance', name: 'Minimum Working Days', threshold: '>= ' + thMinimumWorkingDays + ' days', desc: 'Minimum working days required for eligibility' },
+            { num: 5, category: 'AQL', name: 'AQL Failure (Monthly)', threshold: '= 0', desc: 'No personal AQL failures this month' },
+            { num: 6, category: 'AQL', name: 'AQL Consecutive Failure', threshold: 'No ' + thConsecutiveAql + '-month streak', desc: 'No consecutive month AQL failures' },
+            { num: 7, category: 'AQL', name: 'Team AQL Consecutive', threshold: 'No ' + thConsecutiveAql + '-month streak', desc: 'Team/area has no consecutive failures' },
+            { num: 8, category: 'AQL', name: 'Area Reject Rate', threshold: '< ' + thAreaRejectRate + '%', desc: 'Building area reject rate below threshold' },
+            { num: 9, category: '5PRS', name: '5PRS Pass Rate', threshold: '>= ' + th5prsPassRate + '%', desc: 'Inspection pass rate meets minimum' },
+            { num: 10, category: '5PRS', name: '5PRS Inspection Qty', threshold: '>= ' + th5prsMinQty + ' pairs', desc: 'Minimum inspection quantity required' }
+        ];
+
+        var self = this;
+        var html = '';
+
+        // --- Section 1: Conditions Table ---
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr style="background: #1a237e; color: #fff;">';
+        html += '<th style="width:40px;">#</th>';
+        html += '<th style="width:90px;">Category</th>';
+        html += '<th>Condition</th>';
+        html += '<th style="width:180px;">Threshold</th>';
+        html += '<th>Description</th>';
+        html += '<th style="width:70px; text-align:center;">Pass</th>';
+        html += '<th style="width:70px; text-align:center;">Fail</th>';
+        html += '</tr></thead><tbody>';
+
+        conditions.forEach(function (c) {
+            var yes = 0, no = 0;
+            employees.forEach(function (emp) {
+                var result = window.employeeHelpers
+                    ? window.employeeHelpers.getCondition(emp, c.num)
+                    : 'N/A';
+                var upper = String(result).toUpperCase().trim();
+                if (upper === 'YES' || upper === 'PASS' || upper === 'TRUE' || upper === '1') yes++;
+                else if (upper === 'NO' || upper === 'FAIL' || upper === 'FALSE' || upper === '0') no++;
+            });
+
+            var catColor = c.category === 'Attendance' ? '#1976d2' : (c.category === 'AQL' ? '#e65100' : '#2e7d32');
+            html += '<tr>';
+            html += '<td style="font-weight:700; color: ' + catColor + ';">C' + c.num + '</td>';
+            html += '<td><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:600; color:#fff; background:' + catColor + ';">' + c.category + '</span></td>';
+            html += '<td style="font-weight:600;">' + c.name + '</td>';
+            html += '<td><code style="background:#f0f4ff; padding:2px 6px; border-radius:3px;">' + c.threshold + '</code></td>';
+            html += '<td style="color: #757575; font-size: 0.85rem;">' + c.desc + '</td>';
+            html += '<td style="text-align:center; color:' + self.colors.green + '; font-weight:600;">' + yes + '</td>';
+            html += '<td style="text-align:center; color:' + self.colors.red + '; font-weight:600;">' + no + '</td>';
+            html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+
+        // --- Section 2: Progressive Incentive Table ---
+        html += '<div class="section-card" style="margin-top: 24px;">';
+        html += '<h4 style="color: var(--header-dark); margin-bottom: 12px;">TYPE-1 Progressive Incentive Table (VND)</h4>';
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr style="background: #283593; color: #fff;">';
+        var months = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+        months.forEach(function (m) {
+            html += '<th style="text-align:center; padding:6px;">' + m + '</th>';
+        });
+        html += '</tr></thead><tbody><tr>';
+        var amounts = [150,200,250,300,350,400,450,500,550,600,650,700,800,900,1000];
+        amounts.forEach(function (a) {
+            html += '<td style="text-align:center; padding:6px; font-weight:600;">' + self._formatNumber(a * 1000) + '</td>';
+        });
+        html += '</tr></tbody></table></div>';
+        html += '<p style="color: #757575; font-size: 0.82rem; margin-top: 8px;">* Months = consecutive months of 100% condition fulfillment. Resets to 0 on any failure.</p>';
+        html += '</div>';
+
+        // --- Section 3: TYPE Application Matrix ---
+        html += '<div class="section-card" style="margin-top: 24px;">';
+        html += '<h4 style="color: var(--header-dark); margin-bottom: 12px;">TYPE-based Condition Application</h4>';
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr>';
+        html += '<th>TYPE</th><th>Applied Conditions</th><th>Incentive Method</th>';
+        html += '</tr></thead><tbody>';
+        html += '<tr><td><span class="badge-type badge-type1">TYPE-1</span></td>';
+        html += '<td>C1~C10 (All 10 conditions)</td>';
+        html += '<td>Progressive table (1~15 months)</td></tr>';
+        html += '<tr><td><span class="badge-type badge-type2">TYPE-2</span></td>';
+        html += '<td>C1~C4 (Attendance only)</td>';
+        html += '<td>Based on TYPE-1 position average</td></tr>';
+        html += '<tr><td><span class="badge-type badge-type3">TYPE-3</span></td>';
+        html += '<td>None (Policy excluded)</td>';
+        html += '<td>0 VND (Not eligible)</td></tr>';
+        html += '</tbody></table></div>';
+        html += '</div>';
+
+        container.innerHTML = html;
+        console.log('[DashboardCharts] Criteria tab rendered with ' + conditions.length + ' conditions');
+    },
+
+    // ------------------------------------------------------------------
+    // Team Tab: Building/Team summary
+    // ------------------------------------------------------------------
+
+    /**
+     * Populate #teamSummaryCards and #teamTableContainer with team/building data.
+     * Groups employees by building, shows summary cards and detailed table.
+     *
+     * @param {Object} data - { employees, summary, thresholds }
+     */
+    renderTeamTab: function (data) {
+        var cardsContainer = document.getElementById('teamSummaryCards');
+        var tableContainer = document.getElementById('teamTableContainer');
+        if (!cardsContainer && !tableContainer) return;
+
+        var employees = data.employees || [];
+        if (employees.length === 0) {
+            if (tableContainer) tableContainer.innerHTML = '<p style="color: #757575; text-align: center; padding: 40px;">No data available</p>';
+            return;
+        }
+
+        var self = this;
+
+        // Group by building
+        var buildingMap = {};
+        employees.forEach(function (emp) {
+            var bld = String(emp.building || emp.BUILDING || emp.Building || 'Unknown').trim();
+            if (!bld || bld === 'nan' || bld === 'NaN' || bld === 'null' || bld === 'undefined') bld = 'Unknown';
+            if (!buildingMap[bld]) buildingMap[bld] = [];
+            buildingMap[bld].push(emp);
+        });
+
+        var buildings = Object.keys(buildingMap).sort();
+
+        // Building color palette
+        var buildingColors = {
+            'A': '#e53935', 'B': '#1e88e5', 'B3': '#7b1fa2', 'C': '#43a047',
+            'D': '#ff8f00', 'Unknown': '#9e9e9e'
+        };
+        function getBldColor(bld) {
+            for (var key in buildingColors) {
+                if (bld.toUpperCase().indexOf(key) === 0) return buildingColors[key];
+            }
+            return '#607d8b';
+        }
+
+        // --- Summary Cards ---
+        if (cardsContainer) {
+            var cardsHtml = '';
+            buildings.forEach(function (bld) {
+                var emps = buildingMap[bld];
+                var receiving = 0;
+                var amount = 0;
+                emps.forEach(function (emp) {
+                    var incentive = window.employeeHelpers
+                        ? window.employeeHelpers.getIncentive(emp, 'current')
+                        : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
+                    if (incentive > 0) { receiving++; amount += incentive; }
+                });
+                var rate = emps.length > 0 ? ((receiving / emps.length) * 100) : 0;
+                var color = getBldColor(bld);
+
+                cardsHtml += '<div style="background:#fff; border-radius:10px; padding:16px; min-width:160px; flex:1; box-shadow:0 2px 8px rgba(0,0,0,0.08); border-top:4px solid ' + color + ';">';
+                cardsHtml += '<div style="font-size:0.8rem; color:#757575; margin-bottom:4px;">Building</div>';
+                cardsHtml += '<div style="font-size:1.3rem; font-weight:700; color:' + color + ';">' + self._escapeHtml(bld) + '</div>';
+                cardsHtml += '<div style="margin-top:8px; font-size:0.82rem;">';
+                cardsHtml += '<span style="color:#424242;">Total: <b>' + emps.length + '</b></span>';
+                cardsHtml += ' | <span style="color:' + self.colors.green + ';">Receiving: <b>' + receiving + '</b></span>';
+                cardsHtml += '</div>';
+                cardsHtml += '<div style="font-size:0.82rem; margin-top:4px;">Rate: <b style="color:' + (rate >= 70 ? self.colors.green : self.colors.red) + ';">' + self.formatPercent(rate) + '%</b></div>';
+                cardsHtml += '<div style="font-size:0.82rem; margin-top:2px;">Amount: <b>' + self.formatVND(amount) + '</b> VND</div>';
+                cardsHtml += '</div>';
+            });
+            cardsContainer.innerHTML = cardsHtml;
+        }
+
+        // --- Detailed Table ---
+        if (tableContainer) {
+            var html = '<div class="table-container"><table>';
+            html += '<thead><tr>';
+            html += '<th>Building</th>';
+            html += '<th style="text-align:right;">Total</th>';
+            html += '<th style="text-align:right;">Receiving</th>';
+            html += '<th style="text-align:right;">Rate (%)</th>';
+            html += '<th style="text-align:right;">Total Amount (VND)</th>';
+            html += '<th style="text-align:right;">TYPE-1</th>';
+            html += '<th style="text-align:right;">TYPE-2</th>';
+            html += '<th style="text-align:right;">TYPE-3</th>';
+            html += '</tr></thead><tbody>';
+
+            var gt = 0, gr = 0, ga = 0, gt1 = 0, gt2 = 0, gt3 = 0;
+
+            buildings.forEach(function (bld) {
+                var emps = buildingMap[bld];
+                var receiving = 0;
+                var amount = 0;
+                var type1 = 0, type2 = 0, type3 = 0;
+
+                emps.forEach(function (emp) {
+                    var incentive = window.employeeHelpers
+                        ? window.employeeHelpers.getIncentive(emp, 'current')
+                        : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
+                    if (incentive > 0) { receiving++; amount += incentive; }
+                    var t = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
+                    if (t.indexOf('TYPE-1') !== -1 || t === '1') type1++;
+                    else if (t.indexOf('TYPE-2') !== -1 || t === '2') type2++;
+                    else type3++;
+                });
+
+                var rate = emps.length > 0 ? ((receiving / emps.length) * 100) : 0;
+                var rateColor = rate >= 70 ? self.colors.green : (rate >= 40 ? self.colors.yellow : self.colors.red);
+                var color = getBldColor(bld);
+
+                html += '<tr>';
+                html += '<td><span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:' + color + '; margin-right:6px; vertical-align:middle;"></span><b>' + self._escapeHtml(bld) + '</b></td>';
+                html += '<td style="text-align:right;">' + emps.length + '</td>';
+                html += '<td style="text-align:right;">' + receiving + '</td>';
+                html += '<td style="text-align:right; color:' + rateColor + '; font-weight:600;">' + self.formatPercent(rate) + '%</td>';
+                html += '<td style="text-align:right;">' + self.formatVND(amount) + '</td>';
+                html += '<td style="text-align:right;">' + type1 + '</td>';
+                html += '<td style="text-align:right;">' + type2 + '</td>';
+                html += '<td style="text-align:right;">' + type3 + '</td>';
+                html += '</tr>';
+
+                gt += emps.length; gr += receiving; ga += amount;
+                gt1 += type1; gt2 += type2; gt3 += type3;
+            });
+
+            // Total row
+            var grandRate = gt > 0 ? ((gr / gt) * 100) : 0;
+            html += '<tr style="font-weight: 700; background: #f0f4ff;">';
+            html += '<td>Total (' + buildings.length + ' buildings)</td>';
+            html += '<td style="text-align:right;">' + self._formatNumber(gt) + '</td>';
+            html += '<td style="text-align:right;">' + self._formatNumber(gr) + '</td>';
+            html += '<td style="text-align:right;">' + self.formatPercent(grandRate) + '%</td>';
+            html += '<td style="text-align:right;">' + self.formatVND(ga) + '</td>';
+            html += '<td style="text-align:right;">' + gt1 + '</td>';
+            html += '<td style="text-align:right;">' + gt2 + '</td>';
+            html += '<td style="text-align:right;">' + gt3 + '</td>';
+            html += '</tr>';
+
+            html += '</tbody></table></div>';
+            tableContainer.innerHTML = html;
+        }
+
+        console.log('[DashboardCharts] Team tab rendered: ' + buildings.length + ' buildings');
+    },
+
+    // ------------------------------------------------------------------
+    // Org Chart Tab: Placeholder (D3.js tree not yet implemented)
+    // ------------------------------------------------------------------
+
+    /**
+     * Show a placeholder message for the org chart tab.
+     * Full D3.js tree implementation will come in a later phase.
+     *
+     * @param {Object} data - { employees, summary, thresholds }
+     */
+    renderOrgChartPlaceholder: function (data) {
+        var container = document.getElementById('orgChartContainer');
+        if (!container) return;
+
+        var employees = data.employees || [];
+
+        // Build a basic hierarchy summary instead of D3 tree
+        var managerMap = {};
+        var subordinateCount = {};
+        employees.forEach(function (emp) {
+            var pos = String(emp.position || emp.Position || '').toUpperCase();
+            var empId = String(emp['Employee No'] || emp.emp_no || '');
+            var bossId = String(emp.boss_id || emp['Boss ID'] || '');
+
+            if (pos.indexOf('LINE LEADER') !== -1 || pos.indexOf('GROUP LEADER') !== -1 ||
+                pos.indexOf('SUPERVISOR') !== -1 || pos.indexOf('MANAGER') !== -1) {
+                if (!managerMap[empId]) {
+                    managerMap[empId] = {
+                        name: emp.full_name || emp['Full Name'] || emp.name || '--',
+                        position: emp.position || emp.Position || '--',
+                        building: emp.building || emp.BUILDING || '--',
+                        subordinates: 0
+                    };
+                }
+            }
+            if (bossId && subordinateCount[bossId] !== undefined) {
+                subordinateCount[bossId]++;
+            } else if (bossId) {
+                subordinateCount[bossId] = 1;
+            }
+        });
+
+        // Update subordinate counts
+        for (var mid in managerMap) {
+            managerMap[mid].subordinates = subordinateCount[mid] || 0;
+        }
+
+        var managers = Object.keys(managerMap).map(function (id) { return managerMap[id]; });
+        managers.sort(function (a, b) { return b.subordinates - a.subordinates; });
+
+        var html = '<div style="text-align:center; padding: 20px;">';
+        html += '<i class="fas fa-sitemap" style="font-size:3rem; color: var(--accent); margin-bottom:12px;"></i>';
+        html += '<h4 style="color: var(--header-dark);">Organization Hierarchy</h4>';
+        html += '<p style="color: #757575; margin-bottom: 20px;">Manager hierarchy overview (' + managers.length + ' managers)</p>';
+        html += '</div>';
+
+        if (managers.length > 0) {
+            html += '<div class="table-container" style="max-height: 500px; overflow-y: auto;"><table>';
+            html += '<thead><tr><th>Manager</th><th>Position</th><th>Building</th><th style="text-align:right;">Subordinates</th></tr></thead><tbody>';
+            managers.forEach(function (m) {
+                html += '<tr>';
+                html += '<td style="font-weight:600;">' + (m.name || '--') + '</td>';
+                html += '<td>' + (m.position || '--') + '</td>';
+                html += '<td>' + (m.building || '--') + '</td>';
+                html += '<td style="text-align:right; font-weight:600;">' + m.subordinates + '</td>';
+                html += '</tr>';
+            });
+            html += '</tbody></table></div>';
+        }
+
+        container.innerHTML = html;
+        console.log('[DashboardCharts] Org chart placeholder rendered: ' + managers.length + ' managers');
+    },
+
+    // ------------------------------------------------------------------
     // Validation Tab: 12 KPI Cards
     // ------------------------------------------------------------------
 
@@ -750,5 +1217,35 @@ var DashboardCharts = {
 
         el.textContent = arrow + ' ' + displayVal + ' vs prev';
         el.className = 'kpi-trend ' + direction;
+    },
+
+    /**
+     * Escape HTML special characters to prevent XSS.
+     * @param {string} str
+     * @returns {string}
+     * @private
+     */
+    _escapeHtml: function (str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
+    /**
+     * Escape a string for use in HTML attribute values (onclick handlers).
+     * @param {string} str
+     * @returns {string}
+     * @private
+     */
+    _escapeAttr: function (str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/"/g, '\\"');
     }
 };
