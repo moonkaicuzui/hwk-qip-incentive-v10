@@ -598,7 +598,7 @@
 
                 var totalEmployees = summary.total_employees || summary.totalEmployees || 0;
                 var totalIncentive = summary.total_incentive || summary.totalIncentive || 0;
-                var recipients = summary.recipients || summary.receiving_count || 0;
+                var recipients = summary.recipients || summary.receiving_employees || summary.receiving_count || 0;
 
                 var gradientClass = 'card-gradient-' + (index % 6);
 
