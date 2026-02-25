@@ -133,6 +133,160 @@ const DashboardI18n = {
         'modal.attendanceInfo': { ko: '출근 정보', en: 'Attendance Info', vi: 'Thông tin chấm công' },
         'modal.incentiveInfo': { ko: '인센티브 정보', en: 'Incentive Info', vi: 'Thông tin khuyến khích' },
 
+        // Criteria tab
+        'criteria.conditionsTitle': { ko: '10가지 조건 개요', en: '10 Conditions Overview', vi: 'Tổng quan 10 điều kiện' },
+        'criteria.typeCalcTitle': { ko: 'TYPE별 인센티브 계산 방법', en: 'TYPE-based Incentive Calculation Methods', vi: 'Phương pháp tính khuyến khích theo TYPE' },
+        'criteria.faqTitle': { ko: '자주 묻는 질문 (FAQ)', en: 'Frequently Asked Questions (FAQ)', vi: 'Câu hỏi thường gặp (FAQ)' },
+
+        // TYPE-2 Calculation
+        'criteria.type2Principle': {
+            ko: 'TYPE-2 직급은 해당하는 TYPE-1 직급의 수령자 평균 인센티브를 기준으로 계산됩니다.',
+            en: 'TYPE-2 positions are calculated based on the average incentive of receiving TYPE-1 employees in the reference position.',
+            vi: 'Chức vụ TYPE-2 được tính dựa trên trung bình khuyến khích của nhân viên TYPE-1 đang nhận trong chức vụ tham chiếu.'
+        },
+        'criteria.type2AvgBasis': {
+            ko: '모든 평균 계산은 수령자만 대상으로 합니다. (0 VND 제외)',
+            en: 'All averages are calculated only from receiving employees (excluding 0 VND).',
+            vi: 'Tất cả trung bình chỉ tính từ nhân viên đang nhận (không tính 0 VND).'
+        },
+        'criteria.type2AvgExample': {
+            ko: '예: LINE LEADER 10명 중 7명만 인센티브 수령 시, 7명의 평균으로 계산 (10명 전체 평균 아님)',
+            en: 'Ex: If 7 of 10 LINE LEADERs receive incentive, average is from 7 only (not all 10)',
+            vi: 'VD: Nếu 7/10 LINE LEADER nhận khuyến khích, trung bình tính từ 7 người (không phải 10)'
+        },
+        'criteria.type2ColPosition': { ko: 'TYPE-2 직급', en: 'TYPE-2 Position', vi: 'Chức vụ TYPE-2' },
+        'criteria.type2ColReference': { ko: '참조 TYPE-1 직급', en: 'Reference TYPE-1', vi: 'Tham chiếu TYPE-1' },
+        'criteria.type2ColMethod': { ko: '계산 방법', en: 'Calculation Method', vi: 'Phương pháp tính' },
+        'criteria.type2ColAverage': { ko: '현재 평균', en: 'Current Avg', vi: 'TB hiện tại' },
+        'criteria.receivingAvg': { ko: '수령자 평균', en: 'Receiving Avg', vi: 'TB người nhận' },
+        'criteria.type2GroupLeaderRule': {
+            ko: 'TYPE-2 GROUP LEADER: 기본 = TYPE-1 LINE LEADER 수령자 평균 × 2. Fallback = TYPE-2 LINE LEADER 수령자 평균 × 2.',
+            en: 'TYPE-2 GROUP LEADER: Base = TYPE-1 LINE LEADER receiving avg × 2. Fallback = TYPE-2 LINE LEADER receiving avg × 2.',
+            vi: 'TYPE-2 GROUP LEADER: Cơ bản = TB TYPE-1 LINE LEADER nhận × 2. Dự phòng = TB TYPE-2 LINE LEADER nhận × 2.'
+        },
+        'criteria.type2QaTeamRule': {
+            ko: 'QA TEAM: QA3B = ASSEMBLY INSPECTOR 수령자 평균, QA3A = TYPE-1 LINE LEADER 수령자 평균 × 2 (GROUP LEADER와 동일)',
+            en: 'QA TEAM: QA3B = ASSEMBLY INSPECTOR receiving avg, QA3A = TYPE-1 LINE LEADER receiving avg × 2 (same as GROUP LEADER)',
+            vi: 'QA TEAM: QA3B = TB ASSEMBLY INSPECTOR nhận, QA3A = TB TYPE-1 LINE LEADER nhận × 2 (giống GROUP LEADER)'
+        },
+        'criteria.type2Conditions': {
+            ko: 'TYPE-2는 출근 조건(1-4번)만 충족하면 인센티브 지급',
+            en: 'TYPE-2 only needs to meet attendance conditions (C1-C4) to receive incentive',
+            vi: 'TYPE-2 chỉ cần đáp ứng điều kiện chấm công (C1-C4) để nhận khuyến khích'
+        },
+
+        // FAQ
+        'faq.q1': {
+            ko: '왜 나는 인센티브를 못 받았나요?',
+            en: 'Why didn\'t I receive an incentive?',
+            vi: 'Tại sao tôi không nhận được khuyến khích?'
+        },
+        'faq.a1': {
+            ko: '인센티브를 받으려면 해당 TYPE에 적용되는 모든 조건을 100% 충족해야 합니다. 다음과 같은 이유로 미수령될 수 있습니다:\n• 최소 근무일 {threshold_minimum_working_days}일 미충족\n• 출근율 {threshold_attendance_rate}% 미만\n• 무단결근 {threshold_unapproved_absence}일 초과\n• 당월 AQL 실패 발생\n• 5PRS 통과율 {threshold_5prs_pass_rate}% 미만',
+            en: 'You must meet 100% of all applicable conditions for your TYPE. Possible reasons:\n• Working days below {threshold_minimum_working_days} days\n• Attendance rate below {threshold_attendance_rate}%\n• Unapproved absences exceed {threshold_unapproved_absence} days\n• AQL failure this month\n• 5PRS pass rate below {threshold_5prs_pass_rate}%',
+            vi: 'Bạn phải đáp ứng 100% tất cả điều kiện áp dụng cho TYPE. Lý do có thể:\n• Ngày làm dưới {threshold_minimum_working_days} ngày\n• Tỷ lệ đi làm dưới {threshold_attendance_rate}%\n• Vắng không phép vượt {threshold_unapproved_absence} ngày\n• Lỗi AQL trong tháng\n• Tỷ lệ đạt 5PRS dưới {threshold_5prs_pass_rate}%'
+        },
+        'faq.q2': {
+            ko: '무단결근이 며칠까지 허용되나요?',
+            en: 'How many unapproved absences are allowed?',
+            vi: 'Được phép vắng không phép bao nhiêu ngày?'
+        },
+        'faq.a2': {
+            ko: '무단결근은 월 {threshold_unapproved_absence}일 이하여야 합니다. {threshold_unapproved_absence}일을 초과하면 인센티브 지급 대상에서 제외됩니다.',
+            en: 'Unapproved absences must be {threshold_unapproved_absence} days or less per month. Exceeding {threshold_unapproved_absence} days disqualifies you from incentive.',
+            vi: 'Vắng không phép phải không quá {threshold_unapproved_absence} ngày/tháng. Vượt {threshold_unapproved_absence} ngày sẽ mất khuyến khích.'
+        },
+        'faq.q3': {
+            ko: 'TYPE-2 직급의 인센티브는 어떻게 계산되나요?',
+            en: 'How is the TYPE-2 position incentive calculated?',
+            vi: 'Khuyến khích chức vụ TYPE-2 được tính như thế nào?'
+        },
+        'faq.a3': {
+            ko: 'TYPE-2 직급은 해당하는 TYPE-1 직급의 수령자 평균 인센티브를 기준으로 합니다. 예: LINE LEADER(TYPE-2) = TYPE-1 LINE LEADER 수령자 평균, GROUP LEADER(TYPE-2) = TYPE-1 LINE LEADER 수령자 평균 × 2',
+            en: 'TYPE-2 is based on the receiving average of the corresponding TYPE-1 position. Ex: LINE LEADER(TYPE-2) = TYPE-1 LINE LEADER receiving avg, GROUP LEADER(TYPE-2) = TYPE-1 LINE LEADER receiving avg × 2',
+            vi: 'TYPE-2 dựa trên trung bình nhận của chức vụ TYPE-1 tương ứng. VD: LINE LEADER(TYPE-2) = TB nhận TYPE-1 LINE LEADER, GROUP LEADER(TYPE-2) = TB nhận TYPE-1 LINE LEADER × 2'
+        },
+        'faq.q4': {
+            ko: 'ASSEMBLY INSPECTOR의 연속 근무 개월은 어떻게 계산되나요?',
+            en: 'How are consecutive working months calculated for ASSEMBLY INSPECTOR?',
+            vi: 'Số tháng làm việc liên tục của ASSEMBLY INSPECTOR được tính như thế nào?'
+        },
+        'faq.a4': {
+            ko: '매월 모든 조건을 100% 충족하면 연속 개월이 1씩 증가합니다 (최대 15개월). 한 달이라도 조건 미충족 시 0으로 리셋됩니다. 연속 개월에 따라 Progressive Table의 인센티브 금액이 적용됩니다.',
+            en: 'Consecutive months increase by 1 each month if all conditions are met 100% (max 15). If any condition fails in a month, it resets to 0. The Progressive Table amount applies based on consecutive months.',
+            vi: 'Số tháng liên tục tăng 1 mỗi tháng nếu đáp ứng 100% điều kiện (tối đa 15). Nếu bất kỳ điều kiện nào không đạt, reset về 0. Số tiền theo Bảng lũy tiến áp dụng theo tháng liên tục.'
+        },
+        'faq.q5': {
+            ko: 'AQL 실패가 무엇이고 어떤 영향을 미치나요?',
+            en: 'What is an AQL failure and how does it affect incentives?',
+            vi: 'Lỗi AQL là gì và ảnh hưởng đến khuyến khích như thế nào?'
+        },
+        'faq.a5': {
+            ko: 'AQL(Acceptable Quality Level) 실패는 품질 검사에서 기준 미달을 의미합니다. 당월 AQL 실패가 1건이라도 있으면 조건 5번 미충족으로 인센티브를 받을 수 없습니다. 또한 {threshold_consecutive_aql_months}개월 연속 AQL 실패 시 조건 6번도 미충족됩니다.',
+            en: 'AQL (Acceptable Quality Level) failure means failing quality inspection standards. Even 1 AQL failure this month fails Condition 5 and disqualifies incentive. Additionally, {threshold_consecutive_aql_months} consecutive months of AQL failure also fails Condition 6.',
+            vi: 'Lỗi AQL nghĩa là không đạt tiêu chuẩn kiểm tra chất lượng. Chỉ 1 lỗi AQL trong tháng là không đạt Điều kiện 5. Ngoài ra, {threshold_consecutive_aql_months} tháng liên tục lỗi AQL cũng không đạt Điều kiện 6.'
+        },
+        'faq.q6': {
+            ko: '5PRS 검사량이 부족하면 어떻게 되나요?',
+            en: 'What happens if 5PRS inspection quantity is insufficient?',
+            vi: 'Điều gì xảy ra nếu số lượng kiểm tra 5PRS không đủ?'
+        },
+        'faq.a6': {
+            ko: '5PRS 검사량이 {threshold_5prs_min_qty}족 미만이면 조건 10번 미충족으로 인센티브를 받을 수 없습니다. 또한 5PRS 통과율이 {threshold_5prs_pass_rate}% 미만이면 조건 9번도 미충족됩니다.',
+            en: 'If 5PRS inspection quantity is below {threshold_5prs_min_qty} pairs, Condition 10 is not met and incentive is disqualified. Also, if 5PRS pass rate is below {threshold_5prs_pass_rate}%, Condition 9 is also not met.',
+            vi: 'Nếu số lượng kiểm tra 5PRS dưới {threshold_5prs_min_qty} đôi, Điều kiện 10 không đạt. Ngoài ra, nếu tỷ lệ đạt 5PRS dưới {threshold_5prs_pass_rate}%, Điều kiện 9 cũng không đạt.'
+        },
+        'faq.q7': {
+            ko: '출산휴가나 병가 중에도 인센티브를 받을 수 있나요?',
+            en: 'Can I receive incentive during maternity or sick leave?',
+            vi: 'Tôi có thể nhận khuyến khích khi nghỉ thai sản hoặc ốm không?'
+        },
+        'faq.a7': {
+            ko: '승인된 휴가(출산휴가, 병가 등)는 출근으로 인정됩니다. 다만 실제 근무일이 {threshold_minimum_working_days}일 미만이면 조건 4번 미충족으로 인센티브를 받을 수 없습니다.',
+            en: 'Approved leaves (maternity, sick) count as attendance. However, if actual working days are below {threshold_minimum_working_days}, Condition 4 is not met and incentive is disqualified.',
+            vi: 'Nghỉ phép được duyệt (thai sản, ốm) được tính là đi làm. Tuy nhiên, nếu ngày làm thực tế dưới {threshold_minimum_working_days}, Điều kiện 4 không đạt.'
+        },
+        'faq.q8': {
+            ko: '전월 인센티브와 차이가 나는 이유는 무엇인가요?',
+            en: 'Why is my incentive different from last month?',
+            vi: 'Tại sao khuyến khích tháng này khác tháng trước?'
+        },
+        'faq.a8': {
+            ko: '여러 이유가 있을 수 있습니다:\n• TYPE-1: 연속 개월 증가/리셋으로 인센티브 금액 변동\n• TYPE-2: 참조하는 TYPE-1 평균값 변동\n• 임계값 변경 (관리자 정책 업데이트)\n• 출근율, AQL, 5PRS 결과 변동',
+            en: 'Several reasons:\n• TYPE-1: Consecutive months increase/reset changes amount\n• TYPE-2: Reference TYPE-1 average value changes\n• Threshold changes (admin policy update)\n• Changes in attendance, AQL, or 5PRS results',
+            vi: 'Nhiều lý do:\n• TYPE-1: Tháng liên tục tăng/reset thay đổi số tiền\n• TYPE-2: Giá trị TB TYPE-1 tham chiếu thay đổi\n• Thay đổi ngưỡng (cập nhật chính sách)\n• Thay đổi kết quả chấm công, AQL, hoặc 5PRS'
+        },
+        'faq.q9': {
+            ko: 'TYPE-3에서 TYPE-2로 승진하면 인센티브가 어떻게 변하나요?',
+            en: 'How does incentive change when promoted from TYPE-3 to TYPE-2?',
+            vi: 'Khuyến khích thay đổi thế nào khi thăng từ TYPE-3 lên TYPE-2?'
+        },
+        'faq.a9': {
+            ko: 'TYPE-3 (정책 제외)에서 TYPE-2로 승진하면 출근 조건(1-4번)만 충족하면 인센티브를 받을 수 있습니다. TYPE-2 인센티브 금액은 해당하는 TYPE-1 직급의 수령자 평균으로 결정됩니다.',
+            en: 'When promoted from TYPE-3 (excluded) to TYPE-2, you only need to meet attendance conditions (C1-C4) to receive incentive. TYPE-2 amount is the receiving average of the corresponding TYPE-1 position.',
+            vi: 'Khi thăng từ TYPE-3 (loại trừ) lên TYPE-2, chỉ cần đáp ứng điều kiện chấm công (C1-C4). Số tiền TYPE-2 là trung bình nhận của chức vụ TYPE-1 tương ứng.'
+        },
+        'faq.q10': {
+            ko: '조건을 모두 충족했는데도 인센티브가 0인 이유는 무엇인가요?',
+            en: 'Why is my incentive 0 even though I met all conditions?',
+            vi: 'Tại sao khuyến khích bằng 0 dù tôi đáp ứng tất cả điều kiện?'
+        },
+        'faq.a10': {
+            ko: '가능한 이유:\n• TYPE-3 직급 (정책 제외 대상)\n• 해당 월 중도 입사/퇴사\n• TYPE-2인데 참조 TYPE-1 수령자가 없어 평균 0\n• 시스템 데이터 반영 지연 (관리자에게 문의)',
+            en: 'Possible reasons:\n• TYPE-3 position (policy excluded)\n• Mid-month hire/resignation\n• TYPE-2 but no receiving TYPE-1 employees (average = 0)\n• System data delay (contact admin)',
+            vi: 'Lý do có thể:\n• Chức vụ TYPE-3 (loại trừ)\n• Nhập/nghỉ việc giữa tháng\n• TYPE-2 nhưng không có TYPE-1 nhận (TB = 0)\n• Chậm cập nhật dữ liệu (liên hệ quản trị)'
+        },
+        'faq.q11': {
+            ko: 'TYPE-2 GROUP LEADER가 인센티브를 못 받는 경우가 있나요?',
+            en: 'Can a TYPE-2 GROUP LEADER not receive incentive?',
+            vi: 'TYPE-2 GROUP LEADER có thể không nhận khuyến khích không?'
+        },
+        'faq.a11': {
+            ko: '네, 가능합니다. 출근 조건(1-4번) 미충족 시 인센티브를 받을 수 없습니다. 또한 참조하는 TYPE-1 LINE LEADER 수령자가 없으면 평균이 0이 되어 인센티브가 0 VND가 됩니다.',
+            en: 'Yes. If attendance conditions (C1-C4) are not met, incentive is disqualified. Also, if no TYPE-1 LINE LEADER receives incentive, the average is 0, making GROUP LEADER incentive 0 VND.',
+            vi: 'Có. Nếu điều kiện chấm công (C1-C4) không đạt, không nhận khuyến khích. Ngoài ra, nếu không có TYPE-1 LINE LEADER nhận, trung bình = 0, khuyến khích GROUP LEADER = 0 VND.'
+        },
+
         // Admin
         'admin.title': { ko: '관리자 설정', en: 'Admin Settings', vi: 'Cài đặt quản trị' },
         'admin.thresholds': { ko: '목표 설정', en: 'Threshold Settings', vi: 'Cài đặt ngưỡng' },
@@ -181,6 +335,7 @@ const DashboardI18n = {
             text = text.replace('{threshold_area_reject_rate}', window.thresholds.area_reject_rate || 3.0);
             text = text.replace('{threshold_5prs_pass_rate}', window.thresholds['5prs_pass_rate'] || 95);
             text = text.replace('{threshold_5prs_min_qty}', window.thresholds['5prs_min_qty'] || 100);
+            text = text.replace('{threshold_consecutive_aql_months}', window.thresholds.consecutive_aql_months || 3);
         }
         return text;
     },
@@ -199,6 +354,11 @@ const DashboardI18n = {
         // Re-render table if filters module is loaded
         if (typeof DashboardFilters !== 'undefined') {
             DashboardFilters.renderTable();
+        }
+        // Re-render criteria tab (TYPE-2 methods + FAQ) with new language
+        if (typeof DashboardCharts !== 'undefined' && DashboardCharts._criteriaData) {
+            DashboardCharts._renderTypeCalculationMethods(DashboardCharts._criteriaData);
+            DashboardCharts._renderFAQSection();
         }
     },
 

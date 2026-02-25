@@ -564,6 +564,9 @@ var DashboardCharts = {
         var container = document.getElementById('conditionsOverview');
         if (!container) return;
 
+        // Cache data for language-switch re-render
+        this._criteriaData = data;
+
         var thresholds = data.thresholds || window.thresholds || {};
         var employees = data.employees || [];
 
@@ -667,6 +670,217 @@ var DashboardCharts = {
 
         container.innerHTML = html;
         console.log('[DashboardCharts] Criteria tab rendered with ' + conditions.length + ' conditions');
+
+        // --- TYPE-2 Calculation Methods (#typeCalculationMethods) ---
+        this._renderTypeCalculationMethods(data);
+
+        // --- FAQ Section (#faqSection) ---
+        this._renderFAQSection();
+    },
+
+    // ------------------------------------------------------------------
+    // Criteria Tab: TYPE-2 Calculation Methods
+    // ------------------------------------------------------------------
+
+    /**
+     * Render TYPE-2 calculation method table with dynamic averages
+     * computed from actual employee data.
+     * @param {Object} data - { employees, summary, thresholds }
+     * @private
+     */
+    _renderTypeCalculationMethods: function (data) {
+        var container = document.getElementById('typeCalculationMethods');
+        if (!container) return;
+
+        var employees = data.employees || [];
+        var self = this;
+        var t = function (key) { return typeof DashboardI18n !== 'undefined' ? DashboardI18n.t(key) : key; };
+
+        // --- Compute TYPE-1 receiving averages from employee data ---
+        var type1Averages = {};
+        var posGroups = {};
+
+        employees.forEach(function (emp) {
+            var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
+            if (empType.indexOf('TYPE-1') === -1 && empType !== '1') return;
+
+            var position = String(emp.position || emp.POSITION || emp['Position'] || '').toUpperCase().trim();
+            var incentive = 0;
+            if (window.employeeHelpers) {
+                incentive = window.employeeHelpers.getIncentive(emp, 'current');
+            } else {
+                incentive = parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0;
+            }
+
+            if (!posGroups[position]) posGroups[position] = [];
+            if (incentive > 0) posGroups[position].push(incentive);
+        });
+
+        // Compute receiving averages
+        Object.keys(posGroups).forEach(function (pos) {
+            var values = posGroups[pos];
+            if (values.length > 0) {
+                var sum = 0;
+                values.forEach(function (v) { sum += v; });
+                type1Averages[pos] = Math.round(sum / values.length);
+            } else {
+                type1Averages[pos] = 0;
+            }
+        });
+
+        // Helper to find average by position pattern
+        function getAvg(patterns) {
+            for (var i = 0; i < patterns.length; i++) {
+                var keys = Object.keys(type1Averages);
+                for (var j = 0; j < keys.length; j++) {
+                    if (keys[j].indexOf(patterns[i]) !== -1) return type1Averages[keys[j]];
+                }
+            }
+            return 0;
+        }
+
+        var llAvg = getAvg(['LINE LEADER']);
+        var aiAvg = getAvg(['ASSEMBLY INSPECTOR']);
+        var vsAvg = getAvg(['(V) SUPERVISOR', 'V) SUPERVISOR', 'SUPERVISOR']);
+        var amAvg = getAvg(['A.MANAGER']);
+        var glAvg = getAvg(['GROUP LEADER']);
+
+        // TYPE-2 position definitions with reference and method
+        var type2Positions = [
+            { pos: '(V) SUPERVISOR', ref: 'TYPE-1 (V) SUPERVISOR', method: '(V) SUPERVISOR ' + t('criteria.receivingAvg'), avg: vsAvg, bg: '' },
+            { pos: 'A.MANAGER', ref: 'TYPE-1 A.MANAGER', method: 'A.MANAGER ' + t('criteria.receivingAvg'), avg: amAvg, bg: '' },
+            { pos: 'GROUP LEADER', ref: 'TYPE-1 LINE LEADER', method: 'TYPE-1 LINE LEADER ' + t('criteria.receivingAvg') + ' × 2', avg: llAvg * 2, bg: '#fff9e6' },
+            { pos: 'LINE LEADER', ref: 'TYPE-1 LINE LEADER', method: 'TYPE-1 LINE LEADER ' + t('criteria.receivingAvg'), avg: llAvg, bg: '#e8f5ff' },
+            { pos: 'AQL INSPECTOR', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
+            { pos: 'ASSEMBLY INSPECTOR', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
+            { pos: 'STITCHING INSPECTOR', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
+            { pos: 'BOTTOM INSPECTOR', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
+            { pos: 'CUTTING INSPECTOR', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
+            { pos: 'MTL INSPECTOR', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
+            { pos: 'OCPT STAFF', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
+            { pos: 'OSC INSPECTOR', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
+            { pos: 'QA TEAM (QA3B)', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '#fff3cd' },
+            { pos: 'QA TEAM (QA3A)', ref: 'TYPE-1 GROUP LEADER', method: 'GROUP LEADER ' + t('criteria.receivingAvg'), avg: glAvg > 0 ? glAvg : llAvg * 2, bg: '#d4edda' },
+            { pos: 'RQC', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' }
+        ];
+
+        var html = '';
+
+        // Principle alert boxes
+        html += '<div style="background:#f0f4ff; border-left:4px solid #ef4444; padding:12px 16px; border-radius:4px; margin-bottom:12px;">';
+        html += '<strong style="color:#ef4444;">📊 TYPE-2 ' + t('criteria.type2Principle').substring(0, 6) + ':</strong> ';
+        html += t('criteria.type2Principle');
+        html += '</div>';
+
+        html += '<div style="background:#e8f5e9; border-left:4px solid #4caf50; padding:12px 16px; border-radius:4px; margin-bottom:12px;">';
+        html += '<strong style="color:#1b5e20;">✅ ' + t('criteria.type2AvgBasis').substring(0, 8) + ':</strong> ';
+        html += t('criteria.type2AvgBasis');
+        html += '<br><small style="color:#555;">' + t('criteria.type2AvgExample') + '</small>';
+        html += '</div>';
+
+        // Table
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr style="background:#c62828; color:#fff;">';
+        html += '<th style="width:40px;">#</th>';
+        html += '<th>' + t('criteria.type2ColPosition') + '</th>';
+        html += '<th>' + t('criteria.type2ColReference') + '</th>';
+        html += '<th>' + t('criteria.type2ColMethod') + '</th>';
+        html += '<th style="text-align:right;">' + t('criteria.type2ColAverage') + '</th>';
+        html += '</tr></thead><tbody>';
+
+        type2Positions.forEach(function (row, idx) {
+            var bgStyle = row.bg ? ' style="background:' + row.bg + ';"' : '';
+            html += '<tr' + bgStyle + '>';
+            html += '<td>' + (idx + 1) + '</td>';
+            html += '<td style="font-weight:600;">' + row.pos + '</td>';
+            html += '<td>' + row.ref + '</td>';
+            html += '<td><span style="color:#d32f2f; font-weight:600;">' + row.method + '</span></td>';
+            html += '<td style="text-align:right; font-weight:700; color:#1565c0;">' + self._formatNumber(row.avg) + ' VND</td>';
+            html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+
+        // Special rule boxes
+        html += '<div style="background:#fff3cd; border-left:4px solid #ffc107; padding:12px 16px; border-radius:4px; margin-top:16px;">';
+        html += '<strong>⚠️ GROUP LEADER:</strong> ' + t('criteria.type2GroupLeaderRule');
+        html += '</div>';
+
+        html += '<div style="background:#d1ecf1; border-left:4px solid #17a2b8; padding:12px 16px; border-radius:4px; margin-top:8px;">';
+        html += '<strong>📋 QA TEAM:</strong> ' + t('criteria.type2QaTeamRule');
+        html += '</div>';
+
+        html += '<div style="background:#e8f5e9; border-left:4px solid #4caf50; padding:12px 16px; border-radius:4px; margin-top:8px;">';
+        html += '<strong>✅</strong> ' + t('criteria.type2Conditions');
+        html += '</div>';
+
+        container.innerHTML = html;
+        console.log('[DashboardCharts] TYPE-2 calculation methods rendered (' + type2Positions.length + ' positions)');
+    },
+
+    // ------------------------------------------------------------------
+    // Criteria Tab: FAQ Section
+    // ------------------------------------------------------------------
+
+    /**
+     * Render FAQ accordion with 11 questions and answers.
+     * Uses DashboardI18n.tWithThresholds() for threshold placeholder replacement.
+     * @private
+     */
+    _renderFAQSection: function () {
+        var container = document.getElementById('faqSection');
+        if (!container) return;
+
+        var tw = function (key) {
+            return typeof DashboardI18n !== 'undefined' ? DashboardI18n.tWithThresholds(key) : key;
+        };
+
+        var faqs = [];
+        for (var i = 1; i <= 11; i++) {
+            faqs.push({ q: tw('faq.q' + i), a: tw('faq.a' + i) });
+        }
+
+        var html = '';
+        html += '<style>';
+        html += '.faq-item { border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }';
+        html += '.faq-question { padding: 14px 18px; cursor: pointer; font-weight: 600; color: #1a237e; background: #f8f9ff; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }';
+        html += '.faq-question:hover { background: #e8eaf6; }';
+        html += '.faq-question .faq-arrow { transition: transform 0.3s; font-size: 0.8rem; color: #757575; }';
+        html += '.faq-question.active .faq-arrow { transform: rotate(180deg); }';
+        html += '.faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; padding: 0 18px; background: #fff; }';
+        html += '.faq-answer.show { max-height: 600px; padding: 14px 18px; }';
+        html += '.faq-answer p { margin: 0; color: #424242; line-height: 1.7; white-space: pre-line; }';
+        html += '</style>';
+
+        faqs.forEach(function (faq, idx) {
+            html += '<div class="faq-item">';
+            html += '<div class="faq-question" onclick="DashboardCharts._toggleFAQ(this)">';
+            html += '<span>Q' + (idx + 1) + '. ' + faq.q + '</span>';
+            html += '<span class="faq-arrow">▼</span>';
+            html += '</div>';
+            html += '<div class="faq-answer"><p>' + faq.a + '</p></div>';
+            html += '</div>';
+        });
+
+        container.innerHTML = html;
+        console.log('[DashboardCharts] FAQ section rendered with ' + faqs.length + ' items');
+    },
+
+    /**
+     * Toggle FAQ accordion item (called from onclick).
+     * Closes other open items and toggles the clicked one.
+     * @param {HTMLElement} element - The clicked .faq-question element
+     */
+    _toggleFAQ: function (element) {
+        var answer = element.nextElementSibling;
+        var allAnswers = document.querySelectorAll('.faq-answer');
+        var allQuestions = document.querySelectorAll('.faq-question');
+        // Close all other answers
+        allAnswers.forEach(function (a) { if (a !== answer) a.classList.remove('show'); });
+        allQuestions.forEach(function (q) { if (q !== element) q.classList.remove('active'); });
+        // Toggle current
+        answer.classList.toggle('show');
+        element.classList.toggle('active');
     },
 
     // ------------------------------------------------------------------
