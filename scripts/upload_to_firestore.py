@@ -39,6 +39,11 @@ except ImportError:
 
 LOCAL_SERVICE_ACCOUNT_PATH = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
 
+# 대상 Firebase 프로젝트 ID
+# 서비스 계정은 qip-dashboard 소속이지만, Firestore는 hwk-qip-incentive-dashboard에 위치
+# firebase_admin 초기화 시 대상 프로젝트를 명시적으로 지정해야 함
+TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
+
 CSV_PATTERN = "output_files/output_QIP_incentive_{month}_{year}_Complete_V10.0_Complete.csv"
 
 # Column name mappings: CSV column -> internal key
@@ -103,14 +108,19 @@ def init_firestore(dry_run=False):
         print("✅ Firebase 이미 초기화됨 — 기존 앱 사용")
         return firestore.client()
 
+    # Firebase 앱 초기화 옵션 — 대상 프로젝트 명시
+    # 서비스 계정(qip-dashboard)과 Firestore 프로젝트(hwk-qip-incentive-dashboard)가 다르므로
+    # projectId를 명시적으로 지정해야 올바른 Firestore에 접근 가능
+    app_options = {"projectId": TARGET_FIREBASE_PROJECT}
+
     # 1) 환경변수에서 서비스 계정 정보 로드
     sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
     if sa_json:
         try:
             sa_info = json.loads(sa_json)
             cred = credentials.Certificate(sa_info)
-            firebase_admin.initialize_app(cred)
-            print("✅ Firebase 초기화 성공 (환경변수)")
+            firebase_admin.initialize_app(cred, app_options)
+            print(f"✅ Firebase 초기화 성공 (환경변수 → 프로젝트: {TARGET_FIREBASE_PROJECT})")
             return firestore.client()
         except Exception as e:
             print(f"⚠️ 환경변수 인증 실패: {e}")
@@ -120,8 +130,8 @@ def init_firestore(dry_run=False):
     if os.path.exists(LOCAL_SERVICE_ACCOUNT_PATH):
         try:
             cred = credentials.Certificate(LOCAL_SERVICE_ACCOUNT_PATH)
-            firebase_admin.initialize_app(cred)
-            print(f"✅ Firebase 초기화 성공 (로컬 파일: {LOCAL_SERVICE_ACCOUNT_PATH})")
+            firebase_admin.initialize_app(cred, app_options)
+            print(f"✅ Firebase 초기화 성공 (로컬 파일 → 프로젝트: {TARGET_FIREBASE_PROJECT})")
             return firestore.client()
         except Exception as e:
             print(f"❌ 로컬 파일 인증 실패: {e}")
