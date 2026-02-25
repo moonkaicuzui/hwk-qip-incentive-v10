@@ -908,6 +908,22 @@ var DashboardCharts = {
         var thresholds = data.thresholds || window.thresholds || {};
         var summary = data.summary || {};
 
+        // Helper: resolve nested or flat field paths (Firestore uses nested objects)
+        function getNum(emp, paths) {
+            for (var i = 0; i < paths.length; i++) {
+                var parts = paths[i].split('.');
+                var val = emp;
+                for (var j = 0; j < parts.length; j++) {
+                    if (val == null) break;
+                    val = val[parts[j]];
+                }
+                if (val != null && val !== '' && !isNaN(parseFloat(val))) {
+                    return parseFloat(val);
+                }
+            }
+            return 0;
+        }
+
         // Threshold values with defaults
         var thAttendanceRate = parseFloat(thresholds.attendance_rate) || 88;
         var thUnapprovedAbsence = parseFloat(thresholds.unapproved_absence) || 2;
@@ -923,10 +939,10 @@ var DashboardCharts = {
         // --- KPI 2: Unapproved Absence (exceeds threshold) ---
         var absentCount = 0;
         employees.forEach(function (emp) {
-            var unapproved = parseFloat(
-                emp.unapproved_absence || emp['Unapproved Absences'] ||
-                emp.unapproved_absences || 0
-            ) || 0;
+            var unapproved = getNum(emp, [
+                'attendance.unapproved_absence', 'unapproved_absence',
+                'Unapproved Absences', 'unapproved_absences'
+            ]);
             if (unapproved > thUnapprovedAbsence) {
                 absentCount++;
             }
@@ -936,10 +952,10 @@ var DashboardCharts = {
         // --- KPI 3: Zero Working Days ---
         var zeroWorkingDaysCount = 0;
         employees.forEach(function (emp) {
-            var actualDays = parseFloat(
-                emp.actual_working_days || emp['Actual Working Days'] ||
-                emp.actual_days || 0
-            ) || 0;
+            var actualDays = getNum(emp, [
+                'attendance.actual_days', 'actual_working_days',
+                'Actual Working Days', 'actual_days'
+            ]);
             if (actualDays === 0) {
                 zeroWorkingDaysCount++;
             }
@@ -949,10 +965,10 @@ var DashboardCharts = {
         // --- KPI 4: Minimum Working Days Not Met ---
         var minDaysNotMetCount = 0;
         employees.forEach(function (emp) {
-            var actualDays = parseFloat(
-                emp.actual_working_days || emp['Actual Working Days'] ||
-                emp.actual_days || 0
-            ) || 0;
+            var actualDays = getNum(emp, [
+                'attendance.actual_days', 'actual_working_days',
+                'Actual Working Days', 'actual_days'
+            ]);
             if (actualDays > 0 && actualDays < thMinimumWorkingDays) {
                 minDaysNotMetCount++;
             }
@@ -962,15 +978,14 @@ var DashboardCharts = {
         // --- KPI 5: Attendance Rate Below Threshold ---
         var lowAttendanceCount = 0;
         employees.forEach(function (emp) {
-            var rate = parseFloat(
-                emp.attendance_rate || emp['Attendance Rate'] ||
-                emp['Attendance Rate (%)'] || 0
-            ) || 0;
-            // Only count employees who actually worked (not zero days)
-            var actualDays = parseFloat(
-                emp.actual_working_days || emp['Actual Working Days'] ||
-                emp.actual_days || 0
-            ) || 0;
+            var rate = getNum(emp, [
+                'attendance.rate', 'attendance_rate',
+                'Attendance Rate', 'Attendance Rate (%)'
+            ]);
+            var actualDays = getNum(emp, [
+                'attendance.actual_days', 'actual_working_days',
+                'Actual Working Days', 'actual_days'
+            ]);
             if (actualDays > 0 && rate > 0 && rate < thAttendanceRate) {
                 lowAttendanceCount++;
             }
@@ -1001,11 +1016,25 @@ var DashboardCharts = {
         // --- KPI 7: Consecutive AQL Failure (includes 'YES' - Issue #48 data contract) ---
         var consecutiveAqlCount = 0;
         employees.forEach(function (emp) {
-            var continuousFail = String(
-                emp.continuous_fail || emp['Continuous_FAIL'] ||
-                emp.Continuous_FAIL || ''
-            );
-            // Issue #48: Use includes('YES'), never === 'YES'
+            // Nested: aql.continuous_fail | Flat: continuous_fail, Continuous_FAIL
+            var continuousFail = '';
+            if (emp.aql && emp.aql.continuous_fail) {
+                continuousFail = String(emp.aql.continuous_fail);
+            } else {
+                continuousFail = String(
+                    emp.continuous_fail || emp['Continuous_FAIL'] ||
+                    emp.Continuous_FAIL || ''
+                );
+            }
+            // Also check conditions.c6 for V10 normalized data
+            if (emp.conditions) {
+                var c6 = String(emp.conditions.c6 || '').toUpperCase();
+                if (c6 === 'NO' || c6 === 'FAIL') {
+                    consecutiveAqlCount++;
+                    return;
+                }
+            }
+            // Issue #48: Use indexOf('YES'), never === 'YES'
             if (continuousFail.indexOf('YES') !== -1) {
                 consecutiveAqlCount++;
             }
@@ -1015,10 +1044,11 @@ var DashboardCharts = {
         // --- KPI 8: Area Reject Rate exceeds threshold ---
         var areaRejectCount = 0;
         employees.forEach(function (emp) {
-            var rejectRate = parseFloat(
-                emp.area_reject_rate || emp['Area_Reject_Rate'] ||
-                emp['AQL_Area_Reject_Rate'] || 0
-            ) || 0;
+            // Nested: aql.area_reject_rate | Flat: area_reject_rate, Area_Reject_Rate
+            var rejectRate = getNum(emp, [
+                'aql.area_reject_rate', 'area_reject_rate',
+                'Area_Reject_Rate', 'AQL_Area_Reject_Rate'
+            ]);
             if (rejectRate > thAreaRejectRate) {
                 areaRejectCount++;
             }
@@ -1028,10 +1058,11 @@ var DashboardCharts = {
         // --- KPI 9: 5PRS Pass Rate below threshold ---
         var lowPassRateCount = 0;
         employees.forEach(function (emp) {
-            var passRate = parseFloat(
-                emp.prs_pass_rate || emp['5PRS_Pass_Rate'] ||
-                emp['5PRS Pass Rate (%)'] || 0
-            ) || 0;
+            // Nested: prs.pass_rate | Flat: prs_pass_rate, 5PRS_Pass_Rate
+            var passRate = getNum(emp, [
+                'prs.pass_rate', 'prs_pass_rate',
+                '5PRS_Pass_Rate', '5PRS Pass Rate (%)'
+            ]);
             // Only count TYPE-1 employees who have 5PRS data
             var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
             if (empType.indexOf('TYPE-1') !== -1 || empType === '1') {
@@ -1045,10 +1076,11 @@ var DashboardCharts = {
         // --- KPI 10: 5PRS Inspection Qty below threshold ---
         var lowInspectionQtyCount = 0;
         employees.forEach(function (emp) {
-            var qty = parseFloat(
-                emp.prs_inspection_qty || emp['5PRS_Inspection_Qty'] ||
-                emp['5PRS Inspection Qty'] || 0
-            ) || 0;
+            // Nested: prs.inspection_qty | Flat: prs_inspection_qty, 5PRS_Inspection_Qty
+            var qty = getNum(emp, [
+                'prs.inspection_qty', 'prs_inspection_qty',
+                '5PRS_Inspection_Qty', '5PRS Inspection Qty'
+            ]);
             var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
             if (empType.indexOf('TYPE-1') !== -1 || empType === '1') {
                 if (qty > 0 && qty < th5prsMinQty) {

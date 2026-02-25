@@ -46,9 +46,27 @@ TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
 
 CSV_PATTERN = "output_files/output_QIP_incentive_{month}_{year}_Complete_V10.0_Complete.csv"
 
-# Column name mappings: CSV column -> internal key
-# These map the CSV header names to the Firestore field names
-CONDITION_COLS = {f"cond_{i}": f"c{i}" for i in range(1, 11)}
+# Column name mappings: CSV column -> Firestore field key
+# CSV uses full descriptive names like "cond_1_attendance_rate"
+CONDITION_COLS = {
+    "cond_1_attendance_rate": "c1",
+    "cond_2_unapproved_absence": "c2",
+    "cond_3_actual_working_days": "c3",
+    "cond_4_minimum_days": "c4",
+    "cond_5_aql_personal_failure": "c5",
+    "cond_6_aql_continuous": "c6",
+    "cond_7_aql_team_area": "c7",
+    "cond_8_area_reject": "c8",
+    "cond_9_5prs_pass_rate": "c9",
+    "cond_10_5prs_inspection_qty": "c10",
+}
+
+# CSV condition values -> Firestore normalized values
+CONDITION_VALUE_MAP = {
+    "PASS": "YES",
+    "FAIL": "NO",
+    "NOT_APPLICABLE": "N/A",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -183,10 +201,11 @@ def row_to_employee(row: pd.Series, month_capitalized: str) -> dict:
     Returns:
         dict: Firestore에 저장할 employee 객체
     """
-    # Condition results (YES / NO / N/A)
+    # Condition results: normalize CSV values (PASS/FAIL/NOT_APPLICABLE) → (YES/NO/N/A)
     conditions = {}
     for csv_col, fs_key in CONDITION_COLS.items():
-        conditions[fs_key] = safe_str(row.get(csv_col, ""), "N/A")
+        raw = safe_str(row.get(csv_col, ""), "N/A").strip().upper()
+        conditions[fs_key] = CONDITION_VALUE_MAP.get(raw, raw)
 
     # Condition values and thresholds
     condition_values = {}
@@ -211,9 +230,9 @@ def row_to_employee(row: pd.Series, month_capitalized: str) -> dict:
 
         "conditions": conditions,
         "condition_values": condition_values,
-        "conditions_applicable": safe_int(row.get("Conditions_Applicable")),
-        "conditions_passed": safe_int(row.get("Conditions_Passed")),
-        "conditions_pass_rate": safe_float(row.get("Condition_Pass_Rate")),
+        "conditions_applicable": safe_int(row.get("conditions_applicable")),
+        "conditions_passed": safe_int(row.get("conditions_passed")),
+        "conditions_pass_rate": safe_float(row.get("conditions_pass_rate")),
 
         "attendance": {
             "rate": safe_float(row.get("출근율_Attendance_Rate_Percent")),
@@ -308,15 +327,15 @@ def build_summary(df: pd.DataFrame, month: str, year: int, working_days: int) ->
                 "total_amount": float(sub_receiving["_incentive"].sum()),
             }
 
-    # Condition 통계 (c1 ~ c10)
+    # Condition 통계 (c1 ~ c10) — CSV uses PASS/FAIL/NOT_APPLICABLE
     condition_stats = {}
-    for i in range(1, 11):
-        col = f"cond_{i}"
-        if col in df.columns:
-            values = df[col].astype(str).str.strip().str.upper()
-            condition_stats[f"c{i}_pass"] = int((values == "YES").sum())
-            condition_stats[f"c{i}_fail"] = int((values == "NO").sum())
-            condition_stats[f"c{i}_na"] = int((values == "N/A").sum())
+    for csv_col, fs_key in CONDITION_COLS.items():
+        i = fs_key.replace("c", "")  # "c1" -> "1"
+        if csv_col in df.columns:
+            values = df[csv_col].astype(str).str.strip().str.upper()
+            condition_stats[f"c{i}_pass"] = int((values == "PASS").sum())
+            condition_stats[f"c{i}_fail"] = int((values == "FAIL").sum())
+            condition_stats[f"c{i}_na"] = int((values == "NOT_APPLICABLE").sum())
         else:
             condition_stats[f"c{i}_pass"] = 0
             condition_stats[f"c{i}_fail"] = 0
