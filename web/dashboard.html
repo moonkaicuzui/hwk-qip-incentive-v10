@@ -145,6 +145,78 @@
         .org-action-btns button:hover { background: #f0f4ff; }
         #buildingSummaryCards { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
 
+        /* Org Chart Tree Nodes */
+        #orgTreeContent ul { list-style: none; padding-left: 30px; position: relative; }
+        #orgTreeContent > ul { padding-left: 0; }
+        #orgTreeContent li { position: relative; padding: 6px 0; }
+        #orgTreeContent li::before {
+            content: ''; position: absolute; left: -20px; top: 0; bottom: 50%;
+            border-left: 2px solid #d1d5db; border-bottom: 2px solid #d1d5db;
+            width: 18px; height: calc(50% + 6px);
+        }
+        #orgTreeContent > ul > li::before { display: none; }
+        #orgTreeContent li::after {
+            content: ''; position: absolute; left: -20px; top: 50%; bottom: 0;
+            border-left: 2px solid #d1d5db;
+        }
+        #orgTreeContent li:last-child::after { display: none; }
+
+        .org-node {
+            display: inline-block; padding: 12px 16px; background: #fff;
+            border-radius: 10px; cursor: pointer; box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            position: relative; min-width: 190px; border-left: 4px solid #6b7280;
+            transition: all 0.2s ease;
+        }
+        .org-node:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+        .org-node.manager { border-left-color: #6366f1; background: linear-gradient(135deg, #fff 0%, #eef2ff 100%); }
+        .org-node.a-manager { border-left-color: #8b5cf6; background: linear-gradient(135deg, #fff 0%, #f3e8ff 100%); }
+        .org-node.supervisor { border-left-color: #ec4899; background: linear-gradient(135deg, #fff 0%, #fce7f3 100%); }
+        .org-node.group-leader { border-left-color: #f59e0b; background: linear-gradient(135deg, #fff 0%, #fef3c7 100%); }
+        .org-node.line-leader { border-left-color: #10b981; background: linear-gradient(135deg, #fff 0%, #d1fae5 100%); }
+
+        .org-node .node-incentive {
+            position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%;
+        }
+        .org-node .node-incentive.received { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+        .org-node .node-incentive.not-received { background: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
+        .org-node .node-position { font-size: 0.68rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+        .org-node .node-name { font-size: 0.85rem; font-weight: 600; color: #1f2937; margin-bottom: 2px; }
+        .org-node .node-id { font-size: 0.68rem; color: #9ca3af; }
+        .org-node .node-incentive-info {
+            margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.08);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .org-node .incentive-amount { font-size: 0.82rem; font-weight: 700; color: #059669; }
+        .org-node .incentive-detail-btn {
+            background: #6366f1; color: #fff; border: none; border-radius: 50%;
+            width: 24px; height: 24px; display: inline-flex; align-items: center;
+            justify-content: center; font-size: 12px; cursor: pointer; transition: transform 0.2s;
+        }
+        .org-node .incentive-detail-btn:hover { transform: scale(1.15); background: #4f46e5; }
+        .org-node .subordinate-info { font-size: 0.7rem; color: #6b7280; margin-top: 4px; }
+        .org-node .child-count {
+            background: #ef4444; color: #fff; border-radius: 10px;
+            padding: 1px 7px; font-size: 0.68rem; font-weight: 600; margin-left: 6px;
+        }
+        .org-node .toggle-btn {
+            position: absolute; right: -28px; top: 50%; transform: translateY(-50%);
+            width: 22px; height: 22px; background: #fff; border: 2px solid #d1d5db;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 14px; color: #6b7280; z-index: 5; transition: all 0.2s;
+        }
+        .org-node .toggle-btn:hover { border-color: #6366f1; color: #6366f1; }
+        #orgTreeContent li.collapsed > ul { display: none; }
+        #orgTreeContent li.collapsed .toggle-btn::after { content: '+'; }
+        #orgTreeContent li.expanded .toggle-btn::after { content: '−'; }
+
+        .org-loading { text-align: center; padding: 40px; color: #6b7280; }
+        .org-building-card {
+            padding: 10px 16px; border-radius: 8px; background: #f9fafb;
+            border: 1px solid #e5e7eb; min-width: 100px; text-align: center; cursor: default;
+        }
+        .org-building-card .bcard-label { font-size: 0.72rem; color: #6b7280; }
+        .org-building-card .bcard-count { font-size: 1.1rem; font-weight: 700; color: #1f2937; }
+
         /* ===== Section Cards ===== */
         .section-card { background: #fff; border-radius: 10px; box-shadow: var(--card-shadow); padding: 20px; margin-bottom: 20px; }
         .section-card h3 { font-size: 1.05rem; margin: 0 0 14px; color: var(--header-dark); }
@@ -386,8 +458,12 @@
     <!-- Building Summary Cards -->
     <div id="buildingSummaryCards"></div>
 
-    <!-- D3 Org Chart Container -->
-    <div id="orgChartContainer"></div>
+    <!-- Org Chart Tree Container -->
+    <div id="orgChartContainer">
+        <div id="orgTreeContent">
+            <p class="text-muted" data-i18n="loading">데이터를 불러오는 중...</p>
+        </div>
+    </div>
 
     <!-- Action Buttons -->
     <div class="org-action-btns">
@@ -554,13 +630,13 @@
 <!-- ============================================================ -->
 <!-- Local JS Modules (load order matters)                        -->
 <!-- ============================================================ -->
-<script src="js/firebase-config.js?v=20260226d"></script>
-<script src="js/auth.js?v=20260226d"></script>
-<script src="js/dashboard-data.js?v=20260226d"></script>
-<script src="js/dashboard-i18n.js?v=20260226d"></script>
-<script src="js/dashboard-charts.js?v=20260226d"></script>
-<script src="js/dashboard-filters.js?v=20260226d"></script>
-<script src="js/dashboard-modals.js?v=20260226d"></script>
+<script src="js/firebase-config.js?v=20260226e"></script>
+<script src="js/auth.js?v=20260226e"></script>
+<script src="js/dashboard-data.js?v=20260226e"></script>
+<script src="js/dashboard-i18n.js?v=20260226e"></script>
+<script src="js/dashboard-charts.js?v=20260226e"></script>
+<script src="js/dashboard-filters.js?v=20260226e"></script>
+<script src="js/dashboard-modals.js?v=20260226e"></script>
 
 <!-- ============================================================ -->
 <!-- Initialization                                               -->

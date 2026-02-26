@@ -63,7 +63,7 @@ var DashboardCharts = {
         this.renderPositionTables(data);
         this.renderCriteriaTab(data);
         this.renderTeamTab(data);
-        this.renderOrgChartPlaceholder(data);
+        this.renderOrgChart(data);
         this.renderValidationKPIs(data);
 
         console.log('[DashboardCharts] Initialization complete');
@@ -1032,77 +1032,471 @@ var DashboardCharts = {
     },
 
     // ------------------------------------------------------------------
-    // Org Chart Tab: Placeholder (D3.js tree not yet implemented)
+    // Org Chart Tab: Collapsible Tree with Building/Incentive Filters
     // ------------------------------------------------------------------
 
+    /** Cached org data for filter re-renders */
+    _orgData: null,
+
     /**
-     * Show a placeholder message for the org chart tab.
-     * Full D3.js tree implementation will come in a later phase.
+     * Initialize the org chart tab: populate building filter, render tree.
+     * Replaces the former placeholder.
      *
      * @param {Object} data - { employees, summary, thresholds }
      */
-    renderOrgChartPlaceholder: function (data) {
-        var container = document.getElementById('orgChartContainer');
-        if (!container) return;
-
+    renderOrgChart: function (data) {
+        this._orgData = data;
         var employees = data.employees || [];
 
-        // Build a basic hierarchy summary instead of D3 tree
-        var managerMap = {};
-        var subordinateCount = {};
-        employees.forEach(function (emp) {
-            var pos = String(emp.position || emp.Position || '').toUpperCase();
-            var empId = String(emp['Employee No'] || emp.emp_no || '');
-            var bossId = String(emp.boss_id || emp['Boss ID'] || '');
+        // 1. Populate building filter dropdown
+        this._populateBuildingFilter(employees);
 
-            if (pos.indexOf('LINE LEADER') !== -1 || pos.indexOf('GROUP LEADER') !== -1 ||
-                pos.indexOf('SUPERVISOR') !== -1 || pos.indexOf('MANAGER') !== -1) {
-                if (!managerMap[empId]) {
-                    managerMap[empId] = {
-                        name: emp.full_name || emp['Full Name'] || emp.name || '--',
-                        position: emp.position || emp.Position || '--',
-                        building: emp.building || emp.BUILDING || '--',
-                        subordinates: 0
-                    };
+        // 2. Populate building summary cards
+        this._renderBuildingSummaryCards(employees);
+
+        // 3. Wire filter change events (only once)
+        if (!this._orgFiltersWired) {
+            this._wireOrgFilters();
+            this._orgFiltersWired = true;
+        }
+
+        // 4. Draw the tree
+        this._drawOrgTree();
+    },
+
+    /**
+     * Populate the #orgBuildingFilter <select> with unique buildings.
+     */
+    _populateBuildingFilter: function (employees) {
+        var sel = document.getElementById('orgBuildingFilter');
+        if (!sel) return;
+
+        var buildings = {};
+        employees.forEach(function (emp) {
+            var b = String(emp.building || emp.BUILDING || '').toUpperCase().trim();
+            if (b && b !== 'NAN' && b !== '') buildings[b] = (buildings[b] || 0) + 1;
+        });
+
+        // Keep the first "all" option, remove dynamic ones
+        while (sel.options.length > 1) sel.remove(1);
+
+        Object.keys(buildings).sort().forEach(function (b) {
+            var opt = document.createElement('option');
+            opt.value = b;
+            opt.textContent = 'Building ' + b + ' (' + buildings[b] + ')';
+            sel.appendChild(opt);
+        });
+    },
+
+    /**
+     * Render building summary cards above the tree.
+     */
+    _renderBuildingSummaryCards: function (employees) {
+        var container = document.getElementById('buildingSummaryCards');
+        if (!container) return;
+
+        var stats = { total: 0, managers: 0 };
+        var bldg = {};
+        employees.forEach(function (emp) {
+            var b = String(emp.building || emp.BUILDING || '').toUpperCase().trim();
+            var pos = String(emp.position || '').toUpperCase();
+            var isManager = pos.indexOf('LINE LEADER') !== -1 || pos.indexOf('GROUP LEADER') !== -1 ||
+                            pos.indexOf('SUPERVISOR') !== -1 || pos.indexOf('MANAGER') !== -1;
+            if (isManager && emp.type === 'TYPE-1') {
+                stats.managers++;
+                if (b && b !== 'NAN') {
+                    bldg[b] = (bldg[b] || 0) + 1;
                 }
-            }
-            if (bossId && subordinateCount[bossId] !== undefined) {
-                subordinateCount[bossId]++;
-            } else if (bossId) {
-                subordinateCount[bossId] = 1;
             }
         });
 
-        // Update subordinate counts
-        for (var mid in managerMap) {
-            managerMap[mid].subordinates = subordinateCount[mid] || 0;
-        }
-
-        var managers = Object.keys(managerMap).map(function (id) { return managerMap[id]; });
-        managers.sort(function (a, b) { return b.subordinates - a.subordinates; });
-
-        var html = '<div style="text-align:center; padding: 20px;">';
-        html += '<i class="fas fa-sitemap" style="font-size:3rem; color: var(--accent); margin-bottom:12px;"></i>';
-        html += '<h4 style="color: var(--header-dark);">Organization Hierarchy</h4>';
-        html += '<p style="color: #757575; margin-bottom: 20px;">Manager hierarchy overview (' + managers.length + ' managers)</p>';
-        html += '</div>';
-
-        if (managers.length > 0) {
-            html += '<div class="table-container" style="max-height: 500px; overflow-y: auto;"><table>';
-            html += '<thead><tr><th>Manager</th><th>Position</th><th>Building</th><th style="text-align:right;">Subordinates</th></tr></thead><tbody>';
-            managers.forEach(function (m) {
-                html += '<tr>';
-                html += '<td style="font-weight:600;">' + (m.name || '--') + '</td>';
-                html += '<td>' + (m.position || '--') + '</td>';
-                html += '<td>' + (m.building || '--') + '</td>';
-                html += '<td style="text-align:right; font-weight:600;">' + m.subordinates + '</td>';
-                html += '</tr>';
-            });
-            html += '</tbody></table></div>';
-        }
-
+        var html = '<div class="org-building-card"><div class="bcard-label">Total Managers</div><div class="bcard-count">' + stats.managers + '</div></div>';
+        Object.keys(bldg).sort().forEach(function (b) {
+            html += '<div class="org-building-card"><div class="bcard-label">Bldg ' + b + '</div><div class="bcard-count">' + bldg[b] + '</div></div>';
+        });
         container.innerHTML = html;
-        console.log('[DashboardCharts] Org chart placeholder rendered: ' + managers.length + ' managers');
+    },
+
+    /**
+     * Wire filter change events.
+     */
+    _wireOrgFilters: function () {
+        var self = this;
+        var bSel = document.getElementById('orgBuildingFilter');
+        var iSel = document.getElementById('orgIncentiveFilter');
+        if (bSel) bSel.addEventListener('change', function () { self._drawOrgTree(); });
+        if (iSel) iSel.addEventListener('change', function () { self._drawOrgTree(); });
+    },
+
+    /**
+     * Main draw function — builds hierarchy, renders HTML tree, attaches events.
+     */
+    _drawOrgTree: function () {
+        var treeEl = document.getElementById('orgTreeContent');
+        if (!treeEl) return;
+        if (!this._orgData) return;
+
+        treeEl.innerHTML = '<div class="org-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
+        var employees = this._orgData.employees || [];
+        var selectedBuilding = (document.getElementById('orgBuildingFilter') || {}).value || '';
+        var incentiveFilter = (document.getElementById('orgIncentiveFilter') || {}).value || '';
+
+        // Build hierarchy
+        var roots = this._buildOrgHierarchy(employees, selectedBuilding, incentiveFilter);
+        if (!roots || roots.length === 0) {
+            treeEl.innerHTML = '<div class="org-loading">No manager data available.</div>';
+            return;
+        }
+
+        // Render HTML tree
+        var html = this._buildOrgTreeHTML(roots, 0, selectedBuilding);
+        treeEl.innerHTML = html;
+
+        // Attach event listeners
+        this._attachOrgEvents(treeEl);
+
+        console.log('[DashboardCharts] Org chart rendered: ' + roots.length + ' root nodes');
+    },
+
+    /**
+     * Build the org hierarchy tree from boss_id relationships.
+     * Filters: TYPE-1 managers only, excludes resigned/pregnant employees.
+     * Building filter uses boss chain collection for parent managers.
+     *
+     * @returns {Array} Root nodes of the tree
+     */
+    _buildOrgHierarchy: function (employees, selectedBuilding, incentiveFilter) {
+        // Helper: collect boss chain for building filter
+        function collectBossChain(emps, buildingEmpIds) {
+            var bossChainIds = new Set();
+            var empMap = {};
+            emps.forEach(function (e) {
+                var id = String(e.emp_no || e['Employee No'] || '');
+                if (id && id !== 'nan') empMap[id] = e;
+            });
+            function addBoss(empId, depth) {
+                if (depth > 10) return;
+                var e = empMap[empId];
+                if (!e) return;
+                var bId = String(e.boss_id || '');
+                if (bId && bId !== '' && bId !== 'nan' && bId !== '0' && !bossChainIds.has(bId)) {
+                    bossChainIds.add(bId);
+                    addBoss(bId, depth + 1);
+                }
+            }
+            buildingEmpIds.forEach(function (id) { addBoss(id, 0); });
+            return bossChainIds;
+        }
+
+        // Collect building employee IDs and boss chain
+        var buildingEmployeeIds = new Set();
+        var bossChainIds = new Set();
+
+        if (selectedBuilding) {
+            var selUpper = selectedBuilding.toUpperCase();
+            employees.forEach(function (emp) {
+                var b = String(emp.building || emp.BUILDING || '').toUpperCase();
+                if (b.indexOf(selUpper) === 0) { // startsWith
+                    var id = String(emp.emp_no || emp['Employee No'] || '');
+                    if (id && id !== 'nan') buildingEmployeeIds.add(id);
+                }
+            });
+            bossChainIds = collectBossChain(employees, buildingEmployeeIds);
+        }
+
+        // Filter TYPE-1 manager-level employees
+        var type1Managers = employees.filter(function (emp) {
+            // Exclude resigned
+            var stop = emp.stop_working_date || emp['Stop working Date'] || '';
+            if (stop && String(stop).trim() !== '') return false;
+
+            // Exclude pregnant vacation
+            var preg = String(emp.pregnant_vacation || emp['pregnant vacation-yes or no'] || '').toLowerCase();
+            if (preg === 'yes') return false;
+
+            // TYPE-1 only
+            if (emp.type !== 'TYPE-1') return false;
+
+            var pos = String(emp.position || '').toUpperCase();
+            var isManagerLevel = pos.indexOf('MANAGER') !== -1 || pos.indexOf('SUPERVISOR') !== -1 ||
+                                 pos.indexOf('GROUP LEADER') !== -1 || pos.indexOf('LINE LEADER') !== -1;
+            if (!isManagerLevel) return false;
+
+            // Exclude special calc positions (AQL Inspector, Model Master, Auditor & Trainer)
+            if (pos.indexOf('AQL') !== -1 || pos.indexOf('MODEL MASTER') !== -1 || pos.indexOf('AUDITOR') !== -1) return false;
+
+            // Building filter
+            var empId = String(emp.emp_no || emp['Employee No'] || '');
+            if (selectedBuilding) {
+                var isTopMgr = pos === 'MANAGER' && pos.indexOf('A.MANAGER') === -1;
+                if (!isTopMgr) {
+                    var empB = String(emp.building || emp.BUILDING || '').toUpperCase();
+                    var inBldg = empB.indexOf(selectedBuilding.toUpperCase()) === 0;
+                    var inChain = bossChainIds.has(empId);
+                    if (!inBldg && !inChain) return false;
+                }
+            }
+
+            // Incentive filter
+            if (incentiveFilter) {
+                var inc = (window.employeeHelpers) ?
+                    window.employeeHelpers.getIncentive(emp, 'current') :
+                    (emp.currentIncentive || 0);
+                if (incentiveFilter === 'paid' && !(inc > 0)) return false;
+                if (incentiveFilter === 'unpaid' && inc > 0) return false;
+            }
+
+            return true;
+        });
+
+        // Build node map
+        var nodeMap = {};
+        var rootNodes = [];
+        var self = this;
+
+        type1Managers.forEach(function (emp) {
+            var empId = String(emp.emp_no || emp['Employee No'] || '');
+            var inc = (window.employeeHelpers) ?
+                window.employeeHelpers.getIncentive(emp, 'current') :
+                (emp.currentIncentive || 0);
+
+            // Count direct subordinates (all employees whose boss_id = this emp)
+            var directSubs = employees.filter(function (sub) {
+                return String(sub.boss_id || '') === empId;
+            });
+            var subReceiving = directSubs.filter(function (sub) {
+                var sInc = (window.employeeHelpers) ?
+                    window.employeeHelpers.getIncentive(sub, 'current') :
+                    (sub.currentIncentive || 0);
+                return sInc > 0;
+            });
+
+            nodeMap[empId] = {
+                id: empId,
+                name: self._escapeHtml(emp.full_name || emp['Full Name'] || emp.name || '--'),
+                position: emp.position || '--',
+                type: emp.type || '--',
+                incentive: Number(inc) || 0,
+                boss_id: String(emp.boss_id || ''),
+                building: String(emp.building || emp.BUILDING || ''),
+                subordinateCount: directSubs.length,
+                subordinateReceiving: subReceiving.length,
+                children: []
+            };
+        });
+
+        // Link parent → child
+        Object.keys(nodeMap).forEach(function (id) {
+            var node = nodeMap[id];
+            var bossId = node.boss_id;
+            if (bossId && bossId !== '' && bossId !== 'nan' && bossId !== '0' && nodeMap[bossId]) {
+                nodeMap[bossId].children.push(node);
+            } else {
+                rootNodes.push(node);
+            }
+        });
+
+        return rootNodes;
+    },
+
+    /**
+     * Recursively build collapsible HTML tree from hierarchy nodes.
+     */
+    _buildOrgTreeHTML: function (nodes, depth, selectedBuilding) {
+        if (!nodes || nodes.length === 0) return '';
+
+        var html = '<ul>';
+        var self = this;
+        var selUpper = (selectedBuilding || '').toUpperCase();
+
+        nodes.forEach(function (node) {
+            var hasChildren = node.children && node.children.length > 0;
+            var liClass = hasChildren ? 'expanded' : 'no-children';
+            var posClass = self._getNodePositionClass(node.position);
+            var incDot = node.incentive > 0 ? 'received' : 'not-received';
+
+            // Building filter styling
+            var bldgStyle = '';
+            var bldgTitle = '';
+            if (selUpper) {
+                var nodeB = (node.building || '').toUpperCase();
+                if (nodeB.indexOf(selUpper) === 0) {
+                    bldgStyle = 'border: 3px solid #0d6efd; background-color: #e7f3ff;';
+                } else {
+                    bldgStyle = 'border: 2px dashed #999; opacity: 0.65; background-color: #f8f9fa;';
+                    bldgTitle = nodeB ? ('Boss chain (Building ' + nodeB + ')') : 'Boss chain';
+                }
+            }
+
+            html += '<li class="' + liClass + '">';
+            html += '<div class="org-node ' + posClass + '" style="' + bldgStyle + '" title="' + bldgTitle + '">';
+
+            // Incentive dot
+            html += '<div class="node-incentive ' + incDot + '"></div>';
+
+            // Node content
+            html += '<div class="node-position">' + self._escapeHtml(node.position) + '</div>';
+            html += '<div class="node-name">' + node.name + '</div>';
+            html += '<div class="node-id">ID: ' + node.id + '</div>';
+
+            // Incentive info row
+            var fmtInc = Number(node.incentive).toLocaleString('ko-KR');
+            html += '<div class="node-incentive-info" data-node-id="' + node.id + '">';
+            html += '<span class="incentive-amount">' + fmtInc + ' VND</span>';
+            html += '<button type="button" class="incentive-detail-btn" data-node-id="' + node.id + '" title="Detail">';
+            html += '<i class="fas fa-info-circle"></i></button>';
+            html += '</div>';
+
+            // Subordinate count
+            if (node.subordinateCount > 0) {
+                html += '<div class="subordinate-info">';
+                html += node.subordinateReceiving + '/' + node.subordinateCount + ' receiving';
+                html += '</div>';
+            }
+
+            // Toggle button + child count
+            if (hasChildren) {
+                html += '<span class="child-count">' + node.children.length + '</span>';
+                html += '<span class="toggle-btn" aria-hidden="true"></span>';
+            }
+
+            html += '</div>'; // .org-node
+
+            // Recurse children
+            if (hasChildren) {
+                html += self._buildOrgTreeHTML(node.children, depth + 1, selectedBuilding);
+            }
+
+            html += '</li>';
+        });
+
+        html += '</ul>';
+        return html;
+    },
+
+    /**
+     * Return CSS class name based on position.
+     */
+    _getNodePositionClass: function (position) {
+        var p = String(position || '').toUpperCase();
+        if (p.indexOf('A.MANAGER') !== -1 || p.indexOf('ASSISTANT') !== -1) return 'a-manager';
+        if (p.indexOf('MANAGER') !== -1) return 'manager';
+        if (p.indexOf('SUPERVISOR') !== -1) return 'supervisor';
+        if (p.indexOf('GROUP LEADER') !== -1) return 'group-leader';
+        if (p.indexOf('LINE LEADER') !== -1) return 'line-leader';
+        return '';
+    },
+
+    /**
+     * Attach click events to the org tree (event delegation).
+     */
+    _attachOrgEvents: function (treeEl) {
+        // Toggle collapse/expand
+        treeEl.addEventListener('click', function (e) {
+            // Toggle button
+            var toggleBtn = e.target.closest('.toggle-btn');
+            if (toggleBtn) {
+                e.stopPropagation();
+                var li = toggleBtn.closest('li');
+                if (li) {
+                    if (li.classList.contains('collapsed')) {
+                        li.classList.remove('collapsed');
+                        li.classList.add('expanded');
+                    } else {
+                        li.classList.remove('expanded');
+                        li.classList.add('collapsed');
+                    }
+                }
+                return;
+            }
+
+            // Detail button → open employee modal
+            var detailBtn = e.target.closest('.incentive-detail-btn');
+            if (detailBtn) {
+                e.stopPropagation();
+                var nodeId = detailBtn.getAttribute('data-node-id');
+                if (nodeId && typeof DashboardModals !== 'undefined' && DashboardModals.showEmployeeDetail) {
+                    DashboardModals.showEmployeeDetail(nodeId);
+                }
+                return;
+            }
+
+            // Click on incentive info row → open employee modal
+            var incInfo = e.target.closest('.node-incentive-info');
+            if (incInfo) {
+                e.stopPropagation();
+                var nId = incInfo.getAttribute('data-node-id');
+                if (nId && typeof DashboardModals !== 'undefined' && DashboardModals.showEmployeeDetail) {
+                    DashboardModals.showEmployeeDetail(nId);
+                }
+                return;
+            }
+
+            // Click on node itself → toggle children
+            var orgNode = e.target.closest('.org-node');
+            if (orgNode) {
+                var tBtn = orgNode.querySelector('.toggle-btn');
+                if (tBtn) tBtn.click();
+            }
+        });
+    },
+
+    // ------------------------------------------------------------------
+    // Org Chart: Expand / Collapse / Find Me
+    // ------------------------------------------------------------------
+
+    /**
+     * Expand all tree nodes.
+     */
+    expandAll: function () {
+        var items = document.querySelectorAll('#orgTreeContent li.collapsed');
+        items.forEach(function (li) {
+            li.classList.remove('collapsed');
+            li.classList.add('expanded');
+        });
+    },
+
+    /**
+     * Collapse all tree nodes.
+     */
+    collapseAll: function () {
+        var items = document.querySelectorAll('#orgTreeContent li.expanded');
+        items.forEach(function (li) {
+            li.classList.remove('expanded');
+            li.classList.add('collapsed');
+        });
+    },
+
+    /**
+     * Find and highlight a node by employee number (prompt user).
+     */
+    findMe: function () {
+        var empId = prompt('Employee No:');
+        if (!empId) return;
+        empId = empId.trim();
+
+        // Expand all first so the node is visible
+        this.expandAll();
+
+        // Find matching node
+        var allNodes = document.querySelectorAll('#orgTreeContent .org-node');
+        var found = false;
+        allNodes.forEach(function (node) {
+            node.style.outline = '';
+        });
+        allNodes.forEach(function (node) {
+            var idEl = node.querySelector('.node-id');
+            if (idEl && idEl.textContent.indexOf(empId) !== -1) {
+                node.style.outline = '3px solid #6366f1';
+                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                found = true;
+            }
+        });
+
+        if (!found) {
+            alert('Employee ' + empId + ' not found in org chart.');
+        }
     },
 
     // ------------------------------------------------------------------
