@@ -29,6 +29,27 @@ const DashboardI18n = {
         'tabs.validation': { ko: '요약 및 시스템 검증', en: 'Summary & Validation', vi: 'Tổng hợp & Xác nhận' },
         'tabs.attendanceLookup': { ko: '🔍 개인 출결 조회', en: '🔍 Attendance Lookup', vi: '🔍 Tra cứu chấm công' },
 
+        // Header & Navigation
+        'lastUpdated': { ko: '최종 업데이트:', en: 'Last Updated:', vi: 'Cập nhật:' },
+        'loading': { ko: '데이터를 불러오는 중...', en: 'Loading data...', vi: 'Đang tải dữ liệu...' },
+        'errorTitle': { ko: '오류 발생', en: 'Error', vi: 'Lỗi' },
+
+        // Summary section
+        'summary.typeOverview': { ko: 'TYPE별 현황', en: 'TYPE Overview', vi: 'Tổng quan TYPE' },
+        'summary.conditionCharts': { ko: '조건별 충족 현황', en: 'Condition Fulfillment', vi: 'Tình trạng điều kiện' },
+
+        // Validation extras
+        'validation.crossBuilding': { ko: '교차 Building 검토', en: 'Cross-Building Review', vi: 'Xem xét liên xưởng' },
+        'validation.attendanceCalendar': { ko: '출근 캘린더', en: 'Attendance Calendar', vi: 'Lịch chấm công' },
+
+        // Attendance lookup
+        'attendanceLookup.title': { ko: '개인 출결 조회', en: 'Personal Attendance Lookup', vi: 'Tra cứu chấm công cá nhân' },
+        'attendanceLookup.placeholder': { ko: '사번 입력', en: 'Enter Employee No', vi: 'Nhập mã NV' },
+        'attendanceLookup.search': { ko: '조회', en: 'Search', vi: 'Tìm kiếm' },
+
+        // Footer
+        'footer.dataSource': { ko: 'Data source: Firestore', en: 'Data source: Firestore', vi: 'Nguồn dữ liệu: Firestore' },
+
         // KPI labels
         'kpi.recipients': { ko: '수령 직원', en: 'Recipients', vi: 'Nhân viên nhận' },
         'kpi.paymentRate': { ko: '지급률', en: 'Payment Rate', vi: 'Tỷ lệ chi trả' },

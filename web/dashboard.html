@@ -294,12 +294,12 @@
         </div>
     </div>
     <div class="header-controls">
-        <button class="lang-btn active" onclick="switchLanguage('ko')">KO</button>
-        <button class="lang-btn" onclick="switchLanguage('en')">EN</button>
-        <button class="lang-btn" onclick="switchLanguage('vn')">VN</button>
-        <a href="selector.html" class="header-link" data-i18n="backToSelector"><i class="fas fa-arrow-left"></i> 월 선택</a>
+        <button class="lang-btn active" data-lang="ko" onclick="switchLanguage('ko')">KO</button>
+        <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
+        <button class="lang-btn" data-lang="vi" onclick="switchLanguage('vi')">VN</button>
+        <a href="selector.html" class="header-link" data-i18n="common.back"><i class="fas fa-arrow-left"></i> 월 선택</a>
         <span class="user-email" id="userEmail"></span>
-        <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">로그아웃</span></button>
+        <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> <span data-i18n="common.logout">로그아웃</span></button>
     </div>
 </header>
 
@@ -307,14 +307,14 @@
 <!-- TAB NAVIGATION                                               -->
 <!-- ============================================================ -->
 <div class="tabs" id="mainTabs">
-    <div class="tab active" data-tab="summary" onclick="showTab('summary')"><span data-i18n="tab.summary">요약</span></div>
-    <div class="tab" data-tab="position" onclick="showTab('position')"><span data-i18n="tab.position">직급별 상세</span></div>
-    <div class="tab" data-tab="detail" onclick="showTab('detail')"><span data-i18n="tab.detail">개인별 상세</span></div>
-    <div class="tab" data-tab="criteria" onclick="showTab('criteria')"><span data-i18n="tab.criteria">인센티브 기준</span></div>
-    <div class="tab" data-tab="orgchart" onclick="showTab('orgchart')"><span data-i18n="tab.orgchart">조직도</span></div>
-    <div class="tab" data-tab="team" onclick="showTab('team')"><span data-i18n="tab.team">팀 관리</span></div>
-    <div class="tab" data-tab="validation" onclick="showTab('validation')"><span data-i18n="tab.validation">요약 및 시스템 검증</span></div>
-    <div class="tab" data-tab="attendance-lookup" onclick="showTab('attendance-lookup')"><i class="fas fa-search"></i> <span data-i18n="tab.attendanceLookup">개인 출결 조회</span></div>
+    <div class="tab active" data-tab="summary" onclick="showTab('summary')"><span data-i18n="tabs.summary">요약</span></div>
+    <div class="tab" data-tab="position" onclick="showTab('position')"><span data-i18n="tabs.position">직급별 상세</span></div>
+    <div class="tab" data-tab="detail" onclick="showTab('detail')"><span data-i18n="tabs.individual">개인별 상세</span></div>
+    <div class="tab" data-tab="criteria" onclick="showTab('criteria')"><span data-i18n="tabs.criteria">인센티브 기준</span></div>
+    <div class="tab" data-tab="orgchart" onclick="showTab('orgchart')"><span data-i18n="tabs.orgchart">조직도</span></div>
+    <div class="tab" data-tab="team" onclick="showTab('team')"><span data-i18n="nav.team">팀 관리</span></div>
+    <div class="tab" data-tab="validation" onclick="showTab('validation')"><span data-i18n="tabs.validation">요약 및 시스템 검증</span></div>
+    <div class="tab" data-tab="attendance-lookup" onclick="showTab('attendance-lookup')"><i class="fas fa-search"></i> <span data-i18n="tabs.attendanceLookup">개인 출결 조회</span></div>
 </div>
 
 <!-- ============================================================ -->
@@ -368,7 +368,7 @@
 <div class="tab-content" id="detail">
     <!-- Filters -->
     <div class="filter-row">
-        <input type="text" id="employeeSearch" placeholder="사번 또는 이름 검색" data-i18n-placeholder="filter.searchPlaceholder">
+        <input type="text" id="employeeSearch" placeholder="사번 또는 이름 검색" data-i18n="filter.search">
         <select id="positionFilter">
             <option value="" data-i18n="filter.allPositions">전체 직급</option>
         </select>
@@ -393,9 +393,9 @@
                     <th data-i18n="table.position">직급</th>
                     <th data-i18n="table.building">Building</th>
                     <th data-i18n="table.type">TYPE</th>
-                    <th data-i18n="table.attendanceRate">출근율</th>
+                    <th data-i18n="table.attendance">출근율</th>
                     <th data-i18n="table.aql">AQL</th>
-                    <th data-i18n="table.fivePrs">5PRS</th>
+                    <th data-i18n="table.5prs">5PRS</th>
                     <th data-i18n="table.incentive">인센티브</th>
                     <th data-i18n="table.detail">상세</th>
                 </tr>
@@ -447,8 +447,8 @@
     <div class="filter-row">
         <select id="orgIncentiveFilter">
             <option value="" data-i18n="filter.all">전체</option>
-            <option value="paid" data-i18n="filter.paid">수령</option>
-            <option value="unpaid" data-i18n="filter.unpaid">미수령</option>
+            <option value="paid" data-i18n="filter.received">수령</option>
+            <option value="unpaid" data-i18n="filter.notReceived">미수령</option>
         </select>
         <select id="orgBuildingFilter">
             <option value="" data-i18n="filter.allBuildings">전체 Building</option>
@@ -630,13 +630,13 @@
 <!-- ============================================================ -->
 <!-- Local JS Modules (load order matters)                        -->
 <!-- ============================================================ -->
-<script src="js/firebase-config.js?v=20260226f"></script>
-<script src="js/auth.js?v=20260226f"></script>
-<script src="js/dashboard-data.js?v=20260226f"></script>
-<script src="js/dashboard-i18n.js?v=20260226f"></script>
-<script src="js/dashboard-charts.js?v=20260226f"></script>
-<script src="js/dashboard-filters.js?v=20260226f"></script>
-<script src="js/dashboard-modals.js?v=20260226f"></script>
+<script src="js/firebase-config.js?v=20260226g"></script>
+<script src="js/auth.js?v=20260226g"></script>
+<script src="js/dashboard-data.js?v=20260226g"></script>
+<script src="js/dashboard-i18n.js?v=20260226g"></script>
+<script src="js/dashboard-charts.js?v=20260226g"></script>
+<script src="js/dashboard-filters.js?v=20260226g"></script>
+<script src="js/dashboard-modals.js?v=20260226g"></script>
 
 <!-- ============================================================ -->
 <!-- Initialization                                               -->
@@ -664,13 +664,8 @@
      * @param {string} lang - Language code: 'ko', 'en', or 'vn'.
      */
     function switchLanguage(lang) {
-        document.querySelectorAll('.lang-btn').forEach(function(btn) {
-            btn.classList.remove('active');
-        });
-        var activeBtn = document.querySelector('.lang-btn[onclick*="' + lang + '"]');
-        if (activeBtn) activeBtn.classList.add('active');
-        if (typeof DashboardI18n !== 'undefined' && DashboardI18n.switchTo) {
-            DashboardI18n.switchTo(lang);
+        if (typeof DashboardI18n !== 'undefined' && DashboardI18n.switchLanguage) {
+            DashboardI18n.switchLanguage(lang);
         }
     }
 
