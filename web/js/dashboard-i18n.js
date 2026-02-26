@@ -314,7 +314,8 @@ const DashboardI18n = {
      * @returns {string} Translated text
      */
     t(key) {
-        const entry = this.translations[key];
+        // Fallback to _core if translations not yet initialized (init() not called)
+        const entry = this.translations[key] || this._core[key];
         if (!entry) return key;
         return entry[this.currentLang] || entry['ko'] || key;
     },
