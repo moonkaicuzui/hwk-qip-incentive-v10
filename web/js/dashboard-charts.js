@@ -1153,8 +1153,11 @@ var DashboardCharts = {
         var html = this._buildOrgTreeHTML(roots, 0, selectedBuilding);
         treeEl.innerHTML = html;
 
-        // Attach event listeners
-        this._attachOrgEvents(treeEl);
+        // Attach event listeners (only once — duplicate listeners cause double-toggle)
+        if (!this._orgEventsAttached) {
+            this._attachOrgEvents(treeEl);
+            this._orgEventsAttached = true;
+        }
 
         console.log('[DashboardCharts] Org chart rendered: ' + roots.length + ' root nodes');
     },
