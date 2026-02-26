@@ -1661,17 +1661,9 @@ var DashboardModals = {
         html += '📊 ' + t('modal.top10LowestPassRate');
         html += '</h4>';
 
-        // Add rank column for Top 10
-        var rankColumns = [{ key: '_rank', label: '#', formatter: 'text' }].concat(columns);
-
-        // Manually add rank to employees
-        var top10WithRank = top10.map(function (emp, idx) {
-            var clone = Object.assign({}, emp);
-            clone._rank = (idx + 1);
-            return clone;
-        });
-
-        html += this._createEmployeeTable(top10WithRank, rankColumns, 'lowPassRate');
+        // _createEmployeeTable already adds a # (row number) column,
+        // so no need for a separate rank column.
+        html += this._createEmployeeTable(top10, columns, 'lowPassRate');
         html += '</div>';
 
         return html;
@@ -1861,18 +1853,38 @@ var DashboardModals = {
         var t = this._t;
         var employees = this.employees;
 
-        // Case 1: Building mismatch
-        var case1 = employees.filter(function (emp) {
-            var building = String(emp.building || '').trim();
-            var bossBuilding = String(emp.boss_building || '').trim();
-            return building && bossBuilding && building !== bossBuilding;
+        // Build empMap for boss building lookup (V10 has no boss_building field)
+        // Same pattern as dashboard-charts.js line 1730-1752
+        var empMap = {};
+        employees.forEach(function (emp) {
+            var empNo = String(emp.emp_no || emp['Employee No'] || '');
+            if (empNo) empMap[empNo] = emp;
         });
 
-        // Case 2: Boss building unknown
+        // Helper: get boss building via empMap lookup
+        function getBossBuilding(emp) {
+            var bossId = String(emp.boss_id || '');
+            if (!bossId) return '';
+            var boss = empMap[bossId];
+            return boss ? String(boss.building || '').toUpperCase().trim() : '';
+        }
+
+        // Case 1: Building mismatch (employee and boss have different buildings)
+        var case1 = employees.filter(function (emp) {
+            var building = String(emp.building || '').toUpperCase().trim();
+            var bossBuilding = getBossBuilding(emp);
+            if (!building || !bossBuilding) return false;
+            // Use startsWith for hierarchical building matching (A matches A2)
+            return !building.startsWith(bossBuilding) && !bossBuilding.startsWith(building);
+        });
+
+        // Case 2: Boss building unknown (employee has building, boss has no building)
         var case2 = employees.filter(function (emp) {
-            var building = String(emp.building || '').trim();
-            var bossBuilding = String(emp.boss_building || '').trim();
-            return building && !bossBuilding;
+            var building = String(emp.building || '').toUpperCase().trim();
+            var bossId = String(emp.boss_id || '');
+            if (!building || !bossId) return false;
+            var bossBuilding = getBossBuilding(emp);
+            return !bossBuilding;
         });
 
         var totalCases = case1.length + case2.length;
@@ -1923,7 +1935,7 @@ var DashboardModals = {
                 tbl += '<td>' + self._getBuildingBadge(emp.building) + '</td>';
                 tbl += '<td>' + self._escapeHtml(emp.boss_name || '--') + '</td>';
                 if (showBossBuilding) {
-                    tbl += '<td>' + self._getBuildingBadge(emp.boss_building || '') + '</td>';
+                    tbl += '<td>' + self._getBuildingBadge(getBossBuilding(emp)) + '</td>';
                 }
                 tbl += '</tr>';
             });
@@ -1978,19 +1990,18 @@ var DashboardModals = {
         var isAqlInspector = position.indexOf('AQL') !== -1 && position.indexOf('INSPECTOR') !== -1;
         if (!isAqlInspector) return '';
 
-        // Check if AQL Inspector config is available
-        var aqlConfig = window.aqlInspectorConfig || window.aqlIncentiveConfig;
-        if (!aqlConfig) return '';
+        // AQL Inspector config is optional — show 3-Part even without it
+        var aqlConfig = window.aqlInspectorConfig || window.aqlIncentiveConfig || null;
 
         var empNo = String(emp.emp_no || emp['Employee No'] || '');
         var inspectorData = null;
 
-        // Look up inspector data in config
-        if (aqlConfig.aql_inspectors) {
+        // Look up inspector data in config (if available)
+        if (aqlConfig && aqlConfig.aql_inspectors) {
             inspectorData = aqlConfig.aql_inspectors[empNo];
         }
 
-        // Fallback: derive from employee data
+        // Derive data from employee record
         var continuousMonths = parseInt(emp.continuous_months || emp.Continuous_Months || 0, 10) || 0;
         var isPaid = currentIncentive > 0;
 
@@ -2009,10 +2020,10 @@ var DashboardModals = {
             isCfaCertified = inspectorData.cfa_certified || false;
         }
         if (isCfaCertified && isPaid) {
-            part2Amount = (aqlConfig.parts && aqlConfig.parts.part2) ? (aqlConfig.parts.part2.amount || 700000) : 700000;
+            part2Amount = (aqlConfig && aqlConfig.parts && aqlConfig.parts.part2) ? (aqlConfig.parts.part2.amount || 700000) : 700000;
         }
 
-        // Part 3: HWK 클레임 방지 (from config)
+        // Part 3: HWK 클레임 방지 (from config if available)
         var part3Amount = 0;
         var part3Months = 0;
         if (inspectorData) {
