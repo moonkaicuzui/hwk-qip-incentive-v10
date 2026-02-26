@@ -224,6 +224,7 @@ def row_to_employee(row: pd.Series, month_capitalized: str) -> dict:
         "position": safe_str(row.get("QIP POSITION 1ST  NAME", "")),
         "position_code": safe_str(row.get("FINAL QIP POSITION NAME CODE", "")),
         "type": safe_str(row.get("ROLE TYPE STD", "")),
+        "boss_id": safe_str(row.get("MST direct boss name", "")).replace(".0", ""),
         "boss_name": safe_str(row.get("direct boss name", "")),
         "entrance_date": safe_str(row.get("Entrance Date", "")),
         "stop_working_date": safe_str(row.get("Stop working Date", "")),
