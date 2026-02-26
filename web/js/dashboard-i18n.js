@@ -606,6 +606,11 @@ const DashboardI18n = {
                 if (DashboardCharts.renderAttendanceCalendar) {
                     DashboardCharts.renderAttendanceCalendar(d);
                 }
+                // Re-render attendance lookup result on language switch (Bug fix: result labels stayed in original language)
+                var lookupInput = document.getElementById('attendanceLookupInput');
+                if (lookupInput && lookupInput.value && typeof DashboardFilters !== 'undefined') {
+                    DashboardFilters.searchAttendance(lookupInput.value);
+                }
             }
         }
         // Update Quick Summary overlay if visible
