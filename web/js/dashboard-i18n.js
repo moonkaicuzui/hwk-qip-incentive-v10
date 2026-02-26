@@ -330,13 +330,14 @@ const DashboardI18n = {
     tWithThresholds(key) {
         let text = this.t(key);
         if (window.thresholds) {
-            text = text.replace('{threshold_attendance_rate}', window.thresholds.attendance_rate || 88);
-            text = text.replace('{threshold_unapproved_absence}', window.thresholds.unapproved_absence || 2);
-            text = text.replace('{threshold_minimum_working_days}', window.thresholds.minimum_working_days || 12);
-            text = text.replace('{threshold_area_reject_rate}', window.thresholds.area_reject_rate || 3.0);
-            text = text.replace('{threshold_5prs_pass_rate}', window.thresholds['5prs_pass_rate'] || 95);
-            text = text.replace('{threshold_5prs_min_qty}', window.thresholds['5prs_min_qty'] || 100);
-            text = text.replace('{threshold_consecutive_aql_months}', window.thresholds.consecutive_aql_months || 3);
+            // replaceAll: same placeholder can appear multiple times in one text (e.g. faq.a2)
+            text = text.replaceAll('{threshold_attendance_rate}', window.thresholds.attendance_rate || 88);
+            text = text.replaceAll('{threshold_unapproved_absence}', window.thresholds.unapproved_absence || 2);
+            text = text.replaceAll('{threshold_minimum_working_days}', window.thresholds.minimum_working_days || 12);
+            text = text.replaceAll('{threshold_area_reject_rate}', window.thresholds.area_reject_rate || 3.0);
+            text = text.replaceAll('{threshold_5prs_pass_rate}', window.thresholds['5prs_pass_rate'] || 95);
+            text = text.replaceAll('{threshold_5prs_min_qty}', window.thresholds['5prs_min_qty'] || 100);
+            text = text.replaceAll('{threshold_consecutive_aql_months}', window.thresholds.consecutive_aql_months || 3);
         }
         return text;
     },
