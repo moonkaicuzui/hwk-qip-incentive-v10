@@ -18,6 +18,7 @@ import sys
 import json
 import argparse
 import math
+import calendar
 from datetime import datetime
 
 import pandas as pd
@@ -276,7 +277,91 @@ def row_to_employee(row: pd.Series, month_capitalized: str) -> dict:
 # Transform: DataFrame -> dashboard summary
 # ---------------------------------------------------------------------------
 
-def build_summary(df: pd.DataFrame, month: str, year: int, working_days: int) -> dict:
+def build_calendar_data(month: str, year: int) -> dict:
+    """출근 CSV에서 캘린더 데이터 생성
+
+    원본 출근 파일에서 근무일 날짜 목록과 날짜별 출근 인원수를 추출한다.
+
+    Args:
+        month: 월 이름 (lowercase, e.g. "february")
+        year: 연도 (e.g. 2026)
+
+    Returns:
+        dict: calendar_data 또는 None (파일 없을 때)
+    """
+    # 월 이름 → 숫자
+    month_names = {
+        "january": 1, "february": 2, "march": 3, "april": 4,
+        "may": 5, "june": 6, "july": 7, "august": 8,
+        "september": 9, "october": 10, "november": 11, "december": 12
+    }
+    month_num = month_names.get(month)
+    if not month_num:
+        print(f"  ⚠️ 캘린더: 알 수 없는 월 이름 '{month}'")
+        return None
+
+    # 원본 출근 CSV 찾기
+    attendance_dir = "input_files/attendance/original"
+    attendance_file = os.path.join(attendance_dir, f"attendance data {month}.csv")
+    if not os.path.exists(attendance_file):
+        print(f"  ⚠️ 캘린더: 출근 파일 없음 — {attendance_file}")
+        return None
+
+    try:
+        att_df = pd.read_csv(attendance_file, encoding="utf-8-sig")
+    except Exception as e:
+        print(f"  ⚠️ 캘린더: 출근 파일 읽기 실패 — {e}")
+        return None
+
+    if "Work Date" not in att_df.columns:
+        print("  ⚠️ 캘린더: 'Work Date' 컬럼 없음")
+        return None
+
+    # Work Date 파싱 (형식: "2026.02.02")
+    att_df["_parsed_date"] = pd.to_datetime(att_df["Work Date"], errors="coerce")
+    valid = att_df["_parsed_date"].notna()
+    att_df = att_df[valid].copy()
+
+    # 해당 월 데이터만 필터
+    att_df = att_df[
+        (att_df["_parsed_date"].dt.month == month_num) &
+        (att_df["_parsed_date"].dt.year == year)
+    ]
+
+    if att_df.empty:
+        print(f"  ⚠️ 캘린더: {month.capitalize()} {year} 데이터 없음")
+        return None
+
+    # 날짜(일)별 출근 인원 카운트 (Personnel Number 기준 고유 직원 수)
+    att_df["_day"] = att_df["_parsed_date"].dt.day
+    if "Personnel Number" in att_df.columns:
+        daily = att_df.groupby("_day")["Personnel Number"].nunique()
+    else:
+        daily = att_df.groupby("_day").size()
+
+    working_day_dates = sorted(daily.index.tolist())
+    daily_counts = {str(day): int(count) for day, count in daily.items()}
+    days_in_month = calendar.monthrange(year, month_num)[1]
+
+    # 각 날짜의 요일 (0=월, 1=화, ..., 6=일)
+    weekday_indices = []
+    for day in range(1, days_in_month + 1):
+        weekday_indices.append(calendar.weekday(year, month_num, day))
+
+    cal_data = {
+        "working_day_dates": working_day_dates,
+        "daily_counts": daily_counts,
+        "days_in_month": days_in_month,
+        "total_working_days": len(working_day_dates),
+        "weekday_indices": weekday_indices,
+    }
+
+    print(f"  📅 캘린더: {len(working_day_dates)}일 근무 / {days_in_month}일 총")
+    return cal_data
+
+
+def build_summary(df: pd.DataFrame, month: str, year: int, working_days: int,
+                  calendar_data: dict = None) -> dict:
     """계산 결과 DataFrame에서 대시보드 요약 생성
 
     Args:
@@ -284,6 +369,7 @@ def build_summary(df: pd.DataFrame, month: str, year: int, working_days: int) ->
         month: 월 이름 (lowercase)
         year: 연도
         working_days: 총 근무일
+        calendar_data: 캘린더 데이터 (optional)
 
     Returns:
         dict: dashboard_summary document
@@ -365,6 +451,10 @@ def build_summary(df: pd.DataFrame, month: str, year: int, working_days: int) ->
         "data_updated_at": now_iso,
         "calculated_at": now_iso,
     }
+
+    # 캘린더 데이터 포함 (있으면)
+    if calendar_data:
+        summary["calendar_data"] = calendar_data
 
     # 임시 컬럼 제거
     df.drop(columns=["_incentive"], inplace=True, errors="ignore")
@@ -554,9 +644,13 @@ def main():
         working_days = safe_int(df["Total Working Days"].dropna().iloc[0] if len(df) > 0 else 0)
         print(f"   총 근무일: {working_days} (CSV fallback)")
 
+    # 4.5. 캘린더 데이터 생성
+    print(f"\n📅 Step 4.5: 캘린더 데이터 생성")
+    calendar_data = build_calendar_data(month, year)
+
     # 5. 요약 데이터 생성
-    print(f"\n📊 Step 4: 대시보드 요약 생성")
-    summary = build_summary(df, month, year, working_days)
+    print(f"\n📊 Step 5: 대시보드 요약 생성")
+    summary = build_summary(df, month, year, working_days, calendar_data=calendar_data)
 
     # 6. Firestore 업로드
     print(f"\n☁️  Step 5: Firestore 업로드")

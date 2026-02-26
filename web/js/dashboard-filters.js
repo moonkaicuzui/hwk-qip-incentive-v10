@@ -58,8 +58,6 @@ var DashboardFilters = {
             return;
         }
 
-        console.log('[DashboardFilters] Initializing filters');
-
         this.allEmployees = data.employees || [];
         this.filteredData = [].concat(this.allEmployees);
         this._thresholds = data.thresholds || window.thresholds || {};
@@ -67,8 +65,6 @@ var DashboardFilters = {
         this.populateFilterOptions();
         this.bindEvents();
         this.renderTable();
-
-        console.log('[DashboardFilters] Initialization complete (' + this.allEmployees.length + ' employees)');
     },
 
     // ------------------------------------------------------------------
@@ -126,9 +122,6 @@ var DashboardFilters = {
             });
         }
 
-        console.log('[DashboardFilters] Filter options populated:',
-            'positions=' + positions.length,
-            'buildings=' + buildings.length);
     },
 
     // ------------------------------------------------------------------
@@ -215,7 +208,6 @@ var DashboardFilters = {
             });
         }
 
-        console.log('[DashboardFilters] Events bound');
     },
 
     // ------------------------------------------------------------------
@@ -759,7 +751,7 @@ var DashboardFilters = {
                 '<td style="padding: 6px 12px; font-weight: 600; color: ' + (unapproved > 0 ? '#c62828' : '#2e7d32') + ';">' +
                 unapproved + '\uC77C</td></tr>';
         html += '<tr><td style="padding: 6px 12px; color: #757575;">\uCD9C\uADFC\uC728</td>' +            // 출근율
-                '<td style="padding: 6px 12px; font-weight: 600; color: ' + (attendanceRate >= 88 ? '#2e7d32' : '#c62828') + ';">' +
+                '<td style="padding: 6px 12px; font-weight: 600; color: ' + (attendanceRate >= (window.thresholds && window.thresholds.attendance_rate || THRESHOLD_DEFAULTS.attendance_rate) ? '#2e7d32' : '#c62828') + ';">' +
                 this._formatPercent(attendanceRate) + '%</td></tr>';
         html += '</table>';
         html += '</div>';

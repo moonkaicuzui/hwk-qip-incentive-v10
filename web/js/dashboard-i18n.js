@@ -42,6 +42,22 @@ const DashboardI18n = {
         'validation.crossBuilding': { ko: '교차 Building 검토', en: 'Cross-Building Review', vi: 'Xem xét liên xưởng' },
         'validation.attendanceCalendar': { ko: '출근 캘린더', en: 'Attendance Calendar', vi: 'Lịch chấm công' },
 
+        // Calendar
+        'calendar.totalWorkingDays': { ko: '총 근무일', en: 'Working Days', vi: 'Ngày làm việc' },
+        'calendar.totalDays': { ko: '총 일수', en: 'Total Days', vi: 'Tổng số ngày' },
+        'calendar.noDataDays': { ko: '데이터 없음', en: 'No Data', vi: 'Không có dữ liệu' },
+        'calendar.legendWorkDay': { ko: '근무일', en: 'Work Day', vi: 'Ngày làm' },
+        'calendar.legendNoData': { ko: '휴무일/데이터 없음', en: 'Holiday/No Data', vi: 'Nghỉ/Không dữ liệu' },
+        'calendar.employeeCount': { ko: '명', en: ' emp', vi: ' NV' },
+        'calendar.day': { ko: '일', en: 'day', vi: 'ngày' },
+        'calendar.weekdays.mon': { ko: '월', en: 'Mon', vi: 'T2' },
+        'calendar.weekdays.tue': { ko: '화', en: 'Tue', vi: 'T3' },
+        'calendar.weekdays.wed': { ko: '수', en: 'Wed', vi: 'T4' },
+        'calendar.weekdays.thu': { ko: '목', en: 'Thu', vi: 'T5' },
+        'calendar.weekdays.fri': { ko: '금', en: 'Fri', vi: 'T6' },
+        'calendar.weekdays.sat': { ko: '토', en: 'Sat', vi: 'T7' },
+        'calendar.weekdays.sun': { ko: '일', en: 'Sun', vi: 'CN' },
+
         // Attendance lookup
         'attendanceLookup.title': { ko: '개인 출결 조회', en: 'Personal Attendance Lookup', vi: 'Tra cứu chấm công cá nhân' },
         'attendanceLookup.placeholder': { ko: '사번 입력', en: 'Enter Employee No', vi: 'Nhập mã NV' },
@@ -153,6 +169,8 @@ const DashboardI18n = {
         'modal.conditionStatus': { ko: '조건 충족 현황', en: 'Condition Status', vi: 'Tình trạng điều kiện' },
         'modal.attendanceInfo': { ko: '출근 정보', en: 'Attendance Info', vi: 'Thông tin chấm công' },
         'modal.incentiveInfo': { ko: '인센티브 정보', en: 'Incentive Info', vi: 'Thông tin khuyến khích' },
+        'modal.workingDayCount': { ko: '근무일수', en: 'Working Days', vi: 'Số ngày làm' },
+        'modal.employeeCount': { ko: '직원 수', en: 'Employees', vi: 'Số nhân viên' },
 
         // Criteria tab
         'criteria.conditionsTitle': { ko: '10가지 조건 개요', en: '10 Conditions Overview', vi: 'Tổng quan 10 điều kiện' },
@@ -308,6 +326,121 @@ const DashboardI18n = {
             vi: 'Có. Nếu điều kiện chấm công (C1-C4) không đạt, không nhận khuyến khích. Ngoài ra, nếu không có TYPE-1 LINE LEADER nhận, trung bình = 0, khuyến khích GROUP LEADER = 0 VND.'
         },
 
+        // Type table headers (summary tab)
+        'typeTable.type': { ko: 'TYPE', en: 'TYPE', vi: 'TYPE' },
+
+        // Condition chart
+        'chart.employeeCount': { ko: '직원 수', en: 'Employee Count', vi: 'Số nhân viên' },
+        'chart.conditionLabel.1': { ko: 'C1: 출근율', en: 'C1: Attendance Rate', vi: 'C1: Tỷ lệ đi làm' },
+        'chart.conditionLabel.2': { ko: 'C2: 무단결근', en: 'C2: Unapproved Absence', vi: 'C2: Vắng không phép' },
+        'chart.conditionLabel.3': { ko: 'C3: 실제 근무일', en: 'C3: Actual Working Days', vi: 'C3: Ngày làm thực tế' },
+        'chart.conditionLabel.4': { ko: 'C4: 최소 근무일', en: 'C4: Minimum Working Days', vi: 'C4: Ngày làm tối thiểu' },
+        'chart.conditionLabel.5': { ko: 'C5: AQL 실패 (당월)', en: 'C5: AQL Failure (Monthly)', vi: 'C5: Lỗi AQL (Tháng)' },
+        'chart.conditionLabel.6': { ko: 'C6: AQL 연속 실패', en: 'C6: AQL 3-Month Consecutive', vi: 'C6: AQL liên tục 3 tháng' },
+        'chart.conditionLabel.7': { ko: 'C7: 팀 AQL 연속', en: 'C7: Team AQL Consecutive', vi: 'C7: AQL nhóm liên tục' },
+        'chart.conditionLabel.8': { ko: 'C8: 구역 Reject Rate', en: 'C8: Area Reject Rate', vi: 'C8: Tỷ lệ từ chối khu vực' },
+        'chart.conditionLabel.9': { ko: 'C9: 5PRS 통과율', en: 'C9: 5PRS Pass Rate', vi: 'C9: Tỷ lệ đạt 5PRS' },
+        'chart.conditionLabel.10': { ko: 'C10: 5PRS 검사량', en: 'C10: 5PRS Inspection Qty', vi: 'C10: SL kiểm tra 5PRS' },
+
+        // Position table
+        'position.summary': { ko: '직급별 요약', en: 'Position Summary', vi: 'Tóm tắt chức vụ' },
+        'position.positions': { ko: '개 직급', en: ' positions', vi: ' chức vụ' },
+        'position.totalAmount': { ko: '총 지급액 (VND)', en: 'Total Amount (VND)', vi: 'Tổng tiền (VND)' },
+        'position.avgReceiving': { ko: '평균(수령자)', en: 'Avg (Receiving)', vi: 'TB (Người nhận)' },
+
+        // Criteria tab
+        'criteria.category': { ko: '분류', en: 'Category', vi: 'Phân loại' },
+        'criteria.condition': { ko: '조건', en: 'Condition', vi: 'Điều kiện' },
+        'criteria.threshold': { ko: '기준값', en: 'Threshold', vi: 'Ngưỡng' },
+        'criteria.description': { ko: '설명', en: 'Description', vi: 'Mô tả' },
+        'criteria.pass': { ko: 'Pass', en: 'Pass', vi: 'Đạt' },
+        'criteria.fail': { ko: 'Fail', en: 'Fail', vi: 'K.đạt' },
+        'criteria.progressiveTitle': { ko: 'TYPE-1 누진 인센티브 표 (VND)', en: 'TYPE-1 Progressive Incentive Table (VND)', vi: 'Bảng khuyến khích lũy tiến TYPE-1 (VND)' },
+        'criteria.progressiveNote': {
+            ko: '* 개월 = 조건 100% 충족 연속 개월수. 1회라도 미충족 시 0으로 리셋.',
+            en: '* Months = consecutive months of 100% condition fulfillment. Resets to 0 on any failure.',
+            vi: '* Tháng = số tháng liên tục đáp ứng 100% điều kiện. Reset về 0 khi bất kỳ lỗi nào.'
+        },
+        'criteria.typeAppTitle': { ko: 'TYPE별 조건 적용', en: 'TYPE-based Condition Application', vi: 'Áp dụng điều kiện theo TYPE' },
+        'criteria.appliedConditions': { ko: '적용 조건', en: 'Applied Conditions', vi: 'Điều kiện áp dụng' },
+        'criteria.incentiveMethod': { ko: '인센티브 방식', en: 'Incentive Method', vi: 'Phương pháp KK' },
+        'criteria.type1Conditions': { ko: 'C1~C10 (10개 조건 전체)', en: 'C1~C10 (All 10 conditions)', vi: 'C1~C10 (Tất cả 10 điều kiện)' },
+        'criteria.type1Method': { ko: '누진표 (1~15개월)', en: 'Progressive table (1~15 months)', vi: 'Bảng lũy tiến (1~15 tháng)' },
+        'criteria.type2Conds': { ko: 'C1~C4 (출근 조건만)', en: 'C1~C4 (Attendance only)', vi: 'C1~C4 (Chỉ chấm công)' },
+        'criteria.type2Method': { ko: 'TYPE-1 직급 평균 기준', en: 'Based on TYPE-1 position average', vi: 'Dựa trên TB chức vụ TYPE-1' },
+        'criteria.type3Conditions': { ko: '없음 (정책 제외)', en: 'None (Policy excluded)', vi: 'Không (Loại trừ)' },
+        'criteria.type3Method': { ko: '0 VND (미대상)', en: '0 VND (Not eligible)', vi: '0 VND (Không đủ điều kiện)' },
+        // Criteria - condition details (with threshold placeholders)
+        'criteria.cond.cat.attendance': { ko: '출근', en: 'Attendance', vi: 'Chấm công' },
+        'criteria.cond.cat.aql': { ko: 'AQL', en: 'AQL', vi: 'AQL' },
+        'criteria.cond.cat.5prs': { ko: '5PRS', en: '5PRS', vi: '5PRS' },
+        'criteria.cond.name.1': { ko: '출근율', en: 'Attendance Rate', vi: 'Tỷ lệ đi làm' },
+        'criteria.cond.name.2': { ko: '무단결근', en: 'Unapproved Absence', vi: 'Vắng không phép' },
+        'criteria.cond.name.3': { ko: '실제 근무일', en: 'Actual Working Days', vi: 'Ngày làm thực tế' },
+        'criteria.cond.name.4': { ko: '최소 근무일', en: 'Minimum Working Days', vi: 'Ngày làm tối thiểu' },
+        'criteria.cond.name.5': { ko: 'AQL 실패 (당월)', en: 'AQL Failure (Monthly)', vi: 'Lỗi AQL (Tháng)' },
+        'criteria.cond.name.6': { ko: 'AQL 연속 실패', en: 'AQL Consecutive Failure', vi: 'Lỗi AQL liên tiếp' },
+        'criteria.cond.name.7': { ko: '팀 AQL 연속', en: 'Team AQL Consecutive', vi: 'AQL nhóm liên tục' },
+        'criteria.cond.name.8': { ko: '구역 Reject Rate', en: 'Area Reject Rate', vi: 'Tỷ lệ từ chối KV' },
+        'criteria.cond.name.9': { ko: '5PRS 통과율', en: '5PRS Pass Rate', vi: 'Tỷ lệ đạt 5PRS' },
+        'criteria.cond.name.10': { ko: '5PRS 검사량', en: '5PRS Inspection Qty', vi: 'SL kiểm tra 5PRS' },
+        'criteria.cond.desc.1': { ko: '월 출근율 기준 충족', en: 'Monthly attendance rate must meet minimum', vi: 'Tỷ lệ đi làm tháng phải đạt tối thiểu' },
+        'criteria.cond.desc.2': { ko: '무단결근 허용 한도', en: 'Maximum unexcused absences allowed', vi: 'Số ngày vắng không phép tối đa' },
+        'criteria.cond.desc.3': { ko: '최소 1일 이상 근무', en: 'Employee must have worked at least 1 day', vi: 'NV phải làm ít nhất 1 ngày' },
+        'criteria.cond.desc.4': { ko: '자격 요건 최소 근무일', en: 'Minimum working days required for eligibility', vi: 'Ngày làm tối thiểu để đủ điều kiện' },
+        'criteria.cond.desc.5': { ko: '당월 개인 AQL 실패 없음', en: 'No personal AQL failures this month', vi: 'Không có lỗi AQL cá nhân tháng này' },
+        'criteria.cond.desc.6': { ko: '연속 월 AQL 실패 없음', en: 'No consecutive month AQL failures', vi: 'Không lỗi AQL liên tiếp tháng' },
+        'criteria.cond.desc.7': { ko: '팀/구역 연속 실패 없음', en: 'Team/area has no consecutive failures', vi: 'Nhóm/KV không lỗi liên tiếp' },
+        'criteria.cond.desc.8': { ko: '구역 불량률 기준 이하', en: 'Building area reject rate below threshold', vi: 'Tỷ lệ từ chối KV dưới ngưỡng' },
+        'criteria.cond.desc.9': { ko: '검사 통과율 기준 충족', en: 'Inspection pass rate meets minimum', vi: 'Tỷ lệ đạt kiểm tra đạt tối thiểu' },
+        'criteria.cond.desc.10': { ko: '최소 검사량 필수', en: 'Minimum inspection quantity required', vi: 'Số lượng kiểm tra tối thiểu bắt buộc' },
+        'criteria.streakNo': { ko: '개월 연속 = NO', en: 'M streak = NO', vi: ' tháng liên tục = NO' },
+        'criteria.unitPairs': { ko: '족', en: 'pairs', vi: 'đôi' },
+
+        // Team tab
+        'team.building': { ko: 'Building', en: 'Building', vi: 'Xưởng' },
+        'team.total': { ko: '전체:', en: 'Total:', vi: 'Tổng:' },
+        'team.receiving': { ko: '수령:', en: 'Receiving:', vi: 'Nhận:' },
+        'team.rate': { ko: '지급률:', en: 'Rate:', vi: 'Tỷ lệ:' },
+        'team.amount': { ko: '금액:', en: 'Amount:', vi: 'Số tiền:' },
+        'team.totalAmount': { ko: '총 지급액 (VND)', en: 'Total Amount (VND)', vi: 'Tổng tiền (VND)' },
+        'team.buildings': { ko: '개 Building', en: ' buildings', vi: ' xưởng' },
+
+        // Org chart extras
+        'orgchart.totalManagers': { ko: '관리자 합계', en: 'Total Managers', vi: 'Tổng quản lý' },
+        'orgchart.bldg': { ko: 'Bldg', en: 'Bldg', vi: 'Xưởng' },
+        'orgchart.id': { ko: 'ID', en: 'ID', vi: 'ID' },
+        'orgchart.receiving': { ko: '수령', en: 'receiving', vi: 'nhận' },
+        'orgchart.bossChain': { ko: '상사 체인', en: 'Boss chain', vi: 'Chuỗi quản lý' },
+        'orgchart.promptEmpNo': { ko: '사번을 입력하세요:', en: 'Employee No:', vi: 'Nhập mã NV:' },
+        'orgchart.notFound': { ko: '직원 {id}을(를) 조직도에서 찾을 수 없습니다.', en: 'Employee {id} not found in org chart.', vi: 'Không tìm thấy nhân viên {id} trong sơ đồ tổ chức.' },
+        'orgchart.noManagerData': { ko: '관리자 데이터가 없습니다.', en: 'No manager data available.', vi: 'Không có dữ liệu quản lý.' },
+
+        // Modal extras
+        'modal.entranceDate': { ko: '입사일', en: 'Entrance Date', vi: 'Ngày vào' },
+        'modal.boss': { ko: '상사', en: 'Boss', vi: 'Quản lý' },
+        'modal.approvedLeave': { ko: '승인 휴가', en: 'Approved Leave', vi: 'Nghỉ phép được duyệt' },
+        'modal.conditionHeader': { ko: '조건', en: 'Condition', vi: 'Điều kiện' },
+        'modal.valueHeader': { ko: '값', en: 'Value', vi: 'Giá trị' },
+        'modal.thresholdHeader': { ko: '기준값', en: 'Threshold', vi: 'Ngưỡng' },
+        'modal.resultHeader': { ko: '결과', en: 'Result', vi: 'Kết quả' },
+        'modal.conditionsPassed': { ko: '개 조건 충족', en: ' conditions passed', vi: ' điều kiện đạt' },
+        'modal.progressiveTitle': { ko: '누진 인센티브 (1~15개월)', en: 'Progressive Incentive (1-15 months)', vi: 'KK lũy tiến (1-15 tháng)' },
+        'modal.aqlNotApplicable': { ko: '이 TYPE에는 AQL 조건 미적용', en: 'AQL conditions not applicable for this TYPE', vi: 'Điều kiện AQL không áp dụng cho TYPE này' },
+        'modal.totalTests': { ko: '총 검사수', en: 'Total Tests', vi: 'Tổng kiểm tra' },
+        'modal.passCount': { ko: '통과 수', en: 'Pass Count', vi: 'Số đạt' },
+        'modal.failPercent': { ko: '실패율 %', en: 'Fail %', vi: '% Lỗi' },
+        'modal.5prsNotApplicable': { ko: '이 TYPE에는 5PRS 조건 미적용', en: '5PRS conditions not applicable for this TYPE', vi: 'Điều kiện 5PRS không áp dụng cho TYPE này' },
+        'modal.totalQty': { ko: '총 검사량', en: 'Total Qty', vi: 'Tổng SL' },
+        'modal.bossBuilding': { ko: '상사 Building', en: 'Boss Building', vi: 'Xưởng quản lý' },
+        'modal.workingDays': { ko: '근무일', en: 'Working Days', vi: 'Ngày làm' },
+        'modal.employeesCount': { ko: '직원', en: 'Employees', vi: 'Nhân viên' },
+        'modal.currentIncentive': { ko: '당월 인센티브', en: 'Current Incentive', vi: 'KK tháng này' },
+        'modal.previousIncentive': { ko: '전월 인센티브', en: 'Previous Incentive', vi: 'KK tháng trước' },
+        'modal.continuousMonths': { ko: '연속 개월 수', en: 'Continuous Months', vi: 'Số tháng liên tục' },
+        'modal.progressionBar': { ko: '누진 인센티브 (1~15개월)', en: 'Progressive Incentive (1-15 months)', vi: 'KK lũy tiến (1-15 tháng)' },
+        'modal.errorLoading': { ko: '데이터 로드 오류. 모달을 닫고 다시 시도하세요.', en: 'Error loading data. Please close and try again.', vi: 'Lỗi tải dữ liệu. Vui lòng đóng và thử lại.' },
+
         // Admin
         'admin.title': { ko: '관리자 설정', en: 'Admin Settings', vi: 'Cài đặt quản trị' },
         'admin.thresholds': { ko: '목표 설정', en: 'Threshold Settings', vi: 'Cài đặt ngưỡng' },
@@ -352,13 +485,14 @@ const DashboardI18n = {
         let text = this.t(key);
         if (window.thresholds) {
             // replaceAll: same placeholder can appear multiple times in one text (e.g. faq.a2)
-            text = text.replaceAll('{threshold_attendance_rate}', window.thresholds.attendance_rate || 88);
-            text = text.replaceAll('{threshold_unapproved_absence}', window.thresholds.unapproved_absence || 2);
-            text = text.replaceAll('{threshold_minimum_working_days}', window.thresholds.minimum_working_days || 12);
-            text = text.replaceAll('{threshold_area_reject_rate}', window.thresholds.area_reject_rate || 3.0);
-            text = text.replaceAll('{threshold_5prs_pass_rate}', window.thresholds['5prs_pass_rate'] || 95);
-            text = text.replaceAll('{threshold_5prs_min_qty}', window.thresholds['5prs_min_qty'] || 100);
-            text = text.replaceAll('{threshold_consecutive_aql_months}', window.thresholds.consecutive_aql_months || 3);
+            var d = (typeof THRESHOLD_DEFAULTS !== 'undefined') ? THRESHOLD_DEFAULTS : {};
+            text = text.replaceAll('{threshold_attendance_rate}', window.thresholds.attendance_rate || d.attendance_rate || 88);
+            text = text.replaceAll('{threshold_unapproved_absence}', window.thresholds.unapproved_absence || d.unapproved_absence || 2);
+            text = text.replaceAll('{threshold_minimum_working_days}', window.thresholds.minimum_working_days || d.minimum_working_days || 12);
+            text = text.replaceAll('{threshold_area_reject_rate}', window.thresholds.area_reject_rate || d.area_reject_rate || 3.0);
+            text = text.replaceAll('{threshold_5prs_pass_rate}', window.thresholds['5prs_pass_rate'] || d['5prs_pass_rate'] || 95);
+            text = text.replaceAll('{threshold_5prs_min_qty}', window.thresholds['5prs_min_qty'] || d['5prs_min_qty'] || 100);
+            text = text.replaceAll('{threshold_consecutive_aql_months}', window.thresholds.consecutive_aql_months || d.consecutive_aql_months || 3);
         }
         return text;
     },
@@ -378,10 +512,19 @@ const DashboardI18n = {
         if (typeof DashboardFilters !== 'undefined') {
             DashboardFilters.renderTable();
         }
-        // Re-render criteria tab (TYPE-2 methods + FAQ) with new language
-        if (typeof DashboardCharts !== 'undefined' && DashboardCharts._criteriaData) {
-            DashboardCharts._renderTypeCalculationMethods(DashboardCharts._criteriaData);
-            DashboardCharts._renderFAQSection();
+        // Re-render all dynamically-built sections with new language
+        if (typeof DashboardCharts !== 'undefined') {
+            var d = DashboardCharts._criteriaData;
+            if (d) {
+                DashboardCharts.renderTypeTable(d);
+                DashboardCharts.renderConditionCharts(d);
+                DashboardCharts.renderPositionTables(d);
+                DashboardCharts.renderCriteriaTab(d);
+                DashboardCharts.renderTeamTab(d);
+                DashboardCharts._renderBuildingSummaryCards(d.employees || []);
+                DashboardCharts._renderTypeCalculationMethods(d);
+                DashboardCharts._renderFAQSection();
+            }
         }
     },
 

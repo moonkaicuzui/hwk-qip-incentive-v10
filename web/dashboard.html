@@ -236,6 +236,79 @@
         .lookup-input-row button { padding: 10px 20px; background: var(--header-dark); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
         .lookup-input-row button:hover { background: var(--header-light); }
 
+        /* ===== Attendance Calendar Grid ===== */
+        .att-calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .att-cal-header {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #1a237e;
+            padding: 8px 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .att-cal-header.weekend { color: #c62828; }
+        .att-cal-cell {
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            padding: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        .att-cal-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .att-cal-cell.work-day {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: #fff;
+        }
+        .att-cal-cell.no-data {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px dashed #dee2e6;
+        }
+        .att-cal-cell.weekend-day.no-data { background: #f0f0f0; }
+        .att-cal-cell.empty { background: transparent; box-shadow: none; min-height: 0; }
+        .att-cal-daynum { font-size: 1.4rem; font-weight: 700; line-height: 1; margin-bottom: 2px; }
+        .att-cal-icon { font-size: 1.1rem; margin: 3px 0; }
+        .att-cal-count {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.25);
+            margin-top: 2px;
+        }
+        .att-cal-nodata { font-size: 0.9rem; color: #aaa; margin-top: 4px; }
+        .att-cal-nodata i { color: #bbb; }
+
+        /* Mini calendar for modals */
+        .att-mini-calendar { gap: 4px; padding: 10px; margin-top: 12px; }
+        .att-mini-calendar .att-cal-header { font-size: 0.7rem; padding: 4px 0; }
+        .att-mini-calendar .att-cal-cell { min-height: 52px; padding: 4px; }
+        .att-mini-calendar .att-cal-daynum { font-size: 0.95rem; }
+        .att-mini-calendar .att-cal-icon { font-size: 0.8rem; margin: 1px 0; }
+        .att-mini-calendar .att-cal-count { font-size: 0.65rem; padding: 1px 5px; }
+
+        @media (max-width: 576px) {
+            .att-calendar-grid { gap: 4px; padding: 8px; }
+            .att-cal-cell { min-height: 60px; padding: 4px; }
+            .att-cal-daynum { font-size: 1rem; }
+            .att-cal-count { font-size: 0.65rem; }
+        }
+
         /* ===== Footer ===== */
         .dashboard-footer { text-align: center; padding: 16px; font-size: 0.75rem; color: var(--text-secondary); border-top: 1px solid #eee; margin-top: 20px; }
 
@@ -630,13 +703,13 @@
 <!-- ============================================================ -->
 <!-- Local JS Modules (load order matters)                        -->
 <!-- ============================================================ -->
-<script src="js/firebase-config.js?v=20260226i"></script>
-<script src="js/auth.js?v=20260226i"></script>
-<script src="js/dashboard-data.js?v=20260226i"></script>
-<script src="js/dashboard-i18n.js?v=20260226i"></script>
-<script src="js/dashboard-charts.js?v=20260226i"></script>
-<script src="js/dashboard-filters.js?v=20260226i"></script>
-<script src="js/dashboard-modals.js?v=20260226i"></script>
+<script src="js/firebase-config.js?v=20260226cal"></script>
+<script src="js/auth.js?v=20260226cal"></script>
+<script src="js/dashboard-data.js?v=20260226cal"></script>
+<script src="js/dashboard-i18n.js?v=20260226cal"></script>
+<script src="js/dashboard-charts.js?v=20260226cal"></script>
+<script src="js/dashboard-filters.js?v=20260226cal"></script>
+<script src="js/dashboard-modals.js?v=20260226cal"></script>
 
 <!-- ============================================================ -->
 <!-- Initialization                                               -->

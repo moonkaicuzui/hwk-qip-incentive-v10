@@ -55,7 +55,7 @@ var DashboardCharts = {
             return;
         }
 
-        console.log('[DashboardCharts] Initializing charts and KPIs');
+
 
         this.renderSummaryKPIs(data);
         this.renderTypeTable(data);
@@ -65,8 +65,9 @@ var DashboardCharts = {
         this.renderTeamTab(data);
         this.renderOrgChart(data);
         this.renderValidationKPIs(data);
+        this.renderAttendanceCalendar(data);
 
-        console.log('[DashboardCharts] Initialization complete');
+
     },
 
     // ------------------------------------------------------------------
@@ -138,10 +139,7 @@ var DashboardCharts = {
         this._renderTrend('paymentRateTrend', summary.payment_rate_trend);
         this._renderTrend('totalAmountTrend', summary.total_amount_trend);
 
-        console.log('[DashboardCharts] Summary KPIs rendered:',
-            'recipients=' + receivingCount,
-            'rate=' + this.formatPercent(paymentRate) + '%',
-            'total=' + this.formatVND(totalAmount));
+
     },
 
     // ------------------------------------------------------------------
@@ -163,9 +161,12 @@ var DashboardCharts = {
         var employees = data.employees || [];
 
         if (employees.length === 0) {
-            container.innerHTML = '<p style="color: #757575; text-align: center; padding: 20px;">No data available</p>';
+            container.innerHTML = '<p style="color: #757575; text-align: center; padding: 20px;">' + DashboardI18n.t('common.noData') + '</p>';
             return;
         }
+
+        // i18n helper
+        var t = DashboardI18n.t.bind(DashboardI18n);
 
         // Group employees by TYPE
         var types = { 'TYPE-1': [], 'TYPE-2': [], 'TYPE-3': [] };
@@ -187,13 +188,13 @@ var DashboardCharts = {
         // Build table HTML
         var html = '<div class="table-container"><table>';
         html += '<thead><tr>';
-        html += '<th>TYPE</th>';
-        html += '<th style="text-align:right;">Total</th>';
-        html += '<th style="text-align:right;">Receiving</th>';
-        html += '<th style="text-align:right;">Rate (%)</th>';
-        html += '<th style="text-align:right;">Total Amount (VND)</th>';
-        html += '<th style="text-align:right;">Avg (Receiving)</th>';
-        html += '<th style="text-align:right;">Avg (All)</th>';
+        html += '<th>' + t('typeTable.type') + '</th>';
+        html += '<th style="text-align:right;">' + t('typeTable.total') + '</th>';
+        html += '<th style="text-align:right;">' + t('typeTable.receiving') + '</th>';
+        html += '<th style="text-align:right;">' + t('typeTable.rate') + ' (%)</th>';
+        html += '<th style="text-align:right;">' + t('typeTable.totalAmount') + ' (VND)</th>';
+        html += '<th style="text-align:right;">' + t('typeTable.avgReceiving') + '</th>';
+        html += '<th style="text-align:right;">' + t('typeTable.avgAll') + '</th>';
         html += '</tr></thead><tbody>';
 
         var self = this;
@@ -254,7 +255,7 @@ var DashboardCharts = {
         var grandAvgAll = grandTotal > 0 ? (grandAmount / grandTotal) : 0;
 
         html += '<tr style="font-weight: 700; background: #f0f4ff;">';
-        html += '<td>Total</td>';
+        html += '<td>' + t('typeTable.total') + '</td>';
         html += '<td style="text-align:right;">' + this._formatNumber(grandTotal) + '</td>';
         html += '<td style="text-align:right;">' + this._formatNumber(grandReceiving) + '</td>';
         html += '<td style="text-align:right;">' + this.formatPercent(grandRate) + '%</td>';
@@ -266,10 +267,7 @@ var DashboardCharts = {
         html += '</tbody></table></div>';
         container.innerHTML = html;
 
-        console.log('[DashboardCharts] Type table rendered:',
-            'TYPE-1=' + types['TYPE-1'].length,
-            'TYPE-2=' + types['TYPE-2'].length,
-            'TYPE-3=' + types['TYPE-3'].length);
+
     },
 
     // ------------------------------------------------------------------
@@ -289,22 +287,23 @@ var DashboardCharts = {
         var employees = data.employees || [];
 
         if (employees.length === 0) {
-            container.innerHTML = '<p style="color: #757575; text-align: center; padding: 20px;">No data available</p>';
+            container.innerHTML = '<p style="color: #757575; text-align: center; padding: 20px;">' + DashboardI18n.t('common.noData') + '</p>';
             return;
         }
 
-        // Condition labels
+        // Condition labels (i18n)
+        var t = DashboardI18n.t.bind(DashboardI18n);
         var conditionLabels = [
-            'C1: Attendance Rate',
-            'C2: Unapproved Absence',
-            'C3: Actual Working Days',
-            'C4: Minimum Working Days',
-            'C5: AQL Failure (Monthly)',
-            'C6: AQL 3-Month Consecutive',
-            'C7: Team AQL Consecutive',
-            'C8: Area Reject Rate',
-            'C9: 5PRS Pass Rate',
-            'C10: 5PRS Inspection Qty'
+            t('chart.conditionLabel.1'),
+            t('chart.conditionLabel.2'),
+            t('chart.conditionLabel.3'),
+            t('chart.conditionLabel.4'),
+            t('chart.conditionLabel.5'),
+            t('chart.conditionLabel.6'),
+            t('chart.conditionLabel.7'),
+            t('chart.conditionLabel.8'),
+            t('chart.conditionLabel.9'),
+            t('chart.conditionLabel.10')
         ];
 
         // Count YES / NO / N/A for each condition
@@ -354,21 +353,21 @@ var DashboardCharts = {
                 labels: conditionLabels,
                 datasets: [
                     {
-                        label: 'PASS',
+                        label: t('common.pass'),
                         data: yesCount,
                         backgroundColor: self.colors.green,
                         borderColor: self.colors.green,
                         borderWidth: 1
                     },
                     {
-                        label: 'FAIL',
+                        label: t('common.fail'),
                         data: noCount,
                         backgroundColor: self.colors.red,
                         borderColor: self.colors.red,
                         borderWidth: 1
                     },
                     {
-                        label: 'N/A',
+                        label: t('common.na'),
                         data: naCount,
                         backgroundColor: self.colors.gray,
                         borderColor: self.colors.gray,
@@ -405,7 +404,7 @@ var DashboardCharts = {
                         stacked: true,
                         title: {
                             display: true,
-                            text: 'Employee Count',
+                            text: t('chart.employeeCount'),
                             font: { size: 12 }
                         },
                         ticks: {
@@ -425,7 +424,7 @@ var DashboardCharts = {
             }
         });
 
-        console.log('[DashboardCharts] Condition chart rendered (10 conditions)');
+
     },
 
     // ------------------------------------------------------------------
@@ -445,9 +444,12 @@ var DashboardCharts = {
 
         var employees = data.employees || [];
         if (employees.length === 0) {
-            container.innerHTML = '<p style="color: #757575; text-align: center; padding: 40px;">No data available</p>';
+            container.innerHTML = '<p style="color: #757575; text-align: center; padding: 40px;">' + DashboardI18n.t('common.noData') + '</p>';
             return;
         }
+
+        // i18n helper
+        var t = DashboardI18n.t.bind(DashboardI18n);
 
         // Group employees by position
         var positionMap = {};
@@ -465,16 +467,16 @@ var DashboardCharts = {
         });
 
         var self = this;
-        var html = '<h4 style="margin-bottom: 16px; color: var(--header-dark);">Position Summary (' + positions.length + ' positions)</h4>';
+        var html = '<h4 style="margin-bottom: 16px; color: var(--header-dark);">' + t('position.summary') + ' (' + positions.length + t('position.positions') + ')</h4>';
         html += '<div class="table-container"><table>';
         html += '<thead><tr>';
-        html += '<th>Position</th>';
-        html += '<th style="text-align:center;">TYPE</th>';
-        html += '<th style="text-align:right;">Total</th>';
-        html += '<th style="text-align:right;">Receiving</th>';
-        html += '<th style="text-align:right;">Rate (%)</th>';
-        html += '<th style="text-align:right;">Total Amount (VND)</th>';
-        html += '<th style="text-align:right;">Avg (Receiving)</th>';
+        html += '<th>' + t('table.position') + '</th>';
+        html += '<th style="text-align:center;">' + t('table.type') + '</th>';
+        html += '<th style="text-align:right;">' + t('typeTable.total') + '</th>';
+        html += '<th style="text-align:right;">' + t('typeTable.receiving') + '</th>';
+        html += '<th style="text-align:right;">' + t('typeTable.rate') + ' (%)</th>';
+        html += '<th style="text-align:right;">' + t('position.totalAmount') + '</th>';
+        html += '<th style="text-align:right;">' + t('position.avgReceiving') + '</th>';
         html += '</tr></thead><tbody>';
 
         var grandTotal = 0, grandReceiving = 0, grandAmount = 0;
@@ -535,7 +537,7 @@ var DashboardCharts = {
         var grandAvgReceiving = grandReceiving > 0 ? (grandAmount / grandReceiving) : 0;
 
         html += '<tr style="font-weight: 700; background: #f0f4ff;">';
-        html += '<td>Total (' + positions.length + ' positions)</td>';
+        html += '<td>' + t('typeTable.total') + ' (' + positions.length + t('position.positions') + ')</td>';
         html += '<td></td>';
         html += '<td style="text-align:right;">' + self._formatNumber(grandTotal) + '</td>';
         html += '<td style="text-align:right;">' + self._formatNumber(grandReceiving) + '</td>';
@@ -547,7 +549,7 @@ var DashboardCharts = {
         html += '</tbody></table></div>';
         container.innerHTML = html;
 
-        console.log('[DashboardCharts] Position tables rendered: ' + positions.length + ' positions');
+
     },
 
     // ------------------------------------------------------------------
@@ -578,17 +580,20 @@ var DashboardCharts = {
         var th5prsMinQty = parseFloat(thresholds['5prs_min_qty']) || 100;
         var thConsecutiveAql = parseFloat(thresholds.consecutive_aql_months) || 3;
 
+        var t = DashboardI18n.t.bind(DashboardI18n);
+        var dayLabel = t('common.days');
+
         var conditions = [
-            { num: 1, category: 'Attendance', name: 'Attendance Rate', threshold: '>= ' + thAttendanceRate + '%', desc: 'Monthly attendance rate must meet minimum' },
-            { num: 2, category: 'Attendance', name: 'Unapproved Absence', threshold: '<= ' + thUnapprovedAbsence + ' days', desc: 'Maximum unexcused absences allowed' },
-            { num: 3, category: 'Attendance', name: 'Actual Working Days', threshold: '> 0', desc: 'Employee must have worked at least 1 day' },
-            { num: 4, category: 'Attendance', name: 'Minimum Working Days', threshold: '>= ' + thMinimumWorkingDays + ' days', desc: 'Minimum working days required for eligibility' },
-            { num: 5, category: 'AQL', name: 'AQL Failure (Monthly)', threshold: '= 0', desc: 'No personal AQL failures this month' },
-            { num: 6, category: 'AQL', name: 'AQL Consecutive Failure', threshold: 'No ' + thConsecutiveAql + '-month streak', desc: 'No consecutive month AQL failures' },
-            { num: 7, category: 'AQL', name: 'Team AQL Consecutive', threshold: 'No ' + thConsecutiveAql + '-month streak', desc: 'Team/area has no consecutive failures' },
-            { num: 8, category: 'AQL', name: 'Area Reject Rate', threshold: '< ' + thAreaRejectRate + '%', desc: 'Building area reject rate below threshold' },
-            { num: 9, category: '5PRS', name: '5PRS Pass Rate', threshold: '>= ' + th5prsPassRate + '%', desc: 'Inspection pass rate meets minimum' },
-            { num: 10, category: '5PRS', name: '5PRS Inspection Qty', threshold: '>= ' + th5prsMinQty + ' pairs', desc: 'Minimum inspection quantity required' }
+            { num: 1, category: t('criteria.cond.cat.attendance'), name: t('criteria.cond.name.1'), threshold: '>= ' + thAttendanceRate + '%', desc: t('criteria.cond.desc.1') },
+            { num: 2, category: t('criteria.cond.cat.attendance'), name: t('criteria.cond.name.2'), threshold: '<= ' + thUnapprovedAbsence + dayLabel, desc: t('criteria.cond.desc.2') },
+            { num: 3, category: t('criteria.cond.cat.attendance'), name: t('criteria.cond.name.3'), threshold: '> 0', desc: t('criteria.cond.desc.3') },
+            { num: 4, category: t('criteria.cond.cat.attendance'), name: t('criteria.cond.name.4'), threshold: '>= ' + thMinimumWorkingDays + dayLabel, desc: t('criteria.cond.desc.4') },
+            { num: 5, category: t('criteria.cond.cat.aql'), name: t('criteria.cond.name.5'), threshold: '= 0', desc: t('criteria.cond.desc.5') },
+            { num: 6, category: t('criteria.cond.cat.aql'), name: t('criteria.cond.name.6'), threshold: thConsecutiveAql + t('criteria.streakNo'), desc: t('criteria.cond.desc.6') },
+            { num: 7, category: t('criteria.cond.cat.aql'), name: t('criteria.cond.name.7'), threshold: thConsecutiveAql + t('criteria.streakNo'), desc: t('criteria.cond.desc.7') },
+            { num: 8, category: t('criteria.cond.cat.aql'), name: t('criteria.cond.name.8'), threshold: '< ' + thAreaRejectRate + '%', desc: t('criteria.cond.desc.8') },
+            { num: 9, category: t('criteria.cond.cat.5prs'), name: t('criteria.cond.name.9'), threshold: '>= ' + th5prsPassRate + '%', desc: t('criteria.cond.desc.9') },
+            { num: 10, category: t('criteria.cond.cat.5prs'), name: t('criteria.cond.name.10'), threshold: '>= ' + th5prsMinQty + ' ' + t('criteria.unitPairs'), desc: t('criteria.cond.desc.10') }
         ];
 
         var self = this;
@@ -598,12 +603,12 @@ var DashboardCharts = {
         html += '<div class="table-container"><table>';
         html += '<thead><tr style="background: #1a237e; color: #fff;">';
         html += '<th style="width:40px;">#</th>';
-        html += '<th style="width:90px;">Category</th>';
-        html += '<th>Condition</th>';
-        html += '<th style="width:180px;">Threshold</th>';
-        html += '<th>Description</th>';
-        html += '<th style="width:70px; text-align:center;">Pass</th>';
-        html += '<th style="width:70px; text-align:center;">Fail</th>';
+        html += '<th style="width:90px;">' + t('criteria.category') + '</th>';
+        html += '<th>' + t('criteria.condition') + '</th>';
+        html += '<th style="width:180px;">' + t('criteria.threshold') + '</th>';
+        html += '<th>' + t('criteria.description') + '</th>';
+        html += '<th style="width:70px; text-align:center;">' + t('criteria.pass') + '</th>';
+        html += '<th style="width:70px; text-align:center;">' + t('criteria.fail') + '</th>';
         html += '</tr></thead><tbody>';
 
         conditions.forEach(function (c) {
@@ -633,7 +638,7 @@ var DashboardCharts = {
 
         // --- Section 2: Progressive Incentive Table ---
         html += '<div class="section-card" style="margin-top: 24px;">';
-        html += '<h4 style="color: var(--header-dark); margin-bottom: 12px;">TYPE-1 Progressive Incentive Table (VND)</h4>';
+        html += '<h4 style="color: var(--header-dark); margin-bottom: 12px;">' + t('criteria.progressiveTitle') + '</h4>';
         html += '<div class="table-container"><table>';
         html += '<thead><tr style="background: #283593; color: #fff;">';
         var months = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
@@ -646,30 +651,30 @@ var DashboardCharts = {
             html += '<td style="text-align:center; padding:6px; font-weight:600;">' + self._formatNumber(a * 1000) + '</td>';
         });
         html += '</tr></tbody></table></div>';
-        html += '<p style="color: #757575; font-size: 0.82rem; margin-top: 8px;">* Months = consecutive months of 100% condition fulfillment. Resets to 0 on any failure.</p>';
+        html += '<p style="color: #757575; font-size: 0.82rem; margin-top: 8px;">' + t('criteria.progressiveNote') + '</p>';
         html += '</div>';
 
         // --- Section 3: TYPE Application Matrix ---
         html += '<div class="section-card" style="margin-top: 24px;">';
-        html += '<h4 style="color: var(--header-dark); margin-bottom: 12px;">TYPE-based Condition Application</h4>';
+        html += '<h4 style="color: var(--header-dark); margin-bottom: 12px;">' + t('criteria.typeAppTitle') + '</h4>';
         html += '<div class="table-container"><table>';
         html += '<thead><tr>';
-        html += '<th>TYPE</th><th>Applied Conditions</th><th>Incentive Method</th>';
+        html += '<th>' + t('typeTable.type') + '</th><th>' + t('criteria.appliedConditions') + '</th><th>' + t('criteria.incentiveMethod') + '</th>';
         html += '</tr></thead><tbody>';
         html += '<tr><td><span class="badge-type badge-type1">TYPE-1</span></td>';
-        html += '<td>C1~C10 (All 10 conditions)</td>';
-        html += '<td>Progressive table (1~15 months)</td></tr>';
+        html += '<td>' + t('criteria.type1Conditions') + '</td>';
+        html += '<td>' + t('criteria.type1Method') + '</td></tr>';
         html += '<tr><td><span class="badge-type badge-type2">TYPE-2</span></td>';
-        html += '<td>C1~C4 (Attendance only)</td>';
-        html += '<td>Based on TYPE-1 position average</td></tr>';
+        html += '<td>' + t('criteria.type2Conds') + '</td>';
+        html += '<td>' + t('criteria.type2Method') + '</td></tr>';
         html += '<tr><td><span class="badge-type badge-type3">TYPE-3</span></td>';
-        html += '<td>None (Policy excluded)</td>';
-        html += '<td>0 VND (Not eligible)</td></tr>';
+        html += '<td>' + t('criteria.type3Conditions') + '</td>';
+        html += '<td>' + t('criteria.type3Method') + '</td></tr>';
         html += '</tbody></table></div>';
         html += '</div>';
 
         container.innerHTML = html;
-        console.log('[DashboardCharts] Criteria tab rendered with ' + conditions.length + ' conditions');
+
 
         // --- TYPE-2 Calculation Methods (#typeCalculationMethods) ---
         this._renderTypeCalculationMethods(data);
@@ -815,7 +820,7 @@ var DashboardCharts = {
         html += '</div>';
 
         container.innerHTML = html;
-        console.log('[DashboardCharts] TYPE-2 calculation methods rendered (' + type2Positions.length + ' positions)');
+
     },
 
     // ------------------------------------------------------------------
@@ -863,7 +868,7 @@ var DashboardCharts = {
         });
 
         container.innerHTML = html;
-        console.log('[DashboardCharts] FAQ section rendered with ' + faqs.length + ' items');
+
     },
 
     /**
@@ -900,11 +905,12 @@ var DashboardCharts = {
 
         var employees = data.employees || [];
         if (employees.length === 0) {
-            if (tableContainer) tableContainer.innerHTML = '<p style="color: #757575; text-align: center; padding: 40px;">No data available</p>';
+            if (tableContainer) tableContainer.innerHTML = '<p style="color: #757575; text-align: center; padding: 40px;">' + DashboardI18n.t('common.noData') + '</p>';
             return;
         }
 
         var self = this;
+        var t = DashboardI18n.t.bind(DashboardI18n);
 
         // Group by building
         var buildingMap = {};
@@ -946,14 +952,14 @@ var DashboardCharts = {
                 var color = getBldColor(bld);
 
                 cardsHtml += '<div style="background:#fff; border-radius:10px; padding:16px; min-width:160px; flex:1; box-shadow:0 2px 8px rgba(0,0,0,0.08); border-top:4px solid ' + color + ';">';
-                cardsHtml += '<div style="font-size:0.8rem; color:#757575; margin-bottom:4px;">Building</div>';
+                cardsHtml += '<div style="font-size:0.8rem; color:#757575; margin-bottom:4px;">' + t('team.building') + '</div>';
                 cardsHtml += '<div style="font-size:1.3rem; font-weight:700; color:' + color + ';">' + self._escapeHtml(bld) + '</div>';
                 cardsHtml += '<div style="margin-top:8px; font-size:0.82rem;">';
-                cardsHtml += '<span style="color:#424242;">Total: <b>' + emps.length + '</b></span>';
-                cardsHtml += ' | <span style="color:' + self.colors.green + ';">Receiving: <b>' + receiving + '</b></span>';
+                cardsHtml += '<span style="color:#424242;">' + t('team.total') + ' <b>' + emps.length + '</b></span>';
+                cardsHtml += ' | <span style="color:' + self.colors.green + ';">' + t('team.receiving') + ' <b>' + receiving + '</b></span>';
                 cardsHtml += '</div>';
-                cardsHtml += '<div style="font-size:0.82rem; margin-top:4px;">Rate: <b style="color:' + (rate >= 70 ? self.colors.green : self.colors.red) + ';">' + self.formatPercent(rate) + '%</b></div>';
-                cardsHtml += '<div style="font-size:0.82rem; margin-top:2px;">Amount: <b>' + self.formatVND(amount) + '</b> VND</div>';
+                cardsHtml += '<div style="font-size:0.82rem; margin-top:4px;">' + t('team.rate') + ' <b style="color:' + (rate >= 70 ? self.colors.green : self.colors.red) + ';">' + self.formatPercent(rate) + '%</b></div>';
+                cardsHtml += '<div style="font-size:0.82rem; margin-top:2px;">' + t('team.amount') + ' <b>' + self.formatVND(amount) + '</b> VND</div>';
                 cardsHtml += '</div>';
             });
             cardsContainer.innerHTML = cardsHtml;
@@ -963,11 +969,11 @@ var DashboardCharts = {
         if (tableContainer) {
             var html = '<div class="table-container"><table>';
             html += '<thead><tr>';
-            html += '<th>Building</th>';
-            html += '<th style="text-align:right;">Total</th>';
-            html += '<th style="text-align:right;">Receiving</th>';
-            html += '<th style="text-align:right;">Rate (%)</th>';
-            html += '<th style="text-align:right;">Total Amount (VND)</th>';
+            html += '<th>' + t('team.building') + '</th>';
+            html += '<th style="text-align:right;">' + t('typeTable.total') + '</th>';
+            html += '<th style="text-align:right;">' + t('typeTable.receiving') + '</th>';
+            html += '<th style="text-align:right;">' + t('typeTable.rate') + '</th>';
+            html += '<th style="text-align:right;">' + t('team.totalAmount') + '</th>';
             html += '<th style="text-align:right;">TYPE-1</th>';
             html += '<th style="text-align:right;">TYPE-2</th>';
             html += '<th style="text-align:right;">TYPE-3</th>';
@@ -1014,7 +1020,7 @@ var DashboardCharts = {
             // Total row
             var grandRate = gt > 0 ? ((gr / gt) * 100) : 0;
             html += '<tr style="font-weight: 700; background: #f0f4ff;">';
-            html += '<td>Total (' + buildings.length + ' buildings)</td>';
+            html += '<td>' + t('typeTable.total') + ' (' + buildings.length + ' ' + t('team.buildings') + ')</td>';
             html += '<td style="text-align:right;">' + self._formatNumber(gt) + '</td>';
             html += '<td style="text-align:right;">' + self._formatNumber(gr) + '</td>';
             html += '<td style="text-align:right;">' + self.formatPercent(grandRate) + '%</td>';
@@ -1028,7 +1034,7 @@ var DashboardCharts = {
             tableContainer.innerHTML = html;
         }
 
-        console.log('[DashboardCharts] Team tab rendered: ' + buildings.length + ' buildings');
+
     },
 
     // ------------------------------------------------------------------
@@ -1083,7 +1089,7 @@ var DashboardCharts = {
         Object.keys(buildings).sort().forEach(function (b) {
             var opt = document.createElement('option');
             opt.value = b;
-            opt.textContent = 'Building ' + b + ' (' + buildings[b] + ')';
+            opt.textContent = b + ' (' + buildings[b] + ')';
             sel.appendChild(opt);
         });
     },
@@ -1110,9 +1116,10 @@ var DashboardCharts = {
             }
         });
 
-        var html = '<div class="org-building-card"><div class="bcard-label">Total Managers</div><div class="bcard-count">' + stats.managers + '</div></div>';
+        var t = DashboardI18n.t.bind(DashboardI18n);
+        var html = '<div class="org-building-card"><div class="bcard-label">' + t('orgchart.totalManagers') + '</div><div class="bcard-count">' + stats.managers + '</div></div>';
         Object.keys(bldg).sort().forEach(function (b) {
-            html += '<div class="org-building-card"><div class="bcard-label">Bldg ' + b + '</div><div class="bcard-count">' + bldg[b] + '</div></div>';
+            html += '<div class="org-building-card"><div class="bcard-label">' + t('orgchart.bldg') + ' ' + b + '</div><div class="bcard-count">' + bldg[b] + '</div></div>';
         });
         container.innerHTML = html;
     },
@@ -1136,7 +1143,7 @@ var DashboardCharts = {
         if (!treeEl) return;
         if (!this._orgData) return;
 
-        treeEl.innerHTML = '<div class="org-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+        treeEl.innerHTML = '<div class="org-loading"><i class="fas fa-spinner fa-spin"></i> ' + DashboardI18n.t('common.loading') + '</div>';
 
         var employees = this._orgData.employees || [];
         var selectedBuilding = (document.getElementById('orgBuildingFilter') || {}).value || '';
@@ -1145,7 +1152,7 @@ var DashboardCharts = {
         // Build hierarchy
         var roots = this._buildOrgHierarchy(employees, selectedBuilding, incentiveFilter);
         if (!roots || roots.length === 0) {
-            treeEl.innerHTML = '<div class="org-loading">No manager data available.</div>';
+            treeEl.innerHTML = '<div class="org-loading">' + DashboardI18n.t('orgchart.noManagerData') + '</div>';
             return;
         }
 
@@ -1159,7 +1166,7 @@ var DashboardCharts = {
             this._orgEventsAttached = true;
         }
 
-        console.log('[DashboardCharts] Org chart rendered: ' + roots.length + ' root nodes');
+
     },
 
     /**
@@ -1328,7 +1335,7 @@ var DashboardCharts = {
                     bldgStyle = 'border: 3px solid #0d6efd; background-color: #e7f3ff;';
                 } else {
                     bldgStyle = 'border: 2px dashed #999; opacity: 0.65; background-color: #f8f9fa;';
-                    bldgTitle = nodeB ? ('Boss chain (Building ' + nodeB + ')') : 'Boss chain';
+                    bldgTitle = nodeB ? (DashboardI18n.t('orgchart.bossChain') + ' (' + nodeB + ')') : DashboardI18n.t('orgchart.bossChain');
                 }
             }
 
@@ -1341,7 +1348,7 @@ var DashboardCharts = {
             // Node content
             html += '<div class="node-position">' + self._escapeHtml(node.position) + '</div>';
             html += '<div class="node-name">' + node.name + '</div>';
-            html += '<div class="node-id">ID: ' + node.id + '</div>';
+            html += '<div class="node-id">' + DashboardI18n.t('orgchart.id') + ': ' + node.id + '</div>';
 
             // Incentive info row
             var fmtInc = Number(node.incentive).toLocaleString('ko-KR');
@@ -1354,7 +1361,7 @@ var DashboardCharts = {
             // Subordinate count
             if (node.subordinateCount > 0) {
                 html += '<div class="subordinate-info">';
-                html += node.subordinateReceiving + '/' + node.subordinateCount + ' receiving';
+                html += node.subordinateReceiving + '/' + node.subordinateCount + ' ' + DashboardI18n.t('orgchart.receiving');
                 html += '</div>';
             }
 
@@ -1475,7 +1482,7 @@ var DashboardCharts = {
      * Find and highlight a node by employee number (prompt user).
      */
     findMe: function () {
-        var empId = prompt('Employee No:');
+        var empId = prompt(DashboardI18n.t('orgchart.promptEmpNo'));
         if (!empId) return;
         empId = empId.trim();
 
@@ -1498,7 +1505,7 @@ var DashboardCharts = {
         });
 
         if (!found) {
-            alert('Employee ' + empId + ' not found in org chart.');
+            alert(DashboardI18n.t('orgchart.notFound').replace('{id}', empId));
         }
     },
 
@@ -1751,13 +1758,131 @@ var DashboardCharts = {
         });
         this._setKpiCount('kpiLineLeaderNotAssigned', lineLeaderNotAssignedCount);
 
-        console.log('[DashboardCharts] Validation KPIs rendered:',
-            'absent=' + absentCount,
-            'zeroDay=' + zeroWorkingDaysCount,
-            'lowAttendance=' + lowAttendanceCount,
-            'aqlFail=' + aqlFailCount,
-            'consecutiveAql=' + consecutiveAqlCount,
-            'lineLeaderNA=' + lineLeaderNotAssignedCount);
+
+    },
+
+    // ------------------------------------------------------------------
+    // Attendance Calendar (V9-style 7-column grid)
+    // ------------------------------------------------------------------
+
+    /**
+     * Render a monthly attendance calendar grid inside #attendanceCalendarSection.
+     *
+     * Data source: summary.calendar_data (from Firestore dashboard_summary)
+     *   - working_day_dates: [2, 3, 4, ...]
+     *   - daily_counts: { "2": 415, "3": 413, ... }
+     *   - days_in_month: 28
+     *   - total_working_days: 15
+     *   - weekday_indices: [0, 1, 2, ...] (0=Mon, 6=Sun)
+     *
+     * @param {Object} data - { employees, summary, thresholds }
+     */
+    renderAttendanceCalendar: function (data) {
+        var container = document.getElementById('attendanceCalendarSection');
+        if (!container) return;
+
+        var summary = data.summary || {};
+        var cal = summary.calendar_data;
+
+        // Translation helper
+        var t = (typeof DashboardI18n !== 'undefined' && DashboardI18n.t)
+            ? DashboardI18n.t.bind(DashboardI18n)
+            : function (key, fb) { return fb || key; };
+
+        // Graceful fallback when no calendar data
+        if (!cal || !cal.working_day_dates || cal.working_day_dates.length === 0) {
+            container.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">' +
+                t('common.noData', 'No data') + '</p>';
+            return;
+        }
+
+        var workingDates = cal.working_day_dates;
+        var dailyCounts = cal.daily_counts || {};
+        var daysInMonth = cal.days_in_month || 31;
+        var totalWorkingDays = cal.total_working_days || workingDates.length;
+        var weekdayIndices = cal.weekday_indices || [];
+        var noDataDays = daysInMonth - totalWorkingDays;
+
+        // Weekday names from i18n
+        var weekdayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+        var weekdayNames = weekdayKeys.map(function (key) {
+            return t('calendar.weekdays.' + key, key);
+        });
+
+        var empLabel = t('calendar.employeeCount', ' emp');
+        var dayLabel = t('calendar.day', 'day');
+        var noDataText = t('calendar.noDataDays', 'No Data');
+
+        // --- Summary Cards ---
+        var html = '<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">';
+        // Card 1: Working Days
+        html += '<div style="flex:1;min-width:140px;text-align:center;padding:16px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:10px;">';
+        html += '<div style="font-size:2rem;">💼</div>';
+        html += '<div style="font-size:0.85rem;color:#1565c0;margin:4px 0;">' + t('calendar.totalWorkingDays', 'Working Days') + '</div>';
+        html += '<div style="font-size:1.8rem;font-weight:700;color:#0d47a1;">' + totalWorkingDays + '<span style="font-size:0.9rem;font-weight:400;">' + dayLabel + '</span></div>';
+        html += '</div>';
+        // Card 2: Total Days
+        html += '<div style="flex:1;min-width:140px;text-align:center;padding:16px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:10px;">';
+        html += '<div style="font-size:2rem;">📅</div>';
+        html += '<div style="font-size:0.85rem;color:#2e7d32;margin:4px 0;">' + t('calendar.totalDays', 'Total Days') + '</div>';
+        html += '<div style="font-size:1.8rem;font-weight:700;color:#1b5e20;">' + daysInMonth + '<span style="font-size:0.9rem;font-weight:400;">' + dayLabel + '</span></div>';
+        html += '</div>';
+        // Card 3: No Data Days
+        html += '<div style="flex:1;min-width:140px;text-align:center;padding:16px;background:linear-gradient(135deg,#fafafa,#eeeeee);border-radius:10px;">';
+        html += '<div style="font-size:2rem;">❌</div>';
+        html += '<div style="font-size:0.85rem;color:#757575;margin:4px 0;">' + noDataText + '</div>';
+        html += '<div style="font-size:1.8rem;font-weight:700;color:#616161;">' + noDataDays + '<span style="font-size:0.9rem;font-weight:400;">' + dayLabel + '</span></div>';
+        html += '</div>';
+        html += '</div>';
+
+        // --- Weekday Header ---
+        html += '<div class="att-calendar-grid">';
+        for (var w = 0; w < 7; w++) {
+            var isWeekend = (w >= 5);
+            html += '<div class="att-cal-header' + (isWeekend ? ' weekend' : '') + '">' + weekdayNames[w] + '</div>';
+        }
+
+        // --- Leading empty cells (align first day to correct weekday) ---
+        var firstDayWeekday = weekdayIndices.length > 0 ? weekdayIndices[0] : 0; // 0=Mon
+        for (var e = 0; e < firstDayWeekday; e++) {
+            html += '<div class="att-cal-cell empty"></div>';
+        }
+
+        // --- Day cells ---
+        for (var day = 1; day <= daysInMonth; day++) {
+            var isWorkDay = workingDates.indexOf(day) !== -1;
+            var count = dailyCounts[String(day)] || 0;
+            var cellClass = isWorkDay ? 'att-cal-cell work-day' : 'att-cal-cell no-data';
+
+            // Weekend detection from weekday_indices
+            var wdi = (day <= weekdayIndices.length) ? weekdayIndices[day - 1] : -1;
+            if (wdi >= 5) cellClass += ' weekend-day';
+
+            html += '<div class="' + cellClass + '">';
+            html += '<div class="att-cal-daynum">' + day + '</div>';
+
+            if (isWorkDay) {
+                html += '<div class="att-cal-icon">💼</div>';
+                if (count > 0) {
+                    html += '<div class="att-cal-count">' + count + empLabel + '</div>';
+                }
+            } else {
+                html += '<div class="att-cal-nodata"><i class="fas fa-times-circle"></i></div>';
+            }
+
+            html += '</div>';
+        }
+
+        html += '</div>';
+
+        // --- Legend ---
+        html += '<div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;">';
+        html += '<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:0.85rem;font-weight:600;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;">💼 ' + t('calendar.legendWorkDay', 'Work Day') + '</span>';
+        html += '<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:0.85rem;font-weight:600;background:#f5f5f5;color:#757575;border:2px dashed #ccc;">❌ ' + t('calendar.legendNoData', 'Holiday/No Data') + '</span>';
+        html += '</div>';
+
+        container.innerHTML = html;
+
     },
 
     // ------------------------------------------------------------------

@@ -27,6 +27,42 @@
 
 var CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
+// Debug flag — set to true in browser console for development: window.QIP_DEBUG = true
+var QIP_DEBUG = (typeof window !== 'undefined' && window.QIP_DEBUG) || false;
+
+// ---------------------------------------------------------------------------
+// Centralized Defaults (Single Source of Truth for fallback values)
+// ---------------------------------------------------------------------------
+
+var THRESHOLD_DEFAULTS = {
+    attendance_rate: 88,
+    unapproved_absence: 2,
+    minimum_working_days: 12,
+    area_reject_rate: 3.0,
+    '5prs_pass_rate': 95,
+    '5prs_min_qty': 100,
+    consecutive_aql_months: 3
+};
+
+var PROGRESSIVE_TABLE_DEFAULT = [
+    0,        // index 0 (unused)
+    150000,   // month 1
+    200000,   // month 2
+    250000,   // month 3
+    300000,   // month 4
+    400000,   // month 5
+    450000,   // month 6
+    500000,   // month 7
+    650000,   // month 8
+    700000,   // month 9
+    750000,   // month 10
+    850000,   // month 11
+    1000000,  // month 12
+    1000000,  // month 13
+    1000000,  // month 14
+    1000000   // month 15
+];
+
 // ---------------------------------------------------------------------------
 // DashboardData Namespace
 // ---------------------------------------------------------------------------
@@ -61,7 +97,6 @@ var DashboardData = {
             var age = Date.now() - (wrapper._ts || 0);
             if (age > CACHE_TTL_MS) {
                 sessionStorage.removeItem(key);
-                console.log('[DashboardData] Cache expired for', key);
                 return null;
             }
             return wrapper.data;
@@ -152,14 +187,12 @@ var DashboardData = {
         // 1. Check cache
         var cached = self._getCache(key);
         if (cached) {
-            console.log('[DashboardData] Employees loaded from cache (' + cached.length + ' records)');
             window.employeeData = cached;
             return Promise.resolve(cached);
         }
 
         // 2. Fetch from Firestore
         var docPath = 'employees/' + month + '_' + year + '/all_data/data';
-        console.log('[DashboardData] Loading employees from Firestore:', docPath);
 
         return db.collection('employees')
             .doc(month + '_' + year)
@@ -175,8 +208,6 @@ var DashboardData = {
 
                 var docData = doc.data();
                 var employees = docData.employees || [];
-
-                console.log('[DashboardData] Employees loaded from Firestore:', employees.length, 'records');
 
                 // Store globally and cache
                 window.employeeData = employees;
@@ -208,14 +239,12 @@ var DashboardData = {
         // 1. Check cache
         var cached = self._getCache(key);
         if (cached) {
-            console.log('[DashboardData] Summary loaded from cache');
             window.dashboardSummary = cached;
             return Promise.resolve(cached);
         }
 
         // 2. Fetch from Firestore
         var docId = month + '_' + year;
-        console.log('[DashboardData] Loading summary from Firestore: dashboard_summary/' + docId);
 
         return db.collection('dashboard_summary')
             .doc(docId)
@@ -228,7 +257,6 @@ var DashboardData = {
                 }
 
                 var summary = doc.data();
-                console.log('[DashboardData] Summary loaded from Firestore');
 
                 window.dashboardSummary = summary;
                 self._setCache(key, summary);
@@ -257,28 +285,19 @@ var DashboardData = {
         var self = this;
         var key = self._cacheKey(month, year, 'thresholds');
 
-        // Default thresholds (V9 baseline)
-        var defaults = {
-            attendance_rate: 88,
-            unapproved_absence: 2,
-            minimum_working_days: 12,
-            area_reject_rate: 3.0,
-            '5prs_pass_rate': 95,
-            '5prs_min_qty': 100,
-            consecutive_aql_months: 3
-        };
+        // Use centralized defaults (defined at top of file)
+        var defaults = THRESHOLD_DEFAULTS;
 
         // 1. Check cache
         var cached = self._getCache(key);
         if (cached) {
-            console.log('[DashboardData] Thresholds loaded from cache');
             window.thresholds = cached;
+            window.progressiveTable = cached.progressive_table || PROGRESSIVE_TABLE_DEFAULT;
             return Promise.resolve(cached);
         }
 
         // 2. Fetch from Firestore
         var docId = month + '_' + year;
-        console.log('[DashboardData] Loading thresholds from Firestore: thresholds/' + docId);
 
         return db.collection('thresholds')
             .doc(docId)
@@ -286,8 +305,10 @@ var DashboardData = {
             .then(function (doc) {
                 var thresholds;
                 if (!doc.exists) {
-                    console.warn('[DashboardData] No thresholds document found for', docId, '- using defaults');
-                    thresholds = defaults;
+                    thresholds = {};
+                    Object.keys(defaults).forEach(function (k) {
+                        thresholds[k] = defaults[k];
+                    });
                 } else {
                     // Merge with defaults so missing keys still have values
                     var stored = doc.data();
@@ -297,25 +318,24 @@ var DashboardData = {
                             ? stored[k]
                             : defaults[k];
                     });
-                    // Preserve any extra keys from Firestore
+                    // Preserve any extra keys from Firestore (including progressive_table)
                     Object.keys(stored).forEach(function (k) {
                         if (thresholds[k] === undefined) {
                             thresholds[k] = stored[k];
                         }
                     });
-                    console.log('[DashboardData] Thresholds loaded from Firestore');
                 }
 
                 window.thresholds = thresholds;
+                window.progressiveTable = thresholds.progressive_table || PROGRESSIVE_TABLE_DEFAULT;
                 self._setCache(key, thresholds);
 
                 return thresholds;
             })
             .catch(function (error) {
-                console.error('[DashboardData] Failed to load thresholds:', error);
-                console.warn('[DashboardData] Using default thresholds');
-                window.thresholds = defaults;
-                return defaults;
+                window.thresholds = Object.assign({}, defaults);
+                window.progressiveTable = PROGRESSIVE_TABLE_DEFAULT;
+                return window.thresholds;
             });
     },
 
@@ -334,9 +354,6 @@ var DashboardData = {
 
         self._hideError();
         self._showLoading();
-        console.log('[DashboardData] === Loading all data for', month, year, '===');
-
-        var startTime = Date.now();
 
         return Promise.all([
             self.loadEmployees(month, year),
@@ -371,19 +388,12 @@ var DashboardData = {
                         }
                     });
 
-                    console.log('[DashboardData] Phase 1 normalization complete:', employees.length, 'employees');
                 }
 
                 // ----------------------------------------------------------
                 // Setup employeeHelpers (V9 Issue #37 compatibility)
                 // ----------------------------------------------------------
                 _setupEmployeeHelpers();
-
-                var elapsed = Date.now() - startTime;
-                console.log('[DashboardData] === All data loaded in', elapsed, 'ms ===');
-                console.log('[DashboardData]   Employees:', employees.length);
-                console.log('[DashboardData]   Summary keys:', Object.keys(summary).length);
-                console.log('[DashboardData]   Thresholds:', JSON.stringify(thresholds));
 
                 self._hideLoading();
 
@@ -423,7 +433,6 @@ var DashboardData = {
             sessionStorage.removeItem(key);
         });
         this._cache = {};
-        console.log('[DashboardData] Cache cleared (' + keysToRemove.length + ' entries removed)');
     },
 
     /**
@@ -436,8 +445,6 @@ var DashboardData = {
      *          Sorted by year desc, then month desc.
      */
     getAvailableMonths: function () {
-        console.log('[DashboardData] Fetching available months from Firestore');
-
         var monthOrder = {
             january: 1, february: 2, march: 3, april: 4,
             may: 5, june: 6, july: 7, august: 8,
@@ -475,7 +482,6 @@ var DashboardData = {
                 // Remove internal sort key
                 months.forEach(function (m) { delete m.monthNum; });
 
-                console.log('[DashboardData] Available months:', months.length, months.map(function (m) { return m.month_year; }));
                 return months;
             })
             .catch(function (error) {
@@ -601,5 +607,4 @@ function _setupEmployeeHelpers() {
         }
     };
 
-    console.log('[DashboardData] employeeHelpers initialized');
 }

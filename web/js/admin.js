@@ -16,14 +16,14 @@ var AdminPage = {
     currentMonth: null,
     currentYear: null,
 
-    // Threshold field definitions
+    // Threshold field definitions (defaultVal from centralized THRESHOLD_DEFAULTS in dashboard-data.js)
     THRESHOLD_FIELDS: [
-        { id: 'th-attendance-rate',       key: 'attendance_rate',       label: 'Attendance Rate (%)',       defaultVal: 88 },
-        { id: 'th-unapproved-absence',    key: 'unapproved_absence',   label: 'Unapproved Absence (days)', defaultVal: 2 },
-        { id: 'th-minimum-working-days',  key: 'minimum_working_days', label: 'Minimum Working Days',      defaultVal: 12 },
-        { id: 'th-area-reject-rate',      key: 'area_reject_rate',     label: 'Area Reject Rate (%)',      defaultVal: 3.0 },
-        { id: 'th-5prs-pass-rate',        key: '5prs_pass_rate',       label: '5PRS Pass Rate (%)',        defaultVal: 95 },
-        { id: 'th-5prs-min-qty',          key: '5prs_min_qty',         label: '5PRS Inspection Qty',       defaultVal: 100 }
+        { id: 'th-attendance-rate',       key: 'attendance_rate',       label: 'Attendance Rate (%)',       defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.attendance_rate : 88) },
+        { id: 'th-unapproved-absence',    key: 'unapproved_absence',   label: 'Unapproved Absence (days)', defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.unapproved_absence : 2) },
+        { id: 'th-minimum-working-days',  key: 'minimum_working_days', label: 'Minimum Working Days',      defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.minimum_working_days : 12) },
+        { id: 'th-area-reject-rate',      key: 'area_reject_rate',     label: 'Area Reject Rate (%)',      defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.area_reject_rate : 3.0) },
+        { id: 'th-5prs-pass-rate',        key: '5prs_pass_rate',       label: '5PRS Pass Rate (%)',        defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS['5prs_pass_rate'] : 95) },
+        { id: 'th-5prs-min-qty',          key: '5prs_min_qty',         label: '5PRS Inspection Qty',       defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS['5prs_min_qty'] : 100) }
     ],
 
     /**

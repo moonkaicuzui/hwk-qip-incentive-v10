@@ -37,25 +37,11 @@ var DashboardModals = {
     summary: {},
     thresholds: {},
 
-    // TYPE-1 progressive incentive table (months 1-15, VND)
-    PROGRESSIVE_TABLE: [
-        0,        // index 0 (unused)
-        150000,   // month 1
-        200000,   // month 2
-        250000,   // month 3
-        300000,   // month 4
-        400000,   // month 5
-        450000,   // month 6
-        500000,   // month 7
-        650000,   // month 8
-        700000,   // month 9
-        750000,   // month 10
-        850000,   // month 11
-        1000000,  // month 12
-        1000000,  // month 13
-        1000000,  // month 14
-        1000000   // month 15
-    ],
+    // TYPE-1 progressive incentive table - loaded from Firestore via window.progressiveTable
+    // Fallback: PROGRESSIVE_TABLE_DEFAULT (defined in dashboard-data.js)
+    _getProgressiveTable: function () {
+        return window.progressiveTable || PROGRESSIVE_TABLE_DEFAULT;
+    },
 
     // ------------------------------------------------------------------
     // Public API
@@ -77,7 +63,7 @@ var DashboardModals = {
         this.summary = data.summary || {};
         this.thresholds = data.thresholds || window.thresholds || {};
 
-        console.log('[DashboardModals] Initialized (' + this.employees.length + ' employees)');
+
     },
 
     // ====================================================================
@@ -294,7 +280,7 @@ var DashboardModals = {
 
         } catch (e) {
             console.error('[DashboardModals][Issue #62] Error populating validation modal:', e);
-            bodyDiv.innerHTML = '<p style="color: #c62828; padding: 20px;">Error loading data. Please close and try again.</p>';
+            bodyDiv.innerHTML = '<p style="color: #c62828; padding: 20px;">' + this._t('modal.errorLoading') + '</p>';
         }
     },
 
@@ -328,8 +314,8 @@ var DashboardModals = {
         html += this._renderInfoItem(t('table.empNo'), empNo);
         html += this._renderInfoItem(t('table.building'), building);
         html += this._renderInfoItem(t('table.type'), '<span class="' + typeBadgeClass + '">' + this._escapeHtml(empType) + '</span>');
-        html += this._renderInfoItem(t('modal.entranceDate') || 'Entrance Date', entranceDate);
-        html += this._renderInfoItem(t('modal.bossName') || 'Boss', bossName);
+        html += this._renderInfoItem(t('modal.entranceDate'), entranceDate);
+        html += this._renderInfoItem(t('modal.bossName'), bossName);
         html += '</div></div>';
 
         return html;
@@ -357,7 +343,7 @@ var DashboardModals = {
         html += this._renderInfoItem(t('condition.3'), actualDays + t('common.days'));
         html += this._renderInfoItem(t('validation.totalWorkingDays'), totalDays + t('common.days'));
         html += this._renderInfoItem(t('condition.2'), unapproved + t('common.days'));
-        html += this._renderInfoItem(t('modal.approvedLeave') || 'Approved Leave', approvedLeave + t('common.days'));
+        html += this._renderInfoItem(t('modal.approvedLeave'), approvedLeave + t('common.days'));
         html += '</div></div>';
 
         return html;
@@ -396,10 +382,10 @@ var DashboardModals = {
         html += '<div class="table-container"><table>';
         html += '<thead><tr>';
         html += '<th style="width: 40px;">#</th>';
-        html += '<th>' + (t('modal.conditionName') || 'Condition') + '</th>';
-        html += '<th style="text-align: right;">' + (t('modal.value') || 'Value') + '</th>';
-        html += '<th style="text-align: right;">' + (t('modal.threshold') || 'Threshold') + '</th>';
-        html += '<th style="text-align: center;">' + (t('modal.result') || 'Result') + '</th>';
+        html += '<th>' + t('modal.conditionHeader') + '</th>';
+        html += '<th style="text-align: right;">' + t('modal.valueHeader') + '</th>';
+        html += '<th style="text-align: right;">' + t('modal.thresholdHeader') + '</th>';
+        html += '<th style="text-align: center;">' + t('modal.resultHeader') + '</th>';
         html += '</tr></thead><tbody>';
 
         for (var i = 1; i <= 10; i++) {
@@ -452,7 +438,7 @@ var DashboardModals = {
         // Summary line
         var summaryColor = (totalApplicable > 0 && passCount === totalApplicable) ? '#2e7d32' : '#c62828';
         html += '<p style="margin: 10px 0 0; font-weight: 600; color: ' + summaryColor + ';">';
-        html += passCount + '/' + totalApplicable + ' ' + (t('modal.conditionsPassed') || 'conditions passed');
+        html += passCount + '/' + totalApplicable + ' ' + t('modal.conditionsPassed');
         if (totalApplicable > 0 && passCount === totalApplicable) {
             html += ' (100%)';
         } else if (totalApplicable > 0) {
@@ -482,17 +468,17 @@ var DashboardModals = {
         html += '<h3 style="font-size: 1rem; margin: 0 0 12px;">' + t('modal.incentiveInfo') + '</h3>';
         html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">';
         html += this._renderInfoItem(
-            t('modal.currentIncentive') || 'Current',
+            t('modal.currentIncentive'),
             '<span style="font-weight: 700; color: ' + (currentIncentive > 0 ? '#2e7d32' : '#c62828') + ';">'
                 + this._formatVND(currentIncentive) + ' VND</span>'
         );
         html += this._renderInfoItem(
-            t('modal.previousIncentive') || 'Previous',
+            t('modal.previousIncentive'),
             this._formatVND(previousIncentive) + ' VND'
         );
         if (isType1) {
             html += this._renderInfoItem(
-                t('modal.continuousMonths') || 'Continuous Months',
+                t('modal.continuousMonths'),
                 '<strong>' + continuousMonths + '</strong> / 15'
             );
         }
@@ -502,7 +488,7 @@ var DashboardModals = {
         if (isType1 && continuousMonths > 0) {
             html += '<div style="margin-top: 14px;">';
             html += '<div style="font-size: 0.82rem; color: #757575; margin-bottom: 6px;">'
-                  + (t('modal.progressionBar') || 'Progressive Incentive (1-15 months)') + '</div>';
+                  + t('modal.progressionBar') + '</div>';
 
             var maxMonths = 15;
             var barWidth = Math.min(continuousMonths / maxMonths * 100, 100);
@@ -517,7 +503,7 @@ var DashboardModals = {
             // Progression table preview
             html += '<div style="display: flex; gap: 4px; margin-top: 8px; overflow-x: auto;">';
             for (var m = 1; m <= maxMonths; m++) {
-                var amount = this.PROGRESSIVE_TABLE[m] || 0;
+                var amount = this._getProgressiveTable()[m] || 0;
                 var isCurrent = (m === continuousMonths);
                 var bg = isCurrent ? barColor : '#f5f5f5';
                 var fg = isCurrent ? '#fff' : '#9e9e9e';
@@ -552,7 +538,7 @@ var DashboardModals = {
             var html = '<div class="section-card" style="margin-bottom: 16px;">';
             html += '<h3 style="font-size: 1rem; margin: 0 0 12px;">AQL</h3>';
             html += '<p style="color: #9e9e9e;">' + this._formatBadge('N/A', 'condition');
-            html += ' ' + (t('modal.aqlNotApplicable') || 'AQL conditions not applicable for this TYPE') + '</p>';
+            html += ' ' + t('modal.aqlNotApplicable') + '</p>';
             html += '</div>';
             return html;
         }
@@ -576,9 +562,9 @@ var DashboardModals = {
         html += this._renderInfoItem(t('condition.6'), contFailStr + ' ' + contFailBadge);
 
         html += this._renderInfoItem(t('condition.8'), this._formatPercent(areaRejectRate) + '%');
-        html += this._renderInfoItem(t('modal.totalTests') || 'Total Tests', String(totalTests));
-        html += this._renderInfoItem(t('modal.passCount') || 'Pass Count', String(passCount));
-        html += this._renderInfoItem(t('modal.failPercent') || 'Fail %', this._formatPercent(failPercent) + '%');
+        html += this._renderInfoItem(t('modal.totalTests'), String(totalTests));
+        html += this._renderInfoItem(t('modal.passCount'), String(passCount));
+        html += this._renderInfoItem(t('modal.failPercent'), this._formatPercent(failPercent) + '%');
         html += '</div></div>';
 
         return html;
@@ -600,7 +586,7 @@ var DashboardModals = {
             var html = '<div class="section-card" style="margin-bottom: 16px;">';
             html += '<h3 style="font-size: 1rem; margin: 0 0 12px;">5PRS</h3>';
             html += '<p style="color: #9e9e9e;">' + this._formatBadge('N/A', 'condition');
-            html += ' ' + (t('modal.5prsNotApplicable') || '5PRS conditions not applicable for this TYPE') + '</p>';
+            html += ' ' + t('modal.5prsNotApplicable') + '</p>';
             html += '</div>';
             return html;
         }
@@ -615,7 +601,7 @@ var DashboardModals = {
         html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">';
         html += this._renderInfoItem(t('condition.9'), this._formatPercent(passRate) + '%');
         html += this._renderInfoItem(t('condition.10'), String(inspectionQty) + ' prs');
-        html += this._renderInfoItem(t('modal.totalQty') || 'Total Qty', String(totalQty) + ' prs');
+        html += this._renderInfoItem(t('modal.totalQty'), String(totalQty) + ' prs');
         html += '</div></div>';
 
         return html;
@@ -803,10 +789,10 @@ var DashboardModals = {
                 valueColumn = { key: 'inspection_qty', label: t('condition.10'), formatter: 'number' };
                 break;
             case 'buildingReviewTotal':
-                valueColumn = { key: 'boss_building', label: t('modal.bossBuilding') || 'Boss Building', formatter: 'text' };
+                valueColumn = { key: 'boss_building', label: t('modal.bossBuilding'), formatter: 'text' };
                 break;
             case 'lineLeaderNotAssigned':
-                valueColumn = { key: 'boss_name', label: t('modal.bossName') || 'Boss', formatter: 'text' };
+                valueColumn = { key: 'boss_name', label: t('modal.bossName'), formatter: 'text' };
                 break;
             default:
                 valueColumn = { key: 'incentive', label: t('table.incentive'), formatter: 'vnd' };
@@ -847,8 +833,8 @@ var DashboardModals = {
         if (sortedDays.length > 0) {
             html += '<div class="table-container"><table>';
             html += '<thead><tr>';
-            html += '<th>' + (t('modal.workingDayCount') || 'Working Days') + '</th>';
-            html += '<th style="text-align: right;">' + (t('modal.employeeCount') || 'Employees') + '</th>';
+            html += '<th>' + t('modal.workingDays') + '</th>';
+            html += '<th style="text-align: right;">' + t('modal.employeesCount') + '</th>';
             html += '</tr></thead><tbody>';
 
             sortedDays.forEach(function (day) {
@@ -860,6 +846,61 @@ var DashboardModals = {
             });
 
             html += '</tbody></table></div>';
+        }
+
+        // --- Mini Calendar Grid (from Firestore calendar_data) ---
+        var cal = summary.calendar_data;
+        if (cal && cal.working_day_dates && cal.working_day_dates.length > 0) {
+            var workingDates = cal.working_day_dates;
+            var dailyCounts = cal.daily_counts || {};
+            var daysInMonth = cal.days_in_month || 31;
+            var weekdayIndices = cal.weekday_indices || [];
+
+            // Weekday names from i18n
+            var weekdayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+            var weekdayNames = weekdayKeys.map(function (key) {
+                return t('calendar.weekdays.' + key) || key;
+            });
+            var empLabel = t('calendar.employeeCount') || ' emp';
+
+            html += '<h4 style="margin:24px 0 8px;font-size:1rem;color:#1a237e;">' + (t('validation.attendanceCalendar') || '출근 캘린더') + '</h4>';
+            html += '<div class="att-calendar-grid att-mini-calendar">';
+
+            // Weekday headers
+            for (var w = 0; w < 7; w++) {
+                var isWeekend = (w >= 5);
+                html += '<div class="att-cal-header' + (isWeekend ? ' weekend' : '') + '">' + weekdayNames[w] + '</div>';
+            }
+
+            // Leading empty cells
+            var firstDayWeekday = weekdayIndices.length > 0 ? weekdayIndices[0] : 0;
+            for (var e = 0; e < firstDayWeekday; e++) {
+                html += '<div class="att-cal-cell empty"></div>';
+            }
+
+            // Day cells
+            for (var day = 1; day <= daysInMonth; day++) {
+                var isWorkDay = workingDates.indexOf(day) !== -1;
+                var count = dailyCounts[String(day)] || 0;
+                var cellClass = isWorkDay ? 'att-cal-cell work-day' : 'att-cal-cell no-data';
+                var wdi = (day <= weekdayIndices.length) ? weekdayIndices[day - 1] : -1;
+                if (wdi >= 5) cellClass += ' weekend-day';
+
+                html += '<div class="' + cellClass + '">';
+                html += '<div class="att-cal-daynum">' + day + '</div>';
+                if (isWorkDay && count > 0) {
+                    html += '<div class="att-cal-count">' + count + empLabel + '</div>';
+                }
+                html += '</div>';
+            }
+
+            html += '</div>';
+
+            // Mini legend
+            html += '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">';
+            html += '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:16px;font-size:0.75rem;font-weight:600;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;">💼 ' + t('calendar.legendWorkDay') + '</span>';
+            html += '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:16px;font-size:0.75rem;font-weight:600;background:#f5f5f5;color:#757575;border:2px dashed #ccc;">❌ ' + t('calendar.legendNoData') + '</span>';
+            html += '</div>';
         }
 
         return html;
