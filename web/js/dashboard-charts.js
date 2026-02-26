@@ -1702,8 +1702,27 @@ var DashboardCharts = {
         this._setKpiCount('kpiLowInspectionQty', lowInspectionQtyCount);
 
         // --- KPI 11: Cross-Building Review ---
-        // Use summary data if available, otherwise placeholder
-        var crossBuildingCount = summary.cross_building_count || '--';
+        // Calculate from employee data: employees whose building differs from boss's building
+        var crossBuildingCount = 0;
+        var empMap = {};
+        employees.forEach(function (emp) {
+            var empNo = String(emp.emp_no || emp['Employee No'] || '');
+            if (empNo) empMap[empNo] = emp;
+        });
+        employees.forEach(function (emp) {
+            var bossId = String(emp.boss_id || '');
+            var empBuilding = String(emp.building || '').toUpperCase().trim();
+            if (!bossId || !empBuilding) return;
+            var boss = empMap[bossId];
+            if (!boss) return;
+            var bossBuilding = String(boss.building || '').toUpperCase().trim();
+            if (!bossBuilding) {
+                crossBuildingCount++; // Case 2: boss has no building
+            } else if (!empBuilding.startsWith(bossBuilding) && !bossBuilding.startsWith(empBuilding)) {
+                crossBuildingCount++; // Case 1: building mismatch
+            }
+        });
+        window.crossBuildingData = { count: crossBuildingCount, empMap: empMap };
         this._setText('kpiBuildingReviewTotal', String(crossBuildingCount));
 
         // --- KPI 12: LINE LEADER Not Assigned (no subordinates) ---
