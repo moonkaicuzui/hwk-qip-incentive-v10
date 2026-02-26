@@ -258,7 +258,7 @@ var DashboardModals = {
             { key: 'emp_no', label: t('table.empNo') },
             { key: 'name', label: t('table.name') },
             { key: 'building', label: t('table.building') },
-            { key: 'conditions', label: t('modal.conditionStatus') },
+            { key: 'conditions', label: t('modal.conditionStatus'), formatter: 'html' },
             { key: 'incentive', label: t('table.incentive') }
         ];
         html += this._createEmployeeTable(filtered, columns);
@@ -1263,6 +1263,8 @@ var DashboardModals = {
                 return String(value);
             case 'days':
                 return value + this._t('common.days');
+            case 'html':
+                return value;  // Pass through pre-formatted HTML (e.g., condition badges)
             case 'text':
                 return this._escapeHtml(String(value));
             default:
