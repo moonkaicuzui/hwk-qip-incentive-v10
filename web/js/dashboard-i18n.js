@@ -62,6 +62,15 @@ const DashboardI18n = {
         'attendanceLookup.title': { ko: '개인 출결 조회', en: 'Personal Attendance Lookup', vi: 'Tra cứu chấm công cá nhân' },
         'attendanceLookup.placeholder': { ko: '사번 입력', en: 'Enter Employee No', vi: 'Nhập mã NV' },
         'attendanceLookup.search': { ko: '조회', en: 'Search', vi: 'Tìm kiếm' },
+        'attendanceLookup.enterEmpNo': { ko: '사번을 입력해주세요.', en: 'Please enter an employee number.', vi: 'Vui lòng nhập mã nhân viên.' },
+        'attendanceLookup.notFound': { ko: '에 해당하는 직원을 찾을 수 없습니다.', en: ' not found.', vi: ' không tìm thấy.' },
+        'attendanceLookup.empNoLabel': { ko: '사번 ', en: 'Employee No ', vi: 'Mã NV ' },
+        'attendanceLookup.totalWorkDays': { ko: '총 근무일', en: 'Total Work Days', vi: 'Tổng ngày làm' },
+        'attendanceLookup.actualWorkDays': { ko: '실제 근무일', en: 'Actual Work Days', vi: 'Ngày làm thực tế' },
+        'attendanceLookup.approvedLeave': { ko: '승인휴가', en: 'Approved Leave', vi: 'Nghỉ phép' },
+        'attendanceLookup.unapprovedAbsence': { ko: '무단결근', en: 'Unapproved Absence', vi: 'Vắng không phép' },
+        'attendanceLookup.attendanceRate': { ko: '출근율', en: 'Attendance Rate', vi: 'Tỷ lệ chấm công' },
+        'attendanceLookup.day': { ko: '일', en: ' days', vi: ' ngày' },
 
         // Footer
         'footer.dataSource': { ko: 'Data source: Firestore', en: 'Data source: Firestore', vi: 'Nguồn dữ liệu: Firestore' },
@@ -473,7 +482,11 @@ const DashboardI18n = {
         // Fallback to _core if translations not yet initialized (init() not called)
         const entry = this.translations[key] || this._core[key];
         if (!entry) return key;
-        return entry[this.currentLang] || entry['ko'] || key;
+        var val = entry[this.currentLang];
+        if (val !== undefined && val !== null) return val;
+        var koVal = entry['ko'];
+        if (koVal !== undefined && koVal !== null) return koVal;
+        return key;
     },
 
     /**

@@ -387,9 +387,10 @@ var DashboardFilters = {
 
         // Empty state
         if (pageData.length === 0) {
+            var noDataText = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t('common.noData') : '데이터 없음';
             tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: #757575; padding: 40px 0;">' +
                 '<i class="fas fa-inbox" style="font-size: 2rem; display: block; margin-bottom: 8px;"></i>' +
-                '\uB370\uC774\uD130 \uC5C6\uC74C</td></tr>'; // 데이터 없음
+                noDataText + '</td></tr>';
             this.renderPagination();
             return;
         }
@@ -690,8 +691,9 @@ var DashboardFilters = {
         var resultDiv = document.getElementById('attendanceLookupResult');
         if (!resultDiv) return;
 
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
         if (!empId) {
-            resultDiv.innerHTML = '<p style="color: #757575;">\uC0AC\uBC88\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694.</p>'; // 사번을 입력해주세요.
+            resultDiv.innerHTML = '<p style="color: #757575;">' + t('attendanceLookup.enterEmpNo') + '</p>';
             return;
         }
 
@@ -711,7 +713,7 @@ var DashboardFilters = {
 
         if (!found) {
             resultDiv.innerHTML = '<p style="color: #c62828;"><i class="fas fa-exclamation-circle"></i> ' +
-                '\uC0AC\uBC88 ' + this._escapeHtml(empIdStr) + '\uC5D0 \uD574\uB2F9\uD558\uB294 \uC9C1\uC6D0\uC744 \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.</p>'; // 사번 ... 에 해당하는 직원을 찾을 수 없습니다.
+                t('attendanceLookup.empNoLabel') + this._escapeHtml(empIdStr) + t('attendanceLookup.notFound') + '</p>';
             return;
         }
 
@@ -742,17 +744,18 @@ var DashboardFilters = {
         var html = '<div class="section-card">';
         html += '<h3><i class="fas fa-user"></i> ' + this._escapeHtml(name) + ' (' + this._escapeHtml(empIdStr) + ')</h3>';
         html += '<p style="color: #757575; margin-bottom: 16px;">' + this._escapeHtml(position) + '</p>';
+        var dayUnit = t('attendanceLookup.day');
         html += '<table style="width: 100%; max-width: 500px;">';
-        html += '<tr><td style="padding: 6px 12px; color: #757575;">\uCD1C \uADFC\uBB34\uC77C</td>' +   // 총 근무일
-                '<td style="padding: 6px 12px; font-weight: 600;">' + totalDays + '\uC77C</td></tr>';      // 일
-        html += '<tr><td style="padding: 6px 12px; color: #757575;">\uC2E4\uC81C \uADFC\uBB34\uC77C</td>' + // 실제 근무일
-                '<td style="padding: 6px 12px; font-weight: 600;">' + actualDays + '\uC77C</td></tr>';
-        html += '<tr><td style="padding: 6px 12px; color: #757575;">\uC2B9\uC778\uD734\uAC00</td>' +      // 승인휴가
-                '<td style="padding: 6px 12px; font-weight: 600;">' + approvedLeave + '\uC77C</td></tr>';
-        html += '<tr><td style="padding: 6px 12px; color: #757575;">\uBB34\uB2E8\uACB0\uADFC</td>' +      // 무단결근
+        html += '<tr><td style="padding: 6px 12px; color: #757575;">' + t('attendanceLookup.totalWorkDays') + '</td>' +
+                '<td style="padding: 6px 12px; font-weight: 600;">' + totalDays + dayUnit + '</td></tr>';
+        html += '<tr><td style="padding: 6px 12px; color: #757575;">' + t('attendanceLookup.actualWorkDays') + '</td>' +
+                '<td style="padding: 6px 12px; font-weight: 600;">' + actualDays + dayUnit + '</td></tr>';
+        html += '<tr><td style="padding: 6px 12px; color: #757575;">' + t('attendanceLookup.approvedLeave') + '</td>' +
+                '<td style="padding: 6px 12px; font-weight: 600;">' + approvedLeave + dayUnit + '</td></tr>';
+        html += '<tr><td style="padding: 6px 12px; color: #757575;">' + t('attendanceLookup.unapprovedAbsence') + '</td>' +
                 '<td style="padding: 6px 12px; font-weight: 600; color: ' + (unapproved > 0 ? '#c62828' : '#2e7d32') + ';">' +
-                unapproved + '\uC77C</td></tr>';
-        html += '<tr><td style="padding: 6px 12px; color: #757575;">\uCD9C\uADFC\uC728</td>' +            // 출근율
+                unapproved + dayUnit + '</td></tr>';
+        html += '<tr><td style="padding: 6px 12px; color: #757575;">' + t('attendanceLookup.attendanceRate') + '</td>' +
                 '<td style="padding: 6px 12px; font-weight: 600; color: ' + (attendanceRate >= (window.thresholds && window.thresholds.attendance_rate || THRESHOLD_DEFAULTS.attendance_rate) ? '#2e7d32' : '#c62828') + ';">' +
                 this._formatPercent(attendanceRate) + '%</td></tr>';
         html += '</table>';
