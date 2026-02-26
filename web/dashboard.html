@@ -80,17 +80,70 @@
         .tab-content.active-tab { display: block; }
 
         /* ===== KPI Cards ===== */
-        .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
         .kpi-card {
             background: #fff; border-radius: 12px; padding: 20px;
             box-shadow: var(--card-shadow); text-align: center; position: relative; overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+        .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .kpi-card .kpi-icon { font-size: 1.6rem; margin-bottom: 6px; }
         .kpi-card .kpi-label { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 6px; }
         .kpi-card .kpi-value { font-size: 2rem; font-weight: 700; color: var(--header-dark); }
         .kpi-card .kpi-trend { font-size: 0.78rem; margin-top: 4px; }
         .kpi-card .kpi-trend.up { color: var(--success); }
         .kpi-card .kpi-trend.down { color: var(--danger); }
         .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--header-dark), var(--accent)); }
+        .kpi-card .kpi-progress { height: 6px; background: #e0e0e0; border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .kpi-card .kpi-progress-bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+        /* ===== Trend Chart ===== */
+        #trendChartSection { margin-bottom: 20px; }
+        #trendChartSection canvas { max-height: 300px; }
+
+        /* ===== Talent Pool ===== */
+        .talent-pool-card {
+            background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; border-radius: 12px;
+            padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(239,68,68,0.3);
+        }
+        .talent-pool-card h3 { color: #fff; margin-bottom: 12px; font-size: 1.1rem; }
+        .talent-member { display: inline-flex; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; padding: 8px 14px; margin: 4px; font-size: 0.85rem; }
+        .talent-member .talent-months { background: rgba(255,255,255,0.3); border-radius: 4px; padding: 2px 6px; margin-left: 8px; font-weight: 600; }
+
+        /* ===== Quick Summary Overlay ===== */
+        #quickSummaryOverlay {
+            display: none; position: fixed; inset: 0; z-index: 1050;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+        }
+        #quickSummaryOverlay .qs-panel {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #fff; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        #quickSummaryOverlay .qs-panel h3 { margin: 0 0 16px; font-size: 1.2rem; color: var(--header-dark); }
+        .qs-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .qs-item:last-child { border-bottom: none; }
+        .qs-item .qs-label { color: var(--text-secondary); }
+        .qs-item .qs-value { font-weight: 700; color: var(--header-dark); }
+
+        /* ===== Dark Mode ===== */
+        .dark-mode { --bg-light: #1a1a2e; --text-primary: #e0e0e0; --text-secondary: #a0a0a0; --card-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .dark-mode body, .dark-mode { background: #1a1a2e; color: #e0e0e0; }
+        .dark-mode .kpi-card, .dark-mode .section-card, .dark-mode .validation-kpi-card { background: #16213e; border-color: #2a3a5c; }
+        .dark-mode .kpi-card .kpi-value { color: #90caf9; }
+        .dark-mode .dashboard-header { background: linear-gradient(135deg, #0d1b2a, #1b2838) !important; }
+        .dark-mode table { color: #e0e0e0; }
+        .dark-mode table thead { background: #1b2838; }
+        .dark-mode table tbody tr:nth-child(even) { background: rgba(255,255,255,0.03); }
+        .dark-mode table tbody tr:hover { background: rgba(255,255,255,0.08); }
+        .dark-mode .filter-row input, .dark-mode .filter-row select { background: #16213e; color: #e0e0e0; border-color: #2a3a5c; }
+        .dark-mode .modal-content { background: #16213e; color: #e0e0e0; }
+        .dark-mode .modal-header { background: linear-gradient(135deg, #0d1b2a, #1b2838) !important; }
+        .dark-mode #quickSummaryOverlay .qs-panel { background: #16213e; }
+        .dark-mode .talent-pool-card { box-shadow: 0 4px 15px rgba(239,68,68,0.15); }
+        .dark-mode .tabs .tab { color: #a0a0a0; }
+        .dark-mode .tabs .tab.active { color: #90caf9; border-bottom-color: #90caf9; }
+        .dark-mode .dashboard-footer { border-top-color: #2a3a5c; }
 
         /* ===== Validation KPI Grid ===== */
         .validation-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
@@ -314,7 +367,7 @@
 
         /* ===== Responsive ===== */
         @media (max-width: 992px) {
-            .kpi-row { grid-template-columns: 1fr; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
             .validation-kpi-grid { grid-template-columns: repeat(2, 1fr); }
             .dashboard-header { padding: 12px 16px; }
             .tab-content { padding: 14px; }
@@ -370,6 +423,11 @@
         <button class="lang-btn active" data-lang="ko" onclick="switchLanguage('ko')">KO</button>
         <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
         <button class="lang-btn" data-lang="vi" onclick="switchLanguage('vi')">VN</button>
+        <button class="header-link" onclick="toggleDarkMode()" title="Dark Mode" id="darkModeToggle" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.9rem;">🌙</button>
+        <button class="header-link" onclick="toggleQuickSummary()" title="Quick Summary" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.9rem;">📋</button>
+        <button class="header-link" onclick="showMyIncentive()" title="My Incentive" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;"><i class="fas fa-search"></i> <span data-i18n="myIncentive.btnLabel">내 인센티브</span></button>
+        <button class="header-link" onclick="downloadExcel()" title="Excel Download" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;"><i class="fas fa-file-excel"></i> Excel</button>
+        <button class="header-link" id="dataPeriodToggle" onclick="toggleDataPeriod()" title="Data Period" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;">📅 <span data-i18n="dataPeriod.final">최종 보고서</span></button>
         <a href="selector.html" class="header-link" data-i18n="common.back"><i class="fas fa-arrow-left"></i> 월 선택</a>
         <span class="user-email" id="userEmail"></span>
         <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> <span data-i18n="common.logout">로그아웃</span></button>
@@ -394,23 +452,39 @@
 <!-- TAB: SUMMARY                                                 -->
 <!-- ============================================================ -->
 <div class="tab-content active-tab" id="summary" style="display: block;">
-    <!-- KPI Cards -->
+    <!-- KPI Cards (4 cards) -->
     <div class="kpi-row">
         <div class="kpi-card">
+            <div class="kpi-icon">👤</div>
+            <div class="kpi-label" data-i18n="kpi.totalEmployees">전체 직원</div>
+            <div class="kpi-value" id="totalEmployeesValue">--</div>
+            <div class="kpi-trend" id="totalEmployeesTrend"></div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon">👥</div>
             <div class="kpi-label" data-i18n="kpi.recipients">수령 직원</div>
             <div class="kpi-value" id="recipientsCountValue">--</div>
             <div class="kpi-trend" id="recipientsTrend"></div>
         </div>
         <div class="kpi-card">
+            <div class="kpi-icon">📊</div>
             <div class="kpi-label" data-i18n="kpi.paymentRate">지급률</div>
             <div class="kpi-value" id="paymentRateValue">--</div>
+            <div class="kpi-progress"><div class="kpi-progress-bar" id="paymentRateBar" style="width:0%; background: var(--success);"></div></div>
             <div class="kpi-trend" id="paymentRateTrend"></div>
         </div>
         <div class="kpi-card">
+            <div class="kpi-icon">💰</div>
             <div class="kpi-label" data-i18n="kpi.totalAmount">총 지급액</div>
             <div class="kpi-value" id="totalAmountValue">--</div>
             <div class="kpi-trend" id="totalAmountTrend"></div>
         </div>
+    </div>
+
+    <!-- Trend Chart (Previous vs Current) -->
+    <div class="section-card" id="trendChartSection" style="display:none;">
+        <h3 data-i18n="chart.trendTitle">전월 대비 인센티브 분석</h3>
+        <canvas id="trendChart"></canvas>
     </div>
 
     <!-- TYPE Table -->
@@ -418,6 +492,9 @@
         <h3 data-i18n="summary.typeOverview">TYPE별 현황</h3>
         <div id="typeTableContainer"></div>
     </div>
+
+    <!-- Talent Pool Section -->
+    <div id="talentPoolSection" style="display:none;"></div>
 
     <!-- Condition Summary Charts -->
     <div class="section-card">
@@ -676,6 +753,21 @@
 </div>
 
 <!-- ============================================================ -->
+<!-- QUICK SUMMARY OVERLAY                                        -->
+<!-- ============================================================ -->
+<div id="quickSummaryOverlay" onclick="toggleQuickSummary()">
+    <div class="qs-panel" onclick="event.stopPropagation()">
+        <h3>📋 <span data-i18n="quickSummary.title">빠른 요약</span></h3>
+        <div id="quickSummaryContent"></div>
+        <div style="text-align:center; margin-top: 16px;">
+            <button onclick="toggleQuickSummary()" style="padding: 8px 24px; border-radius: 8px; border: 1px solid #ddd; background: #f5f5f5; cursor: pointer;">
+                <span data-i18n="quickSummary.close">닫기</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
 <!-- FOOTER                                                       -->
 <!-- ============================================================ -->
 <footer class="dashboard-footer">
@@ -703,13 +795,13 @@
 <!-- ============================================================ -->
 <!-- Local JS Modules (load order matters)                        -->
 <!-- ============================================================ -->
-<script src="js/firebase-config.js?v=20260226cal"></script>
-<script src="js/auth.js?v=20260226fix4"></script>
-<script src="js/dashboard-data.js?v=20260226fix4"></script>
-<script src="js/dashboard-i18n.js?v=20260226fix4"></script>
-<script src="js/dashboard-charts.js?v=20260226fix4"></script>
-<script src="js/dashboard-filters.js?v=20260226fix4"></script>
-<script src="js/dashboard-modals.js?v=20260226fix4"></script>
+<script src="js/firebase-config.js?v=20260227phase5"></script>
+<script src="js/auth.js?v=20260227phase5"></script>
+<script src="js/dashboard-data.js?v=20260227phase5"></script>
+<script src="js/dashboard-i18n.js?v=20260227phase5"></script>
+<script src="js/dashboard-charts.js?v=20260227phase5"></script>
+<script src="js/dashboard-filters.js?v=20260227phase5"></script>
+<script src="js/dashboard-modals.js?v=20260227phase5"></script>
 
 <!-- ============================================================ -->
 <!-- Initialization                                               -->
@@ -807,6 +899,154 @@
     }
 
     /**
+     * Download Excel file from GitHub Pages.
+     * Uses window._dashboardMonth / _dashboardYear set by dashboard-data.js.
+     */
+    function downloadExcel() {
+        var month = (window._dashboardMonth || 'february').toLowerCase();
+        var year = window._dashboardYear || 2026;
+        var filename = 'output_QIP_incentive_' + month + '_' + year + '_Complete_V10.0_Complete.xlsx';
+        var url = filename;
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    /**
+     * Toggle Quick Summary overlay.
+     * Renders core KPI stats + TYPE breakdown in a centered panel.
+     */
+    function toggleQuickSummary() {
+        var overlay = document.getElementById('quickSummaryOverlay');
+        if (!overlay) return;
+
+        if (overlay.style.display === 'flex') {
+            overlay.style.display = 'none';
+            return;
+        }
+
+        // Populate content
+        var content = document.getElementById('quickSummaryContent');
+        if (content && window.employeeData) {
+            var employees = window.employeeData;
+            var total = employees.length;
+            var receiving = 0, totalAmt = 0;
+            var typeStats = { 'TYPE-1': { count: 0, recv: 0 }, 'TYPE-2': { count: 0, recv: 0 }, 'TYPE-3': { count: 0, recv: 0 } };
+
+            employees.forEach(function(emp) {
+                var amt = window.employeeHelpers ? window.employeeHelpers.getIncentive(emp, 'current') : (emp.currentIncentive || 0);
+                var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || 'TYPE-3').toUpperCase();
+                if (!empType.startsWith('TYPE')) empType = 'TYPE-' + empType;
+                if (!typeStats[empType]) empType = 'TYPE-3';
+
+                typeStats[empType].count++;
+                if (amt > 0) { receiving++; totalAmt += amt; typeStats[empType].recv++; }
+            });
+
+            var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+            var rate = total > 0 ? ((receiving / total) * 100).toFixed(1) : '0.0';
+
+            var html = '';
+            html += '<div class="qs-item"><span class="qs-label">' + t('quickSummary.recipients') + '</span><span class="qs-value">' + receiving.toLocaleString() + ' / ' + total.toLocaleString() + '</span></div>';
+            html += '<div class="qs-item"><span class="qs-label">' + t('quickSummary.paymentRate') + '</span><span class="qs-value">' + rate + '%</span></div>';
+            html += '<div class="qs-item"><span class="qs-label">' + t('quickSummary.totalAmount') + '</span><span class="qs-value">' + totalAmt.toLocaleString() + ' VND</span></div>';
+            html += '<hr style="margin: 12px 0; border-color: #eee;">';
+            ['TYPE-1', 'TYPE-2', 'TYPE-3'].forEach(function(tp) {
+                var s = typeStats[tp];
+                html += '<div class="qs-item"><span class="qs-label">' + tp + '</span><span class="qs-value">' + s.recv + ' / ' + s.count + '</span></div>';
+            });
+            content.innerHTML = html;
+        }
+
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+    }
+
+    /**
+     * Show My Incentive lookup: prompt for emp number, open employee modal.
+     * Reuses DashboardModals.showEmployeeDetail() (Issue #62 safe).
+     */
+    function showMyIncentive() {
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+        var empNo = prompt(t('myIncentive.placeholder'));
+        if (!empNo || !empNo.trim()) return;
+
+        empNo = empNo.trim();
+
+        // Try to find employee
+        if (window.employeeData) {
+            var found = window.employeeData.find(function(emp) {
+                return String(emp.emp_no || emp['Employee No'] || '') === String(empNo);
+            });
+
+            if (!found) {
+                alert(t('myIncentive.notFound'));
+                return;
+            }
+        }
+
+        if (typeof DashboardModals !== 'undefined' && DashboardModals.showEmployeeDetail) {
+            DashboardModals.showEmployeeDetail(empNo);
+        }
+    }
+
+    /**
+     * Toggle Dark Mode. Persists preference in localStorage.
+     */
+    function toggleDarkMode() {
+        var isDark = document.documentElement.classList.toggle('dark-mode');
+        localStorage.setItem('qip_dark_mode', isDark ? 'true' : 'false');
+
+        // Update toggle button
+        var btn = document.getElementById('darkModeToggle');
+        if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+
+        // Update Chart.js charts for dark mode
+        if (typeof DashboardCharts !== 'undefined') {
+            var textColor = isDark ? '#e0e0e0' : '#212121';
+            var gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            Object.values(DashboardCharts.charts).forEach(function(chart) {
+                if (chart && chart.options && chart.options.scales) {
+                    ['x', 'y'].forEach(function(axis) {
+                        if (chart.options.scales[axis]) {
+                            if (chart.options.scales[axis].ticks) chart.options.scales[axis].ticks.color = textColor;
+                            if (chart.options.scales[axis].grid) chart.options.scales[axis].grid.color = gridColor;
+                        }
+                    });
+                    if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+                        chart.options.plugins.legend.labels.color = textColor;
+                    }
+                    chart.update();
+                }
+            });
+        }
+    }
+
+    /**
+     * Toggle Data Period (Interim/Final report mode).
+     * Affects condition display in validation tab.
+     */
+    function toggleDataPeriod() {
+        window._isInterimReport = !window._isInterimReport;
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+
+        // Update display
+        var btn = document.getElementById('dataPeriodToggle');
+        if (btn) {
+            btn.textContent = window._isInterimReport ? t('dataPeriod.interim') : t('dataPeriod.final');
+        }
+
+        // Re-render validation KPIs if available
+        if (typeof DashboardCharts !== 'undefined' && DashboardCharts._criteriaData) {
+            DashboardCharts.renderValidationKPIs(DashboardCharts._criteriaData);
+        }
+    }
+
+    /**
      * Main initialization — runs after DOM is ready.
      */
     document.addEventListener('DOMContentLoaded', async function() {
@@ -870,7 +1110,14 @@
                 footerTs.textContent = new Date().toLocaleString();
             }
 
-            // 7. Show default tab and hide loading
+            // 7. Restore Dark Mode preference from localStorage
+            if (localStorage.getItem('qip_dark_mode') === 'true') {
+                document.documentElement.classList.add('dark-mode');
+                var dmBtn = document.getElementById('darkModeToggle');
+                if (dmBtn) dmBtn.textContent = '☀️';
+            }
+
+            // 8. Show default tab and hide loading
             showTab('summary');
             hideLoading();
 

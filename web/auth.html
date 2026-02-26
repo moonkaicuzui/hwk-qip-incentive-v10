@@ -479,7 +479,7 @@
                         uid: user.uid,
                         email: user.email,
                         displayName: user.displayName || user.email,
-                        isAdmin: user.email === ADMIN_EMAIL,
+                        isAdmin: false,  // Admin check done server-side via Firestore rules
                         loginTime: new Date().toISOString()
                     };
                     sessionStorage.setItem('qip_firebase_session', JSON.stringify(sessionData));

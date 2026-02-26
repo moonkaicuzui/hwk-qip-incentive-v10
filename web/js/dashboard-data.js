@@ -395,6 +395,10 @@ var DashboardData = {
                 // ----------------------------------------------------------
                 _setupEmployeeHelpers();
 
+                // Expose month/year globally for download functions (Phase B)
+                window._dashboardMonth = month;
+                window._dashboardYear = year;
+
                 self._hideLoading();
 
                 return {

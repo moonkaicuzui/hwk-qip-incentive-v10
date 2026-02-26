@@ -117,6 +117,58 @@ var DashboardModals = {
 
         bodyEl.innerHTML = html;
 
+        // Render condition doughnut chart (Phase C - deferred rendering)
+        // Must run AFTER innerHTML so <canvas> exists in DOM
+        try {
+            if (this._conditionDoughnutData) {
+                var cd = this._conditionDoughnutData;
+                var cdCanvas = document.getElementById('conditionDoughnutChart');
+                if (cdCanvas && typeof Chart !== 'undefined') {
+                    DashboardCharts.destroyChart('conditionDoughnutChart');
+                    var total = cd.pass + cd.fail;
+                    var pct = total > 0 ? Math.round((cd.pass / total) * 100) : 0;
+                    new Chart(cdCanvas.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: [DashboardI18n.t('status.pass'), DashboardI18n.t('status.fail')],
+                            datasets: [{
+                                data: [cd.pass, cd.fail],
+                                backgroundColor: ['#28a745', '#dc3545'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            cutout: '65%',
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { enabled: true }
+                            }
+                        },
+                        plugins: [{
+                            id: 'conditionCenterText',
+                            afterDraw: function(chart) {
+                                var ctx = chart.ctx;
+                                ctx.save();
+                                ctx.font = 'bold 14px sans-serif';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillStyle = pct >= 100 ? '#28a745' : '#dc3545';
+                                var cx = (chart.chartArea.left + chart.chartArea.right) / 2;
+                                var cy = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+                                ctx.fillText(pct + '%', cx, cy);
+                                ctx.restore();
+                            }
+                        }]
+                    });
+                }
+                this._conditionDoughnutData = null;
+            }
+        } catch (e) {
+            console.error('[Phase C] Condition doughnut chart error:', e);
+        }
+
         // Show using Bootstrap 5 Modal API
         var modalEl = document.getElementById('employeeModal');
         if (modalEl) {
@@ -165,14 +217,40 @@ var DashboardModals = {
         });
 
         var avgIncentive = receivingCount > 0 ? totalIncentive / receivingCount : 0;
+        var notReceiving = filtered.length - receivingCount;
+
+        // Determine TYPE for icon
+        var sampleType = filtered.length > 0 ? String(filtered[0].type || filtered[0].TYPE || filtered[0]['ROLE TYPE STD'] || '').toUpperCase() : '';
+        var typeIcon = sampleType.indexOf('1') >= 0 ? '🏆' : sampleType.indexOf('2') >= 0 ? '📊' : '🆕';
+
+        // Find max/min incentive
+        var maxIncentive = 0, minIncentive = Infinity;
+        filtered.forEach(function (emp) {
+            var amt = self._getIncentive(emp, 'current');
+            if (amt > maxIncentive) maxIncentive = amt;
+            if (amt > 0 && amt < minIncentive) minIncentive = amt;
+        });
+        if (minIncentive === Infinity) minIncentive = 0;
 
         var html = '';
 
-        // Summary cards
-        html += '<div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">';
-        html += this._renderMiniKpi(t('kpi.recipients'), receivingCount + '/' + filtered.length + t('common.people_count'));
-        html += this._renderMiniKpi(t('kpi.totalAmount'), this._formatVND(totalIncentive) + ' VND');
-        html += this._renderMiniKpi(t('typeTable.avgReceiving'), this._formatVND(avgIncentive) + ' VND');
+        // Summary cards + Doughnut chart row
+        html += '<div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; align-items: flex-start;">';
+
+        // Left: Mini KPIs
+        html += '<div style="flex: 1; min-width: 200px;">';
+        html += this._renderMiniKpi(typeIcon + ' ' + t('kpi.recipients'), receivingCount + '/' + filtered.length + t('common.people_count'));
+        html += this._renderMiniKpi(t('kpi.totalAmount'), this._formatVND(totalIncentive) + ' ' + t('unit.currency'));
+        html += this._renderMiniKpi(t('typeTable.avgReceiving'), this._formatVND(avgIncentive) + ' ' + t('unit.currency'));
+        html += this._renderMiniKpi(t('kpi.maxMin'), this._formatVND(maxIncentive) + ' / ' + this._formatVND(minIncentive) + ' ' + t('unit.currency'));
+        html += '</div>';
+
+        // Right: Doughnut chart
+        html += '<div style="width: 200px; text-align: center;">';
+        html += '<canvas id="positionDoughnutChart" width="180" height="180"></canvas>';
+        html += '<div style="font-size: 0.8rem; color: #757575; margin-top: 4px;">' + t('kpi.paymentRate') + '</div>';
+        html += '</div>';
+
         html += '</div>';
 
         // Employee table
@@ -186,6 +264,51 @@ var DashboardModals = {
         html += this._createEmployeeTable(filtered, columns);
 
         bodyEl.innerHTML = html;
+
+        // Render Doughnut chart after HTML is in DOM
+        try {
+            var dCanvas = document.getElementById('positionDoughnutChart');
+            if (dCanvas && typeof Chart !== 'undefined') {
+                DashboardCharts.destroyChart('positionDoughnutChart');
+                var payRate = filtered.length > 0 ? ((receivingCount / filtered.length) * 100).toFixed(1) : '0.0';
+                DashboardCharts.charts['positionDoughnutChart'] = new Chart(dCanvas.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: [t('filter.received'), t('filter.notReceived')],
+                        datasets: [{
+                            data: [receivingCount, notReceiving],
+                            backgroundColor: ['#28a745', '#dc3545'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        cutout: '65%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: true }
+                        }
+                    },
+                    plugins: [{
+                        id: 'centerText',
+                        afterDraw: function(chart) {
+                            var ctx = chart.ctx;
+                            ctx.save();
+                            ctx.font = 'bold 1.4rem sans-serif';
+                            ctx.fillStyle = '#1a237e';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            var cx = (chart.chartArea.left + chart.chartArea.right) / 2;
+                            var cy = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+                            ctx.fillText(payRate + '%', cx, cy);
+                            ctx.restore();
+                        }
+                    }]
+                });
+            }
+        } catch (e) {
+            console.error('[DashboardModals] Position doughnut chart error:', e);
+        }
 
         // Show using Bootstrap 5 Modal API
         var modalEl = document.getElementById('positionModal');
@@ -424,7 +547,11 @@ var DashboardModals = {
                 }
             }
 
-            html += '<tr>';
+            // Row background color based on result (Phase C Korean UX)
+            var rowBg = result === 'YES' ? 'background: rgba(40,167,69,0.08);' :
+                        result === 'NO' ? 'background: rgba(220,53,69,0.08);' : '';
+
+            html += '<tr style="' + rowBg + '">';
             html += '<td style="text-align: center; color: #9e9e9e;">' + i + '</td>';
             html += '<td>' + conditionNames[i - 1] + '</td>';
             html += '<td style="text-align: right;">' + valueStr + '</td>';
@@ -435,17 +562,23 @@ var DashboardModals = {
 
         html += '</tbody></table></div>';
 
-        // Summary line
+        // Summary line + Doughnut
+        var failCount = totalApplicable - passCount;
         var summaryColor = (totalApplicable > 0 && passCount === totalApplicable) ? '#2e7d32' : '#c62828';
-        html += '<p style="margin: 10px 0 0; font-weight: 600; color: ' + summaryColor + ';">';
+        html += '<div style="display: flex; align-items: center; gap: 16px; margin-top: 10px;">';
+        html += '<canvas id="conditionDoughnutChart" width="80" height="80" style="flex-shrink:0;"></canvas>';
+        html += '<p style="margin: 0; font-weight: 600; color: ' + summaryColor + ';">';
         html += passCount + '/' + totalApplicable + ' ' + t('modal.conditionsPassed');
         if (totalApplicable > 0 && passCount === totalApplicable) {
-            html += ' (100%)';
+            html += ' (100%) ✅';
         } else if (totalApplicable > 0) {
-            html += ' (' + Math.round(passCount / totalApplicable * 100) + '%)';
+            html += ' (' + Math.round(passCount / totalApplicable * 100) + '%) ❌';
         }
-        html += '</p>';
+        html += '</p></div>';
         html += '</div>';
+
+        // Store data for deferred doughnut render (after innerHTML set)
+        this._conditionDoughnutData = { pass: passCount, fail: failCount };
 
         return html;
     },
@@ -470,11 +603,11 @@ var DashboardModals = {
         html += this._renderInfoItem(
             t('modal.currentIncentive'),
             '<span style="font-weight: 700; color: ' + (currentIncentive > 0 ? '#2e7d32' : '#c62828') + ';">'
-                + this._formatVND(currentIncentive) + ' VND</span>'
+                + this._formatVND(currentIncentive) + ' ' + t('unit.currency') + '</span>'
         );
         html += this._renderInfoItem(
             t('modal.previousIncentive'),
-            this._formatVND(previousIncentive) + ' VND'
+            this._formatVND(previousIncentive) + ' ' + t('unit.currency')
         );
         if (isType1) {
             html += this._renderInfoItem(
@@ -600,8 +733,8 @@ var DashboardModals = {
         html += '<h3 style="font-size: 1rem; margin: 0 0 12px;">5PRS</h3>';
         html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">';
         html += this._renderInfoItem(t('condition.9'), this._formatPercent(passRate) + '%');
-        html += this._renderInfoItem(t('condition.10'), String(inspectionQty) + ' prs');
-        html += this._renderInfoItem(t('modal.totalQty'), String(totalQty) + ' prs');
+        html += this._renderInfoItem(t('condition.10'), String(inspectionQty) + ' ' + t('unit.pairs'));
+        html += this._renderInfoItem(t('modal.totalQty'), String(totalQty) + ' ' + t('unit.pairs'));
         html += '</div></div>';
 
         return html;
@@ -1226,12 +1359,13 @@ var DashboardModals = {
     _formatBadge: function (value, type) {
         if (type === 'condition') {
             var upper = String(value).toUpperCase();
+            var t = DashboardI18n.t.bind(DashboardI18n);
             if (upper === 'YES') {
-                return '<span class="badge-pass">PASS</span>';
+                return '<span class="badge-pass">' + t('status.pass') + '</span>';
             } else if (upper === 'NO') {
-                return '<span class="badge-fail">FAIL</span>';
+                return '<span class="badge-fail">' + t('status.fail') + '</span>';
             } else {
-                return '<span class="badge-na">N/A</span>';
+                return '<span class="badge-na">' + t('status.na') + '</span>';
             }
         }
         if (type === 'incentive') {

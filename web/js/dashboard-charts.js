@@ -58,7 +58,9 @@ var DashboardCharts = {
 
 
         this.renderSummaryKPIs(data);
+        this.renderTrendChart(data);
         this.renderTypeTable(data);
+        this.renderTalentPool(data);
         this.renderConditionCharts(data);
         this.renderPositionTables(data);
         this.renderCriteriaTab(data);
@@ -129,10 +131,27 @@ var DashboardCharts = {
             ? ((receivingCount / totalCount) * 100)
             : 0;
 
-        // Set KPI values
+        // Set KPI values (4 cards)
+        this._setText('totalEmployeesValue', this._formatNumber(totalCount));
         this._setText('recipientsCountValue', this._formatNumber(receivingCount));
         this._setText('paymentRateValue', this.formatPercent(paymentRate) + '%');
-        this._setText('totalAmountValue', this.formatVND(totalAmount) + ' VND');
+        this._setText('totalAmountValue', this.formatVND(totalAmount) + ' ' + DashboardI18n.t('unit.currency'));
+
+        // Payment rate progress bar
+        var progressBar = document.getElementById('paymentRateBar');
+        if (progressBar) {
+            var barColor = paymentRate >= 70 ? this.colors.green : paymentRate >= 40 ? this.colors.yellow : this.colors.red;
+            progressBar.style.width = Math.min(paymentRate, 100) + '%';
+            progressBar.style.background = barColor;
+        }
+
+        // Total employees trend: ratio display
+        var totalTrendEl = document.getElementById('totalEmployeesTrend');
+        if (totalTrendEl) {
+            var t = DashboardI18n.t.bind(DashboardI18n);
+            totalTrendEl.textContent = t('kpi.employeeRatio') + ': ' + receivingCount + '/' + totalCount;
+            totalTrendEl.className = 'kpi-trend';
+        }
 
         // Trend indicators (from summary if available)
         this._renderTrend('recipientsTrend', summary.recipients_trend);
@@ -800,7 +819,7 @@ var DashboardCharts = {
             html += '<td style="font-weight:600;">' + row.pos + '</td>';
             html += '<td>' + row.ref + '</td>';
             html += '<td><span style="color:#d32f2f; font-weight:600;">' + row.method + '</span></td>';
-            html += '<td style="text-align:right; font-weight:700; color:#1565c0;">' + self._formatNumber(row.avg) + ' VND</td>';
+            html += '<td style="text-align:right; font-weight:700; color:#1565c0;">' + self._formatNumber(row.avg) + ' ' + DashboardI18n.t('unit.currency') + '</td>';
             html += '</tr>';
         });
 
@@ -959,7 +978,7 @@ var DashboardCharts = {
                 cardsHtml += ' | <span style="color:' + self.colors.green + ';">' + t('team.receiving') + ' <b>' + receiving + '</b></span>';
                 cardsHtml += '</div>';
                 cardsHtml += '<div style="font-size:0.82rem; margin-top:4px;">' + t('team.rate') + ' <b style="color:' + (rate >= 70 ? self.colors.green : self.colors.red) + ';">' + self.formatPercent(rate) + '%</b></div>';
-                cardsHtml += '<div style="font-size:0.82rem; margin-top:2px;">' + t('team.amount') + ' <b>' + self.formatVND(amount) + '</b> VND</div>';
+                cardsHtml += '<div style="font-size:0.82rem; margin-top:2px;">' + t('team.amount') + ' <b>' + self.formatVND(amount) + '</b> ' + DashboardI18n.t('unit.currency') + '</div>';
                 cardsHtml += '</div>';
             });
             cardsContainer.innerHTML = cardsHtml;
@@ -1353,7 +1372,7 @@ var DashboardCharts = {
             // Incentive info row
             var fmtInc = Number(node.incentive).toLocaleString('ko-KR');
             html += '<div class="node-incentive-info" data-node-id="' + node.id + '">';
-            html += '<span class="incentive-amount">' + fmtInc + ' VND</span>';
+            html += '<span class="incentive-amount">' + fmtInc + ' ' + DashboardI18n.t('unit.currency') + '</span>';
             html += '<button type="button" class="incentive-detail-btn" data-node-id="' + node.id + '" title="Detail">';
             html += '<i class="fas fa-info-circle"></i></button>';
             html += '</div>';
@@ -2020,6 +2039,170 @@ var DashboardCharts = {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
+    },
+
+    // ------------------------------------------------------------------
+    // Summary Tab: Trend Chart (Previous vs Current Month)
+    // ------------------------------------------------------------------
+
+    /**
+     * Render a bar chart comparing previous vs current month incentives.
+     * Shows: Total Incentive, Recipient Count, Avg Incentive.
+     * Hidden if no previous month data exists.
+     *
+     * @param {Object} data - { employees, summary, thresholds }
+     */
+    renderTrendChart: function (data) {
+        var section = document.getElementById('trendChartSection');
+        if (!section) return;
+
+        var employees = data.employees || [];
+        var t = DashboardI18n.t.bind(DashboardI18n);
+
+        // Calculate current month stats
+        var curTotal = 0, curCount = 0;
+        var prevTotal = 0, prevCount = 0;
+        var hasPrevData = false;
+
+        employees.forEach(function (emp) {
+            var curAmt = window.employeeHelpers
+                ? window.employeeHelpers.getIncentive(emp, 'current')
+                : (emp.currentIncentive || 0);
+            var prevAmt = window.employeeHelpers
+                ? window.employeeHelpers.getIncentive(emp, 'previous')
+                : (emp.previousIncentive || 0);
+
+            if (curAmt > 0) { curCount++; curTotal += curAmt; }
+            if (prevAmt > 0) { prevCount++; prevTotal += prevAmt; hasPrevData = true; }
+        });
+
+        // Hide section if no previous data
+        if (!hasPrevData) {
+            section.style.display = 'none';
+            return;
+        }
+        section.style.display = 'block';
+
+        var curAvg = curCount > 0 ? curTotal / curCount : 0;
+        var prevAvg = prevCount > 0 ? prevTotal / prevCount : 0;
+
+        // Destroy existing chart
+        this.destroyChart('trendChart');
+
+        var canvas = document.getElementById('trendChart');
+        if (!canvas) return;
+
+        var ctx = canvas.getContext('2d');
+        this.charts['trendChart'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [t('chart.totalIncentive'), t('chart.recipientCount'), t('chart.avgIncentive')],
+                datasets: [
+                    {
+                        label: t('chart.previousMonth'),
+                        data: [prevTotal, prevCount, prevAvg],
+                        backgroundColor: 'rgba(108, 117, 125, 0.6)',
+                        borderColor: '#6c757d',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    },
+                    {
+                        label: t('chart.currentMonth'),
+                        data: [curTotal, curCount, curAvg],
+                        backgroundColor: 'rgba(26, 35, 126, 0.6)',
+                        borderColor: '#1a237e',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                var val = context.parsed.y;
+                                if (context.dataIndex === 1) return context.dataset.label + ': ' + val + t('kpi.people');
+                                return context.dataset.label + ': ' + val.toLocaleString() + ' ' + DashboardI18n.t('unit.currency');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                                if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
+                                return value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    },
+
+    // ------------------------------------------------------------------
+    // Summary Tab: Talent Pool
+    // ------------------------------------------------------------------
+
+    /**
+     * Render Talent Pool section: employees with 12+ consecutive months.
+     * @param {Object} data - { employees, summary, thresholds }
+     */
+    renderTalentPool: function (data) {
+        var container = document.getElementById('talentPoolSection');
+        if (!container) return;
+
+        var employees = data.employees || [];
+        var t = DashboardI18n.t.bind(DashboardI18n);
+
+        // Filter: Continuous_Months >= 12 AND currently receiving incentive
+        var members = employees.filter(function (emp) {
+            var months = parseInt(emp.Continuous_Months || emp.continuous_months || 0, 10);
+            var hasIncentive = window.employeeHelpers
+                ? window.employeeHelpers.hasReceivedIncentive(emp)
+                : (emp.currentIncentive > 0);
+            return months >= 12 && hasIncentive;
+        });
+
+        if (members.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'block';
+
+        // Sort by continuous months descending
+        members.sort(function (a, b) {
+            return (parseInt(b.Continuous_Months || b.continuous_months || 0, 10)) -
+                   (parseInt(a.Continuous_Months || a.continuous_months || 0, 10));
+        });
+
+        var html = '<div class="talent-pool-card">';
+        html += '<h3>' + t('talentPool.title') + ' (' + members.length + t('talentPool.memberCount') + ')</h3>';
+        html += '<div style="display: flex; flex-wrap: wrap; gap: 6px;">';
+
+        members.forEach(function (emp) {
+            var name = emp.full_name || emp.name || emp.Name || emp['Employee Name'] || '--';
+            var months = parseInt(emp.Continuous_Months || emp.continuous_months || 0, 10);
+            var incentive = window.employeeHelpers
+                ? window.employeeHelpers.getIncentive(emp, 'current')
+                : (emp.currentIncentive || 0);
+
+            html += '<div class="talent-member">';
+            html += '<span>🏅 ' + name + '</span>';
+            html += '<span class="talent-months">' + months + t('talentPool.consecutiveMonths') + '</span>';
+            html += '</div>';
+        });
+
+        html += '</div></div>';
+        container.innerHTML = html;
     },
 
     /**

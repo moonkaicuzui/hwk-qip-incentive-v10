@@ -524,7 +524,7 @@ var DashboardFilters = {
             html += '<td style="text-align: center;">' + aqlHtml + '</td>';
             html += '<td style="text-align: center;">' + prsHtml + '</td>';
             html += '<td style="text-align: right; color: ' + incentiveColor + '; font-weight: ' + incentiveWeight + ';">' +
-                    incentiveFormatted + ' <small style="color:#9e9e9e;">VND</small></td>';
+                    incentiveFormatted + ' <small style="color:#9e9e9e;">' + DashboardI18n.t('unit.currency') + '</small></td>';
             html += '<td style="text-align: center;">' +
                     '<button onclick="DashboardFilters._openEmployeeModal(\'' + self._escapeAttr(empNo) + '\')" ' +
                     'style="padding: 3px 10px; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; font-size: 0.75rem;" ' +

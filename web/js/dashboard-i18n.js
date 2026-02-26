@@ -76,10 +76,53 @@ const DashboardI18n = {
         'footer.dataSource': { ko: 'Data source: Firestore', en: 'Data source: Firestore', vi: 'Nguồn dữ liệu: Firestore' },
 
         // KPI labels
+        'kpi.totalEmployees': { ko: '전체 직원', en: 'Total Employees', vi: 'Tổng nhân viên' },
         'kpi.recipients': { ko: '수령 직원', en: 'Recipients', vi: 'Nhân viên nhận' },
         'kpi.paymentRate': { ko: '지급률', en: 'Payment Rate', vi: 'Tỷ lệ chi trả' },
         'kpi.totalAmount': { ko: '총 지급액', en: 'Total Amount', vi: 'Tổng số tiền' },
         'kpi.people': { ko: '명', en: ' people', vi: ' người' },
+        'kpi.employeeRatio': { ko: '수령/전체', en: 'Recv/Total', vi: 'Nhận/Tổng' },
+
+        // Trend Chart
+        'chart.trendTitle': { ko: '전월 대비 인센티브 분석', en: 'Monthly Incentive Trend Analysis', vi: 'Phân tích xu hướng khuyến khích' },
+        'chart.previousMonth': { ko: '전월', en: 'Previous', vi: 'Tháng trước' },
+        'chart.currentMonth': { ko: '당월', en: 'Current', vi: 'Tháng này' },
+        'chart.totalIncentive': { ko: '총 인센티브', en: 'Total Incentive', vi: 'Tổng khuyến khích' },
+        'chart.recipientCount': { ko: '수령자 수', en: 'Recipients', vi: 'Số người nhận' },
+        'chart.avgIncentive': { ko: '평균 인센티브', en: 'Avg Incentive', vi: 'TB khuyến khích' },
+        'chart.change': { ko: '변동', en: 'Change', vi: 'Thay đổi' },
+        'chart.noTrendData': { ko: '전월 데이터 없음', en: 'No previous month data', vi: 'Không có dữ liệu tháng trước' },
+
+        // Quick Summary
+        'quickSummary.title': { ko: '빠른 요약', en: 'Quick Summary', vi: 'Tóm tắt nhanh' },
+        'quickSummary.close': { ko: '닫기', en: 'Close', vi: 'Đóng' },
+        'quickSummary.recipients': { ko: '수령 직원', en: 'Recipients', vi: 'Nhân viên nhận' },
+        'quickSummary.paymentRate': { ko: '지급률', en: 'Payment Rate', vi: 'Tỷ lệ chi trả' },
+        'quickSummary.totalAmount': { ko: '총 지급액', en: 'Total Amount', vi: 'Tổng số tiền' },
+
+        // My Incentive
+        'myIncentive.btnLabel': { ko: '내 인센티브', en: 'My Incentive', vi: 'KK của tôi' },
+        'myIncentive.title': { ko: '내 인센티브 조회', en: 'My Incentive Lookup', vi: 'Tra cứu KK của tôi' },
+        'myIncentive.placeholder': { ko: '사번을 입력하세요', en: 'Enter your employee number', vi: 'Nhập mã nhân viên' },
+        'myIncentive.notFound': { ko: '해당 사번의 직원을 찾을 수 없습니다.', en: 'Employee not found with that number.', vi: 'Không tìm thấy nhân viên.' },
+
+        // Excel Download
+        'common.excelDownload': { ko: 'Excel 다운로드', en: 'Excel Download', vi: 'Tải Excel' },
+
+        // Talent Pool
+        'talentPool.title': { ko: '🏆 Talent Pool', en: '🏆 Talent Pool', vi: '🏆 Talent Pool' },
+        'talentPool.memberCount': { ko: '명', en: ' members', vi: ' thành viên' },
+        'talentPool.consecutiveMonths': { ko: '개월 연속', en: ' consecutive months', vi: ' tháng liên tục' },
+        'talentPool.noMembers': { ko: 'Talent Pool 해당자 없음', en: 'No Talent Pool members', vi: 'Không có thành viên Talent Pool' },
+
+        // Dark Mode
+        'common.darkMode': { ko: '다크 모드', en: 'Dark Mode', vi: 'Chế độ tối' },
+        'common.lightMode': { ko: '라이트 모드', en: 'Light Mode', vi: 'Chế độ sáng' },
+
+        // Data Period
+        'dataPeriod.interim': { ko: '📋 중간 보고서', en: '📋 Interim Report', vi: '📋 Báo cáo giữa kỳ' },
+        'dataPeriod.final': { ko: '📋 최종 보고서', en: '📋 Final Report', vi: '📋 Báo cáo cuối kỳ' },
+        'dataPeriod.badge': { ko: '중간 데이터', en: 'Interim Data', vi: 'Dữ liệu giữa kỳ' },
 
         // Table headers
         'table.no': { ko: '번호', en: 'No', vi: 'STT' },
@@ -444,6 +487,16 @@ const DashboardI18n = {
         'modal.5prsNotApplicable': { ko: '이 TYPE에는 5PRS 조건 미적용', en: '5PRS conditions not applicable for this TYPE', vi: 'Điều kiện 5PRS không áp dụng cho TYPE này' },
         'modal.totalQty': { ko: '총 검사량', en: 'Total Qty', vi: 'Tổng SL' },
         'modal.bossBuilding': { ko: '상사 Building', en: 'Boss Building', vi: 'Xưởng quản lý' },
+
+        // Status badges (language-aware)
+        'status.pass': { ko: '통과', en: 'PASS', vi: 'Đạt' },
+        'status.fail': { ko: '실패', en: 'FAIL', vi: 'Không đạt' },
+        'status.na': { ko: '해당없음', en: 'N/A', vi: 'N/A' },
+        // Units
+        'unit.pairs': { ko: '족', en: 'prs', vi: 'đôi' },
+        'unit.currency': { ko: 'VND', en: 'VND', vi: 'VND' },
+        // KPI extras
+        'kpi.maxMin': { ko: '최대 / 최소', en: 'MAX / MIN', vi: 'Tối đa / Tối thiểu' },
         'modal.workingDays': { ko: '근무일', en: 'Working Days', vi: 'Ngày làm' },
         'modal.employeesCount': { ko: '직원', en: 'Employees', vi: 'Nhân viên' },
         'modal.currentIncentive': { ko: '당월 인센티브', en: 'Current Incentive', vi: 'KK tháng này' },
@@ -539,7 +592,39 @@ const DashboardI18n = {
                 DashboardCharts._renderBuildingSummaryCards(d.employees || []);
                 DashboardCharts._renderTypeCalculationMethods(d);
                 DashboardCharts._renderFAQSection();
+                // Re-render Phase A features on language switch
+                if (DashboardCharts.renderTrendChart) {
+                    DashboardCharts.renderTrendChart(d);
+                }
+                if (DashboardCharts.renderTalentPool) {
+                    DashboardCharts.renderTalentPool(d);
+                }
+                if (DashboardCharts.renderSummaryKPIs) {
+                    DashboardCharts.renderSummaryKPIs(d);
+                }
             }
+        }
+        // Update Quick Summary overlay if visible
+        var qsPanel = document.getElementById('quickSummaryOverlay');
+        if (qsPanel && qsPanel.style.display !== 'none') {
+            toggleQuickSummary(); // Close and reopen to re-render with new language
+            toggleQuickSummary();
+        }
+        // Update Data Period toggle button text
+        var dpBtn = document.getElementById('dataPeriodToggle');
+        if (dpBtn) {
+            var dpSpan = dpBtn.querySelector('[data-i18n]');
+            if (dpSpan) {
+                var dpKey = window._isInterimReport ? 'dataPeriod.interim' : 'dataPeriod.final';
+                dpSpan.setAttribute('data-i18n', dpKey);
+                dpSpan.textContent = DashboardI18n.t(dpKey);
+            }
+        }
+        // Update dark mode toggle tooltip
+        var dmBtn = document.getElementById('darkModeToggle');
+        if (dmBtn) {
+            var isDark = document.documentElement.classList.contains('dark-mode');
+            dmBtn.title = DashboardI18n.t(isDark ? 'common.lightMode' : 'common.darkMode');
         }
     },
 
