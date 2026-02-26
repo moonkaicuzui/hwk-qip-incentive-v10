@@ -602,6 +602,10 @@ const DashboardI18n = {
                 if (DashboardCharts.renderSummaryKPIs) {
                     DashboardCharts.renderSummaryKPIs(d);
                 }
+                // Re-render attendance calendar on language switch (Bug fix: calendar text stayed in original language)
+                if (DashboardCharts.renderAttendanceCalendar) {
+                    DashboardCharts.renderAttendanceCalendar(d);
+                }
             }
         }
         // Update Quick Summary overlay if visible
