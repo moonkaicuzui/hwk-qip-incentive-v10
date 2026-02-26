@@ -419,6 +419,7 @@ const DashboardI18n = {
         // Modal extras
         'modal.entranceDate': { ko: '입사일', en: 'Entrance Date', vi: 'Ngày vào' },
         'modal.boss': { ko: '상사', en: 'Boss', vi: 'Quản lý' },
+        'modal.bossName': { ko: '상사 이름', en: 'Boss Name', vi: 'Tên quản lý' },
         'modal.approvedLeave': { ko: '승인 휴가', en: 'Approved Leave', vi: 'Nghỉ phép được duyệt' },
         'modal.conditionHeader': { ko: '조건', en: 'Condition', vi: 'Điều kiện' },
         'modal.valueHeader': { ko: '값', en: 'Value', vi: 'Giá trị' },

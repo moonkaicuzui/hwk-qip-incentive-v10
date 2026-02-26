@@ -91,7 +91,7 @@ var DashboardModals = {
         var bodyEl = document.getElementById('employeeModalBody');
         if (!titleEl || !bodyEl) return;
 
-        var empName = this._escapeHtml(emp.name || emp.Name || emp['Employee Name'] || '--');
+        var empName = this._escapeHtml(emp.full_name || emp.name || emp.Name || emp['Employee Name'] || '--');
         var empPosition = this._escapeHtml(emp.position || emp.Position || emp['Position Name'] || '--');
         titleEl.textContent = empName + ' - ' + empPosition;
 
@@ -1064,7 +1064,7 @@ var DashboardModals = {
             case 'emp_no':
                 return String(emp.emp_no || emp['Employee No'] || '--');
             case 'name':
-                return emp.name || emp.Name || emp['Employee Name'] || '--';
+                return emp.full_name || emp.name || emp.Name || emp['Employee Name'] || '--';
             case 'position':
                 return emp.position || emp.Position || emp['Position Name'] || '--';
             case 'building':
