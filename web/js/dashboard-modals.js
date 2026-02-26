@@ -172,6 +172,14 @@ var DashboardModals = {
         // Show using Bootstrap 5 Modal API
         var modalEl = document.getElementById('employeeModal');
         if (modalEl) {
+            // Fix: Ensure Employee Detail appears above Position Detail (z-index stacking)
+            modalEl.style.zIndex = '1060';
+            modalEl.addEventListener('shown.bs.modal', function () {
+                var backdrops = document.querySelectorAll('.modal-backdrop');
+                if (backdrops.length > 1) {
+                    backdrops[backdrops.length - 1].style.zIndex = '1058';
+                }
+            }, { once: true });
             var bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
             bsModal.show();
         }
