@@ -554,8 +554,9 @@ var DashboardFilters = {
         var currentPage = this.currentPage;
 
         if (totalPages <= 0) {
+            var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
             container.innerHTML = '<div style="text-align: center; color: #757575; font-size: 0.82rem; padding: 8px 0;">' +
-                '\uCD1D 0\uBA85</div>'; // 총 0명
+                t('common.total') + ' 0' + t('common.people_count') + '</div>';
             return;
         }
 
@@ -566,8 +567,9 @@ var DashboardFilters = {
 
         // Info text
         html += '<div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 8px;">';
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
         html += '<span style="color: #757575; font-size: 0.82rem;">' +
-                start + '-' + end + ' / ' + totalItems + '\uBA85</span>'; // 명
+                start + '-' + end + ' / ' + totalItems + t('common.people_count') + '</span>';
 
         // Page buttons
         html += '<div style="display: flex; gap: 4px; align-items: center;">';

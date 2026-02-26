@@ -117,6 +117,7 @@ const DashboardI18n = {
         'common.back': { ko: '← 월 선택', en: '← Select Month', vi: '← Chọn tháng' },
         'common.days': { ko: '일', en: ' days', vi: ' ngày' },
         'common.people_count': { ko: '명', en: '', vi: '' },
+        'common.total': { ko: '총', en: 'Total', vi: 'Tổng' },
         'common.employee': { ko: '직원', en: 'employee', vi: 'nhân viên' },
         'common.employees': { ko: '직원', en: 'employees', vi: 'nhân viên' },
 
