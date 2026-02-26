@@ -393,8 +393,17 @@ var DashboardModals = {
             if (type === 'totalWorkingDays') {
                 // Special case: summary info, not a filtered list
                 html += this._renderWorkingDaysSummary();
+            } else if (type === 'lowPassRate') {
+                // V9 feature: 5PRS 2-table structure (threshold violators + Top 10)
+                html += this._renderLowPassRateContent(th);
+            } else if (type === 'consecutiveAqlFail') {
+                // V9 feature: AQL 3-month/2-month split + Line Leader aggregation
+                html += this._renderConsecutiveAqlContent(th);
+            } else if (type === 'buildingReviewTotal') {
+                // V9 feature: Cross-Building enhanced modal with color badges
+                html += this._renderBuildingReviewContent(th);
             } else {
-                // Filter employees based on type
+                // Generic: filter + table
                 var filtered = this._filterEmployees(type, th);
 
                 html += '<p style="margin: 0 0 12px; color: #616161;">';
@@ -402,12 +411,14 @@ var DashboardModals = {
                 html += this._t('common.people_count');
                 html += '</p>';
 
-                // Build table columns based on type
                 var columns = this._getValidationColumns(type);
                 html += this._createEmployeeTable(filtered, columns, type);
             }
 
             bodyDiv.innerHTML = html;
+
+            // V9 feature: Enable table sorting (▲▼ click)
+            this._enableTableSorting(bodyDiv);
 
         } catch (e) {
             console.error('[DashboardModals][Issue #62] Error populating validation modal:', e);
@@ -658,6 +669,9 @@ var DashboardModals = {
             html += '</div>';
             html += '</div>';
         }
+
+        // V9 feature: AQL Inspector 3-Part breakdown
+        html += this._renderAqlInspector3Part(emp, currentIncentive);
 
         html += '</div>';
         return html;
@@ -1159,12 +1173,20 @@ var DashboardModals = {
         var self = this;
         var html = '<div class="table-container"><table>';
 
-        // Header
+        // Header with sortable columns (V9 feature: ▲▼ click sorting)
         html += '<thead><tr>';
         html += '<th style="width: 40px;">#</th>';
         columns.forEach(function (col) {
-            var align = (col.formatter === 'vnd' || col.formatter === 'percent' || col.formatter === 'number' || col.formatter === 'days') ? ' style="text-align:right;"' : '';
-            html += '<th' + align + '>' + self._escapeHtml(col.label) + '</th>';
+            var isNumeric = (col.formatter === 'vnd' || col.formatter === 'percent' || col.formatter === 'number' || col.formatter === 'days');
+            var align = isNumeric ? ' text-align:right;' : '';
+            var sortType = isNumeric ? 'number' : 'text';
+            html += '<th style="cursor:pointer; user-select:none;' + align + '" ';
+            html += 'data-sort-key="' + self._escapeHtml(col.key) + '" ';
+            html += 'data-sort-type="' + sortType + '" ';
+            html += 'data-formatter="' + (col.formatter || 'text') + '">';
+            html += self._escapeHtml(col.label);
+            html += ' <span class="sort-indicator" style="opacity:0.3; font-size:0.7em;">▲▼</span>';
+            html += '</th>';
         });
         html += '</tr></thead><tbody>';
 
@@ -1481,5 +1503,585 @@ var DashboardModals = {
             return DashboardI18n.t(key);
         }
         return key;
+    },
+
+    // ====================================================================
+    // V9 Feature: Table Sorting (▲▼ click)
+    // ====================================================================
+
+    /**
+     * Enable click-to-sort on all sortable table headers within a container.
+     * Binds click events to <th> elements with data-sort-key attribute.
+     *
+     * @param {HTMLElement} container - Parent element containing table(s)
+     * @private
+     */
+    _enableTableSorting: function (container) {
+        if (!container) return;
+        var self = this;
+
+        var headers = container.querySelectorAll('th[data-sort-key]');
+        headers.forEach(function (th) {
+            th.addEventListener('click', function () {
+                var table = th.closest('table');
+                if (!table) return;
+
+                var sortKey = th.getAttribute('data-sort-key');
+                var sortType = th.getAttribute('data-sort-type') || 'text';
+                var formatter = th.getAttribute('data-formatter') || 'text';
+                var tbody = table.querySelector('tbody');
+                if (!tbody) return;
+
+                // Determine sort direction (toggle)
+                var currentDir = th.getAttribute('data-sort-dir') || 'none';
+                var newDir = (currentDir === 'asc') ? 'desc' : 'asc';
+
+                // Reset all headers in this table
+                table.querySelectorAll('th[data-sort-key]').forEach(function (h) {
+                    h.setAttribute('data-sort-dir', 'none');
+                    var ind = h.querySelector('.sort-indicator');
+                    if (ind) { ind.textContent = '▲▼'; ind.style.opacity = '0.3'; }
+                });
+
+                // Set current header
+                th.setAttribute('data-sort-dir', newDir);
+                var indicator = th.querySelector('.sort-indicator');
+                if (indicator) {
+                    indicator.textContent = newDir === 'asc' ? '▲' : '▼';
+                    indicator.style.opacity = '1';
+                }
+
+                // Sort rows
+                var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+                var colIndex = self._getColumnIndex(th);
+
+                rows.sort(function (a, b) {
+                    var aCell = a.cells[colIndex];
+                    var bCell = b.cells[colIndex];
+                    if (!aCell || !bCell) return 0;
+
+                    var aVal = (aCell.textContent || '').trim();
+                    var bVal = (bCell.textContent || '').trim();
+
+                    if (sortType === 'number' || formatter === 'vnd' || formatter === 'percent' || formatter === 'number' || formatter === 'days') {
+                        var aNum = parseFloat(aVal.replace(/[^0-9.\-]/g, '')) || 0;
+                        var bNum = parseFloat(bVal.replace(/[^0-9.\-]/g, '')) || 0;
+                        return newDir === 'asc' ? (aNum - bNum) : (bNum - aNum);
+                    } else {
+                        var cmp = aVal.localeCompare(bVal, undefined, { sensitivity: 'base' });
+                        return newDir === 'asc' ? cmp : -cmp;
+                    }
+                });
+
+                // Re-append sorted rows and update row numbers
+                rows.forEach(function (row, idx) {
+                    tbody.appendChild(row);
+                    if (row.cells[0]) row.cells[0].textContent = (idx + 1);
+                });
+            });
+        });
+    },
+
+    /**
+     * Get the column index of a <th> element within its row.
+     * @param {HTMLElement} th
+     * @returns {number}
+     * @private
+     */
+    _getColumnIndex: function (th) {
+        var row = th.parentElement;
+        if (!row) return 0;
+        var cells = Array.prototype.slice.call(row.children);
+        return cells.indexOf(th);
+    },
+
+    // ====================================================================
+    // V9 Feature: 5PRS 2-Table Structure (Low Pass Rate + Top 10)
+    // ====================================================================
+
+    /**
+     * Render 5PRS low pass rate content with two tables:
+     *  Table 1: All employees below threshold
+     *  Table 2: Top 10 lowest pass rates among all TYPE-1 inspectors
+     *
+     * @param {Object} th - Thresholds
+     * @returns {string} HTML
+     * @private
+     */
+    _renderLowPassRateContent: function (th) {
+        var self = this;
+        var t = this._t;
+        var thPassRate = parseFloat(th['5prs_pass_rate'] || 95);
+
+        // Get all TYPE-1 inspectors
+        var allType1 = this.employees.filter(function (emp) {
+            var empType = String(emp.type || emp.TYPE || '').toUpperCase();
+            var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+            var hasData = parseFloat(emp.prs ? emp.prs.pass_rate : (emp.prs_pass_rate || 0)) > 0;
+            return isType1 && hasData;
+        });
+
+        // Table 1: Below threshold
+        var lowPass = allType1.filter(function (emp) {
+            var val = parseFloat(emp.prs ? emp.prs.pass_rate : (emp.prs_pass_rate || 0)) || 0;
+            return val < thPassRate;
+        });
+
+        // Table 2: Top 10 lowest pass rates
+        var top10 = allType1.slice().sort(function (a, b) {
+            var aRate = parseFloat(a.prs ? a.prs.pass_rate : (a.prs_pass_rate || 0)) || 0;
+            var bRate = parseFloat(b.prs ? b.prs.pass_rate : (b.prs_pass_rate || 0)) || 0;
+            return aRate - bRate;
+        }).slice(0, 10);
+
+        var columns = [
+            { key: 'emp_no', label: t('table.empNo') },
+            { key: 'name', label: t('table.name') },
+            { key: 'position', label: t('table.position') },
+            { key: 'building', label: t('table.building') },
+            { key: 'inspection_qty', label: t('modal.inspectionQty'), formatter: 'number' },
+            { key: 'pass_rate', label: t('condition.9'), formatter: 'percent' },
+            { key: 'incentive', label: t('table.incentive'), formatter: 'vnd' }
+        ];
+
+        var html = '';
+
+        // Table 1: Threshold violators
+        html += '<div style="margin-bottom: 24px;">';
+        html += '<h4 style="font-size: 1rem; margin: 0 0 8px; color: #c62828;">';
+        html += '🔴 ' + t('modal.lowPassRateTable1') + ' (< ' + thPassRate + '%)';
+        html += ' — <strong>' + lowPass.length + '</strong>' + t('common.people_count');
+        html += '</h4>';
+        html += this._createEmployeeTable(lowPass, columns, 'lowPassRate');
+        html += '</div>';
+
+        // Table 2: Top 10 lowest
+        html += '<div>';
+        html += '<h4 style="font-size: 1rem; margin: 0 0 8px; color: #e65100;">';
+        html += '📊 ' + t('modal.top10LowestPassRate');
+        html += '</h4>';
+
+        // Add rank column for Top 10
+        var rankColumns = [{ key: '_rank', label: '#', formatter: 'text' }].concat(columns);
+
+        // Manually add rank to employees
+        var top10WithRank = top10.map(function (emp, idx) {
+            var clone = Object.assign({}, emp);
+            clone._rank = (idx + 1);
+            return clone;
+        });
+
+        html += this._createEmployeeTable(top10WithRank, rankColumns, 'lowPassRate');
+        html += '</div>';
+
+        return html;
+    },
+
+    // ====================================================================
+    // V9 Feature: AQL Consecutive Fail 2-Table + Line Leader Aggregation
+    // ====================================================================
+
+    /**
+     * Render AQL consecutive failure content:
+     *  Section 1: 3-month consecutive failures
+     *  Section 2: 2-month consecutive failures
+     *  Section 3: Line Leader aggregation (failures per supervisor)
+     *
+     * @param {Object} th - Thresholds
+     * @returns {string} HTML
+     * @private
+     */
+    _renderConsecutiveAqlContent: function (th) {
+        var self = this;
+        var t = this._t;
+        var employees = this.employees;
+
+        // Issue #48: Use includes/indexOf for Continuous_FAIL
+        var threeMonthFails = employees.filter(function (emp) {
+            var val = String(emp.aql ? emp.aql.continuous_fail : (emp.continuous_fail || emp['Continuous_FAIL'] || 'NO'));
+            return val.indexOf('YES_3MONTHS') !== -1;
+        });
+
+        var twoMonthFails = employees.filter(function (emp) {
+            // Check for 2-month field (Continuous_FAIL_2Month) or pattern match
+            var cf2 = String(emp.aql ? (emp.aql.continuous_fail_2month || '') : (emp.continuous_fail_2month || emp['Continuous_FAIL_2Month'] || ''));
+            if (cf2 === 'YES') return true;
+            // Fallback: includes YES but NOT 3MONTHS
+            var cf = String(emp.aql ? emp.aql.continuous_fail : (emp.continuous_fail || emp['Continuous_FAIL'] || 'NO'));
+            return cf.indexOf('YES') !== -1 && cf.indexOf('3MONTHS') === -1;
+        });
+
+        var baseColumns = [
+            { key: 'emp_no', label: t('table.empNo') },
+            { key: 'name', label: t('table.name') },
+            { key: 'position', label: t('table.position') },
+            { key: 'building', label: t('table.building') },
+            { key: 'boss_name', label: t('modal.bossName') },
+            { key: 'continuous_fail', label: t('modal.failPattern'), formatter: 'text' },
+            { key: 'incentive', label: t('table.incentive'), formatter: 'vnd' }
+        ];
+
+        var html = '';
+
+        // Summary statistics
+        html += '<div style="display: flex; gap: 16px; margin-bottom: 20px;">';
+        html += '<div style="flex:1; padding: 16px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; border-radius: 12px; text-align: center;">';
+        html += '<div style="font-size: 2rem; font-weight: 700;">' + threeMonthFails.length + '</div>';
+        html += '<div style="font-size: 0.85rem; opacity: 0.9;">' + t('modal.threeMonthAqlFail') + '</div>';
+        html += '</div>';
+        html += '<div style="flex:1; padding: 16px; background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; border-radius: 12px; text-align: center;">';
+        html += '<div style="font-size: 2rem; font-weight: 700;">' + twoMonthFails.length + '</div>';
+        html += '<div style="font-size: 0.85rem; opacity: 0.9;">' + t('modal.twoMonthAqlFail') + '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        // Table 1: 3-month failures
+        html += '<div style="margin-bottom: 24px;">';
+        html += '<h4 style="font-size: 1rem; margin: 0 0 8px; color: #c62828;">';
+        html += '🔴 ' + t('modal.threeMonthAqlFail');
+        html += ' — <strong>' + threeMonthFails.length + '</strong>' + t('common.people_count');
+        html += '</h4>';
+        html += this._createEmployeeTable(threeMonthFails, baseColumns, 'consecutiveAqlFail');
+        html += '</div>';
+
+        // Table 2: 2-month failures
+        html += '<div style="margin-bottom: 24px;">';
+        html += '<h4 style="font-size: 1rem; margin: 0 0 8px; color: #e65100;">';
+        html += '🟠 ' + t('modal.twoMonthAqlFail');
+        html += ' — <strong>' + twoMonthFails.length + '</strong>' + t('common.people_count');
+        html += '</h4>';
+        html += this._createEmployeeTable(twoMonthFails, baseColumns, 'consecutiveAqlFail');
+        html += '</div>';
+
+        // Section 3: Line Leader aggregation
+        var allFails = threeMonthFails.concat(twoMonthFails);
+        var leaderMap = {};
+        allFails.forEach(function (emp) {
+            var bossName = emp.boss_name || emp['Boss Name'] || t('common.unknown');
+            var bossId = String(emp.boss_id || emp['Boss ID'] || '');
+            var key = bossId || bossName;
+            if (!leaderMap[key]) {
+                leaderMap[key] = { name: bossName, id: bossId, count3m: 0, count2m: 0, total: 0, employees: [] };
+            }
+            var cf = String(emp.aql ? emp.aql.continuous_fail : (emp.continuous_fail || emp['Continuous_FAIL'] || 'NO'));
+            if (cf.indexOf('3MONTHS') !== -1) {
+                leaderMap[key].count3m++;
+            } else {
+                leaderMap[key].count2m++;
+            }
+            leaderMap[key].total++;
+            leaderMap[key].employees.push(emp.full_name || emp.name || '--');
+        });
+
+        var leaders = Object.keys(leaderMap).map(function (k) { return leaderMap[k]; });
+        leaders.sort(function (a, b) { return b.total - a.total; });
+
+        if (leaders.length > 0) {
+            html += '<div>';
+            html += '<h4 style="font-size: 1rem; margin: 0 0 8px; color: #1565c0;">';
+            html += '📊 ' + t('modal.lineLeaderAggregation');
+            html += '</h4>';
+            html += '<div class="table-container"><table>';
+            html += '<thead><tr>';
+            html += '<th>#</th>';
+            html += '<th>' + t('modal.supervisorName') + '</th>';
+            html += '<th style="text-align:center;">' + t('modal.threeMonthAqlFail') + '</th>';
+            html += '<th style="text-align:center;">' + t('modal.twoMonthAqlFail') + '</th>';
+            html += '<th style="text-align:center;">' + t('modal.totalCount') + '</th>';
+            html += '<th>' + t('modal.subordinateNames') + '</th>';
+            html += '</tr></thead><tbody>';
+
+            leaders.forEach(function (leader, idx) {
+                html += '<tr>';
+                html += '<td style="text-align:center; color:#9e9e9e;">' + (idx + 1) + '</td>';
+                html += '<td><strong>' + self._escapeHtml(leader.name) + '</strong></td>';
+                html += '<td style="text-align:center;">';
+                html += leader.count3m > 0 ? '<span style="color:#c62828; font-weight:700;">' + leader.count3m + '</span>' : '0';
+                html += '</td>';
+                html += '<td style="text-align:center;">';
+                html += leader.count2m > 0 ? '<span style="color:#e65100; font-weight:700;">' + leader.count2m + '</span>' : '0';
+                html += '</td>';
+                html += '<td style="text-align:center; font-weight:700;">' + leader.total + '</td>';
+                html += '<td style="font-size:0.85rem; color:#616161;">' + leader.employees.map(function (n) { return self._escapeHtml(n); }).join(', ') + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            html += '</div>';
+        }
+
+        return html;
+    },
+
+    // ====================================================================
+    // V9 Feature: Cross-Building Enhanced Modal
+    // ====================================================================
+
+    /**
+     * Building color mapping (V9 pattern from Issue #34).
+     * @private
+     */
+    _BUILDING_COLORS: {
+        'A': '#ef4444', 'A1': '#f87171', 'A2': '#fca5a5',
+        'B': '#3b82f6', 'B1': '#60a5fa', 'B2': '#93c5fd', 'B3': '#8b5cf6',
+        'C': '#10b981', 'D': '#f59e0b',
+        'E1': '#6366f1', 'E2': '#818cf8',
+        'MTL WH': '#64748b', 'FG-WH': '#94a3b8',
+        'QA OFFICE': '#ec4899', 'QIP OFFICE': '#f472b6',
+        'INHOUSE EZ': '#14b8a6', 'INHOUSE PRINTING': '#2dd4bf'
+    },
+
+    /**
+     * Get building color badge HTML.
+     * @param {string} building
+     * @returns {string} HTML badge
+     * @private
+     */
+    _getBuildingBadge: function (building) {
+        if (!building || building === '--' || building === 'N/A') {
+            return '<span style="display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.78rem; background:#e0e0e0; color:#757575;">N/A</span>';
+        }
+        var key = String(building).toUpperCase().trim();
+        var color = this._BUILDING_COLORS[key] || '#6c757d';
+        return '<span style="display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.78rem; font-weight:600; color:#fff; background:' + color + ';">' + this._escapeHtml(building) + '</span>';
+    },
+
+    /**
+     * Render Cross-Building review content with color badges and case classification.
+     *
+     * Case 1: Building mismatch (employee vs boss different buildings)
+     * Case 2: Boss building unknown
+     *
+     * @param {Object} th - Thresholds
+     * @returns {string} HTML
+     * @private
+     */
+    _renderBuildingReviewContent: function (th) {
+        var self = this;
+        var t = this._t;
+        var employees = this.employees;
+
+        // Case 1: Building mismatch
+        var case1 = employees.filter(function (emp) {
+            var building = String(emp.building || '').trim();
+            var bossBuilding = String(emp.boss_building || '').trim();
+            return building && bossBuilding && building !== bossBuilding;
+        });
+
+        // Case 2: Boss building unknown
+        var case2 = employees.filter(function (emp) {
+            var building = String(emp.building || '').trim();
+            var bossBuilding = String(emp.boss_building || '').trim();
+            return building && !bossBuilding;
+        });
+
+        var totalCases = case1.length + case2.length;
+
+        var html = '';
+
+        // Summary KPIs
+        html += '<div style="display: flex; gap: 16px; margin-bottom: 20px;">';
+        html += '<div style="flex:1; padding: 16px; background: linear-gradient(135deg, #ff9800, #f57c00); color: #fff; border-radius: 12px; text-align: center;">';
+        html += '<div style="font-size: 2rem; font-weight: 700;">' + totalCases + '</div>';
+        html += '<div style="font-size: 0.85rem; opacity: 0.9;">' + t('modal.totalCases') + '</div>';
+        html += '</div>';
+        html += '<div style="flex:1; padding: 16px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; border-radius: 12px; text-align: center;">';
+        html += '<div style="font-size: 2rem; font-weight: 700;">' + case1.length + '</div>';
+        html += '<div style="font-size: 0.85rem; opacity: 0.9;">' + t('modal.caseMismatch') + '</div>';
+        html += '</div>';
+        html += '<div style="flex:1; padding: 16px; background: linear-gradient(135deg, #9e9e9e, #757575); color: #fff; border-radius: 12px; text-align: center;">';
+        html += '<div style="font-size: 2rem; font-weight: 700;">' + case2.length + '</div>';
+        html += '<div style="font-size: 0.85rem; opacity: 0.9;">' + t('modal.caseNoInfo') + '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        // Helper: create cross-building table with color badges
+        function buildCBTable(emps, showBossBuilding) {
+            if (!emps || emps.length === 0) {
+                return '<p style="text-align:center; color:#9e9e9e; padding:12px;">' + t('common.noData') + '</p>';
+            }
+            var tbl = '<div class="table-container"><table>';
+            tbl += '<thead><tr>';
+            tbl += '<th style="width:40px;">#</th>';
+            tbl += '<th>' + t('table.empNo') + '</th>';
+            tbl += '<th>' + t('table.name') + '</th>';
+            tbl += '<th>' + t('table.position') + '</th>';
+            tbl += '<th>' + t('table.building') + '</th>';
+            tbl += '<th>' + t('modal.bossName') + '</th>';
+            if (showBossBuilding) {
+                tbl += '<th>' + t('modal.bossBuilding') + '</th>';
+            }
+            tbl += '</tr></thead><tbody>';
+
+            emps.forEach(function (emp, idx) {
+                var empNo = String(emp.emp_no || '');
+                tbl += '<tr style="cursor:pointer;" onclick="DashboardModals.showEmployeeDetail(\'' + self._escapeHtml(empNo) + '\')">';
+                tbl += '<td style="text-align:center; color:#9e9e9e;">' + (idx + 1) + '</td>';
+                tbl += '<td>' + self._escapeHtml(empNo) + '</td>';
+                tbl += '<td>' + self._escapeHtml(emp.full_name || emp.name || '--') + '</td>';
+                tbl += '<td>' + self._escapeHtml(emp.position || '--') + '</td>';
+                tbl += '<td>' + self._getBuildingBadge(emp.building) + '</td>';
+                tbl += '<td>' + self._escapeHtml(emp.boss_name || '--') + '</td>';
+                if (showBossBuilding) {
+                    tbl += '<td>' + self._getBuildingBadge(emp.boss_building || '') + '</td>';
+                }
+                tbl += '</tr>';
+            });
+
+            tbl += '</tbody></table></div>';
+            return tbl;
+        }
+
+        // Case 1: Building Mismatch
+        html += '<div style="margin-bottom: 24px;">';
+        html += '<h4 style="font-size: 1rem; margin: 0 0 8px; color: #c62828;">';
+        html += '🔴 ' + t('modal.caseMismatch');
+        html += ' — <strong>' + case1.length + '</strong>' + t('common.people_count');
+        html += '</h4>';
+        html += buildCBTable(case1, true);
+        html += '</div>';
+
+        // Case 2: Boss No Info
+        html += '<div>';
+        html += '<h4 style="font-size: 1rem; margin: 0 0 8px; color: #757575;">';
+        html += '⚪ ' + t('modal.caseNoInfo');
+        html += ' — <strong>' + case2.length + '</strong>' + t('common.people_count');
+        html += '</h4>';
+        html += buildCBTable(case2, false);
+        html += '</div>';
+
+        return html;
+    },
+
+    // ====================================================================
+    // V9 Feature: AQL Inspector 3-Part Breakdown
+    // ====================================================================
+
+    /**
+     * Render AQL Inspector 3-Part incentive breakdown.
+     * Part 1: AQL 검사 평가 (progression table)
+     * Part 2: CFA 자격증 (fixed 700,000 VND if certified)
+     * Part 3: HWK 클레임 방지 (progression table)
+     *
+     * Only shown for AQL Inspector positions.
+     *
+     * @param {Object} emp - Employee object
+     * @param {number} currentIncentive - Current incentive amount
+     * @returns {string} HTML
+     * @private
+     */
+    _renderAqlInspector3Part: function (emp, currentIncentive) {
+        var t = this._t;
+        var position = String(emp.position || emp.Position || '').toUpperCase();
+
+        // Check if this employee is an AQL Inspector
+        var isAqlInspector = position.indexOf('AQL') !== -1 && position.indexOf('INSPECTOR') !== -1;
+        if (!isAqlInspector) return '';
+
+        // Check if AQL Inspector config is available
+        var aqlConfig = window.aqlInspectorConfig || window.aqlIncentiveConfig;
+        if (!aqlConfig) return '';
+
+        var empNo = String(emp.emp_no || emp['Employee No'] || '');
+        var inspectorData = null;
+
+        // Look up inspector data in config
+        if (aqlConfig.aql_inspectors) {
+            inspectorData = aqlConfig.aql_inspectors[empNo];
+        }
+
+        // Fallback: derive from employee data
+        var continuousMonths = parseInt(emp.continuous_months || emp.Continuous_Months || 0, 10) || 0;
+        var isPaid = currentIncentive > 0;
+
+        // Part 1: AQL 검사 평가 (from progressive table)
+        var part1Amount = 0;
+        var part1Months = continuousMonths;
+        var progressiveTable = this._getProgressiveTable();
+        if (isPaid && part1Months > 0) {
+            part1Amount = progressiveTable[Math.min(part1Months, 15)] || 0;
+        }
+
+        // Part 2: CFA 자격증 (check config or data)
+        var isCfaCertified = false;
+        var part2Amount = 0;
+        if (inspectorData) {
+            isCfaCertified = inspectorData.cfa_certified || false;
+        }
+        if (isCfaCertified && isPaid) {
+            part2Amount = (aqlConfig.parts && aqlConfig.parts.part2) ? (aqlConfig.parts.part2.amount || 700000) : 700000;
+        }
+
+        // Part 3: HWK 클레임 방지 (from config)
+        var part3Amount = 0;
+        var part3Months = 0;
+        if (inspectorData) {
+            // Try to find current month data in inspector data
+            var monthKeys = Object.keys(inspectorData).filter(function (k) { return k.indexOf('_incentive') !== -1; });
+            if (monthKeys.length > 0) {
+                var latestKey = monthKeys[monthKeys.length - 1];
+                var monthData = inspectorData[latestKey];
+                if (monthData && typeof monthData === 'object') {
+                    part3Months = monthData.part3_months || 0;
+                    part3Amount = monthData.part3_amount || 0;
+                    // Override part1 if available
+                    if (monthData.part1_months !== undefined) part1Months = monthData.part1_months;
+                    if (monthData.part1_amount !== undefined) part1Amount = monthData.part1_amount;
+                }
+            }
+        }
+
+        var totalAmount = part1Amount + part2Amount + part3Amount;
+
+        // Build HTML
+        var html = '<div style="margin-top: 16px; border: 2px solid #17a2b8; border-radius: 12px; padding: 16px;">';
+        html += '<h4 style="font-size: 0.95rem; margin: 0 0 12px; color: #17a2b8;">';
+        html += '🎯 ' + t('modal.aqlInspector3Part');
+        html += '</h4>';
+
+        if (!isPaid) {
+            html += '<div style="padding: 10px; background: #fff3e0; border-radius: 8px; color: #e65100; margin-bottom: 12px; font-size: 0.88rem;">';
+            html += '⚠️ ' + t('modal.conditionNotMet');
+            html += '</div>';
+        }
+
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr style="background: #17a2b8; color: #fff;">';
+        html += '<th style="width:50%;">' + t('modal.category') + '</th>';
+        html += '<th style="width:25%; text-align:center;">' + t('modal.conditionDetail') + '</th>';
+        html += '<th style="width:25%; text-align:right;">' + t('modal.amount') + '</th>';
+        html += '</tr></thead><tbody>';
+
+        // Part 1
+        html += '<tr>';
+        html += '<td><strong>Part 1: ' + t('modal.aqlPart1') + '</strong></td>';
+        html += '<td style="text-align:center;">' + part1Months + ' ' + t('unit.months') + '</td>';
+        html += '<td style="text-align:right;">' + this._formatVND(part1Amount) + ' ' + t('unit.currency') + '</td>';
+        html += '</tr>';
+
+        // Part 2
+        html += '<tr>';
+        html += '<td><strong>Part 2: ' + t('modal.aqlPart2') + '</strong></td>';
+        html += '<td style="text-align:center;">' + (isCfaCertified ? '✅' : '❌') + '</td>';
+        html += '<td style="text-align:right;">' + this._formatVND(part2Amount) + ' ' + t('unit.currency') + '</td>';
+        html += '</tr>';
+
+        // Part 3
+        html += '<tr>';
+        html += '<td><strong>Part 3: ' + t('modal.aqlPart3') + '</strong></td>';
+        html += '<td style="text-align:center;">' + part3Months + ' ' + t('unit.months') + '</td>';
+        html += '<td style="text-align:right;">' + this._formatVND(part3Amount) + ' ' + t('unit.currency') + '</td>';
+        html += '</tr>';
+
+        // Total
+        html += '<tr style="background: #d4edda; font-weight: 700;">';
+        html += '<td colspan="2">' + t('modal.total') + '</td>';
+        html += '<td style="text-align:right;">' + this._formatVND(totalAmount) + ' ' + t('unit.currency') + '</td>';
+        html += '</tr>';
+
+        html += '</tbody></table></div>';
+        html += '</div>';
+
+        return html;
     }
 };

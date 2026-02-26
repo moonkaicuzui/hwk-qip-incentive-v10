@@ -487,6 +487,38 @@ const DashboardI18n = {
         'modal.5prsNotApplicable': { ko: '이 TYPE에는 5PRS 조건 미적용', en: '5PRS conditions not applicable for this TYPE', vi: 'Điều kiện 5PRS không áp dụng cho TYPE này' },
         'modal.totalQty': { ko: '총 검사량', en: 'Total Qty', vi: 'Tổng SL' },
         'modal.bossBuilding': { ko: '상사 Building', en: 'Boss Building', vi: 'Xưởng quản lý' },
+        'modal.bossName': { ko: '상사명', en: 'Supervisor', vi: 'Quản lý' },
+        'modal.inspectionQty': { ko: '검사량', en: 'Inspection Qty', vi: 'SL kiểm tra' },
+        'modal.failPattern': { ko: '실패 패턴', en: 'Fail Pattern', vi: 'Mẫu lỗi' },
+
+        // V9 Feature: 5PRS 2-Table
+        'modal.lowPassRateTable1': { ko: '기준 미달자 목록', en: 'Below Threshold', vi: 'Dưới ngưỡng' },
+        'modal.top10LowestPassRate': { ko: 'Top 10 최저 통과율', en: 'Top 10 Lowest Pass Rates', vi: 'Top 10 tỷ lệ đạt thấp nhất' },
+
+        // V9 Feature: AQL Consecutive Fail
+        'modal.threeMonthAqlFail': { ko: '3개월 연속 AQL 실패', en: '3-Month Consecutive AQL Fail', vi: 'Lỗi AQL liên tục 3 tháng' },
+        'modal.twoMonthAqlFail': { ko: '2개월 연속 AQL 실패', en: '2-Month Consecutive AQL Fail', vi: 'Lỗi AQL liên tục 2 tháng' },
+        'modal.lineLeaderAggregation': { ko: 'Line Leader별 실패자 집계', en: 'Failures by Line Leader', vi: 'Thống kê lỗi theo Line Leader' },
+        'modal.supervisorName': { ko: '관리자명', en: 'Supervisor Name', vi: 'Tên quản lý' },
+        'modal.totalCount': { ko: '합계', en: 'Total', vi: 'Tổng' },
+        'modal.subordinateNames': { ko: '소속 직원', en: 'Subordinates', vi: 'Nhân viên' },
+
+        // V9 Feature: Cross-Building
+        'modal.totalCases': { ko: '전체 건수', en: 'Total Cases', vi: 'Tổng số' },
+        'modal.caseMismatch': { ko: 'Building 불일치', en: 'Building Mismatch', vi: 'Khác tòa nhà' },
+        'modal.caseNoInfo': { ko: '상사 Building 정보없음', en: 'Boss Building Unknown', vi: 'Không có TT xưởng quản lý' },
+
+        // V9 Feature: AQL Inspector 3-Part
+        'modal.aqlInspector3Part': { ko: 'AQL Inspector 인센티브 상세 (3-Part)', en: 'AQL Inspector Incentive Details (3-Part)', vi: 'Chi tiết KK AQL Inspector (3 phần)' },
+        'modal.aqlPart1': { ko: 'AQL 검사 평가', en: 'AQL Inspection', vi: 'Đánh giá AQL' },
+        'modal.aqlPart2': { ko: 'CFA 자격증', en: 'CFA Certificate', vi: 'Chứng chỉ CFA' },
+        'modal.aqlPart3': { ko: 'HWK 클레임 방지', en: 'HWK Claim Prevention', vi: 'Phòng ngừa khiếu nại HWK' },
+        'modal.category': { ko: '구분', en: 'Category', vi: 'Hạng mục' },
+        'modal.conditionDetail': { ko: '조건', en: 'Condition', vi: 'Điều kiện' },
+        'modal.amount': { ko: '금액', en: 'Amount', vi: 'Số tiền' },
+        'modal.total': { ko: '합계', en: 'Total', vi: 'Tổng' },
+        'modal.conditionNotMet': { ko: '조건 미충족으로 지급 보류', en: 'Payment suspended (conditions not met)', vi: 'Tạm giữ (chưa đáp ứng điều kiện)' },
+        'unit.months': { ko: '개월', en: 'months', vi: 'tháng' },
 
         // Status badges (language-aware)
         'status.pass': { ko: '통과', en: 'PASS', vi: 'Đạt' },
