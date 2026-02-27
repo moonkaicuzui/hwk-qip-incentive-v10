@@ -405,6 +405,9 @@ var DashboardModals = {
             } else if (type === 'buildingReviewTotal') {
                 // V9 feature: Cross-Building enhanced modal with color badges
                 html += this._renderBuildingReviewContent(th);
+            } else if (type === 'lineLeaderNotAssigned') {
+                // Task #24: Building-grouped LINE LEADER not-assigned modal
+                html += this._renderLineLeaderNotAssignedContent(th);
             } else {
                 // Generic: filter + table
                 var filtered = this._filterEmployees(type, th);
@@ -2240,6 +2243,121 @@ var DashboardModals = {
         html += '</h4>';
         html += buildCBTable(case2, false);
         html += '</div>';
+
+        return html;
+    },
+
+    // ====================================================================
+    // Task #24: LINE LEADER Not Assigned - Building Grouped Modal
+    // ====================================================================
+
+    /**
+     * Render LINE LEADER not-assigned content with building grouping.
+     * Groups unassigned employees by building, shows summary badges,
+     * and per-building employee tables.
+     *
+     * @param {Object} th - Thresholds
+     * @returns {string} HTML
+     * @private
+     */
+    _renderLineLeaderNotAssignedContent: function (th) {
+        var self = this;
+        var t = this._t;
+        var employees = this.employees;
+
+        // Filter unassigned employees
+        var unassigned = employees.filter(function (emp) {
+            var bossName = String(emp.boss_name || emp['Boss Name'] || '').trim();
+            var bossId = String(emp.boss_id || emp['Boss ID'] || '').trim();
+            return !bossName && !bossId;
+        });
+
+        // Group by building
+        var buildingGroups = {};
+        var unknownLabel = t('lineLeader.unknownBuilding') || 'Unknown Building';
+        unassigned.forEach(function (emp) {
+            var bld = String(emp.building || emp.BUILDING || '').toUpperCase().trim();
+            var key = bld || unknownLabel;
+            if (!buildingGroups[key]) buildingGroups[key] = [];
+            buildingGroups[key].push(emp);
+        });
+
+        // Sort building keys (known buildings first alphabetically, unknown last)
+        var sortedKeys = Object.keys(buildingGroups).sort(function (a, b) {
+            if (a === unknownLabel) return 1;
+            if (b === unknownLabel) return -1;
+            return a.localeCompare(b);
+        });
+
+        var html = '';
+
+        // Summary KPI bar
+        html += '<div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">';
+        html += '<div style="flex:1; min-width:120px; padding: 14px; background: linear-gradient(135deg, #ff9800, #f57c00); color: #fff; border-radius: 12px; text-align: center;">';
+        html += '<div style="font-size: 1.8rem; font-weight: 700;">' + unassigned.length + '</div>';
+        html += '<div style="font-size: 0.82rem; opacity: 0.9;">' + (t('lineLeader.unassignedCount') || 'Unassigned') + '</div>';
+        html += '</div>';
+        html += '<div style="flex:1; min-width:120px; padding: 14px; background: linear-gradient(135deg, #42a5f5, #1e88e5); color: #fff; border-radius: 12px; text-align: center;">';
+        html += '<div style="font-size: 1.8rem; font-weight: 700;">' + sortedKeys.length + '</div>';
+        html += '<div style="font-size: 0.82rem; opacity: 0.9;">Buildings</div>';
+        html += '</div>';
+        html += '</div>';
+
+        // Building summary badges row
+        html += '<div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">';
+        sortedKeys.forEach(function (key) {
+            var count = buildingGroups[key].length;
+            var isUnknown = (key === unknownLabel);
+            var bgColor = isUnknown ? '#9e9e9e' : (self._BUILDING_COLORS[key] || '#6c757d');
+            html += '<span style="display:inline-block; padding:4px 12px; border-radius:16px; font-size:0.85rem; font-weight:600; color:#fff; background:' + bgColor + ';">';
+            html += self._escapeHtml(key) + ': ' + count;
+            html += '</span>';
+        });
+        html += '</div>';
+
+        // Per-building tables
+        sortedKeys.forEach(function (key) {
+            var emps = buildingGroups[key];
+            var isUnknown = (key === unknownLabel);
+            var bgColor = isUnknown ? '#9e9e9e' : (self._BUILDING_COLORS[key] || '#6c757d');
+
+            html += '<div style="margin-bottom: 20px;">';
+            html += '<h4 style="font-size: 0.95rem; margin: 0 0 8px; display: flex; align-items: center; gap: 8px;">';
+            html += '<span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:' + bgColor + ';"></span>';
+            html += self._escapeHtml(key);
+            html += ' — <strong>' + emps.length + '</strong>' + (t('common.people_count') || '명');
+            html += '</h4>';
+
+            html += '<div class="table-container"><table>';
+            html += '<thead><tr>';
+            html += '<th style="width:36px;">#</th>';
+            html += '<th>' + t('table.empNo') + '</th>';
+            html += '<th>' + t('table.name') + '</th>';
+            html += '<th>' + t('table.position') + '</th>';
+            html += '<th>' + t('table.incentive') + '</th>';
+            html += '</tr></thead><tbody>';
+
+            emps.forEach(function (emp, idx) {
+                var empNo = String(emp.emp_no || '');
+                var incentive = window.employeeHelpers
+                    ? window.employeeHelpers.getIncentive(emp, 'current')
+                    : (emp.currentIncentive || 0);
+                html += '<tr style="cursor:pointer;" onclick="DashboardModals.showEmployeeDetail(\'' + self._escapeHtml(empNo) + '\')">';
+                html += '<td style="text-align:center; color:#9e9e9e;">' + (idx + 1) + '</td>';
+                html += '<td>' + self._escapeHtml(empNo) + '</td>';
+                html += '<td>' + self._escapeHtml(emp.full_name || emp.name || '--') + '</td>';
+                html += '<td>' + self._escapeHtml(emp.position || '--') + '</td>';
+                html += '<td style="text-align:right;">' + self._formatVND(incentive) + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            html += '</div>';
+        });
+
+        if (unassigned.length === 0) {
+            html += '<p style="text-align:center; color:#4caf50; padding:20px; font-size:1.1rem;">✅ ' + (t('common.noData') || 'No data') + '</p>';
+        }
 
         return html;
     },

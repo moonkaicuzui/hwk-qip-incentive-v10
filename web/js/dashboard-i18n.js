@@ -173,6 +173,17 @@ const DashboardI18n = {
         'talentPool.memberCount': { ko: '명', en: ' members', vi: ' thành viên' },
         'talentPool.consecutiveMonths': { ko: '개월 연속', en: ' consecutive months', vi: ' tháng liên tục' },
         'talentPool.noMembers': { ko: 'Talent Pool 해당자 없음', en: 'No Talent Pool members', vi: 'Không có thành viên Talent Pool' },
+        'talentPool.monthlyBonus': { ko: '월 보너스 합계', en: 'Monthly Bonus Total', vi: 'Tổng thưởng tháng' },
+        'talentPool.avgMonths': { ko: '평균 연속 개월', en: 'Avg Consecutive Months', vi: 'TB tháng liên tục' },
+        'talentPool.maxMonths': { ko: '최장 연속 개월', en: 'Max Consecutive Months', vi: 'Tháng LT cao nhất' },
+        'talentPool.incentiveAmount': { ko: '인센티브', en: 'Incentive', vi: 'Khuyến khích' },
+
+        // LINE LEADER Not Assigned - Building Detail (Task #24)
+        'lineLeader.buildingSummary': { ko: 'Building별 미배정 현황', en: 'Unassigned by Building', vi: 'Chưa phân công theo xưởng' },
+        'lineLeader.unassignedCount': { ko: '미배정', en: 'Unassigned', vi: 'Chưa phân công' },
+        'lineLeader.directBoss': { ko: '직속상관', en: 'Direct Boss', vi: 'Sếp trực tiếp' },
+        'lineLeader.noBoss': { ko: '미배정', en: 'Not Assigned', vi: 'Chưa phân công' },
+        'lineLeader.unknownBuilding': { ko: 'Building 미확인', en: 'Unknown Building', vi: 'Xưởng chưa xác định' },
 
         // Dark Mode
         'common.darkMode': { ko: '다크 모드', en: 'Dark Mode', vi: 'Chế độ tối' },

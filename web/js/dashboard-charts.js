@@ -2259,8 +2259,50 @@ var DashboardCharts = {
                    (parseInt(a.Continuous_Months || a.continuous_months || 0, 10));
         });
 
+        // Calculate KPI statistics
+        var totalBonus = 0;
+        var totalMonths = 0;
+        var maxMonths = 0;
+        members.forEach(function (emp) {
+            var inc = window.employeeHelpers
+                ? window.employeeHelpers.getIncentive(emp, 'current')
+                : (emp.currentIncentive || 0);
+            var m = parseInt(emp.Continuous_Months || emp.continuous_months || 0, 10);
+            totalBonus += inc;
+            totalMonths += m;
+            if (m > maxMonths) maxMonths = m;
+        });
+        var avgMonths = members.length > 0 ? Math.round(totalMonths / members.length * 10) / 10 : 0;
+
         var html = '<div class="talent-pool-card">';
         html += '<h3>' + t('talentPool.title') + ' (' + members.length + t('talentPool.memberCount') + ')</h3>';
+
+        // Task #24: 4 KPI mini-cards
+        html += '<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px;">';
+
+        // KPI 1: Member Count
+        html += '<div style="background: rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; text-align: center;">';
+        html += '<div style="font-size: 1.6rem; font-weight: 700;">' + members.length + '</div>';
+        html += '<div style="font-size: 0.75rem; opacity: 0.9;">👥 ' + t('talentPool.memberCount').trim() + '</div></div>';
+
+        // KPI 2: Monthly Bonus Total
+        html += '<div style="background: rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; text-align: center;">';
+        html += '<div style="font-size: 1.2rem; font-weight: 700;">' + totalBonus.toLocaleString() + '</div>';
+        html += '<div style="font-size: 0.75rem; opacity: 0.9;">💰 ' + t('talentPool.monthlyBonus') + '</div></div>';
+
+        // KPI 3: Avg Consecutive Months
+        html += '<div style="background: rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; text-align: center;">';
+        html += '<div style="font-size: 1.6rem; font-weight: 700;">' + avgMonths + '</div>';
+        html += '<div style="font-size: 0.75rem; opacity: 0.9;">📊 ' + t('talentPool.avgMonths') + '</div></div>';
+
+        // KPI 4: Max Consecutive Months
+        html += '<div style="background: rgba(255,255,255,0.2); border-radius: 10px; padding: 10px; text-align: center;">';
+        html += '<div style="font-size: 1.6rem; font-weight: 700;">' + maxMonths + '</div>';
+        html += '<div style="font-size: 0.75rem; opacity: 0.9;">🏅 ' + t('talentPool.maxMonths') + '</div></div>';
+
+        html += '</div>';
+
+        // Member list with incentive amounts
         html += '<div style="display: flex; flex-wrap: wrap; gap: 6px;">';
 
         members.forEach(function (emp) {
@@ -2270,9 +2312,12 @@ var DashboardCharts = {
                 ? window.employeeHelpers.getIncentive(emp, 'current')
                 : (emp.currentIncentive || 0);
 
-            html += '<div class="talent-member">';
+            html += '<div class="talent-member" style="display: flex; justify-content: space-between; width: 100%;">';
             html += '<span>🏅 ' + name + '</span>';
+            html += '<span>';
             html += '<span class="talent-months">' + months + t('talentPool.consecutiveMonths') + '</span>';
+            html += ' <span style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 8px; font-size: 0.78rem; margin-left: 6px;">' + incentive.toLocaleString() + ' VND</span>';
+            html += '</span>';
             html += '</div>';
         });
 
