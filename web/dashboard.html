@@ -719,6 +719,72 @@
             <button onclick="searchAttendance()"><i class="fas fa-search"></i> <span data-i18n="attendanceLookup.search">조회</span></button>
         </div>
         <div id="attendanceLookupResult"></div>
+
+        <!-- Task #21: Daily Attendance Table -->
+        <div id="attendanceDetailSection" style="display: none;">
+            <div class="section-card" style="margin-top: 16px;">
+                <h4 style="color: var(--text-primary); margin-bottom: 12px;">
+                    <i class="fas fa-calendar-check" style="color: #3b82f6;"></i>
+                    <span data-i18n="attendanceLookup.table.title">일별 출결 현황</span>
+                </h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="dailyAttendanceTable">
+                        <thead style="background: var(--header-dark); color: #fff;">
+                            <tr>
+                                <th data-i18n="attendanceLookup.table.date">날짜</th>
+                                <th data-i18n="attendanceLookup.table.weekday">요일</th>
+                                <th data-i18n="attendanceLookup.table.status">출결 상태</th>
+                                <th data-i18n="attendanceLookup.table.reason">상세 사유</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dailyAttendanceBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Absence Analysis: Weekday Pattern + Reason Classification -->
+            <div class="section-card" style="margin-top: 16px;">
+                <h4 style="color: var(--text-primary); margin-bottom: 12px;">
+                    <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                    <span data-i18n="attendanceLookup.analysis.absence">결근 사유 분석</span>
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <div>
+                        <h6><i class="fas fa-chart-bar"></i> <span data-i18n="attendanceLookup.analysis.weekdayPattern">요일별 결근 패턴</span></h6>
+                        <table class="table table-sm">
+                            <thead><tr>
+                                <th data-i18n="attendanceLookup.table.weekday">요일</th>
+                                <th data-i18n="attendanceLookup.table.absenceCount">결근 횟수</th>
+                                <th data-i18n="attendanceLookup.table.ratio">비율</th>
+                            </tr></thead>
+                            <tbody id="weekdayAbsenceBody"></tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <h6><i class="fas fa-list"></i> <span data-i18n="attendanceLookup.analysis.reasonCategory">결근 사유별 분류</span></h6>
+                        <table class="table table-sm">
+                            <thead><tr>
+                                <th data-i18n="attendanceLookup.table.reason">사유</th>
+                                <th data-i18n="attendanceLookup.table.count">횟수</th>
+                                <th data-i18n="attendanceLookup.table.ratio">비율</th>
+                            </tr></thead>
+                            <tbody id="absenceReasonBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Pattern Analysis Summary -->
+                <div id="patternAnalysisContent" style="margin-top: 12px; padding: 12px; background: var(--bg-secondary, #f8f9fa); border-radius: 8px;"></div>
+            </div>
+
+            <!-- AI Analysis Summary -->
+            <div class="section-card" style="margin-top: 16px;">
+                <h4 style="color: var(--text-primary); margin-bottom: 12px;">
+                    <i class="fas fa-robot" style="color: #10b981;"></i>
+                    <span data-i18n="attendanceLookup.analysis.summary">출결 분석 요약</span>
+                </h4>
+                <div id="attendanceAnalysisSummary"></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -795,13 +861,13 @@
 <!-- ============================================================ -->
 <!-- Local JS Modules (load order matters)                        -->
 <!-- ============================================================ -->
-<script src="js/firebase-config.js?v=task18to20"></script>
-<script src="js/auth.js?v=task18to20"></script>
-<script src="js/dashboard-data.js?v=task18to20"></script>
-<script src="js/dashboard-i18n.js?v=task18to20"></script>
-<script src="js/dashboard-charts.js?v=task18to20"></script>
-<script src="js/dashboard-filters.js?v=task18to20"></script>
-<script src="js/dashboard-modals.js?v=task18to20"></script>
+<script src="js/firebase-config.js?v=task21"></script>
+<script src="js/auth.js?v=task21"></script>
+<script src="js/dashboard-data.js?v=task21"></script>
+<script src="js/dashboard-i18n.js?v=task21"></script>
+<script src="js/dashboard-charts.js?v=task21"></script>
+<script src="js/dashboard-filters.js?v=task21"></script>
+<script src="js/dashboard-modals.js?v=task21"></script>
 
 <!-- ============================================================ -->
 <!-- Initialization                                               -->

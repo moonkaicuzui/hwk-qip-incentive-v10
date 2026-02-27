@@ -741,27 +741,312 @@ var DashboardFilters = {
             found.approved_leave_days || found['Approved Leave Days'] || 0
         ) || 0;
 
+        // --- Task #21: Full attendance analysis (ported from V9) ---
+        var dayUnit = t('attendanceLookup.day');
+        var rateThreshold = (window.thresholds && window.thresholds.attendance_rate) || THRESHOLD_DEFAULTS.attendance_rate;
+        var rateColor = attendanceRate >= rateThreshold ? '#2e7d32' : '#c62828';
+
+        // Basic info card
         var html = '<div class="section-card">';
         html += '<h3><i class="fas fa-user"></i> ' + this._escapeHtml(name) + ' (' + this._escapeHtml(empIdStr) + ')</h3>';
         html += '<p style="color: #757575; margin-bottom: 16px;">' + this._escapeHtml(position) + '</p>';
-        var dayUnit = t('attendanceLookup.day');
-        html += '<table style="width: 100%; max-width: 500px;">';
-        html += '<tr><td style="padding: 6px 12px; color: #757575;">' + t('attendanceLookup.totalWorkDays') + '</td>' +
-                '<td style="padding: 6px 12px; font-weight: 600;">' + totalDays + dayUnit + '</td></tr>';
-        html += '<tr><td style="padding: 6px 12px; color: #757575;">' + t('attendanceLookup.actualWorkDays') + '</td>' +
-                '<td style="padding: 6px 12px; font-weight: 600;">' + actualDays + dayUnit + '</td></tr>';
-        html += '<tr><td style="padding: 6px 12px; color: #757575;">' + t('attendanceLookup.approvedLeave') + '</td>' +
-                '<td style="padding: 6px 12px; font-weight: 600;">' + approvedLeave + dayUnit + '</td></tr>';
-        html += '<tr><td style="padding: 6px 12px; color: #757575;">' + t('attendanceLookup.unapprovedAbsence') + '</td>' +
-                '<td style="padding: 6px 12px; font-weight: 600; color: ' + (unapproved > 0 ? '#c62828' : '#2e7d32') + ';">' +
-                unapproved + dayUnit + '</td></tr>';
-        html += '<tr><td style="padding: 6px 12px; color: #757575;">' + t('attendanceLookup.attendanceRate') + '</td>' +
-                '<td style="padding: 6px 12px; font-weight: 600; color: ' + (attendanceRate >= (window.thresholds && window.thresholds.attendance_rate || THRESHOLD_DEFAULTS.attendance_rate) ? '#2e7d32' : '#c62828') + ';">' +
-                this._formatPercent(attendanceRate) + '%</td></tr>';
-        html += '</table>';
-        html += '</div>';
-
+        html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">';
+        var fields = [
+            { label: t('attendanceLookup.totalWorkDays'), val: totalDays + dayUnit },
+            { label: t('attendanceLookup.actualWorkDays'), val: actualDays + dayUnit },
+            { label: t('attendanceLookup.approvedLeave'), val: approvedLeave + dayUnit },
+            { label: t('attendanceLookup.unapprovedAbsence'), val: unapproved + dayUnit, color: unapproved > 0 ? '#c62828' : '#2e7d32' },
+            { label: t('attendanceLookup.attendanceRate'), val: this._formatPercent(attendanceRate) + '%', color: rateColor }
+        ];
+        for (var fi = 0; fi < fields.length; fi++) {
+            var f = fields[fi];
+            html += '<div style="background: var(--bg-secondary, #f8f9fa); border-radius: 8px; padding: 12px; text-align: center;">';
+            html += '<div style="font-size: 0.8rem; color: #757575; margin-bottom: 4px;">' + f.label + '</div>';
+            html += '<div style="font-size: 1.2rem; font-weight: 700;' + (f.color ? ' color:' + f.color + ';' : '') + '">' + f.val + '</div>';
+            html += '</div>';
+        }
+        html += '</div></div>';
         resultDiv.innerHTML = html;
+
+        // Show detail sections
+        var detailSection = document.getElementById('attendanceDetailSection');
+        if (detailSection) detailSection.style.display = 'block';
+
+        // Generate 3 attendance analysis features
+        this._generateDailyAttendanceTable(found, totalDays, actualDays, approvedLeave, unapproved, t);
+        this._analyzeAttendancePatterns(found, totalDays, actualDays, approvedLeave, unapproved, t);
+        this._generateAttendanceAnalysisSummary(found, totalDays, actualDays, approvedLeave, unapproved, attendanceRate, t);
+    },
+
+    /**
+     * Task #21 Feature 1: Daily Attendance Table
+     * Shows day-by-day attendance status with color-coded rows.
+     * Uses attendance_raw_data if available, otherwise shows summary stats.
+     */
+    _generateDailyAttendanceTable: function(emp, totalDays, actualDays, approvedLeave, unapproved, t) {
+        var tbody = document.getElementById('dailyAttendanceBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        var empNo = String(emp.emp_no || emp['Employee No'] || '');
+        var rawData = (window.attendanceRawData || (window.excelDashboardData && window.excelDashboardData.attendance_raw_data) || {})[empNo];
+
+        // Weekday names (translated)
+        var weekdays = [
+            t('attendanceLookup.weekdays.sun') || '일',
+            t('attendanceLookup.weekdays.mon') || '월',
+            t('attendanceLookup.weekdays.tue') || '화',
+            t('attendanceLookup.weekdays.wed') || '수',
+            t('attendanceLookup.weekdays.thu') || '목',
+            t('attendanceLookup.weekdays.fri') || '금',
+            t('attendanceLookup.weekdays.sat') || '토'
+        ];
+
+        if (rawData && rawData.dates && Object.keys(rawData.dates).length > 0) {
+            // Real data available
+            var banner = '<tr style="background: #d4edda;"><td colspan="4" style="text-align: center; font-weight: bold;">';
+            banner += '✅ Google Drive ' + (t('attendanceLookup.realData') || '실제 출결 데이터') + ' (' + Object.keys(rawData.dates).length + (t('attendanceLookup.day') || '일') + ')';
+            banner += '</td></tr>';
+            tbody.innerHTML = banner;
+
+            var sortedDates = Object.keys(rawData.dates).sort();
+            for (var di = 0; di < sortedDates.length; di++) {
+                var dateStr = sortedDates[di];
+                var record = rawData.dates[dateStr];
+                var date = new Date(dateStr);
+                var dayOfWeek = date.getDay();
+                var statusBadge = '', reason = '-', rowStyle = '';
+
+                if (record.status === 'present') {
+                    statusBadge = '<span class="badge bg-success">✅ ' + (t('attendanceLookup.status.present') || '출근') + '</span>';
+                    reason = t('attendanceLookup.status.normalAttendance') || '정상 출근';
+                    if (record.come_late > 0) reason += ' (' + (t('attendanceLookup.status.late') || '지각') + ' ' + record.come_late + (t('attendanceLookup.times') || '회') + ')';
+                    if (record.leave_early > 0) reason += ' (' + (t('attendanceLookup.status.earlyLeave') || '조퇴') + ' ' + record.leave_early + (t('attendanceLookup.times') || '회') + ')';
+                } else if (record.status === 'approved_leave') {
+                    statusBadge = '<span class="badge bg-warning text-dark">📋 ' + (t('attendanceLookup.status.approvedLeave') || '승인휴가') + '</span>';
+                    reason = record.reason || (t('attendanceLookup.status.approvedLeave') || '승인휴가');
+                    rowStyle = 'background: #fff9e6;';
+                } else if (record.status === 'unapproved') {
+                    statusBadge = '<span class="badge bg-danger">❌ ' + (t('attendanceLookup.status.unapproved') || '무단결근') + '</span>';
+                    reason = record.reason || (t('attendanceLookup.status.unapproved') || '무단결근');
+                    rowStyle = 'background: #fce4ec;';
+                }
+
+                tbody.innerHTML += '<tr style="' + rowStyle + '">'
+                    + '<td>' + dateStr + '</td>'
+                    + '<td>' + weekdays[dayOfWeek] + '</td>'
+                    + '<td>' + statusBadge + '</td>'
+                    + '<td>' + reason + '</td>'
+                    + '</tr>';
+            }
+        } else {
+            // No raw data - show summary statistics
+            var noDataMsg = t('attendanceLookup.noDetailData') || '일별 상세 출결 데이터가 없습니다. 요약 통계만 사용할 수 있습니다.';
+            var dayU = t('attendanceLookup.day') || '일';
+            tbody.innerHTML = '<tr style="background: #fff9e6;"><td colspan="4" style="text-align: center; font-style: italic;">⚠️ ' + noDataMsg + '</td></tr>'
+                + '<tr><td colspan="4"><div style="background: #e3f2fd; border-radius: 8px; padding: 12px;">'
+                + '<strong>📊 ' + (t('attendanceLookup.summaryStats') || '요약 통계') + ':</strong><br>'
+                + '• ' + (t('attendanceLookup.totalWorkDays') || '총 근무일') + ': ' + totalDays + dayU + '<br>'
+                + '• ' + (t('attendanceLookup.actualWorkDays') || '실제 출근') + ': ' + actualDays + dayU + '<br>'
+                + '• ' + (t('attendanceLookup.approvedLeave') || '승인휴가') + ': ' + approvedLeave + dayU + '<br>'
+                + '• ' + (t('attendanceLookup.unapprovedAbsence') || '무단결근') + ': ' + unapproved + dayU
+                + '</div></td></tr>';
+        }
+    },
+
+    /**
+     * Task #21 Feature 2 & 3: Weekday Pattern + Absence Reason Analysis
+     * Analyzes absence patterns by weekday and categorizes absence reasons.
+     */
+    _analyzeAttendancePatterns: function(emp, totalDays, actualDays, approvedLeave, unapproved, t) {
+        var weekdayBody = document.getElementById('weekdayAbsenceBody');
+        var reasonBody = document.getElementById('absenceReasonBody');
+        var patternContent = document.getElementById('patternAnalysisContent');
+        if (!weekdayBody || !reasonBody) return;
+        weekdayBody.innerHTML = '';
+        reasonBody.innerHTML = '';
+
+        var weekdays = [
+            t('attendanceLookup.weekdays.mon') || '월',
+            t('attendanceLookup.weekdays.tue') || '화',
+            t('attendanceLookup.weekdays.wed') || '수',
+            t('attendanceLookup.weekdays.thu') || '목',
+            t('attendanceLookup.weekdays.fri') || '금'
+        ];
+        var empNo = String(emp.emp_no || emp['Employee No'] || '');
+        var rawData = (window.attendanceRawData || (window.excelDashboardData && window.excelDashboardData.attendance_raw_data) || {})[empNo];
+
+        var weekdayAbsences = [0, 0, 0, 0, 0];
+        var reasonCounts = {};
+        var totalAbsences = 0;
+        var timesUnit = t('attendanceLookup.times') || '회';
+
+        if (rawData && rawData.dates && Object.keys(rawData.dates).length > 0) {
+            var dates = rawData.dates;
+            var keys = Object.keys(dates);
+            for (var ki = 0; ki < keys.length; ki++) {
+                var rec = dates[keys[ki]];
+                if (rec.status !== 'present') {
+                    totalAbsences++;
+                    var d = new Date(keys[ki]);
+                    var dow = d.getDay();
+                    if (dow >= 1 && dow <= 5) weekdayAbsences[dow - 1]++;
+                    var reason = rec.reason || (rec.status === 'approved_leave' ? (t('attendanceLookup.status.approvedLeave') || '승인휴가') : (t('attendanceLookup.status.unapproved') || '무단결근'));
+                    reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
+                }
+            }
+
+            // Weekday pattern table with progress bars
+            var maxCount = Math.max.apply(null, weekdayAbsences.concat([1]));
+            for (var wi = 0; wi < weekdays.length; wi++) {
+                var cnt = weekdayAbsences[wi];
+                var pct = totalAbsences > 0 ? (cnt / totalAbsences * 100).toFixed(1) : '0.0';
+                var barW = (cnt / maxCount * 100);
+                weekdayBody.innerHTML += '<tr><td>' + weekdays[wi] + '</td>'
+                    + '<td><div style="display: flex; align-items: center; gap: 8px;">'
+                    + '<div style="flex: 1; background: #e0e0e0; border-radius: 4px; height: 20px; overflow: hidden;">'
+                    + '<div style="width: ' + barW + '%; height: 100%; background: #ef4444; border-radius: 4px;"></div></div>'
+                    + '<span>' + cnt + timesUnit + '</span></div></td>'
+                    + '<td>' + pct + '%</td></tr>';
+            }
+
+            // Absence reason table
+            var reasonKeys = Object.keys(reasonCounts);
+            if (reasonKeys.length > 0) {
+                for (var ri = 0; ri < reasonKeys.length; ri++) {
+                    var rName = reasonKeys[ri];
+                    var rCnt = reasonCounts[rName];
+                    var rPct = totalAbsences > 0 ? (rCnt / totalAbsences * 100).toFixed(1) : '0.0';
+                    var isUnapproved = rName.indexOf('무단') >= 0 || rName === 'unapproved';
+                    var badgeClass = isUnapproved ? 'bg-danger' : 'bg-warning text-dark';
+                    var badgeText = isUnapproved ? (t('attendanceLookup.badge.unapproved') || '무단') : (t('attendanceLookup.badge.approved') || '승인');
+                    reasonBody.innerHTML += '<tr><td><span class="badge ' + badgeClass + '" style="margin-right: 4px;">' + badgeText + '</span> ' + rName + '</td>'
+                        + '<td>' + rCnt + timesUnit + '</td><td>' + rPct + '%</td></tr>';
+                }
+            } else {
+                reasonBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #2e7d32;">✅ ' + (t('attendanceLookup.noAbsence') || '결근 사유 없음 (전원 출근)') + '</td></tr>';
+            }
+        } else {
+            // No raw data fallback
+            weekdayBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #757575;">⚠️ ' + (t('attendanceLookup.noDetailData') || '일별 상세 출결 데이터가 없어 요일별 분석을 표시할 수 없습니다.') + '</td></tr>';
+
+            if (approvedLeave > 0 || unapproved > 0) {
+                if (approvedLeave > 0) {
+                    reasonBody.innerHTML += '<tr><td><span class="badge bg-warning text-dark" style="margin-right: 4px;">' + (t('attendanceLookup.badge.approved') || '승인') + '</span> ' + (t('attendanceLookup.approvedLeave') || '승인휴가') + '</td>'
+                        + '<td>' + approvedLeave + timesUnit + '</td><td>-</td></tr>';
+                }
+                if (unapproved > 0) {
+                    reasonBody.innerHTML += '<tr><td><span class="badge bg-danger" style="margin-right: 4px;">' + (t('attendanceLookup.badge.unapproved') || '무단') + '</span> ' + (t('attendanceLookup.unapprovedAbsence') || '무단결근') + '</td>'
+                        + '<td>' + unapproved + timesUnit + '</td><td>-</td></tr>';
+                }
+            } else {
+                reasonBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #2e7d32;">✅ ' + (t('attendanceLookup.noAbsence') || '결근 사유 없음') + '</td></tr>';
+            }
+        }
+
+        // Pattern analysis summary
+        if (patternContent) {
+            var patterns = [];
+            var monFriAbs = weekdayAbsences[0] + weekdayAbsences[4];
+            if (monFriAbs > totalAbsences * 0.5 && totalAbsences > 0) {
+                patterns.push('<span class="badge bg-warning text-dark" style="margin-right: 4px;">⚠️</span> ' + (t('attendanceLookup.pattern.mondayFriday') || '월요일/금요일 결근 비율이 높습니다 (주말 연장 패턴 의심)'));
+            }
+            if (unapproved > approvedLeave) {
+                patterns.push('<span class="badge bg-danger" style="margin-right: 4px;">🚨</span> ' + (t('attendanceLookup.pattern.unapprovedHigh') || '무단결근이 승인휴가보다 많습니다 - 관리 필요'));
+            }
+            if (unapproved === 0) {
+                patterns.push('<span class="badge bg-success" style="margin-right: 4px;">✅</span> ' + (t('attendanceLookup.pattern.noUnapproved') || '무단결근이 없습니다 - 우수'));
+            }
+            if (patterns.length === 0) {
+                patterns.push('<span class="badge bg-info" style="margin-right: 4px;">ℹ️</span> ' + (t('attendanceLookup.pattern.noSpecial') || '특이 패턴이 발견되지 않았습니다'));
+            }
+            patternContent.innerHTML = patterns.map(function(p) { return '<p style="margin-bottom: 6px;">' + p + '</p>'; }).join('');
+        }
+    },
+
+    /**
+     * Task #21 Feature 4: AI Analysis Summary
+     * Provides condition fulfillment assessment and overall attendance analysis.
+     */
+    _generateAttendanceAnalysisSummary: function(emp, totalDays, actualDays, approvedLeave, unapproved, attendanceRate, t) {
+        var summaryDiv = document.getElementById('attendanceAnalysisSummary');
+        if (!summaryDiv) return;
+
+        var name = emp.full_name || emp['Full Name'] || emp.FULL_NAME || '--';
+        var dayU = t('attendanceLookup.day') || '일';
+        var th = window.thresholds || {};
+        var thRate = th.attendance_rate || THRESHOLD_DEFAULTS.attendance_rate;
+        var thUnapproved = th.unapproved_absence || THRESHOLD_DEFAULTS.unapproved_absence;
+        var thMinDays = th.minimum_working_days || THRESHOLD_DEFAULTS.minimum_working_days;
+
+        // Condition checks
+        var cond1Pass = attendanceRate >= thRate;
+        var cond2Pass = unapproved <= thUnapproved;
+        var cond3Pass = actualDays > 0;
+        var cond4Pass = actualDays >= thMinDays;
+        var allPass = cond1Pass && cond2Pass && cond3Pass && cond4Pass;
+
+        var metText = t('attendanceLookup.analysis.met') || '충족';
+        var notMetText = t('attendanceLookup.analysis.notMet') || '미충족';
+
+        var condBadge = function(pass) {
+            return pass
+                ? '<span class="badge bg-success">' + metText + '</span>'
+                : '<span class="badge bg-danger">' + notMetText + '</span>';
+        };
+
+        // Overall status
+        var statusColor, statusText, statusIcon;
+        if (allPass) {
+            statusColor = '#2e7d32'; statusIcon = '🎉';
+            statusText = t('attendanceLookup.analysis.excellent') || '우수한 출결 상태';
+        } else if (cond1Pass && cond2Pass) {
+            statusColor = '#f57c00'; statusIcon = '⚠️';
+            statusText = t('attendanceLookup.analysis.caution') || '주의 필요';
+        } else {
+            statusColor = '#c62828'; statusIcon = '🚨';
+            statusText = t('attendanceLookup.analysis.improvement') || '개선 필요';
+        }
+
+        var html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">';
+
+        // Left: Summary stats
+        html += '<div>';
+        html += '<h5><i class="fas fa-clipboard-list"></i> ' + (t('attendanceLookup.analysis.summaryTitle') || '출결 현황 요약') + '</h5>';
+        html += '<ul style="list-style: none; padding: 0;">';
+        html += '<li style="padding: 4px 0;">📊 <strong>' + (t('attendanceLookup.totalWorkDays') || '총 근무일') + ':</strong> ' + totalDays + dayU + '</li>';
+        html += '<li style="padding: 4px 0;">✅ <strong>' + (t('attendanceLookup.actualWorkDays') || '실제 출근') + ':</strong> ' + actualDays + dayU + ' (' + (totalDays > 0 ? (actualDays / totalDays * 100).toFixed(1) : 0) + '%)</li>';
+        html += '<li style="padding: 4px 0;">📋 <strong>' + (t('attendanceLookup.approvedLeave') || '승인휴가') + ':</strong> ' + approvedLeave + dayU + '</li>';
+        html += '<li style="padding: 4px 0;">❌ <strong>' + (t('attendanceLookup.unapprovedAbsence') || '무단결근') + ':</strong> ' + unapproved + dayU + '</li>';
+        html += '<li style="padding: 4px 0;">📈 <strong>' + (t('attendanceLookup.attendanceRate') || '출근율') + ':</strong> ' + attendanceRate.toFixed(1) + '%</li>';
+        html += '</ul></div>';
+
+        // Right: Condition fulfillment + overall assessment
+        html += '<div>';
+        html += '<h5><i class="fas fa-check-circle"></i> ' + (t('attendanceLookup.analysis.conditionTitle') || '인센티브 조건 충족 현황') + '</h5>';
+        html += '<table class="table table-sm" style="margin-bottom: 16px;"><tbody>';
+        html += '<tr><td>' + (t('attendanceLookup.analysis.cond1') || '조건 1') + ': ' + (t('attendanceLookup.analysis.cond1Desc') || '출근율 ≥ ' + thRate + '%') + '</td><td>' + condBadge(cond1Pass) + ' ' + attendanceRate.toFixed(1) + '%</td></tr>';
+        html += '<tr><td>' + (t('attendanceLookup.analysis.cond2') || '조건 2') + ': ' + (t('attendanceLookup.analysis.cond2Desc') || '무단결근 ≤ ' + thUnapproved + '일') + '</td><td>' + condBadge(cond2Pass) + ' ' + unapproved + dayU + '</td></tr>';
+        html += '<tr><td>' + (t('attendanceLookup.analysis.cond3') || '조건 3') + ': ' + (t('attendanceLookup.analysis.cond3Desc') || '실제 근무일 > 0') + '</td><td>' + condBadge(cond3Pass) + ' ' + actualDays + dayU + '</td></tr>';
+        html += '<tr><td>' + (t('attendanceLookup.analysis.cond4') || '조건 4') + ': ' + (t('attendanceLookup.analysis.cond4Desc') || '최소 근무일 ≥ ' + thMinDays + '일') + '</td><td>' + condBadge(cond4Pass) + ' ' + actualDays + dayU + '</td></tr>';
+        html += '</tbody></table>';
+
+        // Overall assessment
+        html += '<div style="padding: 12px; border-radius: 8px; background: ' + statusColor + '15; border-left: 4px solid ' + statusColor + ';">';
+        html += '<strong style="color: ' + statusColor + ';">' + statusIcon + ' ' + statusText + '</strong>';
+        if (allPass) {
+            html += '<p style="margin: 4px 0 0; font-size: 0.85rem; color: #555;">' + (t('attendanceLookup.analysis.allCondMet') || '4개 출근 조건 모두 충족 - 인센티브 수령 가능') + '</p>';
+        } else {
+            var failedConds = [];
+            if (!cond1Pass) failedConds.push((t('attendanceLookup.analysis.cond1') || '조건 1'));
+            if (!cond2Pass) failedConds.push((t('attendanceLookup.analysis.cond2') || '조건 2'));
+            if (!cond3Pass) failedConds.push((t('attendanceLookup.analysis.cond3') || '조건 3'));
+            if (!cond4Pass) failedConds.push((t('attendanceLookup.analysis.cond4') || '조건 4'));
+            html += '<p style="margin: 4px 0 0; font-size: 0.85rem; color: #555;">' + failedConds.join(', ') + ' ' + (t('attendanceLookup.analysis.notMetSuffix') || '미충족 - 개선 필요') + '</p>';
+        }
+        html += '</div></div></div>';
+
+        summaryDiv.innerHTML = html;
     },
 
     // ------------------------------------------------------------------
