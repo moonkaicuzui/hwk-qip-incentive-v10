@@ -227,7 +227,7 @@ const DashboardI18n = {
         'common.logout': { ko: '로그아웃', en: 'Logout', vi: 'Đăng xuất' },
         'common.back': { ko: '← 월 선택', en: '← Select Month', vi: '← Chọn tháng' },
         'common.days': { ko: '일', en: ' days', vi: ' ngày' },
-        'common.people_count': { ko: '명', en: '', vi: '' },
+        'common.people_count': { ko: '명', en: ' ppl', vi: ' NV' },
         'common.total': { ko: '총', en: 'Total', vi: 'Tổng' },
         'common.employee': { ko: '직원', en: 'employee', vi: 'nhân viên' },
         'common.employees': { ko: '직원', en: 'employees', vi: 'nhân viên' },
@@ -780,6 +780,27 @@ const DashboardI18n = {
                 DashboardCharts.renderPositionTables(d);
                 DashboardCharts.renderCriteriaTab(d);
                 DashboardCharts.renderTeamTab(d);
+                // Re-render team subordinate view if a manager is selected
+                if (typeof DashboardFilters !== 'undefined') {
+                    var mgrSelect = document.getElementById('teamManagerFilter');
+                    var posSelect = document.getElementById('teamPositionFilter');
+                    if (mgrSelect && mgrSelect.value) {
+                        // Manager is selected - re-render subordinate table with new language
+                        DashboardFilters._showTeamMembers(mgrSelect.value);
+                    }
+                    // Re-populate manager dropdown to update "(N명)" → "(N)" text
+                    if (posSelect && posSelect.value) {
+                        var currentMgr = mgrSelect ? mgrSelect.value : '';
+                        DashboardFilters.onTeamPositionChange();
+                        // Restore manager selection after re-population
+                        if (currentMgr && mgrSelect) {
+                            mgrSelect.value = currentMgr;
+                            if (mgrSelect.value === currentMgr) {
+                                DashboardFilters._showTeamMembers(currentMgr);
+                            }
+                        }
+                    }
+                }
                 DashboardCharts._renderBuildingSummaryCards(d.employees || []);
                 DashboardCharts._renderTypeCalculationMethods(d);
                 DashboardCharts._renderFAQSection();
