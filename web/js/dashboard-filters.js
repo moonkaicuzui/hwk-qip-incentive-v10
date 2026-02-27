@@ -1221,8 +1221,9 @@ var DashboardFilters = {
 
         if (!selectedPos) {
             // Re-render full building view when "All Positions" selected
+            // renderTeamTab expects { employees: [...] } object, not a plain array
             if (window.DashboardCharts && window.employeeData) {
-                window.DashboardCharts.renderTeamTab(window.employeeData);
+                window.DashboardCharts.renderTeamTab({ employees: window.employeeData });
             }
             return;
         }
@@ -1303,8 +1304,9 @@ var DashboardFilters = {
         if (subContainer) subContainer.style.display = 'none';
 
         // Re-render the full unfiltered building view
+        // renderTeamTab expects { employees: [...] } object, not a plain array
         if (window.DashboardCharts && window.employeeData) {
-            window.DashboardCharts.renderTeamTab(window.employeeData);
+            window.DashboardCharts.renderTeamTab({ employees: window.employeeData });
         }
     },
 
