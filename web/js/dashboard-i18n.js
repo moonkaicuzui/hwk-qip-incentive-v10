@@ -224,6 +224,86 @@ const DashboardI18n = {
         'modal.incentiveInfo': { ko: '인센티브 정보', en: 'Incentive Info', vi: 'Thông tin khuyến khích' },
         'modal.workingDayCount': { ko: '근무일수', en: 'Working Days', vi: 'Số ngày làm' },
         'modal.employeeCount': { ko: '직원 수', en: 'Employees', vi: 'Số nhân viên' },
+        'modal.clickToViewBoss': { ko: '클릭하여 상사 정보 보기', en: 'Click to view supervisor details', vi: 'Nhấp để xem chi tiết quản lý' },
+
+        // Task #18: Continuous Months Reset Notice
+        'reset.title': { ko: '연속 개월 초기화', en: 'Continuous Months Reset', vi: 'Đặt lại tháng liên tục' },
+        'reset.subtitle': { ko: '이전 달 대비 연속 개월이 초기화되었습니다', en: 'Continuous months have been reset compared to previous month', vi: 'Tháng liên tục đã được đặt lại so với tháng trước' },
+        'reset.previous': { ko: '이전', en: 'Previous', vi: 'Trước' },
+        'reset.current': { ko: '현재', en: 'Current', vi: 'Hiện tại' },
+        'reset.reasonTitle': { ko: '초기화 사유', en: 'Reset Reasons', vi: 'Lý do đặt lại' },
+        'reset.reason1': { ko: '출근율 미달 또는 무단결근 초과', en: 'Low attendance rate or excessive unapproved absences', vi: 'Tỷ lệ đi làm thấp hoặc vắng không phép vượt' },
+        'reset.reason2': { ko: '당월 AQL 개인 실패 발생', en: 'Personal AQL failure this month', vi: 'Lỗi AQL cá nhân trong tháng' },
+        'reset.reason3': { ko: '5PRS 통과율 또는 검사량 미달', en: '5PRS pass rate or inspection quantity below threshold', vi: 'Tỷ lệ đạt hoặc số lượng kiểm tra 5PRS dưới ngưỡng' },
+        'reset.reason4': { ko: '최소 근무일수 미충족', en: 'Minimum working days not met', vi: 'Không đủ ngày làm tối thiểu' },
+        'reset.restartTitle': { ko: '다시 시작하기', en: 'How to Restart', vi: 'Cách bắt đầu lại' },
+        'reset.tip1': { ko: '다음 달부터 모든 조건을 충족하면 1개월부터 다시 시작', en: 'Meet all conditions next month to restart from month 1', vi: 'Đáp ứng tất cả điều kiện tháng sau để bắt đầu lại từ tháng 1' },
+        'reset.tip2': { ko: '12개월 연속 달성 시 최대 인센티브 수령 가능', en: 'Achieve 12 consecutive months for maximum incentive', vi: 'Đạt 12 tháng liên tiếp để nhận khuyến khích tối đa' },
+        'reset.encouragement': { ko: '다음 달부터 새로 시작할 수 있습니다!', en: 'You can start fresh next month!', vi: 'Bạn có thể bắt đầu lại từ tháng sau!' },
+
+        // Task #19: TYPE-3 New Employee Roadmap
+        'type3.title': { ko: '신입사원 인센티브 로드맵', en: 'New Employee Incentive Roadmap', vi: 'Lộ trình khuyến khích nhân viên mới' },
+        'type3.subtitle': { ko: 'TYPE-3 정책 제외 대상', en: 'TYPE-3 Policy Excluded', vi: 'TYPE-3 Loại trừ theo chính sách' },
+        'type3.step1': { ko: '입사 완료', en: 'Hired', vi: 'Đã tuyển' },
+        'type3.step2': { ko: '교육 진행', en: 'Training', vi: 'Đào tạo' },
+        'type3.step3': { ko: '현장 배치', en: 'Field Work', vi: 'Làm việc' },
+        'type3.step4': { ko: '인센티브 시작', en: 'Incentive Start', vi: 'Bắt đầu KK' },
+        'type3.hireDate': { ko: '입사일', en: 'Hire Date', vi: 'Ngày tuyển' },
+        'type3.expectedStart': { ko: '인센티브 시작 예정', en: 'Expected Incentive Start', vi: 'Dự kiến bắt đầu KK' },
+        'type3.nextMonth': { ko: '다음 달부터', en: 'From next month', vi: 'Từ tháng sau' },
+        'type3.tip': { ko: '다음 달 모든 조건 충족 시 첫 인센티브 150,000 VND 수령 가능!', en: 'Meet all conditions next month for your first incentive of 150,000 VND!', vi: 'Đáp ứng tất cả điều kiện tháng sau để nhận khuyến khích đầu tiên 150.000 VND!' },
+
+        // Task #20: Condition Improvement Guides (10 conditions)
+        'guide.condition1': {
+            ko: '출근율을 높이려면: 지각/조퇴를 줄이고, 승인된 휴가를 사전에 신청하세요',
+            en: 'To improve attendance: Reduce tardiness/early leaves, request approved leave in advance',
+            vi: 'Để cải thiện chuyên cần: Giảm đi muộn/về sớm, xin nghỉ phép trước'
+        },
+        'guide.condition2': {
+            ko: '무단결근은 사전에 휴가 승인을 받으면 방지할 수 있습니다. 긴급 시 당일 보고 필수',
+            en: 'Prevent unapproved absences by getting leave approved in advance. Report emergencies same day',
+            vi: 'Tránh vắng không phép bằng cách xin phép trước. Báo cáo khẩn cấp ngay trong ngày'
+        },
+        'guide.condition3': {
+            ko: '실제 근무일이 0일이면 인센티브를 받을 수 없습니다. 출근 기록을 확인하세요',
+            en: 'Zero actual working days means no incentive. Please verify your attendance records',
+            vi: 'Không có ngày làm thực tế nghĩa là không có khuyến khích. Vui lòng kiểm tra bảng chấm công'
+        },
+        'guide.condition4': {
+            ko: '최소 근무일 미충족: 매월 충분한 근무일을 확보하세요. 장기 휴가 시 사전 조율 필요',
+            en: 'Minimum working days not met: Ensure sufficient working days each month. Coordinate long leaves in advance',
+            vi: 'Không đủ ngày làm tối thiểu: Đảm bảo đủ ngày làm mỗi tháng. Phối hợp nghỉ dài trước'
+        },
+        'guide.condition5': {
+            ko: '개인 AQL 실패: 품질 검사를 더욱 꼼꼼히 수행하고, 불량 원인을 분석하여 재발을 방지하세요',
+            en: 'Personal AQL failure: Perform quality checks more carefully, analyze defect causes to prevent recurrence',
+            vi: 'Lỗi AQL cá nhân: Kiểm tra chất lượng cẩn thận hơn, phân tích nguyên nhân lỗi để ngăn tái phát'
+        },
+        'guide.condition6': {
+            ko: 'AQL 연속 실패: 3개월 연속 실패는 인센티브 제외 사유입니다. 품질 교육에 참여하세요',
+            en: 'AQL consecutive failure: 3 months of consecutive failures disqualifies you. Attend quality training',
+            vi: 'Lỗi AQL liên tiếp: 3 tháng lỗi liên tiếp mất quyền nhận khuyến khích. Tham gia đào tạo chất lượng'
+        },
+        'guide.condition7': {
+            ko: '팀/구역 AQL: 팀 전체의 품질 수준 개선이 필요합니다. 동료와 협력하여 품질을 높이세요',
+            en: 'Team/Area AQL: Team-wide quality improvement needed. Collaborate with colleagues to raise quality',
+            vi: 'AQL nhóm/khu vực: Cần cải thiện chất lượng toàn nhóm. Hợp tác với đồng nghiệp nâng cao chất lượng'
+        },
+        'guide.condition8': {
+            ko: '구역 Reject Rate 초과: 구역 전체 불량률을 줄여야 합니다. 공정 개선을 확인하세요',
+            en: 'Area Reject Rate exceeded: Reduce area-wide defect rate. Check process improvements',
+            vi: 'Tỷ lệ từ chối khu vực vượt: Giảm tỷ lệ lỗi toàn khu vực. Kiểm tra cải tiến quy trình'
+        },
+        'guide.condition9': {
+            ko: '5PRS 통과율 미달: 검사 정확도를 높이고, 불량 판정 기준을 재확인하세요',
+            en: '5PRS pass rate below threshold: Improve inspection accuracy, verify defect criteria',
+            vi: 'Tỷ lệ đạt 5PRS dưới ngưỡng: Nâng cao độ chính xác kiểm tra, xác minh tiêu chí lỗi'
+        },
+        'guide.condition10': {
+            ko: '5PRS 검사량 부족: 목표 검사 수량을 달성하도록 작업 속도를 조절하세요',
+            en: '5PRS inspection quantity below minimum: Adjust work pace to meet target inspection count',
+            vi: 'SL kiểm tra 5PRS dưới tối thiểu: Điều chỉnh tốc độ làm việc để đạt số lượng kiểm tra mục tiêu'
+        },
 
         // Criteria tab
         'criteria.conditionsTitle': { ko: '10가지 조건 개요', en: '10 Conditions Overview', vi: 'Tổng quan 10 điều kiện' },

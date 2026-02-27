@@ -457,7 +457,17 @@ var DashboardModals = {
         html += this._renderInfoItem(t('table.building'), building);
         html += this._renderInfoItem(t('table.type'), '<span class="' + typeBadgeClass + '">' + this._escapeHtml(empType) + '</span>');
         html += this._renderInfoItem(t('modal.entranceDate'), entranceDate);
-        html += this._renderInfoItem(t('modal.bossName'), bossName);
+        // Task #20: Supervisor Click - make boss name clickable to navigate to boss detail
+        var bossId = String(emp.boss_id || emp.Boss_ID || emp['Boss ID'] || '');
+        if (bossId && bossId !== '--' && bossId !== 'undefined' && bossId !== 'null') {
+            var bossCard = '<span style="cursor: pointer; color: #1565c0; text-decoration: underline; font-weight: 600;"'
+                + ' onclick="DashboardModals.showEmployeeDetail(\'' + this._escapeHtml(bossId) + '\')"'
+                + ' title="' + t('modal.clickToViewBoss') + '">'
+                + bossName + ' 👆</span>';
+            html += this._renderInfoItem(t('modal.bossName'), bossCard);
+        } else {
+            html += this._renderInfoItem(t('modal.bossName'), bossName);
+        }
         html += '</div></div>';
 
         return html;
@@ -577,6 +587,17 @@ var DashboardModals = {
             html += '<td style="text-align: right;">' + thresholdStr + '</td>';
             html += '<td style="text-align: center;">' + badge + '</td>';
             html += '</tr>';
+
+            // Task #20: Condition Improvement Guide (shown when condition FAIL)
+            if (result === 'NO') {
+                var guideKey = 'guide.condition' + i;
+                var guideText = t(guideKey);
+                if (guideText && guideText !== guideKey) {
+                    html += '<tr><td colspan="5" style="background: #fff3cd; padding: 8px 12px; border-left: 3px solid #ffc107; font-size: 0.82rem;">';
+                    html += '<span style="color: #856404;">💡 ' + guideText + '</span>';
+                    html += '</td></tr>';
+                }
+            }
         }
 
         html += '</tbody></table></div>';
@@ -669,6 +690,12 @@ var DashboardModals = {
             html += '</div>';
             html += '</div>';
         }
+
+        // Task #18: Continuous Months Reset Notice (when previous > current)
+        html += this._renderContinuousMonthsReset(emp, continuousMonths);
+
+        // Task #19: TYPE-3 New Employee Roadmap
+        html += this._renderType3Roadmap(emp);
 
         // V9 feature: AQL Inspector 3-Part breakdown
         html += this._renderAqlInspector3Part(emp, currentIncentive);
@@ -2092,6 +2119,203 @@ var DashboardModals = {
 
         html += '</tbody></table></div>';
         html += '</div>';
+
+        return html;
+    },
+
+    // ====================================================================
+    // Task #18: Continuous Months Reset Notice
+    // ====================================================================
+
+    /**
+     * Show a warning notice when continuous months have been reset
+     * (previous_continuous_months > current continuous_months).
+     * Ported from V9 integrated_dashboard_final.py:20529-20732
+     *
+     * @param {Object} emp
+     * @param {number} currentMonths - Current continuous months
+     * @returns {string} HTML
+     * @private
+     */
+    _renderContinuousMonthsReset: function (emp, currentMonths) {
+        var t = this._t;
+        var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
+        var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+        if (!isType1) return '';
+
+        var prevMonths = parseInt(emp.previous_continuous_months || emp.Previous_Continuous_Months || emp['Previous_Continuous_Months'] || 0, 10) || 0;
+        if (prevMonths <= currentMonths || prevMonths === 0) return '';
+
+        // Build reset notice UI
+        var html = '<div style="margin-top: 16px; background: linear-gradient(135deg, #ff6b6b, #ee5a24); border-radius: 12px; padding: 16px; color: #fff;">';
+
+        // Header
+        html += '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">';
+        html += '<span style="font-size: 1.5rem;">⚠️</span>';
+        html += '<div>';
+        html += '<div style="font-weight: 700; font-size: 1rem;">' + t('reset.title') + '</div>';
+        html += '<div style="font-size: 0.8rem; opacity: 0.9;">' + t('reset.subtitle') + '</div>';
+        html += '</div></div>';
+
+        // Previous vs Current comparison cards
+        html += '<div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; margin-bottom: 14px;">';
+
+        // Previous card (amber)
+        html += '<div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; text-align: center;">';
+        html += '<div style="font-size: 0.75rem; opacity: 0.85;">' + t('reset.previous') + '</div>';
+        html += '<div style="font-size: 1.8rem; font-weight: 800;">' + prevMonths + '</div>';
+        html += '<div style="font-size: 0.7rem; opacity: 0.75;">' + t('unit.months') + '</div>';
+        html += '</div>';
+
+        // Arrow
+        html += '<div style="font-size: 1.5rem; opacity: 0.8;">→</div>';
+
+        // Current card (blue)
+        html += '<div style="background: rgba(255,255,255,0.25); border-radius: 8px; padding: 10px; text-align: center;">';
+        html += '<div style="font-size: 0.75rem; opacity: 0.85;">' + t('reset.current') + '</div>';
+        html += '<div style="font-size: 1.8rem; font-weight: 800;">' + currentMonths + '</div>';
+        html += '<div style="font-size: 0.7rem; opacity: 0.75;">' + t('unit.months') + '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        // 12-circle progress visualization
+        html += '<div style="display: flex; gap: 4px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap;">';
+        for (var c = 1; c <= 12; c++) {
+            var circleStyle = 'width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 600;';
+            if (c <= prevMonths && c > currentMonths) {
+                // Lost months (strikethrough)
+                circleStyle += ' background: rgba(255,255,255,0.3); color: #fff; text-decoration: line-through;';
+            } else if (c <= currentMonths) {
+                // Current months
+                circleStyle += ' background: #fff; color: #ee5a24;';
+            } else {
+                // Future months
+                circleStyle += ' background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4);';
+            }
+            html += '<div style="' + circleStyle + '">' + c + '</div>';
+        }
+        html += '</div>';
+
+        // Reset reasons
+        html += '<div style="background: rgba(0,0,0,0.15); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 0.8rem;">';
+        html += '<div style="font-weight: 600; margin-bottom: 6px;">' + t('reset.reasonTitle') + '</div>';
+        html += '<div>• ' + t('reset.reason1') + '</div>';
+        html += '<div>• ' + t('reset.reason2') + '</div>';
+        html += '<div>• ' + t('reset.reason3') + '</div>';
+        html += '<div>• ' + t('reset.reason4') + '</div>';
+        html += '</div>';
+
+        // Restart tips
+        html += '<div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; font-size: 0.8rem;">';
+        html += '<div style="font-weight: 600; margin-bottom: 6px;">🔄 ' + t('reset.restartTitle') + '</div>';
+        html += '<div>✅ ' + t('reset.tip1') + '</div>';
+        html += '<div>✅ ' + t('reset.tip2') + '</div>';
+        html += '</div>';
+
+        // Encouragement
+        html += '<div style="text-align: center; margin-top: 10px; font-size: 0.85rem; font-weight: 600;">';
+        html += '💪 ' + t('reset.encouragement');
+        html += '</div>';
+
+        html += '</div>';
+        return html;
+    },
+
+    // ====================================================================
+    // Task #19: TYPE-3 New Employee Roadmap
+    // ====================================================================
+
+    /**
+     * Show a roadmap/timeline for TYPE-3 (policy excluded) new employees.
+     * Ported from V9 integrated_dashboard_final.py:20734-20911
+     *
+     * @param {Object} emp
+     * @returns {string} HTML
+     * @private
+     */
+    _renderType3Roadmap: function (emp) {
+        var t = this._t;
+        var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
+        if (empType.indexOf('TYPE-3') === -1 && empType !== '3') return '';
+
+        // Calculate D-day (days until next month 1st)
+        var now = new Date();
+        var nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        var daysRemaining = Math.ceil((nextMonth - now) / (1000 * 60 * 60 * 24));
+
+        // Get entrance date
+        var entranceDate = emp.entrance_date || emp['Entrance Date'] || emp['Hire Date'] || '--';
+
+        var html = '<div style="margin-top: 16px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 12px; padding: 16px; color: #fff;">';
+
+        // Header with D-day badge
+        html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">';
+        html += '<div>';
+        html += '<div style="font-weight: 700; font-size: 1rem;">' + t('type3.title') + '</div>';
+        html += '<div style="font-size: 0.8rem; opacity: 0.9;">' + t('type3.subtitle') + '</div>';
+        html += '</div>';
+        html += '<div style="background: rgba(255,255,255,0.25); border-radius: 20px; padding: 6px 14px; font-weight: 700; font-size: 0.9rem;">';
+        html += 'D-' + daysRemaining;
+        html += '</div></div>';
+
+        // 4-Step Timeline
+        var steps = [
+            { icon: '✓', label: t('type3.step1'), done: true },
+            { icon: '📚', label: t('type3.step2'), done: true },
+            { icon: '🏭', label: t('type3.step3'), done: true },
+            { icon: '💰', label: t('type3.step4'), done: false }
+        ];
+
+        html += '<div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; position: relative;">';
+        // Connecting line
+        html += '<div style="position: absolute; top: 18px; left: 10%; right: 10%; height: 2px; background: rgba(255,255,255,0.3);"></div>';
+
+        for (var s = 0; s < steps.length; s++) {
+            var step = steps[s];
+            var isLast = (s === steps.length - 1);
+            var circBg = step.done ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)';
+            var circColor = step.done ? '#764ba2' : 'rgba(255,255,255,0.6)';
+            var pulse = isLast ? ' animation: pulse 2s infinite;' : '';
+
+            html += '<div style="text-align: center; flex: 1; position: relative; z-index: 1;">';
+            html += '<div style="width: 36px; height: 36px; border-radius: 50%; background: ' + circBg + '; color: ' + circColor + ';';
+            html += ' display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700;' + pulse + '">';
+            html += step.icon;
+            html += '</div>';
+            html += '<div style="font-size: 0.7rem; margin-top: 4px; opacity: 0.9;">' + step.label + '</div>';
+            html += '</div>';
+        }
+        html += '</div>';
+
+        // Info boxes
+        html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">';
+
+        html += '<div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px;">';
+        html += '<div style="font-size: 0.72rem; opacity: 0.8;">' + t('type3.hireDate') + '</div>';
+        html += '<div style="font-weight: 700;">' + this._escapeHtml(String(entranceDate)) + '</div>';
+        html += '</div>';
+
+        html += '<div style="background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px;">';
+        html += '<div style="font-size: 0.72rem; opacity: 0.8;">' + t('type3.expectedStart') + '</div>';
+        html += '<div style="font-weight: 700;">' + t('type3.nextMonth') + '</div>';
+        html += '</div>';
+
+        html += '</div>';
+
+        // Tip: First incentive amount
+        html += '<div style="background: rgba(255,255,255,0.2); border-radius: 8px; padding: 10px; text-align: center; font-size: 0.85rem;">';
+        html += '💡 ' + t('type3.tip');
+        html += '</div>';
+
+        html += '</div>';
+
+        // Inject pulse animation CSS if not already present
+        if (!document.getElementById('type3PulseStyle')) {
+            var style = document.createElement('style');
+            style.id = 'type3PulseStyle';
+            style.textContent = '@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }';
+            document.head.appendChild(style);
+        }
 
         return html;
     }
