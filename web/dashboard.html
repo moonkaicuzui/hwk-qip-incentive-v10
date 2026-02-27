@@ -627,10 +627,31 @@
 <!-- TAB: TEAM                                                    -->
 <!-- ============================================================ -->
 <div class="tab-content" id="team">
+    <!-- Task #22: Team Position/Manager Filter Controls -->
+    <div id="teamFilterRow" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end;">
+        <div style="flex: 1; min-width: 180px;">
+            <label style="font-size: 0.82rem; color: #757575; display: block; margin-bottom: 4px;" data-i18n="team.filterByPosition">직급별 필터</label>
+            <select id="teamPositionFilter" onchange="DashboardFilters.onTeamPositionChange()" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid #ddd; font-size:0.9rem; background:#fff;">
+                <option value="" data-i18n="team.allPositions">전체 직급</option>
+            </select>
+        </div>
+        <div style="flex: 1; min-width: 180px;">
+            <label style="font-size: 0.82rem; color: #757575; display: block; margin-bottom: 4px;" data-i18n="team.filterByManager">관리자별 필터</label>
+            <select id="teamManagerFilter" onchange="DashboardFilters.onTeamManagerChange()" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid #ddd; font-size:0.9rem; background:#fff;">
+                <option value="" data-i18n="team.allManagers">전체 관리자</option>
+            </select>
+        </div>
+        <button onclick="DashboardFilters.resetTeamFilters()" style="padding:8px 16px; border-radius:8px; border:1px solid #ddd; background:#f5f5f5; cursor:pointer; font-size:0.85rem; white-space:nowrap;" data-i18n="team.resetFilter">필터 초기화</button>
+    </div>
+
+    <!-- Building Summary Cards -->
     <div id="teamSummaryCards" style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;"></div>
+    <!-- Building Table (default view) -->
     <div id="teamTableContainer">
         <p class="text-muted" data-i18n="loading">데이터를 불러오는 중...</p>
     </div>
+    <!-- Manager Subordinate Table (shown when manager selected) -->
+    <div id="teamSubordinateContainer" style="display:none;"></div>
 </div>
 
 <!-- ============================================================ -->
@@ -861,13 +882,13 @@
 <!-- ============================================================ -->
 <!-- Local JS Modules (load order matters)                        -->
 <!-- ============================================================ -->
-<script src="js/firebase-config.js?v=task21b"></script>
-<script src="js/auth.js?v=task21b"></script>
-<script src="js/dashboard-data.js?v=task21b"></script>
-<script src="js/dashboard-i18n.js?v=task21b"></script>
-<script src="js/dashboard-charts.js?v=task21b"></script>
-<script src="js/dashboard-filters.js?v=task21b"></script>
-<script src="js/dashboard-modals.js?v=task21b"></script>
+<script src="js/firebase-config.js?v=task22"></script>
+<script src="js/auth.js?v=task22"></script>
+<script src="js/dashboard-data.js?v=task22"></script>
+<script src="js/dashboard-i18n.js?v=task22"></script>
+<script src="js/dashboard-charts.js?v=task22"></script>
+<script src="js/dashboard-filters.js?v=task22"></script>
+<script src="js/dashboard-modals.js?v=task22"></script>
 
 <!-- ============================================================ -->
 <!-- Initialization                                               -->

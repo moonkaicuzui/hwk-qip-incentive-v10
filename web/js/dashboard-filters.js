@@ -65,6 +65,9 @@ var DashboardFilters = {
         this.populateFilterOptions();
         this.bindEvents();
         this.renderTable();
+
+        // Task #22: Initialize Team tab Position/Manager filter dropdowns
+        this.initTeamFilters();
     },
 
     // ------------------------------------------------------------------
@@ -1160,5 +1163,336 @@ var DashboardFilters = {
             .replace(/\\/g, '\\\\')
             .replace(/'/g, "\\'")
             .replace(/"/g, '&quot;');
+    },
+
+    // ====================================================================
+    // Task #22: Team Tab - Position/Manager Filter System
+    // ====================================================================
+
+    /**
+     * Initialize Team tab filter dropdowns.
+     * Called after employeeData is loaded (from DashboardCharts.renderTeamTab or init).
+     * Populates Position dropdown with unique positions (sorted).
+     */
+    initTeamFilters: function () {
+        var posSelect = document.getElementById('teamPositionFilter');
+        if (!posSelect || !window.employeeData) return;
+
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function (k) { return k; };
+
+        // Collect unique positions
+        var positionSet = {};
+        window.employeeData.forEach(function (emp) {
+            var pos = String(emp.position || emp.Position || emp['Position Name'] || '').trim();
+            if (pos && pos !== '--' && pos !== 'undefined') positionSet[pos] = true;
+        });
+
+        var positions = Object.keys(positionSet).sort();
+
+        // Keep first <option> (All Positions), remove the rest
+        while (posSelect.options.length > 1) posSelect.remove(1);
+
+        positions.forEach(function (pos) {
+            var opt = document.createElement('option');
+            opt.value = pos;
+            opt.textContent = pos;
+            posSelect.appendChild(opt);
+        });
+    },
+
+    /**
+     * Handle Position dropdown change.
+     * Populates Manager dropdown with managers who have subordinates in that position.
+     */
+    onTeamPositionChange: function () {
+        var posSelect = document.getElementById('teamPositionFilter');
+        var mgrSelect = document.getElementById('teamManagerFilter');
+        if (!posSelect || !mgrSelect || !window.employeeData) return;
+
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function (k) { return k; };
+        var selectedPos = posSelect.value;
+
+        // Reset manager dropdown
+        while (mgrSelect.options.length > 1) mgrSelect.remove(1);
+
+        // Reset subordinate view
+        var subContainer = document.getElementById('teamSubordinateContainer');
+        if (subContainer) subContainer.style.display = 'none';
+
+        if (!selectedPos) {
+            // Show building view when no position selected
+            var cardsEl = document.getElementById('teamSummaryCards');
+            var tableEl = document.getElementById('teamTableContainer');
+            if (cardsEl) cardsEl.style.display = 'flex';
+            if (tableEl) tableEl.style.display = '';
+            return;
+        }
+
+        // Find managers who have subordinates with this position
+        var managerMap = {};
+        window.employeeData.forEach(function (emp) {
+            var empPos = String(emp.position || emp.Position || '').trim().toUpperCase();
+            if (empPos !== selectedPos.toUpperCase()) return;
+
+            var bossId = String(emp.boss_id || emp.Boss_ID || emp['Boss ID'] || '');
+            var bossName = String(emp.boss_name || emp['Boss Name'] || '');
+            if (!bossId || bossId === 'undefined' || bossId === 'null' || bossId === 'NaN') return;
+
+            if (!managerMap[bossId]) {
+                managerMap[bossId] = { id: bossId, name: bossName || bossId, count: 0 };
+            }
+            managerMap[bossId].count++;
+        });
+
+        var managers = Object.keys(managerMap).map(function (k) { return managerMap[k]; });
+        managers.sort(function (a, b) { return a.name.localeCompare(b.name); });
+
+        managers.forEach(function (mgr) {
+            var opt = document.createElement('option');
+            opt.value = mgr.id;
+            opt.textContent = mgr.name + ' (' + mgr.count + t('common.people_count') + ')';
+            mgrSelect.appendChild(opt);
+        });
+
+        // Show building view filtered by position
+        this._renderTeamByPosition(selectedPos);
+    },
+
+    /**
+     * Handle Manager dropdown change.
+     * Shows all subordinates of selected manager (recursive BFS).
+     */
+    onTeamManagerChange: function () {
+        var mgrSelect = document.getElementById('teamManagerFilter');
+        if (!mgrSelect || !window.employeeData) return;
+
+        var managerId = mgrSelect.value;
+        if (!managerId) {
+            // If position is selected but no manager, show position-filtered building view
+            var posSelect = document.getElementById('teamPositionFilter');
+            if (posSelect && posSelect.value) {
+                this._renderTeamByPosition(posSelect.value);
+            }
+            return;
+        }
+
+        // Hide building view, show subordinate view
+        var cardsEl = document.getElementById('teamSummaryCards');
+        var tableEl = document.getElementById('teamTableContainer');
+        var subContainer = document.getElementById('teamSubordinateContainer');
+        if (cardsEl) cardsEl.style.display = 'none';
+        if (tableEl) tableEl.style.display = 'none';
+        if (subContainer) subContainer.style.display = 'block';
+
+        this._showTeamMembers(managerId);
+    },
+
+    /**
+     * Reset all Team tab filters to default (building view).
+     */
+    resetTeamFilters: function () {
+        var posSelect = document.getElementById('teamPositionFilter');
+        var mgrSelect = document.getElementById('teamManagerFilter');
+        if (posSelect) posSelect.value = '';
+        if (mgrSelect) {
+            while (mgrSelect.options.length > 1) mgrSelect.remove(1);
+            mgrSelect.value = '';
+        }
+
+        // Restore building view
+        var cardsEl = document.getElementById('teamSummaryCards');
+        var tableEl = document.getElementById('teamTableContainer');
+        var subContainer = document.getElementById('teamSubordinateContainer');
+        if (cardsEl) cardsEl.style.display = 'flex';
+        if (tableEl) tableEl.style.display = '';
+        if (subContainer) subContainer.style.display = 'none';
+    },
+
+    /**
+     * Render building summary filtered by position.
+     * Shows the same building cards + table but only for employees with the selected position.
+     * @param {string} position - Position name to filter by
+     * @private
+     */
+    _renderTeamByPosition: function (position) {
+        var cardsEl = document.getElementById('teamSummaryCards');
+        var tableEl = document.getElementById('teamTableContainer');
+        var subContainer = document.getElementById('teamSubordinateContainer');
+        if (subContainer) subContainer.style.display = 'none';
+        if (cardsEl) cardsEl.style.display = 'flex';
+        if (tableEl) tableEl.style.display = '';
+
+        if (!window.employeeData) return;
+
+        var posUpper = position.toUpperCase();
+        var filtered = window.employeeData.filter(function (emp) {
+            var p = String(emp.position || emp.Position || '').trim().toUpperCase();
+            return p === posUpper;
+        });
+
+        // Re-render team tab with filtered data
+        if (typeof DashboardCharts !== 'undefined' && DashboardCharts.renderTeamTab) {
+            DashboardCharts.renderTeamTab({ employees: filtered, summary: {}, thresholds: window.thresholds || {} });
+        }
+    },
+
+    /**
+     * Show subordinates of a manager in a detailed table.
+     * Uses BFS (findAllSubordinates) for recursive subordinate lookup.
+     *
+     * @param {string} managerId - Manager employee number
+     * @private
+     */
+    _showTeamMembers: function (managerId) {
+        var container = document.getElementById('teamSubordinateContainer');
+        if (!container || !window.employeeData) return;
+
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function (k) { return k; };
+        var self = this;
+
+        // Find manager info
+        var managerIdStr = String(managerId);
+        var manager = null;
+        window.employeeData.forEach(function (emp) {
+            if (String(emp.emp_no || emp['Employee No'] || '') === managerIdStr) manager = emp;
+        });
+
+        var managerName = manager ? (manager.full_name || manager.name || managerIdStr) : managerIdStr;
+
+        // Find all subordinates (BFS)
+        var subordinates = this._findAllSubordinates(managerIdStr);
+
+        // Build header
+        var html = '';
+        html += '<div style="background:linear-gradient(135deg, #1a237e, #283593); color:#fff; padding:16px 20px; border-radius:12px 12px 0 0; margin-bottom:0;">';
+        html += '<h4 style="margin:0; font-size:1.1rem;">👤 ' + self._escapeHtml(managerName) + '</h4>';
+        html += '<div style="font-size:0.85rem; opacity:0.9; margin-top:4px;">';
+        html += t('team.subordinatesOf') + ': <strong>' + subordinates.length + '</strong>' + t('common.people_count');
+        html += '</div>';
+        html += '</div>';
+
+        // Table
+        if (subordinates.length === 0) {
+            html += '<div style="padding:40px; text-align:center; color:#9e9e9e; background:#fafafa; border-radius:0 0 12px 12px;">' + t('common.noData') + '</div>';
+        } else {
+            // Summary row
+            var receiving = 0, totalAmt = 0;
+            subordinates.forEach(function (emp) {
+                var amt = window.employeeHelpers ? window.employeeHelpers.getIncentive(emp, 'current') : (emp.currentIncentive || 0);
+                if (amt > 0) { receiving++; totalAmt += amt; }
+            });
+            var rate = subordinates.length > 0 ? ((receiving / subordinates.length) * 100) : 0;
+
+            html += '<div style="display:flex; gap:12px; padding:12px 16px; background:#f8f9fa; flex-wrap:wrap;">';
+            html += '<span style="font-size:0.85rem;">🟢 ' + t('team.receiving') + ' <b>' + receiving + '</b></span>';
+            html += '<span style="font-size:0.85rem;">📊 ' + t('team.rate') + ' <b>' + rate.toFixed(1) + '%</b></span>';
+            html += '<span style="font-size:0.85rem;">💰 ' + t('team.amount') + ' <b>' + (typeof DashboardCharts !== 'undefined' ? DashboardCharts.formatVND(totalAmt) : totalAmt.toLocaleString()) + ' VND</b></span>';
+            html += '</div>';
+
+            html += '<div class="table-container" style="border-radius:0 0 12px 12px; overflow:hidden;"><table>';
+            html += '<thead><tr>';
+            html += '<th>#</th>';
+            html += '<th>' + t('table.empNo') + '</th>';
+            html += '<th>' + t('table.name') + '</th>';
+            html += '<th>' + t('table.position') + '</th>';
+            html += '<th>' + t('table.building') + '</th>';
+            html += '<th>' + t('table.type') + '</th>';
+            html += '<th style="text-align:center;">' + t('modal.conditionHeader') + '</th>';
+            html += '<th style="text-align:center;">AQL</th>';
+            html += '<th style="text-align:center;">5PRS</th>';
+            html += '<th style="text-align:right;">' + t('table.incentive') + '</th>';
+            html += '</tr></thead><tbody>';
+
+            subordinates.forEach(function (emp, idx) {
+                var empNo = String(emp.emp_no || emp['Employee No'] || '');
+                var empName = emp.full_name || emp.name || '--';
+                var empPos = emp.position || emp.Position || '--';
+                var empBld = emp.building || emp.BUILDING || '--';
+                var empType = String(emp.type || emp.TYPE || 'TYPE-3').toUpperCase();
+                var incentive = window.employeeHelpers ? window.employeeHelpers.getIncentive(emp, 'current') : (emp.currentIncentive || 0);
+
+                // Condition summary (count passed/total)
+                var condTotal = 0, condPass = 0;
+                for (var c = 1; c <= 10; c++) {
+                    var condKey = 'condition_' + c;
+                    var condVal = emp.conditions ? emp.conditions['cond_' + c] : (emp[condKey] || emp['Condition_' + c]);
+                    if (condVal !== undefined && condVal !== null && condVal !== '' && condVal !== 'N/A') {
+                        condTotal++;
+                        var cv = String(condVal).toUpperCase();
+                        if (cv === 'YES' || cv === 'PASS' || cv === 'TRUE' || cv === '1') condPass++;
+                    }
+                }
+                var condText = condTotal > 0 ? condPass + '/' + condTotal : '-';
+                var condColor = (condTotal > 0 && condPass === condTotal) ? '#2e7d32' : (condPass > 0 ? '#e65100' : '#c62828');
+
+                // AQL/5PRS - TYPE-based N/A (Issue #56)
+                var aqlStatus, prsStatus;
+                if (empType.indexOf('TYPE-1') !== -1) {
+                    var aqlFail = parseFloat(emp.aql ? emp.aql.personal_fail : (emp.personal_fail || emp['AQL_Personal_Fail'] || 0)) || 0;
+                    aqlStatus = aqlFail === 0 ? '<span style="color:#2e7d32;">✅</span>' : '<span style="color:#c62828;">❌ ' + aqlFail + '</span>';
+                    var prsRate = parseFloat(emp.prs ? emp.prs.pass_rate : (emp.prs_pass_rate || 0)) || 0;
+                    prsStatus = prsRate >= (window.thresholds ? window.thresholds['5prs_pass_rate'] || 95 : 95)
+                        ? '<span style="color:#2e7d32;">✅ ' + prsRate.toFixed(1) + '%</span>'
+                        : '<span style="color:#c62828;">❌ ' + prsRate.toFixed(1) + '%</span>';
+                } else {
+                    aqlStatus = '<span style="color:#9e9e9e;">➖ N/A</span>';
+                    prsStatus = '<span style="color:#9e9e9e;">➖ N/A</span>';
+                }
+
+                html += '<tr style="cursor:pointer;" onclick="DashboardModals.showEmployeeDetail(\'' + self._escapeHtml(empNo) + '\')">';
+                html += '<td style="text-align:center; color:#9e9e9e;">' + (idx + 1) + '</td>';
+                html += '<td>' + self._escapeHtml(empNo) + '</td>';
+                html += '<td>' + self._escapeHtml(empName) + '</td>';
+                html += '<td>' + self._escapeHtml(empPos) + '</td>';
+                html += '<td>' + self._escapeHtml(empBld) + '</td>';
+                html += '<td><span class="badge-type badge-type' + (empType.indexOf('1') !== -1 ? '1' : empType.indexOf('2') !== -1 ? '2' : '3') + '">' + empType + '</span></td>';
+                html += '<td style="text-align:center; color:' + condColor + '; font-weight:600;">' + condText + '</td>';
+                html += '<td style="text-align:center;">' + aqlStatus + '</td>';
+                html += '<td style="text-align:center;">' + prsStatus + '</td>';
+                html += '<td style="text-align:right;">' + (typeof DashboardCharts !== 'undefined' ? DashboardCharts.formatVND(incentive) : incentive.toLocaleString()) + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+        }
+
+        container.innerHTML = html;
+    },
+
+    /**
+     * Find all subordinates of a manager using BFS (Breadth-First Search).
+     * Issue #28: All ID comparisons use String() conversion.
+     *
+     * @param {string} managerId - Manager employee number (string)
+     * @returns {Array} All subordinate employee objects (direct + indirect)
+     * @private
+     */
+    _findAllSubordinates: function (managerId) {
+        if (!window.employeeData) return [];
+
+        var managerIdStr = String(managerId);
+        var visited = {};
+        visited[managerIdStr] = true;
+
+        var queue = [managerIdStr];
+        var result = [];
+
+        while (queue.length > 0) {
+            var currentId = queue.shift();
+            var currentIdStr = String(currentId);
+
+            window.employeeData.forEach(function (emp) {
+                var bossId = String(emp.boss_id || emp.Boss_ID || emp['Boss ID'] || '');
+                var empNo = String(emp.emp_no || emp['Employee No'] || '');
+
+                if (bossId === currentIdStr && !visited[empNo]) {
+                    visited[empNo] = true;
+                    result.push(emp);
+                    queue.push(empNo);
+                }
+            });
+        }
+
+        return result;
     }
 };

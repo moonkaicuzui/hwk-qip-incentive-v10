@@ -399,6 +399,9 @@ var DashboardModals = {
             } else if (type === 'consecutiveAqlFail') {
                 // V9 feature: AQL 3-month/2-month split + Line Leader aggregation
                 html += this._renderConsecutiveAqlContent(th);
+            } else if (type === 'areaRejectRate') {
+                // Task #22: V9 feature: AQL Building 3-Table modal
+                html += this._renderAreaRejectContent(th);
             } else if (type === 'buildingReviewTotal') {
                 // V9 feature: Cross-Building enhanced modal with color badges
                 html += this._renderBuildingReviewContent(th);
@@ -1620,6 +1623,255 @@ var DashboardModals = {
         if (!row) return 0;
         var cells = Array.prototype.slice.call(row.children);
         return cells.indexOf(th);
+    },
+
+    // ====================================================================
+    // Task #22: V9 Feature: AQL Building 3-Table Modal (Area Reject Rate)
+    // ====================================================================
+
+    /**
+     * Render AQL Building analysis with three tables:
+     *  Table 1: Building-level AQL summary (tests, pass, fail, reject rate, grade)
+     *  Table 2: Inspector statistics per building (inspectors, fail inspectors, pass-only)
+     *  Table 3: Individual inspector/auditor details
+     *
+     * Grade system based on V9 dynamic thresholds:
+     *  A: reject rate <= threshold * 0.5
+     *  B: reject rate <= threshold * 0.83
+     *  C: reject rate <= threshold
+     *  FAIL: reject rate > threshold
+     *
+     * @param {Object} th - Thresholds
+     * @returns {string} HTML
+     * @private
+     */
+    _renderAreaRejectContent: function (th) {
+        var self = this;
+        var t = this._t;
+        var thAreaReject = parseFloat(th.area_reject_rate || 3.0);
+        var employees = this.employees;
+
+        // Get TYPE-1 employees with AQL data
+        var type1Emps = employees.filter(function (emp) {
+            var empType = String(emp.type || emp.TYPE || '').toUpperCase();
+            return empType.indexOf('TYPE-1') !== -1 || empType === '1';
+        });
+
+        // --- Compute building-level AQL statistics ---
+        var buildingMap = {};
+        type1Emps.forEach(function (emp) {
+            var bld = String(emp.building || emp.BUILDING || 'Unknown').trim();
+            if (!bld || bld === 'nan' || bld === 'NaN' || bld === 'null' || bld === 'undefined') bld = 'Unknown';
+            if (!buildingMap[bld]) {
+                buildingMap[bld] = {
+                    totalTests: 0, totalPass: 0, totalFail: 0,
+                    inspectorCount: 0, failInspectors: 0, passOnlyInspectors: 0,
+                    inspectors: []
+                };
+            }
+            var aql = emp.aql || {};
+            var tests = parseFloat(aql.total_tests || emp.total_tests || emp['Total_Tests'] || 0) || 0;
+            var passCount = parseFloat(aql.pass_count || emp.pass_count || emp['Pass_Count'] || 0) || 0;
+            var failPercent = parseFloat(aql.fail_percent || emp.fail_percent || emp['AQL_Fail_Percent'] || 0) || 0;
+            var personalFail = parseFloat(aql.personal_fail || emp.personal_fail || emp['AQL_Personal_Fail'] || 0) || 0;
+            var rejectRate = parseFloat(aql.area_reject_rate || emp.area_reject_rate || emp['Area_Reject_Rate'] || 0) || 0;
+            var continuousFail = String(aql.continuous_fail || emp.continuous_fail || emp['Continuous_FAIL'] || 'NO');
+
+            if (tests > 0) {
+                buildingMap[bld].totalTests += tests;
+                buildingMap[bld].totalPass += passCount;
+                buildingMap[bld].totalFail += (tests - passCount);
+                buildingMap[bld].inspectorCount++;
+
+                if (personalFail > 0) {
+                    buildingMap[bld].failInspectors++;
+                } else {
+                    buildingMap[bld].passOnlyInspectors++;
+                }
+            }
+
+            // Always collect inspector detail
+            buildingMap[bld].inspectors.push({
+                empNo: String(emp.emp_no || emp['Employee No'] || ''),
+                name: emp.full_name || emp.name || emp['Employee Name'] || '--',
+                position: emp.position || emp.Position || '--',
+                building: bld,
+                personalFail: personalFail,
+                rejectRate: rejectRate,
+                continuousFail: continuousFail,
+                incentive: self._getIncentive(emp, 'current')
+            });
+        });
+
+        var buildings = Object.keys(buildingMap).sort();
+
+        // Grade helper
+        function getGrade(rejectRate) {
+            if (rejectRate <= thAreaReject * 0.5) return { grade: 'A', color: '#2e7d32', bg: '#e8f5e9' };
+            if (rejectRate <= thAreaReject * 0.83) return { grade: 'B', color: '#1565c0', bg: '#e3f2fd' };
+            if (rejectRate <= thAreaReject) return { grade: 'C', color: '#e65100', bg: '#fff3e0' };
+            return { grade: 'FAIL', color: '#c62828', bg: '#fbe9e7' };
+        }
+
+        var html = '';
+
+        // === Summary KPI Row ===
+        var totalAboveThreshold = 0;
+        var totalInspectors = 0;
+        buildings.forEach(function (bld) {
+            var stats = buildingMap[bld];
+            totalInspectors += stats.inspectorCount;
+            var bldRate = stats.totalTests > 0 ? ((stats.totalFail / stats.totalTests) * 100) : 0;
+            if (bldRate >= thAreaReject) totalAboveThreshold++;
+        });
+
+        html += '<div style="display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">';
+        html += '<div style="flex:1; min-width:140px; padding:16px; background:linear-gradient(135deg, #1565c0, #0d47a1); color:#fff; border-radius:12px; text-align:center;">';
+        html += '<div style="font-size:2rem; font-weight:700;">' + buildings.length + '</div>';
+        html += '<div style="font-size:0.85rem; opacity:0.9;">' + t('team.buildings').replace(/^\s/, '') + '</div>';
+        html += '</div>';
+        html += '<div style="flex:1; min-width:140px; padding:16px; background:linear-gradient(135deg, #2e7d32, #1b5e20); color:#fff; border-radius:12px; text-align:center;">';
+        html += '<div style="font-size:2rem; font-weight:700;">' + totalInspectors + '</div>';
+        html += '<div style="font-size:0.85rem; opacity:0.9;">' + t('modal.aqlInspectors') + '</div>';
+        html += '</div>';
+        html += '<div style="flex:1; min-width:140px; padding:16px; background:linear-gradient(135deg, ' + (totalAboveThreshold > 0 ? '#ef4444, #dc2626' : '#43a047, #2e7d32') + '); color:#fff; border-radius:12px; text-align:center;">';
+        html += '<div style="font-size:2rem; font-weight:700;">' + totalAboveThreshold + '</div>';
+        html += '<div style="font-size:0.85rem; opacity:0.9;">' + t('modal.buildingsAboveThreshold') + '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        // === Table 1: Building AQL Summary ===
+        html += '<div style="margin-bottom:24px;">';
+        html += '<h4 style="font-size:1rem; margin:0 0 8px; color:#1565c0;">📊 ' + t('modal.aqlBuildingSummary') + '</h4>';
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr>';
+        html += '<th>' + t('team.building') + '</th>';
+        html += '<th style="text-align:right;">' + t('modal.totalTests') + '</th>';
+        html += '<th style="text-align:right;">' + t('modal.passCount') + '</th>';
+        html += '<th style="text-align:right;">' + t('modal.aqlFailCount') + '</th>';
+        html += '<th style="text-align:right;">' + t('modal.aqlRejectRate') + '</th>';
+        html += '<th style="text-align:center;">' + t('modal.aqlGrade') + '</th>';
+        html += '</tr></thead><tbody>';
+
+        var grandTests = 0, grandPass = 0, grandFail = 0;
+        buildings.forEach(function (bld) {
+            var stats = buildingMap[bld];
+            var bldFail = stats.totalTests - stats.totalPass;
+            var bldRate = stats.totalTests > 0 ? ((bldFail / stats.totalTests) * 100) : 0;
+            var g = getGrade(bldRate);
+
+            grandTests += stats.totalTests;
+            grandPass += stats.totalPass;
+            grandFail += bldFail;
+
+            html += '<tr>';
+            html += '<td>' + self._getBuildingBadge(bld) + '</td>';
+            html += '<td style="text-align:right;">' + stats.totalTests.toLocaleString() + '</td>';
+            html += '<td style="text-align:right;">' + stats.totalPass.toLocaleString() + '</td>';
+            html += '<td style="text-align:right;">' + bldFail.toLocaleString() + '</td>';
+            html += '<td style="text-align:right; font-weight:600; color:' + g.color + ';">' + bldRate.toFixed(2) + '%</td>';
+            html += '<td style="text-align:center;"><span style="display:inline-block; padding:2px 10px; border-radius:10px; font-size:0.82rem; font-weight:700; color:' + g.color + '; background:' + g.bg + ';">' + g.grade + '</span></td>';
+            html += '</tr>';
+        });
+
+        // Total row
+        var grandRate = grandTests > 0 ? ((grandFail / grandTests) * 100) : 0;
+        var grandG = getGrade(grandRate);
+        html += '<tr style="font-weight:700; background:#f0f4ff;">';
+        html += '<td>' + t('modal.totalCount') + '</td>';
+        html += '<td style="text-align:right;">' + grandTests.toLocaleString() + '</td>';
+        html += '<td style="text-align:right;">' + grandPass.toLocaleString() + '</td>';
+        html += '<td style="text-align:right;">' + grandFail.toLocaleString() + '</td>';
+        html += '<td style="text-align:right; color:' + grandG.color + ';">' + grandRate.toFixed(2) + '%</td>';
+        html += '<td style="text-align:center;"><span style="display:inline-block; padding:2px 10px; border-radius:10px; font-size:0.82rem; font-weight:700; color:' + grandG.color + '; background:' + grandG.bg + ';">' + grandG.grade + '</span></td>';
+        html += '</tr>';
+        html += '</tbody></table></div></div>';
+
+        // === Table 2: Inspector Stats per Building ===
+        html += '<div style="margin-bottom:24px;">';
+        html += '<h4 style="font-size:1rem; margin:0 0 8px; color:#2e7d32;">👥 ' + t('modal.aqlInspectorStats') + '</h4>';
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr>';
+        html += '<th>' + t('team.building') + '</th>';
+        html += '<th style="text-align:right;">' + t('modal.aqlTotalInspectors') + '</th>';
+        html += '<th style="text-align:right;">' + t('modal.aqlFailInspectors') + '</th>';
+        html += '<th style="text-align:right;">' + t('modal.aqlPassOnlyInspectors') + '</th>';
+        html += '<th style="text-align:right;">' + t('modal.aqlRejectRate') + '</th>';
+        html += '</tr></thead><tbody>';
+
+        var gtInsp = 0, gtFail = 0, gtPass = 0;
+        buildings.forEach(function (bld) {
+            var stats = buildingMap[bld];
+            var bldFail = stats.totalTests - stats.totalPass;
+            var bldRate = stats.totalTests > 0 ? ((bldFail / stats.totalTests) * 100) : 0;
+            var rateColor = bldRate >= thAreaReject ? '#c62828' : '#2e7d32';
+
+            gtInsp += stats.inspectorCount;
+            gtFail += stats.failInspectors;
+            gtPass += stats.passOnlyInspectors;
+
+            html += '<tr>';
+            html += '<td>' + self._getBuildingBadge(bld) + '</td>';
+            html += '<td style="text-align:right;">' + stats.inspectorCount + '</td>';
+            html += '<td style="text-align:right; color:#c62828; font-weight:' + (stats.failInspectors > 0 ? '700' : '400') + ';">' + stats.failInspectors + '</td>';
+            html += '<td style="text-align:right; color:#2e7d32;">' + stats.passOnlyInspectors + '</td>';
+            html += '<td style="text-align:right; color:' + rateColor + '; font-weight:600;">' + bldRate.toFixed(2) + '%</td>';
+            html += '</tr>';
+        });
+
+        // Total
+        html += '<tr style="font-weight:700; background:#f0f4ff;">';
+        html += '<td>' + t('modal.totalCount') + '</td>';
+        html += '<td style="text-align:right;">' + gtInsp + '</td>';
+        html += '<td style="text-align:right; color:#c62828;">' + gtFail + '</td>';
+        html += '<td style="text-align:right; color:#2e7d32;">' + gtPass + '</td>';
+        html += '<td style="text-align:right;">' + grandRate.toFixed(2) + '%</td>';
+        html += '</tr>';
+        html += '</tbody></table></div></div>';
+
+        // === Table 3: Individual Inspector Detail ===
+        html += '<div>';
+        html += '<h4 style="font-size:1rem; margin:0 0 8px; color:#e65100;">🔍 ' + t('modal.aqlIndividualDetail') + '</h4>';
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr>';
+        html += '<th>#</th>';
+        html += '<th>' + t('table.empNo') + '</th>';
+        html += '<th>' + t('table.name') + '</th>';
+        html += '<th>' + t('table.building') + '</th>';
+        html += '<th>' + t('table.position') + '</th>';
+        html += '<th style="text-align:center;">' + t('condition.5') + '</th>';
+        html += '<th style="text-align:center;">' + t('condition.8') + '</th>';
+        html += '<th style="text-align:right;">' + t('table.incentive') + '</th>';
+        html += '</tr></thead><tbody>';
+
+        var rowIdx = 0;
+        buildings.forEach(function (bld) {
+            var inspectors = buildingMap[bld].inspectors;
+            inspectors.sort(function (a, b) { return b.personalFail - a.personalFail; });
+
+            inspectors.forEach(function (insp) {
+                rowIdx++;
+                var cond5Color = insp.personalFail === 0 ? '#2e7d32' : '#c62828';
+                var cond5Text = insp.personalFail === 0 ? '✅ PASS' : '❌ FAIL (' + insp.personalFail + ')';
+                var cond8G = getGrade(insp.rejectRate);
+                var cond8Text = insp.rejectRate.toFixed(2) + '% (' + cond8G.grade + ')';
+
+                html += '<tr style="cursor:pointer;" onclick="DashboardModals.showEmployeeDetail(\'' + self._escapeHtml(insp.empNo) + '\')">';
+                html += '<td style="text-align:center; color:#9e9e9e;">' + rowIdx + '</td>';
+                html += '<td>' + self._escapeHtml(insp.empNo) + '</td>';
+                html += '<td>' + self._escapeHtml(insp.name) + '</td>';
+                html += '<td>' + self._getBuildingBadge(insp.building) + '</td>';
+                html += '<td>' + self._escapeHtml(insp.position) + '</td>';
+                html += '<td style="text-align:center; color:' + cond5Color + '; font-weight:600;">' + cond5Text + '</td>';
+                html += '<td style="text-align:center;"><span style="color:' + cond8G.color + '; font-weight:600;">' + cond8Text + '</span></td>';
+                html += '<td style="text-align:right;">' + self._formatVND(insp.incentive) + '</td>';
+                html += '</tr>';
+            });
+        });
+
+        html += '</tbody></table></div></div>';
+
+        return html;
     },
 
     // ====================================================================

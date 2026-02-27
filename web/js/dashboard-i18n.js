@@ -597,6 +597,13 @@ const DashboardI18n = {
         'team.amount': { ko: '금액:', en: 'Amount:', vi: 'Số tiền:' },
         'team.totalAmount': { ko: '총 지급액 (VND)', en: 'Total Amount (VND)', vi: 'Tổng tiền (VND)' },
         'team.buildings': { ko: '개 Building', en: ' buildings', vi: ' xưởng' },
+        // Task #22: Team Position/Manager filter
+        'team.filterByPosition': { ko: '직급별 필터', en: 'Filter by Position', vi: 'Lọc theo chức vụ' },
+        'team.filterByManager': { ko: '관리자별 필터', en: 'Filter by Manager', vi: 'Lọc theo quản lý' },
+        'team.allPositions': { ko: '전체 직급', en: 'All Positions', vi: 'Tất cả chức vụ' },
+        'team.allManagers': { ko: '전체 관리자', en: 'All Managers', vi: 'Tất cả quản lý' },
+        'team.resetFilter': { ko: '필터 초기화', en: 'Reset Filter', vi: 'Đặt lại bộ lọc' },
+        'team.subordinatesOf': { ko: '소속 직원', en: 'Subordinates', vi: 'Nhân viên trực thuộc' },
 
         // Org chart extras
         'orgchart.totalManagers': { ko: '관리자 합계', en: 'Total Managers', vi: 'Tổng quản lý' },
@@ -629,6 +636,19 @@ const DashboardI18n = {
         'modal.bossName': { ko: '상사명', en: 'Supervisor', vi: 'Quản lý' },
         'modal.inspectionQty': { ko: '검사량', en: 'Inspection Qty', vi: 'SL kiểm tra' },
         'modal.failPattern': { ko: '실패 패턴', en: 'Fail Pattern', vi: 'Mẫu lỗi' },
+
+        // Task #22: AQL Building 3-Table Modal
+        'modal.aqlInspectors': { ko: 'AQL 검사원', en: 'AQL Inspectors', vi: 'Kiểm tra viên AQL' },
+        'modal.buildingsAboveThreshold': { ko: '기준 초과 Building', en: 'Buildings Above Threshold', vi: 'Xưởng vượt ngưỡng' },
+        'modal.aqlBuildingSummary': { ko: 'Building별 AQL 종합', en: 'AQL Summary by Building', vi: 'Tổng hợp AQL theo xưởng' },
+        'modal.aqlFailCount': { ko: 'AQL 불합격 수', en: 'AQL Fail Count', vi: 'Số lỗi AQL' },
+        'modal.aqlRejectRate': { ko: '불량률', en: 'Reject Rate', vi: 'Tỷ lệ lỗi' },
+        'modal.aqlGrade': { ko: '등급', en: 'Grade', vi: 'Hạng' },
+        'modal.aqlInspectorStats': { ko: '검사원 통계', en: 'Inspector Stats', vi: 'TK kiểm tra viên' },
+        'modal.aqlTotalInspectors': { ko: '전체 검사원', en: 'Total Inspectors', vi: 'Tổng KTV' },
+        'modal.aqlFailInspectors': { ko: '실패 검사원', en: 'Fail Inspectors', vi: 'KTV lỗi' },
+        'modal.aqlPassOnlyInspectors': { ko: '합격만 검사원', en: 'Pass-Only Inspectors', vi: 'KTV chỉ đạt' },
+        'modal.aqlIndividualDetail': { ko: '개인별 AQL 상세', en: 'Individual AQL Detail', vi: 'Chi tiết AQL cá nhân' },
 
         // V9 Feature: 5PRS 2-Table
         'modal.lowPassRateTable1': { ko: '기준 미달자 목록', en: 'Below Threshold', vi: 'Dưới ngưỡng' },
