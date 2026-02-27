@@ -103,10 +103,15 @@ system/config                       # System settings
 ```
 
 ## Firebase Project
-- Project: `hwk-qip-incentive-dashboard` (existing)
+- Firebase Project ID: `hwk-qip-incentive-dashboard` (Firebase console name)
+- GitHub Repo: `moonkaicuzui/hwk-qip-incentive-v10`
+- Production URL: `https://moonkaicuzui.github.io/hwk-qip-incentive-v10/`
+- GitHub Pages Root: `/` (repo root, `index.html` redirects to `web/auth.html`)
 - Auth: Email/Password
 - Firestore: asia-northeast3
 - Admin email: ksmoon@hsvina.com
+
+> **Note**: Firebase Project ID (`hwk-qip-incentive-dashboard`)와 GitHub repo name (`hwk-qip-incentive-v10`)이 다릅니다. GitHub Pages URL은 repo name 기준입니다.
 
 ## Dependencies
 ```

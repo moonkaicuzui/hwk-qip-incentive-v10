@@ -1,0 +1,54 @@
+name: Weekly Email Report
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Every Monday 09:00 Vietnam (UTC+7 = UTC 02:00)
+  workflow_dispatch:  # Manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: "Step 1: Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: "Step 2: Setup Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: "Step 2.1: Install dependencies"
+        run: pip install firebase-admin
+
+      - name: "Step 3: Determine current month/year"
+        id: period
+        run: |
+          MONTH=$(python3 -c "
+          import datetime
+          months = ['january','february','march','april','may','june','july','august','september','october','november','december']
+          print(months[datetime.datetime.now().month - 1])
+          ")
+          YEAR=$(date +%Y)
+          echo "month=$MONTH" >> $GITHUB_OUTPUT
+          echo "year=$YEAR" >> $GITHUB_OUTPUT
+          echo "📅 Report period: $MONTH $YEAR"
+
+      - name: "Step 4: Send weekly email report"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        run: |
+          echo "📧 Sending weekly email report..."
+          python scripts/send_report_email.py \
+            --month "${{ steps.period.outputs.month }}" \
+            --year "${{ steps.period.outputs.year }}"
+          echo "✅ Email report complete"

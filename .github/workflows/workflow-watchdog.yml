@@ -1,0 +1,188 @@
+name: 🛡️ Workflow Watchdog (비활성화 감지 및 자동 복구)
+
+on:
+  schedule:
+    # 매일 오전 9시 (베트남 시간 = UTC+7, 그래서 UTC 02:00)
+    - cron: '0 2 * * *'
+
+  # 수동 실행 가능
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  ALERT_EMAIL: ksmoon@hsvina.com
+  MAIN_WORKFLOW_FILE: auto-update.yml
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 0. 저장소 체크아웃 (Keep-Alive 커밋에 필요)
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: true
+        fetch-depth: 1
+
+    - name: 🔍 Check Main Workflow Status
+      id: check_status
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "=== 메인 워크플로우 상태 확인 ==="
+
+        # 워크플로우 상태 조회
+        WORKFLOW_STATE=$(gh api repos/${{ github.repository }}/actions/workflows/${{ env.MAIN_WORKFLOW_FILE }} --jq '.state' 2>/dev/null || echo "not_found")
+
+        echo "워크플로우 상태: $WORKFLOW_STATE"
+        echo "workflow_state=$WORKFLOW_STATE" >> $GITHUB_OUTPUT
+
+        # 마지막 성공 실행 시간 확인
+        LAST_SUCCESS=$(gh api "repos/${{ github.repository }}/actions/workflows/${{ env.MAIN_WORKFLOW_FILE }}/runs?status=success&per_page=1" --jq '.workflow_runs[0].created_at' 2>/dev/null || echo "never")
+        echo "마지막 성공 실행: $LAST_SUCCESS"
+        echo "last_success=$LAST_SUCCESS" >> $GITHUB_OUTPUT
+
+        # 24시간 이내 실행 확인
+        if [ "$LAST_SUCCESS" != "never" ] && [ "$LAST_SUCCESS" != "null" ]; then
+          LAST_SUCCESS_EPOCH=$(date -d "$LAST_SUCCESS" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$LAST_SUCCESS" +%s 2>/dev/null || echo "0")
+          NOW_EPOCH=$(date +%s)
+          DIFF_HOURS=$(( (NOW_EPOCH - LAST_SUCCESS_EPOCH) / 3600 ))
+          echo "마지막 성공 후 경과 시간: ${DIFF_HOURS}시간"
+          echo "hours_since_success=$DIFF_HOURS" >> $GITHUB_OUTPUT
+        else
+          echo "hours_since_success=999" >> $GITHUB_OUTPUT
+        fi
+
+    - name: 🔄 Auto-Enable Workflow if Disabled
+      if: steps.check_status.outputs.workflow_state == 'disabled_manually' || steps.check_status.outputs.workflow_state == 'disabled_inactivity'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "⚠️ 워크플로우가 비활성화됨! 자동 활성화 중..."
+        gh workflow enable ${{ env.MAIN_WORKFLOW_FILE }}
+        echo "✅ 워크플로우 활성화 완료"
+
+        # 즉시 한 번 실행
+        echo "🚀 워크플로우 즉시 실행..."
+        gh workflow run ${{ env.MAIN_WORKFLOW_FILE }}
+        echo "✅ 워크플로우 트리거 완료"
+
+    - name: 📧 Send Email Alert (비활성화 감지 시)
+      if: steps.check_status.outputs.workflow_state == 'disabled_manually' || steps.check_status.outputs.workflow_state == 'disabled_inactivity'
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.SMTP_USERNAME }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+        subject: "🚨 [V10 Dashboard] 워크플로우 비활성화 감지 및 자동 복구"
+        to: ${{ env.ALERT_EMAIL }}
+        from: V10 Dashboard Bot <${{ secrets.SMTP_USERNAME }}>
+        body: |
+          ⚠️ V10 Dashboard 자동 업데이트 워크플로우가 비활성화되어 있었습니다.
+
+          📊 상태 정보:
+          - 워크플로우: ${{ env.MAIN_WORKFLOW_FILE }}
+          - 이전 상태: ${{ steps.check_status.outputs.workflow_state }}
+          - 감지 시간: ${{ github.event.head_commit.timestamp || 'N/A' }}
+
+          ✅ 조치 사항:
+          - 워크플로우가 자동으로 활성화되었습니다.
+          - 워크플로우가 즉시 실행되었습니다.
+
+          🔗 확인하기:
+          - Actions: https://github.com/${{ github.repository }}/actions
+          - Dashboard: https://moonkaicuzui.github.io/hwk-qip-incentive-v10/
+
+          ---
+          이 알림은 V10 Workflow Watchdog에 의해 자동 발송되었습니다.
+      continue-on-error: true
+
+    - name: 📧 Send Email Alert (24시간 이상 실행 안됨)
+      if: steps.check_status.outputs.hours_since_success > 24 && steps.check_status.outputs.workflow_state == 'active'
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.SMTP_USERNAME }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+        subject: "⚠️ [V10 Dashboard] 워크플로우 24시간 이상 미실행"
+        to: ${{ env.ALERT_EMAIL }}
+        from: V10 Dashboard Bot <${{ secrets.SMTP_USERNAME }}>
+        body: |
+          ⚠️ V10 Dashboard 자동 업데이트 워크플로우가 24시간 이상 성공적으로 실행되지 않았습니다.
+
+          📊 상태 정보:
+          - 워크플로우 상태: ${{ steps.check_status.outputs.workflow_state }}
+          - 마지막 성공 실행: ${{ steps.check_status.outputs.last_success }}
+          - 경과 시간: ${{ steps.check_status.outputs.hours_since_success }}시간
+
+          🔍 확인이 필요합니다:
+          - 워크플로우 로그 확인: https://github.com/${{ github.repository }}/actions
+          - 최근 실패 원인 분석 필요
+
+          ---
+          이 알림은 V10 Workflow Watchdog에 의해 자동 발송되었습니다.
+      continue-on-error: true
+
+    - name: 🏥 Keep-Alive (60일 비활성화 방지)
+      run: |
+        echo "=== Keep-Alive: 레포지토리 활성 상태 유지 ==="
+        mkdir -p .github
+        echo "마지막 확인: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" > .github/last-watchdog-check.txt
+        cat .github/last-watchdog-check.txt
+
+    - name: 📝 Commit Keep-Alive (변경사항 있을 때만)
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+
+        # 변경사항 확인
+        if git diff --quiet .github/last-watchdog-check.txt 2>/dev/null; then
+          echo "ℹ️ 변경사항 없음 - 커밋 스킵"
+        else
+          git add .github/last-watchdog-check.txt
+          git commit -m "🛡️ Watchdog: Keep-alive check $(date -u +"%Y-%m-%d")" || echo "Nothing to commit"
+          git push || echo "Push failed - will retry next run"
+        fi
+
+    - name: 📧 Send Test Email (최초 설정 확인용 - 수동 실행 시에만)
+      if: github.event_name == 'workflow_dispatch'
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.SMTP_USERNAME }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+        subject: "✅ [V10 Dashboard] Watchdog 이메일 테스트 성공"
+        to: ${{ env.ALERT_EMAIL }}
+        from: V10 Dashboard Bot <${{ secrets.SMTP_USERNAME }}>
+        body: |
+          ✅ V10 Dashboard Watchdog 이메일 알림 시스템이 정상 작동합니다!
+
+          📊 현재 상태:
+          - 메인 워크플로우: ${{ steps.check_status.outputs.workflow_state }}
+          - 마지막 성공 실행: ${{ steps.check_status.outputs.last_success }}
+          - 경과 시간: ${{ steps.check_status.outputs.hours_since_success }}시간
+
+          🔗 확인하기:
+          - Actions: https://github.com/${{ github.repository }}/actions
+          - Dashboard: https://moonkaicuzui.github.io/hwk-qip-incentive-v10/
+
+          ---
+          이 테스트 이메일은 수동 실행 시에만 발송됩니다.
+      continue-on-error: true
+
+    - name: ✅ Summary
+      run: |
+        echo "========================================"
+        echo "🛡️ Workflow Watchdog 실행 완료"
+        echo "========================================"
+        echo "워크플로우 상태: ${{ steps.check_status.outputs.workflow_state }}"
+        echo "마지막 성공: ${{ steps.check_status.outputs.last_success }}"
+        echo "경과 시간: ${{ steps.check_status.outputs.hours_since_success }}시간"
+        echo "========================================"

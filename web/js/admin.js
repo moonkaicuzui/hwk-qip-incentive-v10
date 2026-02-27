@@ -50,6 +50,7 @@ var AdminPage = {
             // Load initial data
             this.loadChangeHistory();
             this.loadSystemStatus();
+            this.loadEmailSettings();
 
             // Update working days panel display
             this.updateWorkingDaysDisplay();
@@ -627,6 +628,190 @@ var AdminPage = {
      */
     handleLogout: function() {
         signOut();
+    },
+
+    // =====================================================================
+    // Email Report Settings (Panel 5)
+    // =====================================================================
+
+    /**
+     * Load email recipients from Firestore system/config document.
+     */
+    async loadEmailSettings() {
+        var container = document.getElementById('email-recipients-list');
+
+        try {
+            var doc = await db.collection('system').doc('config').get();
+
+            if (doc.exists && doc.data().email_recipients) {
+                var recipients = doc.data().email_recipients;
+                this.renderRecipients(recipients);
+            } else {
+                container.innerHTML =
+                    '<p class="text-muted text-center py-3">' +
+                    '<i class="fa-regular fa-envelope me-1"></i> No recipients configured</p>';
+            }
+        } catch (error) {
+            console.error('[Admin] Failed to load email settings:', error);
+            container.innerHTML =
+                '<p class="text-danger text-center py-3">' +
+                '<i class="fa-solid fa-triangle-exclamation me-1"></i> Failed to load: ' + this.escapeHtml(error.message) + '</p>';
+        }
+    },
+
+    /**
+     * Render recipients array as an HTML table.
+     *
+     * @param {Array} recipients - Array of {email, name, lang} objects
+     */
+    renderRecipients: function(recipients) {
+        var container = document.getElementById('email-recipients-list');
+
+        if (!recipients || recipients.length === 0) {
+            container.innerHTML =
+                '<p class="text-muted text-center py-3">' +
+                '<i class="fa-regular fa-envelope me-1"></i> No recipients configured</p>';
+            return;
+        }
+
+        var langLabels = { ko: '한국어', en: 'English', vi: 'Tiếng Việt' };
+        var self = this;
+
+        var html =
+            '<table class="table recipients-table">' +
+            '<thead><tr>' +
+            '<th>Name</th>' +
+            '<th>Email</th>' +
+            '<th>Lang</th>' +
+            '<th style="width: 60px;"></th>' +
+            '</tr></thead><tbody>';
+
+        recipients.forEach(function(r) {
+            var safeName = self.escapeHtml(r.name || '--');
+            var safeEmail = self.escapeHtml(r.email || '--');
+            var lang = r.lang || 'ko';
+            var langLabel = langLabels[lang] || lang;
+
+            html += '<tr>' +
+                '<td>' + safeName + '</td>' +
+                '<td><code style="font-size: 0.8rem;">' + safeEmail + '</code></td>' +
+                '<td><span class="lang-badge ' + self.escapeHtml(lang) + '">' + self.escapeHtml(langLabel) + '</span></td>' +
+                '<td><button class="btn-remove-sm" onclick="AdminPage.removeRecipient(\'' + safeEmail.replace(/'/g, "\\'") + '\')" title="Remove">' +
+                '<i class="fa-solid fa-trash-can"></i></button></td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    },
+
+    /**
+     * Add a new email recipient to Firestore.
+     * Validates input, checks for duplicates, and uses Firestore arrayUnion.
+     */
+    async addRecipient() {
+        var self = this;
+
+        var emailInput = document.getElementById('new-recipient-email');
+        var nameInput = document.getElementById('new-recipient-name');
+        var langSelect = document.getElementById('new-recipient-lang');
+
+        var email = emailInput.value.trim().toLowerCase();
+        var name = nameInput.value.trim();
+        var lang = langSelect.value;
+
+        // Validate email
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            self.showMessage('email-settings-message', 'Please enter a valid email address.', 'danger');
+            emailInput.focus();
+            return;
+        }
+
+        // Validate name
+        if (!name) {
+            self.showMessage('email-settings-message', 'Please enter a name.', 'danger');
+            nameInput.focus();
+            return;
+        }
+
+        try {
+            // Check for duplicate
+            var doc = await db.collection('system').doc('config').get();
+            var existing = (doc.exists && doc.data().email_recipients) ? doc.data().email_recipients : [];
+            var isDuplicate = existing.some(function(r) { return r.email === email; });
+
+            if (isDuplicate) {
+                self.showMessage('email-settings-message', 'This email is already in the recipient list.', 'warning');
+                return;
+            }
+
+            // Add to Firestore using arrayUnion
+            var newRecipient = { email: email, name: name, lang: lang };
+
+            await db.collection('system').doc('config').set({
+                email_recipients: firebase.firestore.FieldValue.arrayUnion(newRecipient)
+            }, { merge: true });
+
+            // Clear form
+            emailInput.value = '';
+            nameInput.value = '';
+            langSelect.value = 'ko';
+
+            self.showMessage('email-settings-message', 'Added ' + self.escapeHtml(name) + ' (' + self.escapeHtml(email) + ')', 'success');
+
+            // Reload list
+            self.loadEmailSettings();
+
+        } catch (error) {
+            console.error('[Admin] Failed to add recipient:', error);
+            self.showMessage('email-settings-message', 'Failed to add: ' + error.message, 'danger');
+        }
+    },
+
+    /**
+     * Remove a recipient by email address.
+     * Reads current array, filters out the target, and writes back.
+     *
+     * @param {string} email - Email address to remove
+     */
+    async removeRecipient(email) {
+        if (!confirm('Remove ' + email + ' from the recipient list?')) return;
+
+        var self = this;
+
+        try {
+            var doc = await db.collection('system').doc('config').get();
+            if (!doc.exists) return;
+
+            var recipients = doc.data().email_recipients || [];
+            var updated = recipients.filter(function(r) { return r.email !== email; });
+
+            await db.collection('system').doc('config').set({
+                email_recipients: updated
+            }, { merge: true });
+
+            self.showMessage('email-settings-message', 'Removed ' + self.escapeHtml(email), 'success');
+
+            // Reload list
+            self.loadEmailSettings();
+
+        } catch (error) {
+            console.error('[Admin] Failed to remove recipient:', error);
+            self.showMessage('email-settings-message', 'Failed to remove: ' + error.message, 'danger');
+        }
+    },
+
+    /**
+     * Escape HTML special characters to prevent XSS.
+     *
+     * @param {string} str - Input string
+     * @returns {string} Escaped string
+     */
+    escapeHtml: function(str) {
+        if (!str) return '';
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(String(str)));
+        return div.innerHTML;
     }
 };
 

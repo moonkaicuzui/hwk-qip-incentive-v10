@@ -171,9 +171,9 @@ jobs:
                   firebase_admin.initialize_app(cred)
               db = firestore.client()
               db.collection('system').document('status').set({
-                  'last_run_at': datetime.datetime.utcnow().isoformat() + 'Z',
+                  'last_run_at': firestore.SERVER_TIMESTAMP,
                   'status': 'success',
-                  'last_data_update': datetime.datetime.utcnow().isoformat() + 'Z',
+                  'last_data_update': firestore.SERVER_TIMESTAMP,
                   'run_type': 'github_actions',
                   'commit': os.environ.get('GITHUB_SHA', 'unknown')[:8]
               }, merge=True)
