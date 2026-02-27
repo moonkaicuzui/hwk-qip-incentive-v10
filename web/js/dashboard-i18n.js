@@ -780,25 +780,22 @@ const DashboardI18n = {
                 DashboardCharts.renderPositionTables(d);
                 DashboardCharts.renderCriteriaTab(d);
                 DashboardCharts.renderTeamTab(d);
-                // Re-render team subordinate view if a manager is selected
+                // Re-render team subordinate view + manager dropdown on language switch
                 if (typeof DashboardFilters !== 'undefined') {
                     var mgrSelect = document.getElementById('teamManagerFilter');
                     var posSelect = document.getElementById('teamPositionFilter');
-                    if (mgrSelect && mgrSelect.value) {
-                        // Manager is selected - re-render subordinate table with new language
-                        DashboardFilters._showTeamMembers(mgrSelect.value);
-                    }
-                    // Re-populate manager dropdown to update "(N명)" → "(N)" text
+                    var savedMgr = mgrSelect ? mgrSelect.value : '';
+                    // Re-populate manager dropdown to update "(N명)" → "(N ppl)" text
                     if (posSelect && posSelect.value) {
-                        var currentMgr = mgrSelect ? mgrSelect.value : '';
                         DashboardFilters.onTeamPositionChange();
-                        // Restore manager selection after re-population
-                        if (currentMgr && mgrSelect) {
-                            mgrSelect.value = currentMgr;
-                            if (mgrSelect.value === currentMgr) {
-                                DashboardFilters._showTeamMembers(currentMgr);
-                            }
+                        // Restore manager selection after dropdown re-population
+                        if (savedMgr && mgrSelect) {
+                            mgrSelect.value = savedMgr;
                         }
+                    }
+                    // Re-render subordinate table with new language (single render)
+                    if (savedMgr && mgrSelect && mgrSelect.value === savedMgr) {
+                        DashboardFilters._showTeamMembers(savedMgr);
                     }
                 }
                 DashboardCharts._renderBuildingSummaryCards(d.employees || []);
