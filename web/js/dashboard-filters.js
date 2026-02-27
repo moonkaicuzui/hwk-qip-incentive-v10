@@ -735,10 +735,11 @@ var DashboardFilters = {
         ) || 0;
         var unapproved = parseFloat(
             found.unapproved_absence || found['Unapproved Absences'] ||
-            found.unapproved_absences || 0
+            found.unapproved_absences || (found.attendance ? found.attendance.unapproved_absence : 0) || 0
         ) || 0;
         var approvedLeave = parseFloat(
-            found.approved_leave_days || found['Approved Leave Days'] || 0
+            found.approved_leave_days || found['Approved Leave Days'] ||
+            found.approved_leave || (found.attendance ? found.attendance.approved_leave : 0) || 0
         ) || 0;
 
         // --- Task #21: Full attendance analysis (ported from V9) ---
