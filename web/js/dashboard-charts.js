@@ -69,7 +69,8 @@ var DashboardCharts = {
         this.renderValidationKPIs(data);
         this.renderAttendanceCalendar(data);
 
-
+        // Data Freshness Badge (Task #23)
+        this.updateDataFreshness(data);
     },
 
     // ------------------------------------------------------------------
@@ -654,6 +655,80 @@ var DashboardCharts = {
         });
 
         html += '</tbody></table></div>';
+
+        // --- Section 1.5: Attendance Formula Detail (V9 feature port) ---
+        var tw = DashboardI18n.tWithThresholds.bind(DashboardI18n);
+
+        html += '<div class="section-card" style="margin-top: 24px;">';
+        html += '<h4 style="color: var(--header-dark); margin-bottom: 12px;">' + t('attendance.classificationTitle') + '</h4>';
+
+        // Classification box with 2 columns
+        html += '<div style="background: var(--bg-light, #f8f9fa); border-radius: 8px; padding: 16px; margin-bottom: 16px;">';
+        html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">';
+
+        // Left column: Approved leave (12 types)
+        html += '<div>';
+        html += '<p style="color: #28a745; font-weight: 600; margin-bottom: 8px;">' + t('attendance.approvedTitle') + '</p>';
+        html += '<ul style="font-size: 0.85rem; padding-left: 20px; margin: 0; line-height: 1.8;">';
+        html += '<li>Sinh thường 1 con (<span style="color:#666;">' + t('attendance.leave.maternity') + '</span>)</li>';
+        html += '<li>Phép năm (<span style="color:#666;">' + t('attendance.leave.annual') + '</span>)</li>';
+        html += '<li>Vắng có phép (<span style="color:#666;">' + t('attendance.leave.approved') + '</span>)</li>';
+        html += '<li>Dưỡng sức sinh thường (<span style="color:#666;">' + t('attendance.leave.postpartum') + '</span>)</li>';
+        html += '<li>Khám thai bình thường (<span style="color:#666;">' + t('attendance.leave.prenatal') + '</span>)</li>';
+        html += '<li>Con dưới 3 tuổi bị bệnh (<span style="color:#666;">' + t('attendance.leave.childcare') + '</span>)</li>';
+        html += '<li>AR2 - ốm ngắn ngày (<span style="color:#666;">' + t('attendance.leave.sickShort') + '</span>)</li>';
+        html += '<li>Đi công tác (<span style="color:#666;">' + t('attendance.leave.businessTrip') + '</span>)</li>';
+        html += '<li>Nghĩa vụ quân sự (<span style="color:#666;">' + t('attendance.leave.military') + '</span>)</li>';
+        html += '<li style="color:#17a2b8; font-weight:600;">Đi làm không quẹt thẻ (<span style="font-weight:400;">' + t('attendance.leave.cardNotSwiped') + '</span>)</li>';
+        html += '<li style="color:#17a2b8; font-weight:600;">Công nhân viên mới (<span style="font-weight:400;">' + t('attendance.leave.newEmployee') + '</span>)</li>';
+        html += '<li style="color:#17a2b8; font-weight:600;">Nghỉ bù (<span style="font-weight:400;">' + t('attendance.leave.compensatory') + '</span>)</li>';
+        html += '</ul>';
+        html += '</div>';
+
+        // Right column: Unapproved absence (2 types) + counting rules
+        html += '<div>';
+        html += '<p style="color: #dc3545; font-weight: 600; margin-bottom: 8px;">' + t('attendance.unapprovedTitle') + '</p>';
+        html += '<ul style="font-size: 0.85rem; padding-left: 20px; margin: 0; line-height: 1.8;">';
+        html += '<li><strong>AR1 - Vắng không phép</strong> (<span style="color:#666;">' + t('attendance.absence.unauthorized') + '</span>)</li>';
+        html += '<li><strong>AR1 - Gửi thư</strong> (<span style="color:#666;">' + t('attendance.absence.writtenNotice') + '</span>)</li>';
+        html += '</ul>';
+
+        // Counting rules alert
+        html += '<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px; margin-top: 16px;">';
+        html += '<strong>' + t('attendance.countingRulesTitle') + '</strong>';
+        html += '<ul style="font-size: 0.85rem; padding-left: 20px; margin: 8px 0 0 0;">';
+        html += '<li>' + tw('attendance.countingRule1') + '</li>';
+        html += '<li>' + tw('attendance.countingRule2') + '</li>';
+        html += '<li>' + tw('attendance.countingRule3') + '</li>';
+        html += '</ul>';
+        html += '</div>';
+        html += '</div>';
+
+        html += '</div>'; // grid
+        html += '</div>'; // classification box
+
+        // Condition criteria box
+        html += '<div style="background: var(--bg-light, #f8f9fa); border-radius: 8px; padding: 16px; margin-bottom: 16px;">';
+        html += '<h6 style="margin-bottom: 10px;">' + t('attendance.conditionCriteriaTitle') + '</h6>';
+        html += '<ul style="font-size: 0.9rem; padding-left: 20px; margin: 0; line-height: 2;">';
+        html += '<li><strong>' + tw('attendance.criteria1') + '</strong></li>';
+        html += '<li><strong>' + tw('attendance.criteria2') + '</strong></li>';
+        html += '<li><strong>' + tw('attendance.criteria3') + '</strong></li>';
+        html += '<li><strong>' + tw('attendance.criteria4') + '</strong></li>';
+        html += '</ul>';
+
+        // Attendance formula info box
+        html += '<div style="background: #cce5ff; border: 1px solid #b8daff; border-radius: 6px; padding: 12px; margin-top: 12px;">';
+        html += '<strong>' + t('attendance.formulaTitle') + '</strong>';
+        html += '<ul style="font-size: 0.85rem; padding-left: 20px; margin: 8px 0 0 0; line-height: 1.8;">';
+        html += '<li>' + t('attendance.formulaDesc1') + '</li>';
+        html += '<li>' + t('attendance.formulaDesc2') + '</li>';
+        html += '<li style="font-weight:600; color:#0056b3;">' + t('attendance.formulaDesc3') + '</li>';
+        html += '</ul>';
+        html += '</div>';
+
+        html += '</div>'; // condition criteria box
+        html += '</div>'; // section-card
 
         // --- Section 2: Progressive Incentive Table ---
         html += '<div class="section-card" style="margin-top: 24px;">';
@@ -2217,5 +2292,89 @@ var DashboardCharts = {
             .replace(/\\/g, '\\\\')
             .replace(/'/g, "\\'")
             .replace(/"/g, '\\"');
+    },
+
+    // ------------------------------------------------------------------
+    // Data Freshness Badge (Task #23 - V9 feature port)
+    // ------------------------------------------------------------------
+
+    /**
+     * Update the data freshness indicator badge in the header.
+     * Shows 3-state visual indicator: Fresh (<20min), Moderate (20-40min), Stale (>40min).
+     * Auto-refreshes every 60 seconds.
+     * @param {Object} data - { metadata: { lastUpdated } }
+     */
+    updateDataFreshness: function (data) {
+        var badge = document.getElementById('dataFreshnessBadge');
+        if (!badge) return;
+
+        var lastUpdated = data && data.metadata && data.metadata.lastUpdated;
+        if (!lastUpdated) {
+            badge.style.display = 'none';
+            return;
+        }
+
+        // Store timestamp for auto-refresh
+        this._freshnessTimestamp = lastUpdated;
+
+        var self = this;
+        function refresh() {
+            var ts = self._freshnessTimestamp;
+            if (!ts) return;
+
+            try {
+                var lastUpdate = new Date(ts);
+                var now = new Date();
+                var minutesAgo = Math.floor((now - lastUpdate) / 60000);
+                if (isNaN(minutesAgo) || minutesAgo < 0) minutesAgo = 0;
+
+                var t = DashboardI18n.t.bind(DashboardI18n);
+
+                // Time text
+                var timeText;
+                if (minutesAgo >= 60) {
+                    var hrs = Math.floor(minutesAgo / 60);
+                    var mins = minutesAgo % 60;
+                    timeText = hrs + t('freshness.hoursAgo');
+                    if (mins > 0) timeText = hrs + 'h ' + mins + 'm';
+                } else {
+                    timeText = minutesAgo + t('freshness.minutesAgo');
+                }
+
+                // Next auto-sync calculation (30min cycle)
+                var nextSyncMin = 30 - (minutesAgo % 30);
+
+                // State determination
+                var statusText, borderColor;
+                if (minutesAgo < 20) {
+                    statusText = t('freshness.fresh');
+                    borderColor = '#28a745';
+                } else if (minutesAgo < 40) {
+                    statusText = t('freshness.moderate');
+                    borderColor = '#ffc107';
+                } else {
+                    statusText = t('freshness.stale');
+                    borderColor = '#dc3545';
+                }
+
+                badge.style.display = 'inline-flex';
+                badge.style.borderLeftColor = borderColor;
+                badge.innerHTML = '<span>' + statusText + '</span>'
+                    + '<span style="opacity:0.8; font-size:0.72rem;">' + timeText + '</span>';
+                badge.title = t('freshness.lastSync') + ': ' + timeText
+                    + ' | ' + t('freshness.nextSync') + ': ' + nextSyncMin + t('freshness.minutes');
+
+            } catch (e) {
+                console.error('[DashboardCharts] updateDataFreshness error:', e);
+                badge.style.display = 'none';
+            }
+        }
+
+        // Initial update
+        refresh();
+
+        // Auto-refresh every 60 seconds
+        if (this._freshnessInterval) clearInterval(this._freshnessInterval);
+        this._freshnessInterval = setInterval(refresh, 60000);
     }
 };

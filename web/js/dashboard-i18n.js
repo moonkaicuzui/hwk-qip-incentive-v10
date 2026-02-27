@@ -589,6 +589,112 @@ const DashboardI18n = {
         'criteria.streakNo': { ko: '개월 연속 = NO', en: 'M streak = NO', vi: ' tháng liên tục = NO' },
         'criteria.unitPairs': { ko: '족', en: 'pairs', vi: 'đôi' },
 
+        // Attendance Formula Detail Section
+        'attendance.classificationTitle': {
+            ko: '결근 사유 분류',
+            en: 'Absence Classification',
+            vi: 'Phân loại lý do vắng'
+        },
+        'attendance.approvedTitle': {
+            ko: '✅ 결근율에 포함 안됨 (승인된 휴가)',
+            en: '✅ Not counted in absence rate (Approved Leave)',
+            vi: '✅ Không tính vào tỷ lệ vắng (Nghỉ phép được duyệt)'
+        },
+        'attendance.unapprovedTitle': {
+            ko: '❌ 결근율에 포함됨 (무단결근)',
+            en: '❌ Counted in absence rate (Unapproved)',
+            vi: '❌ Tính vào tỷ lệ vắng (Không phép)'
+        },
+        'attendance.leave.maternity': { ko: '출산휴가', en: 'Maternity Leave', vi: 'Nghỉ thai sản' },
+        'attendance.leave.annual': { ko: '연차휴가', en: 'Annual Leave', vi: 'Nghỉ phép năm' },
+        'attendance.leave.approved': { ko: '승인된 휴가', en: 'Approved Absence', vi: 'Vắng có phép' },
+        'attendance.leave.postpartum': { ko: '출산 후 요양', en: 'Postpartum Rest', vi: 'Dưỡng sức sau sinh' },
+        'attendance.leave.prenatal': { ko: '산전검진', en: 'Prenatal Checkup', vi: 'Khám thai' },
+        'attendance.leave.childcare': { ko: '육아휴가', en: 'Childcare Leave', vi: 'Nghỉ con ốm' },
+        'attendance.leave.sickShort': { ko: '병가', en: 'Short Sick Leave', vi: 'Ốm ngắn ngày' },
+        'attendance.leave.businessTrip': { ko: '출장', en: 'Business Trip', vi: 'Công tác' },
+        'attendance.leave.military': { ko: '군복무', en: 'Military Service', vi: 'Nghĩa vụ quân sự' },
+        'attendance.leave.cardNotSwiped': { ko: '출퇴근 체크 누락', en: 'Card Not Swiped', vi: 'Không quẹt thẻ' },
+        'attendance.leave.newEmployee': { ko: '신규입사 특례', en: 'New Employee Exception', vi: 'Nhân viên mới' },
+        'attendance.leave.compensatory': { ko: '대체휴무', en: 'Compensatory Leave', vi: 'Nghỉ bù' },
+        'attendance.absence.unauthorized': { ko: '무단결근', en: 'Unauthorized Absence', vi: 'Vắng không phép' },
+        'attendance.absence.writtenNotice': { ko: '서면통지 결근', en: 'Written Notice Absence', vi: 'Vắng gửi thư' },
+        'attendance.countingRulesTitle': {
+            ko: '📢 무단결근 카운팅 규칙',
+            en: '📢 Unapproved Absence Counting Rules',
+            vi: '📢 Quy tắc tính vắng không phép'
+        },
+        'attendance.countingRule1': {
+            ko: 'AR1 카테고리만 무단결근으로 카운트',
+            en: 'Only AR1 category counts as unapproved absence',
+            vi: 'Chỉ danh mục AR1 tính là vắng không phép'
+        },
+        'attendance.countingRule2': {
+            ko: '{threshold_unapproved_absence}일까지는 인센티브 지급 가능',
+            en: 'Up to {threshold_unapproved_absence} days: incentive eligible',
+            vi: 'Đến {threshold_unapproved_absence} ngày: đủ điều kiện nhận KK'
+        },
+        'attendance.countingRule3': {
+            ko: '{threshold_unapproved_absence}일 초과 시 인센티브 0원',
+            en: 'Exceeding {threshold_unapproved_absence} days: incentive = 0',
+            vi: 'Vượt {threshold_unapproved_absence} ngày: KK = 0'
+        },
+        'attendance.conditionCriteriaTitle': {
+            ko: '조건 충족 기준',
+            en: 'Condition Fulfillment Criteria',
+            vi: 'Tiêu chí đáp ứng điều kiện'
+        },
+        'attendance.criteria1': {
+            ko: '출근율: ≥ {threshold_attendance_rate}%',
+            en: 'Attendance Rate: ≥ {threshold_attendance_rate}%',
+            vi: 'Tỷ lệ đi làm: ≥ {threshold_attendance_rate}%'
+        },
+        'attendance.criteria2': {
+            ko: '무단결근: ≤ {threshold_unapproved_absence}일 (AR1 카테고리만 해당)',
+            en: 'Unapproved Absence: ≤ {threshold_unapproved_absence} days (AR1 category only)',
+            vi: 'Vắng không phép: ≤ {threshold_unapproved_absence} ngày (chỉ AR1)'
+        },
+        'attendance.criteria3': {
+            ko: '실제 근무일: > 0일',
+            en: 'Actual Working Days: > 0 days',
+            vi: 'Ngày làm thực tế: > 0 ngày'
+        },
+        'attendance.criteria4': {
+            ko: '최소 근무일: ≥ {threshold_minimum_working_days}일',
+            en: 'Minimum Working Days: ≥ {threshold_minimum_working_days} days',
+            vi: 'Ngày làm tối thiểu: ≥ {threshold_minimum_working_days} ngày'
+        },
+        'attendance.formulaTitle': {
+            ko: '📊 출근율 계산 공식',
+            en: '📊 Attendance Rate Formula',
+            vi: '📊 Công thức tính tỷ lệ đi làm'
+        },
+        'attendance.formulaDesc1': {
+            ko: '결근일 = 총 근무일 - 실제 근무일 - 승인휴가일',
+            en: 'Absence Days = Total Working Days - Actual Working Days - Approved Leave Days',
+            vi: 'Ngày vắng = Tổng ngày làm - Ngày làm thực - Ngày nghỉ phép'
+        },
+        'attendance.formulaDesc2': {
+            ko: '결근율 = 결근일 / 총 근무일 × 100',
+            en: 'Absence Rate = Absence Days / Total Working Days × 100',
+            vi: 'Tỷ lệ vắng = Ngày vắng / Tổng ngày làm × 100'
+        },
+        'attendance.formulaDesc3': {
+            ko: '출근율 = 100 - 결근율 (승인휴가는 출근으로 인정)',
+            en: 'Attendance Rate = 100 - Absence Rate (Approved leave counts as attendance)',
+            vi: 'Tỷ lệ đi làm = 100 - Tỷ lệ vắng (Nghỉ phép được tính là đi làm)'
+        },
+
+        // Data Freshness Badge
+        'freshness.fresh': { ko: '🟢 최신 데이터', en: '🟢 Fresh Data', vi: '🟢 Dữ liệu mới' },
+        'freshness.moderate': { ko: '🟡 업데이트 권장', en: '🟡 Update Recommended', vi: '🟡 Nên cập nhật' },
+        'freshness.stale': { ko: '🔴 데이터 오래됨', en: '🔴 Data Outdated', vi: '🔴 Dữ liệu cũ' },
+        'freshness.lastSync': { ko: '데이터 동기화', en: 'Data Sync', vi: 'Đồng bộ dữ liệu' },
+        'freshness.minutesAgo': { ko: '분 전', en: 'min ago', vi: 'phút trước' },
+        'freshness.hoursAgo': { ko: '시간 전', en: 'hr ago', vi: 'giờ trước' },
+        'freshness.nextSync': { ko: '다음 자동 동기화', en: 'Next Auto Sync', vi: 'Tự động đồng bộ' },
+        'freshness.minutes': { ko: '분 후', en: 'min', vi: 'phút' },
+
         // Team tab
         'team.building': { ko: 'Building', en: 'Building', vi: 'Xưởng' },
         'team.total': { ko: '전체:', en: 'Total:', vi: 'Tổng:' },
@@ -814,6 +920,10 @@ const DashboardI18n = {
                 // Re-render attendance calendar on language switch (Bug fix: calendar text stayed in original language)
                 if (DashboardCharts.renderAttendanceCalendar) {
                     DashboardCharts.renderAttendanceCalendar(d);
+                }
+                // Re-render data freshness badge on language switch (Task #23)
+                if (DashboardCharts.updateDataFreshness) {
+                    DashboardCharts.updateDataFreshness(d);
                 }
                 // Re-render attendance lookup result on language switch (Bug fix: result labels stayed in original language)
                 var lookupInput = document.getElementById('attendanceLookupInput');
