@@ -1220,11 +1220,10 @@ var DashboardFilters = {
         if (subContainer) subContainer.style.display = 'none';
 
         if (!selectedPos) {
-            // Show building view when no position selected
-            var cardsEl = document.getElementById('teamSummaryCards');
-            var tableEl = document.getElementById('teamTableContainer');
-            if (cardsEl) cardsEl.style.display = 'flex';
-            if (tableEl) tableEl.style.display = '';
+            // Re-render full building view when "All Positions" selected
+            if (window.DashboardCharts && window.employeeData) {
+                window.DashboardCharts.renderTeamTab(window.employeeData);
+            }
             return;
         }
 
@@ -1299,13 +1298,14 @@ var DashboardFilters = {
             mgrSelect.value = '';
         }
 
-        // Restore building view
-        var cardsEl = document.getElementById('teamSummaryCards');
-        var tableEl = document.getElementById('teamTableContainer');
+        // Restore building view by re-rendering with full data
         var subContainer = document.getElementById('teamSubordinateContainer');
-        if (cardsEl) cardsEl.style.display = 'flex';
-        if (tableEl) tableEl.style.display = '';
         if (subContainer) subContainer.style.display = 'none';
+
+        // Re-render the full unfiltered building view
+        if (window.DashboardCharts && window.employeeData) {
+            window.DashboardCharts.renderTeamTab(window.employeeData);
+        }
     },
 
     /**
