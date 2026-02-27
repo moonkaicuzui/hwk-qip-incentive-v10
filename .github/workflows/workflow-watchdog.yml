@@ -75,13 +75,13 @@ jobs:
       if: steps.check_status.outputs.workflow_state == 'disabled_manually' || steps.check_status.outputs.workflow_state == 'disabled_inactivity'
       uses: dawidd6/action-send-mail@v3
       with:
-        server_address: smtp.gmail.com
+        server_address: mail.hsvina.com
         server_port: 587
-        username: ${{ secrets.SMTP_USERNAME }}
+        username: ${{ secrets.SMTP_USER }}
         password: ${{ secrets.SMTP_PASSWORD }}
         subject: "🚨 [V10 Dashboard] 워크플로우 비활성화 감지 및 자동 복구"
         to: ${{ env.ALERT_EMAIL }}
-        from: V10 Dashboard Bot <${{ secrets.SMTP_USERNAME }}>
+        from: V10 Dashboard Bot <${{ secrets.SMTP_USER }}>
         body: |
           ⚠️ V10 Dashboard 자동 업데이트 워크플로우가 비활성화되어 있었습니다.
 
@@ -106,13 +106,13 @@ jobs:
       if: steps.check_status.outputs.hours_since_success > 24 && steps.check_status.outputs.workflow_state == 'active'
       uses: dawidd6/action-send-mail@v3
       with:
-        server_address: smtp.gmail.com
+        server_address: mail.hsvina.com
         server_port: 587
-        username: ${{ secrets.SMTP_USERNAME }}
+        username: ${{ secrets.SMTP_USER }}
         password: ${{ secrets.SMTP_PASSWORD }}
         subject: "⚠️ [V10 Dashboard] 워크플로우 24시간 이상 미실행"
         to: ${{ env.ALERT_EMAIL }}
-        from: V10 Dashboard Bot <${{ secrets.SMTP_USERNAME }}>
+        from: V10 Dashboard Bot <${{ secrets.SMTP_USER }}>
         body: |
           ⚠️ V10 Dashboard 자동 업데이트 워크플로우가 24시간 이상 성공적으로 실행되지 않았습니다.
 
@@ -154,13 +154,13 @@ jobs:
       if: github.event_name == 'workflow_dispatch'
       uses: dawidd6/action-send-mail@v3
       with:
-        server_address: smtp.gmail.com
+        server_address: mail.hsvina.com
         server_port: 587
-        username: ${{ secrets.SMTP_USERNAME }}
+        username: ${{ secrets.SMTP_USER }}
         password: ${{ secrets.SMTP_PASSWORD }}
         subject: "✅ [V10 Dashboard] Watchdog 이메일 테스트 성공"
         to: ${{ env.ALERT_EMAIL }}
-        from: V10 Dashboard Bot <${{ secrets.SMTP_USERNAME }}>
+        from: V10 Dashboard Bot <${{ secrets.SMTP_USER }}>
         body: |
           ✅ V10 Dashboard Watchdog 이메일 알림 시스템이 정상 작동합니다!
 
