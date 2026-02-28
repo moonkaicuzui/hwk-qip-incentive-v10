@@ -1121,7 +1121,12 @@ var DashboardModals = {
         var overlay = document.createElement('div');
         overlay.id = id;
         overlay.className = 'dm-modal-overlay';
-        overlay.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; z-index:1060;'
+        // Calculate z-index: stack above Bootstrap modals and other dynamic modals
+        var existingOverlays = document.querySelectorAll('.dm-modal-overlay');
+        var baseZIndex = 1080; // Above Bootstrap modal (1060) and backdrop (1058)
+        var zIndex = baseZIndex + (existingOverlays.length * 10);
+
+        overlay.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; z-index:' + zIndex + ';'
             + 'background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center;'
             + 'padding:20px;';
 

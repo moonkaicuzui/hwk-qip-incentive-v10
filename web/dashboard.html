@@ -127,25 +127,6 @@
         .qs-item .qs-label { color: var(--text-secondary); }
         .qs-item .qs-value { font-weight: 700; color: var(--header-dark); }
 
-        /* ===== Dark Mode ===== */
-        .dark-mode { --bg-light: #1a1a2e; --text-primary: #e0e0e0; --text-secondary: #a0a0a0; --card-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-        .dark-mode body, .dark-mode { background: #1a1a2e; color: #e0e0e0; }
-        .dark-mode .kpi-card, .dark-mode .section-card, .dark-mode .validation-kpi-card { background: #16213e; border-color: #2a3a5c; }
-        .dark-mode .kpi-card .kpi-value { color: #90caf9; }
-        .dark-mode .dashboard-header { background: linear-gradient(135deg, #0d1b2a, #1b2838) !important; }
-        .dark-mode table { color: #e0e0e0; }
-        .dark-mode table thead { background: #1b2838; }
-        .dark-mode table tbody tr:nth-child(even) { background: rgba(255,255,255,0.03); }
-        .dark-mode table tbody tr:hover { background: rgba(255,255,255,0.08); }
-        .dark-mode .filter-row input, .dark-mode .filter-row select { background: #16213e; color: #e0e0e0; border-color: #2a3a5c; }
-        .dark-mode .modal-content { background: #16213e; color: #e0e0e0; }
-        .dark-mode .modal-header { background: linear-gradient(135deg, #0d1b2a, #1b2838) !important; }
-        .dark-mode #quickSummaryOverlay .qs-panel { background: #16213e; }
-        .dark-mode .talent-pool-card { box-shadow: 0 4px 15px rgba(239,68,68,0.15); }
-        .dark-mode .tabs .tab { color: #a0a0a0; }
-        .dark-mode .tabs .tab.active { color: #90caf9; border-bottom-color: #90caf9; }
-        .dark-mode .dashboard-footer { border-top-color: #2a3a5c; }
-
         /* ===== Validation KPI Grid ===== */
         .validation-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
         .validation-kpi-card {
@@ -425,7 +406,6 @@
         <button class="lang-btn active" data-lang="ko" onclick="switchLanguage('ko')">KO</button>
         <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
         <button class="lang-btn" data-lang="vi" onclick="switchLanguage('vi')">VN</button>
-        <button class="header-link" onclick="toggleDarkMode()" title="Dark Mode" id="darkModeToggle" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.9rem;">🌙</button>
         <button class="header-link" onclick="toggleQuickSummary()" title="Quick Summary" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.9rem;">📋</button>
         <button class="header-link" onclick="showMyIncentive()" title="My Incentive" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;"><i class="fas fa-search"></i> <span data-i18n="myIncentive.btnLabel">내 인센티브</span></button>
         <button class="header-link" onclick="downloadExcel()" title="Excel Download" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;"><i class="fas fa-file-excel"></i> Excel</button>
@@ -1084,38 +1064,6 @@
     }
 
     /**
-     * Toggle Dark Mode. Persists preference in localStorage.
-     */
-    function toggleDarkMode() {
-        var isDark = document.documentElement.classList.toggle('dark-mode');
-        localStorage.setItem('qip_dark_mode', isDark ? 'true' : 'false');
-
-        // Update toggle button
-        var btn = document.getElementById('darkModeToggle');
-        if (btn) btn.textContent = isDark ? '☀️' : '🌙';
-
-        // Update Chart.js charts for dark mode
-        if (typeof DashboardCharts !== 'undefined') {
-            var textColor = isDark ? '#e0e0e0' : '#212121';
-            var gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-            Object.values(DashboardCharts.charts).forEach(function(chart) {
-                if (chart && chart.options && chart.options.scales) {
-                    ['x', 'y'].forEach(function(axis) {
-                        if (chart.options.scales[axis]) {
-                            if (chart.options.scales[axis].ticks) chart.options.scales[axis].ticks.color = textColor;
-                            if (chart.options.scales[axis].grid) chart.options.scales[axis].grid.color = gridColor;
-                        }
-                    });
-                    if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
-                        chart.options.plugins.legend.labels.color = textColor;
-                    }
-                    chart.update();
-                }
-            });
-        }
-    }
-
-    /**
      * Toggle Data Period (Interim/Final report mode).
      * Affects condition display in validation tab.
      */
@@ -1199,14 +1147,7 @@
                 footerTs.textContent = new Date().toLocaleString();
             }
 
-            // 7. Restore Dark Mode preference from localStorage
-            if (localStorage.getItem('qip_dark_mode') === 'true') {
-                document.documentElement.classList.add('dark-mode');
-                var dmBtn = document.getElementById('darkModeToggle');
-                if (dmBtn) dmBtn.textContent = '☀️';
-            }
-
-            // 8. Show default tab and hide loading
+            // 7. Show default tab and hide loading
             showTab('summary');
             hideLoading();
 

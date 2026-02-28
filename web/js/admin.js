@@ -2,7 +2,7 @@
  * Admin Page Module
  * HWK QIP Incentive Dashboard V10
  *
- * Depends on: firebase-config.js, auth.js (must be loaded first)
+ * Depends on: firebase-config.js, auth.js, dashboard-i18n.js (must be loaded first)
  * Uses Firebase v10.7.1 compat SDK (firebase.firestore() style)
  *
  * Firestore collections used:
@@ -10,7 +10,13 @@
  *   - threshold_history               : Change history log
  *   - system/status                   : Pipeline status document
  *   - system/config                   : System config (github_pat, etc.)
+ *
+ * Access Control:
+ *   - Only ksmoon@hsvina.com has admin access (hardcoded safety check)
  */
+
+// Hardcoded admin email for safety (in addition to Firestore admin_emails list)
+var ADMIN_ALLOWED_EMAIL = 'ksmoon@hsvina.com';
 
 var AdminPage = {
     currentMonth: null,
@@ -18,28 +24,42 @@ var AdminPage = {
 
     // Threshold field definitions (defaultVal from centralized THRESHOLD_DEFAULTS in dashboard-data.js)
     THRESHOLD_FIELDS: [
-        { id: 'th-attendance-rate',       key: 'attendance_rate',       label: 'Attendance Rate (%)',       defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.attendance_rate : 88) },
-        { id: 'th-unapproved-absence',    key: 'unapproved_absence',   label: 'Unapproved Absence (days)', defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.unapproved_absence : 2) },
-        { id: 'th-minimum-working-days',  key: 'minimum_working_days', label: 'Minimum Working Days',      defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.minimum_working_days : 12) },
-        { id: 'th-area-reject-rate',      key: 'area_reject_rate',     label: 'Area Reject Rate (%)',      defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.area_reject_rate : 3.0) },
-        { id: 'th-5prs-pass-rate',        key: '5prs_pass_rate',       label: '5PRS Pass Rate (%)',        defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS['5prs_pass_rate'] : 95) },
-        { id: 'th-5prs-min-qty',          key: '5prs_min_qty',         label: '5PRS Inspection Qty',       defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS['5prs_min_qty'] : 100) }
+        { id: 'th-attendance-rate',       key: 'attendance_rate',         label: 'Attendance Rate (%)',           defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.attendance_rate : 88) },
+        { id: 'th-unapproved-absence',    key: 'unapproved_absence',     label: 'Unapproved Absence (days)',     defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.unapproved_absence : 2) },
+        { id: 'th-minimum-working-days',  key: 'minimum_working_days',   label: 'Minimum Working Days',          defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.minimum_working_days : 12) },
+        { id: 'th-area-reject-rate',      key: 'area_reject_rate',       label: 'Area Reject Rate (%)',          defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.area_reject_rate : 3.0) },
+        { id: 'th-5prs-pass-rate',        key: '5prs_pass_rate',         label: '5PRS Pass Rate (%)',            defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS['5prs_pass_rate'] : 95) },
+        { id: 'th-5prs-min-qty',          key: '5prs_min_qty',           label: '5PRS Inspection Qty',           defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS['5prs_min_qty'] : 100) },
+        { id: 'th-consecutive-aql-months', key: 'consecutive_aql_months', label: 'Consecutive AQL Fail Months',  defaultVal: (typeof THRESHOLD_DEFAULTS !== 'undefined' ? THRESHOLD_DEFAULTS.consecutive_aql_months : 3) }
     ],
 
     /**
      * Initialize the admin page.
-     * Checks admin auth, sets defaults, binds events, loads data.
+     * Checks admin auth (hardcoded + Firestore), sets defaults, binds events, loads data.
      */
     async init() {
         try {
             var user = await requireAdmin();
             if (!user) return;
 
+            // Hardcoded admin email check (safety layer)
+            if (user.email !== ADMIN_ALLOWED_EMAIL) {
+                alert('Access denied. Admin access is restricted.');
+                sessionStorage.removeItem(SESSION_KEY);
+                window.location.href = 'auth.html';
+                return;
+            }
+
             // Hide auth loading overlay
             document.getElementById('auth-loading').style.display = 'none';
 
             // Show user email
             document.getElementById('user-email').textContent = user.email;
+
+            // Initialize i18n for admin page
+            if (typeof DashboardI18n !== 'undefined') {
+                DashboardI18n.init();
+            }
 
             // Set default month/year to current
             this.setDefaultMonthYear();
@@ -57,6 +77,20 @@ var AdminPage = {
 
         } catch (error) {
             console.error('[Admin] Init failed:', error);
+        }
+    },
+
+    /**
+     * Switch language on admin page.
+     * Uses DashboardI18n module to update all [data-i18n] elements.
+     * @param {string} lang - Language code ('ko', 'en', 'vi')
+     */
+    switchLang: function(lang) {
+        if (typeof DashboardI18n !== 'undefined') {
+            DashboardI18n.currentLang = lang;
+            localStorage.setItem('qip_lang', lang);
+            DashboardI18n.updateAllTexts();
+            DashboardI18n.updateLanguageButtons();
         }
     },
 
@@ -176,7 +210,8 @@ var AdminPage = {
             self.showMessage('threshold-message', 'Failed to load thresholds: ' + error.message, 'danger');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-download"></i> Load';
+            var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+            btn.innerHTML = '<i class="fa-solid fa-download"></i> <span data-i18n="admin.load">' + t('admin.load') + '</span>';
         }
     },
 
@@ -213,7 +248,8 @@ var AdminPage = {
             if (!valid) {
                 self.showMessage('threshold-message', 'Please enter valid positive numbers for all fields.', 'danger');
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Save Thresholds';
+                var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.saveThresholds">' + t('admin.saveThresholds') + '</span>';
                 return;
             }
 
@@ -270,7 +306,8 @@ var AdminPage = {
             self.showMessage('threshold-message', 'Failed to save: ' + error.message, 'danger');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Save Thresholds';
+            var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.saveThresholds">' + t('admin.saveThresholds') + '</span>';
         }
     },
 
@@ -288,8 +325,9 @@ var AdminPage = {
                 .get();
 
             if (snapshot.empty) {
+                var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">' +
-                    '<i class="fa-regular fa-folder-open me-1"></i> No change history yet</td></tr>';
+                    '<i class="fa-regular fa-folder-open me-1"></i> ' + t('admin.noHistory') + '</td></tr>';
                 return;
             }
 
@@ -498,7 +536,8 @@ var AdminPage = {
             );
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-play me-1"></i> Run Pipeline Now';
+            var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+            btn.innerHTML = '<i class="fa-solid fa-play me-1"></i> <span data-i18n="admin.runPipeline">' + t('admin.runPipeline') + '</span>';
         }
     },
 
@@ -581,7 +620,8 @@ var AdminPage = {
             self.showMessage('working-days-message', 'Failed to update: ' + error.message, 'danger');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-pen-to-square me-1"></i> Update Working Days';
+            var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+            btn.innerHTML = '<i class="fa-solid fa-pen-to-square me-1"></i> <span data-i18n="admin.updateWorkingDays">' + t('admin.updateWorkingDays') + '</span>';
         }
     },
 
@@ -647,9 +687,10 @@ var AdminPage = {
                 var recipients = doc.data().email_recipients;
                 this.renderRecipients(recipients);
             } else {
+                var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
                 container.innerHTML =
                     '<p class="text-muted text-center py-3">' +
-                    '<i class="fa-regular fa-envelope me-1"></i> No recipients configured</p>';
+                    '<i class="fa-regular fa-envelope me-1"></i> ' + t('admin.noRecipients') + '</p>';
             }
         } catch (error) {
             console.error('[Admin] Failed to load email settings:', error);
@@ -666,11 +707,12 @@ var AdminPage = {
      */
     renderRecipients: function(recipients) {
         var container = document.getElementById('email-recipients-list');
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
 
         if (!recipients || recipients.length === 0) {
             container.innerHTML =
                 '<p class="text-muted text-center py-3">' +
-                '<i class="fa-regular fa-envelope me-1"></i> No recipients configured</p>';
+                '<i class="fa-regular fa-envelope me-1"></i> ' + t('admin.noRecipients') + '</p>';
             return;
         }
 
@@ -680,9 +722,9 @@ var AdminPage = {
         var html =
             '<table class="table recipients-table">' +
             '<thead><tr>' +
-            '<th>Name</th>' +
-            '<th>Email</th>' +
-            '<th>Lang</th>' +
+            '<th>' + t('admin.emailName') + '</th>' +
+            '<th>' + t('admin.emailAddress') + '</th>' +
+            '<th>' + t('admin.emailLang') + '</th>' +
             '<th style="width: 60px;"></th>' +
             '</tr></thead><tbody>';
 

@@ -185,9 +185,7 @@ const DashboardI18n = {
         'lineLeader.noBoss': { ko: '미배정', en: 'Not Assigned', vi: 'Chưa phân công' },
         'lineLeader.unknownBuilding': { ko: 'Building 미확인', en: 'Unknown Building', vi: 'Xưởng chưa xác định' },
 
-        // Dark Mode
-        'common.darkMode': { ko: '다크 모드', en: 'Dark Mode', vi: 'Chế độ tối' },
-        'common.lightMode': { ko: '라이트 모드', en: 'Light Mode', vi: 'Chế độ sáng' },
+        // (Dark Mode removed)
 
         // Data Period
         'dataPeriod.interim': { ko: '📋 중간 보고서', en: '📋 Interim Report', vi: '📋 Báo cáo giữa kỳ' },
@@ -813,12 +811,63 @@ const DashboardI18n = {
         'modal.progressionBar': { ko: '누진 인센티브 (1~15개월)', en: 'Progressive Incentive (1-15 months)', vi: 'KK lũy tiến (1-15 tháng)' },
         'modal.errorLoading': { ko: '데이터 로드 오류. 모달을 닫고 다시 시도하세요.', en: 'Error loading data. Please close and try again.', vi: 'Lỗi tải dữ liệu. Vui lòng đóng và thử lại.' },
 
-        // Admin
-        'admin.title': { ko: '관리자 설정', en: 'Admin Settings', vi: 'Cài đặt quản trị' },
-        'admin.thresholds': { ko: '목표 설정', en: 'Threshold Settings', vi: 'Cài đặt ngưỡng' },
+        // Admin page
+        'admin.headerTitle': { ko: 'HWK QIP Incentive - 관리자 패널', en: 'HWK QIP Incentive - Admin Panel', vi: 'HWK QIP Incentive - Quản trị' },
+        'admin.headerSubtitle': { ko: '시스템 설정 및 관리', en: 'System Configuration & Management', vi: 'Cấu hình & Quản lý hệ thống' },
+        'admin.dashboard': { ko: '대시보드', en: 'Dashboard', vi: 'Bảng điều khiển' },
+        'admin.logout': { ko: '로그아웃', en: 'Logout', vi: 'Đăng xuất' },
+        'admin.verifyingAccess': { ko: '관리자 접근 권한 확인 중...', en: 'Verifying admin access...', vi: 'Đang xác minh quyền quản trị...' },
+
+        // Admin - Threshold Settings
+        'admin.thresholds': { ko: '임계값 설정', en: 'Threshold Settings', vi: 'Cài đặt ngưỡng' },
+        'admin.month': { ko: '월', en: 'Month', vi: 'Tháng' },
+        'admin.year': { ko: '년', en: 'Year', vi: 'Năm' },
+        'admin.load': { ko: '불러오기', en: 'Load', vi: 'Tải' },
+        'admin.attendanceRate': { ko: '출근율 (%)', en: 'Attendance Rate (%)', vi: 'Tỷ lệ chấm công (%)' },
+        'admin.unapprovedAbsence': { ko: '무단결근 (일)', en: 'Unapproved Absence (days)', vi: 'Vắng không phép (ngày)' },
+        'admin.minimumWorkingDays': { ko: '최소 근무일', en: 'Minimum Working Days', vi: 'Ngày làm tối thiểu' },
+        'admin.areaRejectRate': { ko: 'AQL 불량률 (%)', en: 'Area Reject Rate (%)', vi: 'Tỷ lệ lỗi khu vực (%)' },
+        'admin.5prsPassRate': { ko: '5PRS 통과율 (%)', en: '5PRS Pass Rate (%)', vi: 'Tỷ lệ đạt 5PRS (%)' },
+        'admin.5prsMinQty': { ko: '5PRS 최소 검사량', en: '5PRS Inspection Qty', vi: 'SL kiểm tra 5PRS tối thiểu' },
+        'admin.consecutiveAqlMonths': { ko: 'AQL 연속 실패 기준 (월)', en: 'Consecutive AQL Fail Months', vi: 'Tháng lỗi AQL liên tục' },
+        'admin.saveThresholds': { ko: '임계값 저장', en: 'Save Thresholds', vi: 'Lưu ngưỡng' },
+
+        // Admin - Change History
         'admin.history': { ko: '변경 이력', en: 'Change History', vi: 'Lịch sử thay đổi' },
-        'admin.save': { ko: '저장', en: 'Save', vi: 'Lưu' },
-        'admin.runPipeline': { ko: '파이프라인 실행', en: 'Run Pipeline', vi: 'Chạy pipeline' }
+        'admin.historyDateTime': { ko: '일시', en: 'Date/Time', vi: 'Ngày/Giờ' },
+        'admin.historyChangedBy': { ko: '변경자', en: 'Changed By', vi: 'Người thay đổi' },
+        'admin.historyMonth': { ko: '월', en: 'Month', vi: 'Tháng' },
+        'admin.historyField': { ko: '항목', en: 'Field', vi: 'Trường' },
+        'admin.historyOld': { ko: '이전값', en: 'Old', vi: 'Cũ' },
+        'admin.historyNew': { ko: '새값', en: 'New', vi: 'Mới' },
+        'admin.noHistory': { ko: '변경 이력 없음', en: 'No change history yet', vi: 'Chưa có lịch sử thay đổi' },
+
+        // Admin - System Status
+        'admin.systemStatus': { ko: '시스템 상태', en: 'System Status', vi: 'Trạng thái hệ thống' },
+        'admin.lastPipelineRun': { ko: '마지막 파이프라인 실행', en: 'Last Pipeline Run', vi: 'Chạy pipeline cuối' },
+        'admin.status': { ko: '상태', en: 'Status', vi: 'Trạng thái' },
+        'admin.lastDataUpdate': { ko: '마지막 데이터 업데이트', en: 'Last Data Update', vi: 'Cập nhật dữ liệu cuối' },
+        'admin.currentMonth': { ko: '현재 월', en: 'Current Month', vi: 'Tháng hiện tại' },
+        'admin.runPipeline': { ko: '파이프라인 실행', en: 'Run Pipeline Now', vi: 'Chạy Pipeline' },
+
+        // Admin - Working Days Override
+        'admin.workingDays': { ko: '근무일 수 재정의', en: 'Working Days Override', vi: 'Ghi đè ngày làm việc' },
+        'admin.workingDaysDesc': { ko: '특정 월의 자동 계산된 근무일 수를 재정의합니다. 임계값 설정에서 선택한 월/년을 사용합니다.', en: 'Override the automatically calculated working days for a specific month. Uses the same month/year selected in Threshold Settings.', vi: 'Ghi đè ngày làm việc tự động cho tháng cụ thể. Sử dụng tháng/năm đã chọn trong Cài đặt ngưỡng.' },
+        'admin.selectedPeriod': { ko: '선택 기간', en: 'Selected Period', vi: 'Kỳ đã chọn' },
+        'admin.currentWorkingDays': { ko: '현재 근무일', en: 'Current Working Days', vi: 'Ngày làm hiện tại' },
+        'admin.overrideValue': { ko: '재정의 값', en: 'Override Value', vi: 'Giá trị ghi đè' },
+        'admin.updateWorkingDays': { ko: '근무일 업데이트', en: 'Update Working Days', vi: 'Cập nhật ngày làm' },
+
+        // Admin - Email Report Settings
+        'admin.emailSettings': { ko: '이메일 보고서 설정', en: 'Email Report Settings', vi: 'Cài đặt báo cáo email' },
+        'admin.emailName': { ko: '이름', en: 'Name', vi: 'Tên' },
+        'admin.emailAddress': { ko: '이메일', en: 'Email', vi: 'Email' },
+        'admin.emailLang': { ko: '언어', en: 'Lang', vi: 'Ngôn ngữ' },
+        'admin.emailAdd': { ko: '추가', en: 'Add', vi: 'Thêm' },
+        'admin.noRecipients': { ko: '등록된 수신자 없음', en: 'No recipients configured', vi: 'Chưa có người nhận' },
+
+        // Admin - Footer
+        'admin.footer': { ko: 'Version 10.0 - 관리자 패널 - Firestore 보안 아키텍처', en: 'Version 10.0 - Admin Panel - Firestore Secure Architecture', vi: 'Version 10.0 - Quản trị - Kiến trúc bảo mật Firestore' }
     },
 
     /**
@@ -959,12 +1008,7 @@ const DashboardI18n = {
                 dpSpan.textContent = DashboardI18n.t(dpKey);
             }
         }
-        // Update dark mode toggle tooltip
-        var dmBtn = document.getElementById('darkModeToggle');
-        if (dmBtn) {
-            var isDark = document.documentElement.classList.contains('dark-mode');
-            dmBtn.title = DashboardI18n.t(isDark ? 'common.lightMode' : 'common.darkMode');
-        }
+        // (Dark mode toggle removed)
     },
 
     /**
