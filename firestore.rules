@@ -37,6 +37,12 @@ service cloud.firestore {
       allow create: if isAdmin();
     }
 
+    // Config settings (position mapping, talent pool, auditor areas, etc.)
+    match /configs/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
     // System config: admin only
     match /system/{document} {
       allow read, write: if isAdmin();

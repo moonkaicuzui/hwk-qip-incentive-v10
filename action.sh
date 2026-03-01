@@ -72,6 +72,12 @@ echo "Step 4: Syncing thresholds from Firestore..."
 python scripts/sync_thresholds.py --month "$MONTH" --year "$YEAR" 2>/dev/null || echo "⚠️ Threshold sync skipped (using local config)"
 echo "✅ Step 4 complete"
 
+# ===== Step 4.5: Sync Config Settings from Firestore =====
+echo ""
+echo "Step 4.5: Syncing config settings from Firestore..."
+python scripts/sync_configs.py 2>/dev/null || echo "⚠️ Config sync skipped (using local config)"
+echo "✅ Step 4.5 complete"
+
 # ===== Step 5: Convert Attendance Data =====
 echo ""
 echo "Step 5: Converting attendance data..."

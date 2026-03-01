@@ -57,6 +57,15 @@ jobs:
           python scripts/sync_thresholds.py --month "$CURRENT_MONTH" --year "$CURRENT_YEAR" || echo "⚠️ Threshold sync failed, using local config"
           echo "✅ Threshold sync complete"
 
+      # ========== Step 4.5: Sync Config Settings from Firestore ==========
+      - name: "Step 4.5: Sync config settings from Firestore"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "🔄 Syncing config settings from Firestore..."
+          python scripts/sync_configs.py || echo "⚠️ Config sync failed, using local config files"
+          echo "✅ Config sync complete"
+
       # ========== Step 5: Enhanced Download with Config ==========
       - name: "Step 5: Enhanced download with config update"
         env:

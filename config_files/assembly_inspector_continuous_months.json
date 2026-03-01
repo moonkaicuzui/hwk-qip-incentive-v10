@@ -1,0 +1,995 @@
+{
+  "description": "TYPE-1 직원 연속 개월 수 추적 (AUDITOR, ASSEMBLY INSPECTOR, MODEL MASTER)",
+  "last_updated": "2026-01-03 14:46:56",
+  "month": "december",
+  "year": 2025,
+  "employees": {
+    "618030241": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "TRẦN THỊ THÚY ANH",
+      "position": "MODEL MASTER"
+    },
+    "618060092": {
+      "november_continuous_months": 4,
+      "december_expected_months": 5,
+      "november_incentive": 350000,
+      "name": "CAO THỊ TỐ NGUYÊN",
+      "position": "AUDITOR & TRAININER"
+    },
+    "618110087": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "NGUYỄN THÚY HẰNG",
+      "position": "AUDITOR & TRAININER"
+    },
+    "618110097": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "DANH THỊ ANH ĐÀO",
+      "position": "MODEL MASTER"
+    },
+    "621030996": {
+      "november_continuous_months": 0,
+      "december_expected_months": 1,
+      "november_incentive": 0,
+      "name": "DANH MINH HIẾU",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "621040446": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "THÁI THỊ XUÂN",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "621060243": {
+      "november_continuous_months": 5,
+      "december_expected_months": 6,
+      "november_incentive": 400000,
+      "name": "HÀ CÔNG NHANH",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "619070185": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "DANH THỊ KIM ANH",
+      "position": "AUDITOR & TRAININER"
+    },
+    "622020174": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN NGỌC BÍCH THỦY",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "622020703": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "DANH CHÀNH THUƠL",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "622021407": {
+      "november_continuous_months": 4,
+      "december_expected_months": 5,
+      "november_incentive": 350000,
+      "name": "DANH TRƯỜNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "620070013": {
+      "november_continuous_months": 1,
+      "december_expected_months": 0,
+      "november_incentive": 150000,
+      "name": "NGUYỄN THANH TRÚC",
+      "position": "AUDITOR & TRAININER"
+    },
+    "620070020": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "PHẠM MỸ HUYỀN",
+      "position": "AUDITOR & TRAININER"
+    },
+    "620080271": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "THỊ MINH PHƯỢNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "620080295": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "VÕ THỊ THÙY LINH",
+      "position": "AUDIT & TRAINING TEAM LEADER"
+    },
+    "622030320": {
+      "november_continuous_months": 3,
+      "december_expected_months": 4,
+      "november_incentive": 300000,
+      "name": "QUÁCH THANH TOÀN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "620110124": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "PHẠM THỊ KIM MAI",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "622030777": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "NGUYỄN THỊ THẢO QUYÊN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "622050636": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "LÊ THỊ PHƯỢNG UYÊN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "620120386": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "NGUYỄN NGỌC TUẤN",
+      "position": "MODEL MASTER"
+    },
+    "622070194": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN QUỐC HUY",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "622080458": {
+      "november_continuous_months": 12,
+      "december_expected_months": 0,
+      "november_incentive": 1000000,
+      "name": "NGUYỄN HỒNG CẨM",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623030007": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "ĐOÀN THỊ MỸ NGÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623080380": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "PHAN THỊ BÉ NGÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623090032": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "ĐẶNG CHÍ CÔNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623090063": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "LÝ NHỰT KHOA",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623090139": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "PHẠM THỊ CẨM LINH",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623090194": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "DANH THỊ KIỀU PHƯƠNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623090198": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "TRƯƠNG THẢO HUY",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623100210": {
+      "november_continuous_months": 7,
+      "december_expected_months": 8,
+      "november_incentive": 500000,
+      "name": "LÊ THỊ KIM ANH",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623100234": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "HUỲNH THỊ HẢO",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623110220": {
+      "november_continuous_months": 4,
+      "december_expected_months": 5,
+      "november_incentive": 350000,
+      "name": "PHAN THỊ MY PHA",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "621050282": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "PHAN MINH ANH",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "621060154": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "LÝ DĨ CƯỜNG",
+      "position": "AUDITOR & TRAININER"
+    },
+    "623120136": {
+      "november_continuous_months": 6,
+      "december_expected_months": 7,
+      "november_incentive": 450000,
+      "name": "VÕ KIM HOÀI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "621060393": {
+      "november_continuous_months": 0,
+      "december_expected_months": 1,
+      "november_incentive": 0,
+      "name": "LÊ VĂN DLEL",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "624020086": {
+      "november_continuous_months": 4,
+      "december_expected_months": 0,
+      "november_incentive": 350000,
+      "name": "NGUYỄN THỊ KIM THOA",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624020152": {
+      "november_continuous_months": 5,
+      "december_expected_months": 6,
+      "november_incentive": 400000,
+      "name": "HUỲNH THỊ THANH THÙY",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624030105": {
+      "november_continuous_months": 7,
+      "december_expected_months": 8,
+      "november_incentive": 500000,
+      "name": "DANH THỊ NƯƠNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624030271": {
+      "november_continuous_months": 8,
+      "december_expected_months": 9,
+      "november_incentive": 650000,
+      "name": "ĐẶNG HOÀNG DUY",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624030295": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "NGUYỄN THỊ ANH THƯ",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624030533": {
+      "november_continuous_months": 2,
+      "december_expected_months": 0,
+      "november_incentive": 250000,
+      "name": "TRẦN TRẦN TRUNG KIÊN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624030608": {
+      "november_continuous_months": 7,
+      "december_expected_months": 8,
+      "november_incentive": 500000,
+      "name": "TRẦN THỊ TRÚC QUYÊN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624040282": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "ĐOÀN CÔNG HÀO",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624040283": {
+      "november_continuous_months": 4,
+      "december_expected_months": 5,
+      "november_incentive": 350000,
+      "name": "TRẦN VĂN HÀ",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624040410": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "LÊ THỊ HUYỀN TRÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624050151": {
+      "november_continuous_months": 4,
+      "december_expected_months": 5,
+      "november_incentive": 350000,
+      "name": "PHẠM THỊ THU THẢO",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624050200": {
+      "november_continuous_months": 3,
+      "december_expected_months": 0,
+      "november_incentive": 300000,
+      "name": "NGUYỄN THỊ HUỲNH HÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624050450": {
+      "november_continuous_months": 4,
+      "december_expected_months": 5,
+      "november_incentive": 350000,
+      "name": "TRẦN THỊ MỸ LỆ",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624060040": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "HỒ NHỰT PHI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624060316": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN THỊ CẨM NHUNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624060318": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN THỊ MỸ HOA",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "622021338": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "THỊ THANH THẢO",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624060331": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "HUỲNH LÊ THANH TÚ",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624060384": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "TÔ THỊ DIỄM MI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624070020": {
+      "november_continuous_months": 5,
+      "december_expected_months": 6,
+      "november_incentive": 400000,
+      "name": "NGUYỄN NGỌC TẤN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624070060": {
+      "november_continuous_months": 1,
+      "december_expected_months": 0,
+      "november_incentive": 150000,
+      "name": "TRẦN THANH THANH",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624070252": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "PHẠM THỊ KIỀU TRANG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624070393": {
+      "november_continuous_months": 1,
+      "december_expected_months": 0,
+      "november_incentive": 150000,
+      "name": "LÊ THỊ CHI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624080082": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "TRẦN THỊ BÍCH THẢO",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624080083": {
+      "november_continuous_months": 3,
+      "december_expected_months": 4,
+      "november_incentive": 300000,
+      "name": "CHƯƠNG THỊ YẾN NHI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624080127": {
+      "november_continuous_months": 3,
+      "december_expected_months": 4,
+      "november_incentive": 300000,
+      "name": "TRẦN KIM Y",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624080430": {
+      "november_continuous_months": 4,
+      "december_expected_months": 5,
+      "november_incentive": 350000,
+      "name": "NGUYỄN VĂN TOÀN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624100065": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "DIỆP TÚ TIÊN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624100308": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "NGUYỄN THỊ MỸ ANH",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624100316": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "TRƯƠNG MINH ĐƯƠNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624110158": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "VƯƠNG Ý NHI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624110228": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "THỊ KIỀU XUÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624110274": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN THỊ MINH THY",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625010030": {
+      "november_continuous_months": 1,
+      "december_expected_months": 0,
+      "november_incentive": 150000,
+      "name": "LÂM THỊ THU LAN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623080475": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "SẦM TRÍ THÀNH",
+      "position": "AUDITOR & TRAININER"
+    },
+    "625020179": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN PHÁT LỢI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625020419": {
+      "november_continuous_months": 3,
+      "december_expected_months": 4,
+      "november_incentive": 300000,
+      "name": "NGUYỄN THỊ DIỄM MY",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625020464": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "DANH THỊ THÙY DƯƠNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625020551": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "TRẦN VĂN SÁNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625020591": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "ĐẶNG THỊ DIỄM ÁI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625030063": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "THỊ XUÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "623090218": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "HUỲNH CHÍ TÂM",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625030111": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN VĂN VINH",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625030163": {
+      "november_continuous_months": 0,
+      "december_expected_months": 1,
+      "november_incentive": 0,
+      "name": "LÊ THANH NGÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625030234": {
+      "november_continuous_months": 5,
+      "december_expected_months": 0,
+      "november_incentive": 400000,
+      "name": "VÕ THỊ CẨM TIÊN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625030296": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN THỊ MỸ SAL",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625030360": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "ĐIÊU KIM NHƯ",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625030363": {
+      "november_continuous_months": 6,
+      "december_expected_months": 7,
+      "november_incentive": 450000,
+      "name": "HUỲNH NGỌC TRÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625050156": {
+      "november_continuous_months": 5,
+      "december_expected_months": 6,
+      "november_incentive": 400000,
+      "name": "NGUYỄN TUYẾT ĐÀO",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625050250": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "LÊ HUYỀN TRÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625060019": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "DƯƠNG THỊ HẬU",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624020170": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "HUỲNH TẤN TƯỚC",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624020551": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "TRẦN THỊ MỘNG TUYỀN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625080009": {
+      "november_continuous_months": 2,
+      "december_expected_months": 0,
+      "november_incentive": 250000,
+      "name": "NGUYỄN THỊ NHƯ Ý",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "619060201": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "BÙI THỊ KIỀU LY",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "620030032": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "NGUYỄN THỊ KIỀU TIÊN",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "624030607": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "THÁI PHƯƠNG YẾN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "620080362": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "DƯƠNG THỊ MỸ XUYÊN",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "624040270": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "LÝ THỊ CHANH ĐA",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "620120148": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "VƯƠNG THỊ MỸ NGA",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "621030557": {
+      "november_continuous_months": 4,
+      "december_expected_months": 5,
+      "november_incentive": 350000,
+      "name": "THỊ NHÀN",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "621070084": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "THỊ NGỌC ĐIỆP",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "621100361": {
+      "november_continuous_months": 7,
+      "december_expected_months": 8,
+      "november_incentive": 500000,
+      "name": "TRẦN THỊ TÚ NGA",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "624050331": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "THỊ NHẬT THANH",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "621110258": {
+      "november_continuous_months": 4,
+      "december_expected_months": 5,
+      "november_incentive": 350000,
+      "name": "PHAN TRUNG HẢO",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "621110407": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "LÊ YẾN NHI",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "624060131": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "PHẠM THỊ THÙY DƯƠNG",
+      "position": "REPACKING LINE TQC"
+    },
+    "621110412": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "NGUYỄN THỊ KIM LOAN",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "621120120": {
+      "november_continuous_months": 1,
+      "december_expected_months": 0,
+      "november_incentive": 150000,
+      "name": "LÊ HỒNG ĐÀO",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "621120400": {
+      "november_continuous_months": 0,
+      "december_expected_months": 1,
+      "november_incentive": 0,
+      "name": "TRẦN THỊ NGỌC QUYỀN",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "622020056": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "NGUYỄN ÚT TÝ",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "622021048": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN MỘNG THÊM",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "622021050": {
+      "november_continuous_months": 12,
+      "december_expected_months": 13,
+      "november_incentive": 1000000,
+      "name": "LÊ THỊ DẠ LÝ",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "622030023": {
+      "november_continuous_months": 8,
+      "december_expected_months": 9,
+      "november_incentive": 650000,
+      "name": "LƯU HUỲNH BỬU XUYẾN",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "622050542": {
+      "november_continuous_months": 4,
+      "december_expected_months": 0,
+      "november_incentive": 350000,
+      "name": "BÙI THANH THẲNG",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "622070156": {
+      "november_continuous_months": 0,
+      "december_expected_months": 1,
+      "november_incentive": 0,
+      "name": "ĐÀO HỒNG NHIỀU",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "624080015": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "TRƯƠNG KIM MỴ",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "622080106": {
+      "november_continuous_months": 3,
+      "december_expected_months": 4,
+      "november_incentive": 300000,
+      "name": "NGUYỄN THỊ YẾN NHƯ",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "624020153": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "HUỲNH THỊ THANH THÚY",
+      "position": "ASSEMBLY LINE RQC"
+    },
+    "622020913": {
+      "november_continuous_months": 0,
+      "december_expected_months": 1,
+      "november_incentive": 0,
+      "name": "LÂM THỊ THU PHƯƠNG",
+      "position": "REPACKING LINE TQC"
+    },
+    "624080166": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "LƯU THỊ THU UYÊN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624080236": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "BÙI THỊ CẨM",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624090322": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGÔ THANH NHƯ",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624090346": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN QUỐC HUY",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624100346": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN THỊ NGỌC HÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624100460": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "HỒ CHÍ TRUNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "624120070": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN ANH KIỆT",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625020385": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "LÊ THÀNH THUẬN",
+      "position": "REPACKING LINE TQC"
+    },
+    "625030361": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "HUỲNH THỊ NHƯ Ý",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625040238": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "VÕ THỊ BẢO HIỀN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625030164": {
+      "november_continuous_months": 0,
+      "december_expected_months": 1,
+      "november_incentive": 0,
+      "name": "TRẦN CẨM TIÊN",
+      "position": "REPACKING LINE TQC"
+    },
+    "625050278": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "NGUYỄN THỊ MỸ TIÊN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625080102": {
+      "november_continuous_months": 2,
+      "december_expected_months": 0,
+      "november_incentive": 250000,
+      "name": "ĐOÀN THẢO NHI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625080141": {
+      "november_continuous_months": 2,
+      "december_expected_months": 3,
+      "november_incentive": 250000,
+      "name": "NGUYỄN THỊ KHẢ DUY",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625080253": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "LÊ NGỌC KIM NGÂN",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625080255": {
+      "november_continuous_months": 3,
+      "december_expected_months": 4,
+      "november_incentive": 300000,
+      "name": "LÂM CẨM NHI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625080289": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "ĐOÀN ĐÌNH LỘC",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625090049": {
+      "november_continuous_months": 0,
+      "december_expected_months": 0,
+      "november_incentive": 0,
+      "name": "TRẦN MỸ NGỌC",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625090192": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "LÊ NHƯ PHỤNG",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625090293": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "DANH LỜI",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625100040": {
+      "november_continuous_months": 1,
+      "december_expected_months": 0,
+      "november_incentive": 150000,
+      "name": "TRẦN THỊ CẨM LY",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625100092": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "HỒ THÚY HUỲNH",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625100152": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "TRẦN THỊ CẨM THƠM",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625100153": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "TRẦN THỊ CẨM THO",
+      "position": "ASSEMBLY LINE TQC"
+    },
+    "625100189": {
+      "november_continuous_months": 1,
+      "december_expected_months": 2,
+      "november_incentive": 150000,
+      "name": "THỊ THỦY",
+      "position": "ASSEMBLY LINE TQC"
+    }
+  }
+}

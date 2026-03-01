@@ -67,13 +67,11 @@ var AdminPage = {
             // Bind events
             this.bindEvents();
 
-            // Load initial data
-            this.loadChangeHistory();
-            this.loadSystemStatus();
-            this.loadEmailSettings();
-
-            // Update working days panel display
+            // Load initial data (Tab 1 is shown by default)
             this.updateWorkingDaysDisplay();
+
+            // Setup tab lazy loading
+            this.initTabLazyLoading();
 
         } catch (error) {
             console.error('[Admin] Init failed:', error);
@@ -326,7 +324,7 @@ var AdminPage = {
 
             if (snapshot.empty) {
                 var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">' +
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">' +
                     '<i class="fa-regular fa-folder-open me-1"></i> ' + t('admin.noHistory') + '</td></tr>';
                 return;
             }
@@ -352,23 +350,31 @@ var AdminPage = {
 
                 var changes = data.changes || [];
 
+                var typeLabel = data.type || 'threshold';
+                var typeBadgeClass = 'bg-secondary';
+                if (typeLabel === 'threshold') typeBadgeClass = 'bg-primary';
+                else if (typeLabel === 'working_days') typeBadgeClass = 'bg-warning text-dark';
+                else if (typeLabel === 'position_mapping') typeBadgeClass = 'bg-info';
+                else if (typeLabel === 'talent_pool') typeBadgeClass = 'bg-success';
+                else if (typeLabel === 'area_mapping') typeBadgeClass = 'bg-danger';
+
                 if (changes.length === 0) {
-                    // Single row for entries without detailed changes
                     html += '<tr>' +
                         '<td>' + timestamp + '</td>' +
                         '<td>' + emailShort + '</td>' +
                         '<td><span class="badge bg-light text-dark">' + monthYear + '</span></td>' +
-                        '<td>' + (data.type || 'threshold') + '</td>' +
+                        '<td><span class="badge ' + typeBadgeClass + '">' + typeLabel + '</span></td>' +
+                        '<td>--</td>' +
                         '<td>--</td>' +
                         '<td>--</td>' +
                         '</tr>';
                 } else {
-                    // One row per changed field
                     changes.forEach(function(change, idx) {
                         html += '<tr>' +
                             '<td>' + (idx === 0 ? timestamp : '') + '</td>' +
                             '<td>' + (idx === 0 ? emailShort : '') + '</td>' +
                             '<td>' + (idx === 0 ? '<span class="badge bg-light text-dark">' + monthYear + '</span>' : '') + '</td>' +
+                            '<td>' + (idx === 0 ? '<span class="badge ' + typeBadgeClass + '">' + typeLabel + '</span>' : '') + '</td>' +
                             '<td>' + (change.field || change.field_key || '--') + '</td>' +
                             '<td><span class="text-danger">' + (change.old_value !== null ? change.old_value : 'N/A') + '</span></td>' +
                             '<td><span class="text-success fw-bold">' + (change.new_value !== null ? change.new_value : 'N/A') + '</span></td>' +
@@ -381,7 +387,7 @@ var AdminPage = {
 
         } catch (error) {
             console.error('[Admin] Failed to load change history:', error);
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-3">' +
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-3">' +
                 '<i class="fa-solid fa-triangle-exclamation me-1"></i> Failed to load history: ' + error.message + '</td></tr>';
         }
     },
@@ -623,6 +629,48 @@ var AdminPage = {
             var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
             btn.innerHTML = '<i class="fa-solid fa-pen-to-square me-1"></i> <span data-i18n="admin.updateWorkingDays">' + t('admin.updateWorkingDays') + '</span>';
         }
+    },
+
+    /**
+     * Initialize tab lazy loading.
+     * Each tab loads its data only on first activation.
+     */
+    initTabLazyLoading: function() {
+        var self = this;
+        var loadedTabs = {};
+
+        var tabEl = document.getElementById('adminTabs');
+        if (!tabEl) return;
+
+        tabEl.addEventListener('shown.bs.tab', function(event) {
+            var target = event.target.getAttribute('data-bs-target');
+
+            if (target === '#pane-system' && !loadedTabs['system']) {
+                loadedTabs['system'] = true;
+                self.loadSystemStatus();
+                self.loadEmailSettings();
+                self.loadChangeHistory();
+            }
+
+            if (target === '#pane-configs' && !loadedTabs['configs']) {
+                loadedTabs['configs'] = true;
+                if (typeof AdminConfigs !== 'undefined') {
+                    AdminConfigs.init();
+                }
+            }
+
+            if (target === '#pane-data' && !loadedTabs['data']) {
+                loadedTabs['data'] = true;
+                if (typeof AdminConfigs !== 'undefined') {
+                    AdminConfigs.loadContinuousMonths();
+                }
+            }
+
+            // Re-apply i18n after tab content is shown
+            if (typeof DashboardI18n !== 'undefined') {
+                DashboardI18n.updateAllTexts();
+            }
+        });
     },
 
     /**
