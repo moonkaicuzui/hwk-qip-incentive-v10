@@ -381,16 +381,35 @@ def send_email(recipients, html_body, subject, smtp_settings):
 
     result = {"sent": 0, "failed": 0, "errors": []}
 
-    try:
-        print(f"  SMTP 연결: {host}:{port} (SSL)")
+    def _connect_and_auth(host, port, user, password):
+        """한비로 SMTP AUTH LOGIN 직접 사용 (CRAM-MD5/PLAIN 실패로 인한 503 방지)"""
+        import ssl
+        import base64
         if port == 465:
-            server = smtplib.SMTP_SSL(host, port, timeout=30)
+            ctx = ssl.create_default_context()
+            srv = smtplib.SMTP_SSL(host, port, timeout=30, context=ctx)
         else:
-            server = smtplib.SMTP(host, port, timeout=30)
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-        server.login(user, password)
+            srv = smtplib.SMTP(host, port, timeout=30)
+            srv.ehlo()
+            srv.starttls()
+            srv.ehlo()
+        srv.ehlo()
+        # AUTH LOGIN 직접 실행
+        code, resp = srv.docmd(
+            "AUTH LOGIN",
+            base64.b64encode(user.encode()).decode()
+        )
+        if code == 334:
+            code, resp = srv.docmd(
+                base64.b64encode(password.encode()).decode()
+            )
+        if code != 235:
+            raise smtplib.SMTPAuthenticationError(code, resp)
+        return srv
+
+    try:
+        print(f"  SMTP 연결: {host}:{port} (AUTH LOGIN)")
+        server = _connect_and_auth(host, port, user, password)
         print(f"  SMTP 로그인 성공: {user}")
 
         for email_addr in email_list:
@@ -401,7 +420,9 @@ def send_email(recipients, html_body, subject, smtp_settings):
                 msg["To"] = email_addr
                 msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-                server.send_message(msg)
+                server.mail(from_email)
+                server.rcpt(email_addr)
+                server.data(msg.as_bytes())
                 result["sent"] += 1
                 print(f"    -> {email_addr} 발송 성공")
             except Exception as e:
@@ -422,14 +443,7 @@ def send_email(recipients, html_body, subject, smtp_settings):
         try:
             import time
             time.sleep(3)
-            if port == 465:
-                server = smtplib.SMTP_SSL(host, port, timeout=30)
-            else:
-                server = smtplib.SMTP(host, port, timeout=30)
-                server.ehlo()
-                server.starttls()
-                server.ehlo()
-            server.login(user, password)
+            server = _connect_and_auth(host, port, user, password)
 
             result = {"sent": 0, "failed": 0, "errors": []}
             for email_addr in email_list:
@@ -439,7 +453,9 @@ def send_email(recipients, html_body, subject, smtp_settings):
                     msg["From"] = f"{from_name} <{from_email}>"
                     msg["To"] = email_addr
                     msg.attach(MIMEText(html_body, "html", "utf-8"))
-                    server.send_message(msg)
+                    server.mail(from_email)
+                    server.rcpt(email_addr)
+                    server.data(msg.as_bytes())
                     result["sent"] += 1
                     print(f"    -> {email_addr} 발송 성공 (재시도)")
                 except Exception as e2:
