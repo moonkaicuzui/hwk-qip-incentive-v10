@@ -7,10 +7,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Helper: Admin user (specific email)
+    // Helper: Admin user (authorized emails)
     function isAdmin() {
       return request.auth != null &&
-             request.auth.token.email == 'ksmoon@hsvina.com';
+             request.auth.token.email in ['ksmoon@hsvina.com', 'huynhnhurgqa04@hsvina.com'];
     }
 
     // Employee data: auth read, admin write
