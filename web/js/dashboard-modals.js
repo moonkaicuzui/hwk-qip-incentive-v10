@@ -651,6 +651,18 @@ var DashboardModals = {
             '<span style="font-weight: 700; color: ' + (currentIncentive > 0 ? '#2e7d32' : '#c62828') + ';">'
                 + this._formatVND(currentIncentive) + ' ' + t('unit.currency') + '</span>'
         );
+        // V9: Talent Pool 보너스 분리 표시
+        var isTalentPool = String(emp.talent_pool_member || emp.Talent_Pool_Member || '') === 'Y';
+        if (isTalentPool && currentIncentive > 0) {
+            var talentBonus = parseInt(emp.talent_pool_bonus || emp.Talent_Pool_Bonus || 0, 10);
+            var baseIncentive = currentIncentive - talentBonus;
+            html += '<div style="background: linear-gradient(135deg, #FFD700, #FFA500); padding: 8px 12px; border-radius: 8px; margin-top: 8px; grid-column: 1 / -1;">';
+            html += '<small style="color: white; font-weight: bold;">';
+            html += '🌟 Talent Pool ' + t('talentPool.bonusIncluded') + '<br>';
+            html += t('talentPool.base') + ': ' + this._formatVND(baseIncentive) + ' ' + t('unit.currency') + '<br>';
+            html += t('talentPool.bonus') + ': +' + this._formatVND(talentBonus) + ' ' + t('unit.currency');
+            html += '</small></div>';
+        }
         html += this._renderInfoItem(
             t('modal.previousIncentive'),
             this._formatVND(previousIncentive) + ' ' + t('unit.currency')

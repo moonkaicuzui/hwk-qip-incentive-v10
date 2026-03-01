@@ -404,6 +404,8 @@ var DashboardFilters = {
         var thresholds = this._thresholds || window.thresholds || {};
         var th5prsPassRate = parseFloat(thresholds['5prs_pass_rate']) || 95;
 
+        var _t = typeof DashboardI18n !== 'undefined' ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+
         pageData.forEach(function (emp, index) {
             var rowNum = start + index + 1;
 
@@ -470,13 +472,13 @@ var DashboardFilters = {
                 var hasConsecutiveFail = continuousFail.indexOf('YES') !== -1;
 
                 if (aqlFailures > 0 || c5Result === 'NO' || c5Result === 'FAIL' || hasConsecutiveFail) {
-                    aqlHtml = '<span class="badge-fail">\u274C FAIL</span>';
+                    aqlHtml = '<span class="badge-fail">\u274C ' + _t('common.fail') + '</span>';
                 } else {
-                    aqlHtml = '<span class="badge-pass">\u2705 PASS</span>';
+                    aqlHtml = '<span class="badge-pass">\u2705 ' + _t('common.pass') + '</span>';
                 }
             } else {
                 // TYPE-2, TYPE-3: AQL not applicable
-                aqlHtml = '<span class="badge-na">\u2796 N/A</span>';
+                aqlHtml = '<span class="badge-na">\u2796 ' + _t('common.na') + '</span>';
             }
 
             // --- 5PRS Status ---
@@ -491,14 +493,14 @@ var DashboardFilters = {
                 ) || 0;
 
                 if (prsPassRate <= 0) {
-                    prsHtml = '<span class="badge-na">\u2796 N/A</span>';
+                    prsHtml = '<span class="badge-na">\u2796 ' + _t('common.na') + '</span>';
                 } else if (prsPassRate >= th5prsPassRate) {
                     prsHtml = '<span class="badge-pass">' + self._formatPercent(prsPassRate) + '%</span>';
                 } else {
                     prsHtml = '<span class="badge-fail">' + self._formatPercent(prsPassRate) + '%</span>';
                 }
             } else {
-                prsHtml = '<span class="badge-na">\u2796 N/A</span>';
+                prsHtml = '<span class="badge-na">\u2796 ' + _t('common.na') + '</span>';
             }
 
             // --- Incentive Amount ---
@@ -514,12 +516,14 @@ var DashboardFilters = {
             var incentiveWeight = incentiveAmount > 0 ? '600' : '400';
             var incentiveFormatted = self._formatVND(incentiveAmount);
 
-            // --- Build row ---
-            html += '<tr>';
+            // --- Build row (V9: Talent Pool highlight) ---
+            var isTalentPool = String(emp.talent_pool_member || emp.Talent_Pool_Member || '') === 'Y';
+            html += '<tr' + (isTalentPool ? ' class="talent-pool-row"' : '') + '>';
             html += '<td style="text-align: center; color: #757575; font-size: 0.78rem;">' + rowNum + '</td>';
             html += '<td style="font-family: monospace; font-size: 0.82rem;">' + self._escapeHtml(empNo) + '</td>';
+            var talentBadge = isTalentPool ? '<span class="talent-pool-badge">' + _t('talentPool.badge') + '</span>' : '';
             html += '<td><a href="javascript:void(0)" onclick="DashboardFilters._openEmployeeModal(\'' + self._escapeAttr(empNo) + '\')" ' +
-                    'style="color: #1565c0; text-decoration: none; font-weight: 500;">' + self._escapeHtml(fullName) + '</a></td>';
+                    'style="color: #1565c0; text-decoration: none; font-weight: 500;">' + self._escapeHtml(fullName) + '</a>' + talentBadge + '</td>';
             html += '<td>' + self._escapeHtml(position) + '</td>';
             html += '<td>' + self._escapeHtml(building) + '</td>';
             html += '<td><span class="badge-type ' + typeBadgeClass + '">' + self._escapeHtml(empType) + '</span></td>';

@@ -217,7 +217,7 @@ var DashboardData = {
             })
             .catch(function (error) {
                 console.error('[DashboardData] Failed to load employees:', error);
-                self._showError('Failed to load employee data. Please check your connection and try again.');
+                self._showError(typeof DashboardI18n !== 'undefined' ? DashboardI18n.t('error.loadEmployees') : 'Failed to load employee data. Please check your connection and try again.');
                 window.employeeData = [];
                 return [];
             });
@@ -265,7 +265,7 @@ var DashboardData = {
             })
             .catch(function (error) {
                 console.error('[DashboardData] Failed to load summary:', error);
-                self._showError('Failed to load dashboard summary. Please try again.');
+                self._showError(typeof DashboardI18n !== 'undefined' ? DashboardI18n.t('error.loadSummary') : 'Failed to load dashboard summary. Please try again.');
                 window.dashboardSummary = {};
                 return {};
             });
@@ -349,18 +349,62 @@ var DashboardData = {
      * @param {number|string} year - 4-digit year
      * @returns {Promise<{employees: Array, summary: Object, thresholds: Object}>}
      */
+    /**
+     * Update loading progress step indicator.
+     * @param {number} step - Step number (1-4)
+     * @param {string} state - 'active' or 'done'
+     */
+    _updateLoadingStep: function (step, state) {
+        var el = document.getElementById('loadStep' + step);
+        var bar = document.getElementById('loadingProgressBar');
+        if (el) {
+            var icon = el.querySelector('.step-icon');
+            if (state === 'active') {
+                el.className = 'active';
+                if (icon) icon.textContent = '◉';
+            } else if (state === 'done') {
+                el.className = 'done';
+                if (icon) icon.textContent = '✓';
+            }
+        }
+        if (bar) {
+            var pct = state === 'done' ? (step * 25) : ((step - 1) * 25 + 12);
+            bar.style.width = pct + '%';
+        }
+    },
+
     loadAll: function (month, year) {
         var self = this;
 
         self._hideError();
         self._showLoading();
 
+        // Start step indicators
+        self._updateLoadingStep(1, 'active');
+
+        var employeesPromise = self.loadEmployees(month, year).then(function (r) {
+            self._updateLoadingStep(1, 'done');
+            self._updateLoadingStep(2, 'active');
+            return r;
+        });
+        var summaryPromise = self.loadSummary(month, year).then(function (r) {
+            self._updateLoadingStep(2, 'done');
+            return r;
+        });
+        var thresholdsPromise = self.loadThresholds(month, year).then(function (r) {
+            self._updateLoadingStep(3, 'active');
+            return r;
+        });
+
         return Promise.all([
-            self.loadEmployees(month, year),
-            self.loadSummary(month, year),
-            self.loadThresholds(month, year)
+            employeesPromise,
+            summaryPromise,
+            thresholdsPromise
         ])
             .then(function (results) {
+                self._updateLoadingStep(3, 'done');
+                self._updateLoadingStep(4, 'active');
+
                 var employees = results[0];
                 var summary = results[1];
                 var thresholds = results[2];
@@ -399,6 +443,7 @@ var DashboardData = {
                 window._dashboardMonth = month;
                 window._dashboardYear = year;
 
+                self._updateLoadingStep(4, 'done');
                 self._hideLoading();
 
                 return {
@@ -413,7 +458,7 @@ var DashboardData = {
             .catch(function (error) {
                 console.error('[DashboardData] loadAll failed:', error);
                 self._hideLoading();
-                self._showError('Failed to load dashboard data. Please refresh the page or try again later.');
+                self._showError(typeof DashboardI18n !== 'undefined' ? DashboardI18n.t('error.loadAll') : 'Failed to load dashboard data. Please refresh the page or try again later.');
                 return {
                     employees: [],
                     summary: {},

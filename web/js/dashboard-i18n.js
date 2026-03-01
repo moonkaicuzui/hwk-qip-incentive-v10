@@ -177,6 +177,12 @@ const DashboardI18n = {
         'talentPool.avgMonths': { ko: '평균 연속 개월', en: 'Avg Consecutive Months', vi: 'TB tháng liên tục' },
         'talentPool.maxMonths': { ko: '최장 연속 개월', en: 'Max Consecutive Months', vi: 'Tháng LT cao nhất' },
         'talentPool.incentiveAmount': { ko: '인센티브', en: 'Incentive', vi: 'Khuyến khích' },
+        'talentPool.bonusIncluded': { ko: '보너스 포함', en: 'Bonus Included', vi: 'Đã bao gồm thưởng' },
+        'talentPool.base': { ko: '기본', en: 'Base', vi: 'Cơ bản' },
+        'talentPool.bonus': { ko: '보너스', en: 'Bonus', vi: 'Thưởng' },
+        'talentPool.badge': { ko: 'TALENT', en: 'TALENT', vi: 'TALENT' },
+        'talentPool.special': { ko: 'QIP Talent Pool', en: 'QIP Talent Pool', vi: 'QIP Talent Pool' },
+        'talentPool.period': { ko: '지급 기간', en: 'Payment Period', vi: 'Kỳ thanh toán' },
 
         // LINE LEADER Not Assigned - Building Detail (Task #24)
         'lineLeader.buildingSummary': { ko: 'Building별 미배정 현황', en: 'Unassigned by Building', vi: 'Chưa phân công theo xưởng' },
@@ -399,6 +405,11 @@ const DashboardI18n = {
         'criteria.type2ColMethod': { ko: '계산 방법', en: 'Calculation Method', vi: 'Phương pháp tính' },
         'criteria.type2ColAverage': { ko: '현재 평균', en: 'Current Avg', vi: 'TB hiện tại' },
         'criteria.receivingAvg': { ko: '수령자 평균', en: 'Receiving Avg', vi: 'TB người nhận' },
+        'criteria.lineLeaderFormula': {
+            ko: '부하 INSPECTOR 인센티브 합계 × 12% × 수급비율',
+            en: 'Sub INSPECTOR incentive sum × 12% × receiving ratio',
+            vi: 'Tổng KK INSPECTOR × 12% × tỷ lệ nhận'
+        },
         'criteria.type2GroupLeaderRule': {
             ko: 'TYPE-2 GROUP LEADER: 기본 = TYPE-1 LINE LEADER 수령자 평균 × 2. Fallback = TYPE-2 LINE LEADER 수령자 평균 × 2.',
             en: 'TYPE-2 GROUP LEADER: Base = TYPE-1 LINE LEADER receiving avg × 2. Fallback = TYPE-2 LINE LEADER receiving avg × 2.',
@@ -694,6 +705,30 @@ const DashboardI18n = {
             vi: 'Tỷ lệ đi làm = 100 - Tỷ lệ vắng (Nghỉ phép được tính là đi làm)'
         },
 
+        // All-Zero Explanation Banner
+        'banner.allZero': {
+            ko: '이번 달은 인센티브 수령자가 0명입니다. "인센티브 기준" 탭에서 조건별 충족 현황을 확인하세요.',
+            en: 'No employees received incentives this month. Check the "Incentive Criteria" tab for condition fulfillment details.',
+            vi: 'Không có nhân viên nào nhận khuyến khích tháng này. Kiểm tra tab "Tiêu chí khuyến khích" để xem chi tiết điều kiện.'
+        },
+        // Stale Data Warning Banner
+        'banner.staleData': {
+            ko: '데이터가 24시간 이상 업데이트되지 않았습니다. 마지막 업데이트: {timestamp}',
+            en: 'Data has not been updated for over 24 hours. Last update: {timestamp}',
+            vi: 'Dữ liệu chưa được cập nhật hơn 24 giờ. Lần cập nhật cuối: {timestamp}'
+        },
+        // Trend Chart Overlay
+        'chart.trendOverlay': {
+            ko: '이번 달 데이터가 아직 확정되지 않았습니다',
+            en: 'This month\'s data is not yet finalized',
+            vi: 'Dữ liệu tháng này chưa được hoàn tất'
+        },
+        // Loading Progress Steps
+        'loading.step1': { ko: '직원 데이터 로딩...', en: 'Loading employee data...', vi: 'Đang tải dữ liệu nhân viên...' },
+        'loading.step2': { ko: '요약 데이터 로딩...', en: 'Loading summary data...', vi: 'Đang tải dữ liệu tổng hợp...' },
+        'loading.step3': { ko: '임계값 로딩...', en: 'Loading thresholds...', vi: 'Đang tải ngưỡng...' },
+        'loading.step4': { ko: '차트 렌더링...', en: 'Rendering charts...', vi: 'Đang vẽ biểu đồ...' },
+
         // Data Freshness Badge
         'freshness.fresh': { ko: '🟢 최신 데이터', en: '🟢 Fresh Data', vi: '🟢 Dữ liệu mới' },
         'freshness.moderate': { ko: '🟡 업데이트 권장', en: '🟡 Update Recommended', vi: '🟡 Nên cập nhật' },
@@ -729,6 +764,7 @@ const DashboardI18n = {
         'orgchart.promptEmpNo': { ko: '사번을 입력하세요:', en: 'Employee No:', vi: 'Nhập mã NV:' },
         'orgchart.notFound': { ko: '직원 {id}을(를) 조직도에서 찾을 수 없습니다.', en: 'Employee {id} not found in org chart.', vi: 'Không tìm thấy nhân viên {id} trong sơ đồ tổ chức.' },
         'orgchart.noManagerData': { ko: '관리자 데이터가 없습니다.', en: 'No manager data available.', vi: 'Không có dữ liệu quản lý.' },
+        'orgchart.expected': { ko: '기대', en: 'Expected', vi: 'Dự kiến' },
 
         // Modal extras
         'modal.entranceDate': { ko: '입사일', en: 'Entrance Date', vi: 'Ngày vào' },
@@ -867,7 +903,12 @@ const DashboardI18n = {
         'admin.noRecipients': { ko: '등록된 수신자 없음', en: 'No recipients configured', vi: 'Chưa có người nhận' },
 
         // Admin - Footer
-        'admin.footer': { ko: 'Version 10.0 - 관리자 패널 - Firestore 보안 아키텍처', en: 'Version 10.0 - Admin Panel - Firestore Secure Architecture', vi: 'Version 10.0 - Quản trị - Kiến trúc bảo mật Firestore' }
+        'admin.footer': { ko: 'Version 10.0 - 관리자 패널 - Firestore 보안 아키텍처', en: 'Version 10.0 - Admin Panel - Firestore Secure Architecture', vi: 'Version 10.0 - Quản trị - Kiến trúc bảo mật Firestore' },
+
+        // Error messages (data loading)
+        'error.loadEmployees': { ko: '직원 데이터를 불러올 수 없습니다. 연결 상태를 확인하고 다시 시도해주세요.', en: 'Failed to load employee data. Please check your connection and try again.', vi: 'Không thể tải dữ liệu nhân viên. Vui lòng kiểm tra kết nối và thử lại.' },
+        'error.loadSummary': { ko: '대시보드 요약을 불러올 수 없습니다. 다시 시도해주세요.', en: 'Failed to load dashboard summary. Please try again.', vi: 'Không thể tải tổng hợp bảng điều khiển. Vui lòng thử lại.' },
+        'error.loadAll': { ko: '대시보드 데이터를 불러올 수 없습니다. 페이지를 새로고침하거나 나중에 다시 시도해주세요.', en: 'Failed to load dashboard data. Please refresh the page or try again later.', vi: 'Không thể tải dữ liệu bảng điều khiển. Vui lòng làm mới trang hoặc thử lại sau.' }
     },
 
     /**
@@ -981,9 +1022,15 @@ const DashboardI18n = {
                 if (DashboardCharts.renderAttendanceCalendar) {
                     DashboardCharts.renderAttendanceCalendar(d);
                 }
-                // Re-render data freshness badge on language switch (Task #23)
+                // Re-render data freshness badge + banners on language switch
                 if (DashboardCharts.updateDataFreshness) {
                     DashboardCharts.updateDataFreshness(d);
+                }
+                // Re-render all-zero banner text
+                var zeroBanner = document.getElementById('all-zero-banner');
+                if (zeroBanner && zeroBanner.style.display !== 'none') {
+                    var zeroText = document.getElementById('all-zero-text');
+                    if (zeroText) zeroText.textContent = DashboardI18n.t('banner.allZero');
                 }
                 // Re-render attendance lookup result on language switch (Bug fix: result labels stayed in original language)
                 var lookupInput = document.getElementById('attendanceLookupInput');

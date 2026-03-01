@@ -37,6 +37,14 @@
         .spinner { width: 48px; height: 48px; border: 5px solid #e0e0e0; border-top-color: var(--header-dark); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         #loading-overlay p { margin-top: 16px; font-size: 1.1rem; color: var(--text-secondary); }
+        .loading-progress { width: 280px; margin-top: 20px; }
+        .loading-progress .progress-bar-bg { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+        .loading-progress .progress-bar-fill { height: 100%; background: var(--header-dark); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+        .loading-steps { list-style: none; padding: 0; margin: 0; }
+        .loading-steps li { padding: 4px 0; font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+        .loading-steps li.active { color: var(--header-dark); font-weight: 600; }
+        .loading-steps li.done { color: var(--success); }
+        .loading-steps li .step-icon { width: 18px; text-align: center; }
 
         /* ===== Error Message ===== */
         #error-message { display: none; max-width: 600px; margin: 80px auto; padding: 24px; background: #fff; border-left: 4px solid var(--danger); border-radius: 8px; box-shadow: var(--card-shadow); }
@@ -51,7 +59,9 @@
         .dashboard-header .title-section { flex: 1; min-width: 200px; }
         .dashboard-header h1 { font-size: 1.35rem; margin: 0; font-weight: 700; }
         .dashboard-header .meta { font-size: 0.8rem; opacity: 0.85; margin-top: 2px; }
-        .header-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .header-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .header-btn-group { display: inline-flex; align-items: center; gap: 4px; padding-left: 8px; border-left: 1px solid rgba(255,255,255,0.3); }
+        .header-btn-group:first-child { border-left: none; padding-left: 0; }
         .lang-btn { padding: 4px 10px; border: 1px solid rgba(255,255,255,0.5); border-radius: 4px; background: transparent; color: #fff; cursor: pointer; font-size: 0.75rem; transition: background 0.2s; }
         .lang-btn:hover, .lang-btn.active { background: rgba(255,255,255,0.25); }
         .header-link { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.8rem; padding: 4px 8px; }
@@ -67,6 +77,12 @@
             -webkit-overflow-scrolling: touch; scrollbar-width: none;
         }
         .tabs::-webkit-scrollbar { display: none; }
+        .tabs::after {
+            content: ''; position: sticky; right: 0; top: 0; bottom: 0;
+            width: 30px; min-width: 30px;
+            background: linear-gradient(to right, transparent, #fff);
+            pointer-events: none; flex-shrink: 0;
+        }
         .tab {
             padding: 12px 18px; cursor: pointer; white-space: nowrap;
             font-size: 0.88rem; color: var(--text-secondary);
@@ -111,6 +127,19 @@
         .talent-member { display: inline-flex; align-items: center; background: rgba(255,255,255,0.2); border-radius: 8px; padding: 8px 14px; margin: 4px; font-size: 0.85rem; }
         .talent-member .talent-months { background: rgba(255,255,255,0.3); border-radius: 4px; padding: 2px 6px; margin-left: 8px; font-weight: 600; }
 
+        /* ===== Talent Pool Table Row (V9) ===== */
+        .talent-pool-row { background: #fffde7 !important; }
+        .talent-pool-row:hover td {
+            background: linear-gradient(90deg, #fff3cc 0%, #fff9e6 50%, #fff3cc 100%) !important;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        .talent-pool-badge {
+            background: linear-gradient(135deg, #FFD700, #FFA500); color: white;
+            padding: 3px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: bold;
+            display: inline-block; margin-left: 6px;
+            box-shadow: 0 2px 4px rgba(255, 165, 0, 0.3);
+        }
+
         /* ===== Quick Summary Overlay ===== */
         #quickSummaryOverlay {
             display: none; position: fixed; inset: 0; z-index: 1050;
@@ -140,14 +169,15 @@
         .validation-kpi-card .vkpi-count { font-size: 1.6rem; font-weight: 700; }
 
         /* ===== Tables ===== */
-        .table-container { background: #fff; border-radius: 10px; box-shadow: var(--card-shadow); overflow: hidden; margin-bottom: 20px; }
+        .table-container { background: #fff; border-radius: 10px; box-shadow: var(--card-shadow); overflow-x: auto; overflow-y: hidden; margin-bottom: 20px; }
         .table-container table { width: 100%; border-collapse: collapse; }
         .table-container th {
             background: var(--header-dark); color: #fff; padding: 10px 14px;
             font-size: 0.82rem; font-weight: 600; text-align: left;
             position: sticky; top: 0; z-index: 2;
+            white-space: nowrap;
         }
-        .table-container td { padding: 9px 14px; font-size: 0.84rem; border-bottom: 1px solid #f0f0f0; }
+        .table-container td { padding: 9px 14px; font-size: 0.84rem; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
         .table-container tr:hover td { background: #f8f9ff; }
         .table-container tr:nth-child(even) td { background: #fafbfc; }
         .table-container tr:nth-child(even):hover td { background: #f0f3ff; }
@@ -214,9 +244,9 @@
         }
         .org-node .node-incentive.received { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
         .org-node .node-incentive.not-received { background: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
-        .org-node .node-position { font-size: 0.68rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+        .org-node .node-position { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
         .org-node .node-name { font-size: 0.85rem; font-weight: 600; color: #1f2937; margin-bottom: 2px; }
-        .org-node .node-id { font-size: 0.68rem; color: #9ca3af; }
+        .org-node .node-id { font-size: 0.75rem; color: #9ca3af; }
         .org-node .node-incentive-info {
             margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(0,0,0,0.08);
             display: flex; justify-content: space-between; align-items: center;
@@ -231,7 +261,7 @@
         .org-node .subordinate-info { font-size: 0.7rem; color: #6b7280; margin-top: 4px; }
         .org-node .child-count {
             background: #ef4444; color: #fff; border-radius: 10px;
-            padding: 1px 7px; font-size: 0.68rem; font-weight: 600; margin-left: 6px;
+            padding: 1px 7px; font-size: 0.75rem; font-weight: 600; margin-left: 6px;
         }
         .org-node .toggle-btn {
             position: absolute; right: -28px; top: 50%; transform: translateY(-50%);
@@ -335,13 +365,34 @@
         .att-mini-calendar .att-cal-cell { min-height: 52px; padding: 4px; }
         .att-mini-calendar .att-cal-daynum { font-size: 0.95rem; }
         .att-mini-calendar .att-cal-icon { font-size: 0.8rem; margin: 1px 0; }
-        .att-mini-calendar .att-cal-count { font-size: 0.65rem; padding: 1px 5px; }
+        .att-mini-calendar .att-cal-count { font-size: 0.75rem; padding: 1px 5px; }
 
         @media (max-width: 576px) {
             .att-calendar-grid { gap: 4px; padding: 8px; }
             .att-cal-cell { min-height: 60px; padding: 4px; }
             .att-cal-daynum { font-size: 1rem; }
-            .att-cal-count { font-size: 0.65rem; }
+            .att-cal-count { font-size: 0.75rem; }
+        }
+
+        /* ===== Info & Warning Banners ===== */
+        .info-banner {
+            display: none; padding: 14px 20px; border-radius: 10px; margin-bottom: 16px;
+            font-size: 0.9rem; line-height: 1.5; align-items: center; gap: 10px;
+        }
+        .info-banner.all-zero {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 1px solid #90caf9;
+            color: #1565c0;
+        }
+        .info-banner.stale-data {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3); border: 1px solid #ffca28;
+            color: #e65100;
+        }
+        .info-banner .banner-icon { font-size: 1.3rem; }
+        .info-banner .banner-text { flex: 1; }
+        .trend-overlay {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.75); border-radius: 10px; z-index: 5;
+            font-size: 0.95rem; color: #e65100; font-weight: 600; text-align: center; padding: 20px;
         }
 
         /* ===== Footer ===== */
@@ -353,6 +404,12 @@
             .validation-kpi-grid { grid-template-columns: repeat(2, 1fr); }
             .dashboard-header { padding: 12px 16px; }
             .tab-content { padding: 14px; }
+        }
+        @media (max-width: 768px) {
+            .kpi-row { grid-template-columns: 1fr; }
+            .tab { padding: 10px 12px; font-size: 0.82rem; }
+            .header-controls { flex-wrap: wrap; gap: 4px; }
+            .dashboard-header h1 { font-size: 1.2rem; }
         }
         @media (max-width: 576px) {
             .validation-kpi-grid { grid-template-columns: 1fr; }
@@ -378,6 +435,15 @@
 <div id="loading-overlay">
     <div class="spinner"></div>
     <p data-i18n="loading">데이터를 불러오는 중...</p>
+    <div class="loading-progress">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="loadingProgressBar"></div></div>
+        <ul class="loading-steps">
+            <li id="loadStep1"><span class="step-icon">○</span> <span data-i18n="loading.step1">직원 데이터 로딩...</span></li>
+            <li id="loadStep2"><span class="step-icon">○</span> <span data-i18n="loading.step2">요약 데이터 로딩...</span></li>
+            <li id="loadStep3"><span class="step-icon">○</span> <span data-i18n="loading.step3">임계값 로딩...</span></li>
+            <li id="loadStep4"><span class="step-icon">○</span> <span data-i18n="loading.step4">차트 렌더링...</span></li>
+        </ul>
+    </div>
 </div>
 
 <!-- ============================================================ -->
@@ -403,37 +469,54 @@
         </div>
     </div>
     <div class="header-controls">
-        <button class="lang-btn active" data-lang="ko" onclick="switchLanguage('ko')">KO</button>
-        <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
-        <button class="lang-btn" data-lang="vi" onclick="switchLanguage('vi')">VN</button>
-        <button class="header-link" onclick="toggleQuickSummary()" title="Quick Summary" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.9rem;">📋</button>
-        <button class="header-link" onclick="showMyIncentive()" title="My Incentive" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;"><i class="fas fa-search"></i> <span data-i18n="myIncentive.btnLabel">내 인센티브</span></button>
-        <button class="header-link" onclick="downloadExcel()" title="Excel Download" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;"><i class="fas fa-file-excel"></i> Excel</button>
-        <button class="header-link" id="dataPeriodToggle" onclick="toggleDataPeriod()" title="Data Period" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;">📅 <span data-i18n="dataPeriod.final">최종 보고서</span></button>
-        <a href="selector.html" class="header-link" data-i18n="common.back"><i class="fas fa-arrow-left"></i> 월 선택</a>
-        <span class="user-email" id="userEmail"></span>
-        <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> <span data-i18n="common.logout">로그아웃</span></button>
+        <div class="header-btn-group">
+            <button class="lang-btn active" data-lang="ko" onclick="switchLanguage('ko')">KO</button>
+            <button class="lang-btn" data-lang="en" onclick="switchLanguage('en')">EN</button>
+            <button class="lang-btn" data-lang="vi" onclick="switchLanguage('vi')">VN</button>
+        </div>
+        <div class="header-btn-group">
+            <button class="header-link" onclick="toggleQuickSummary()" title="Quick Summary" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.9rem;">📋</button>
+            <button class="header-link" onclick="showMyIncentive()" title="My Incentive" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;"><i class="fas fa-search"></i> <span data-i18n="myIncentive.btnLabel">내 인센티브</span></button>
+            <button class="header-link" onclick="downloadExcel()" title="Excel Download" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;"><i class="fas fa-file-excel"></i> Excel</button>
+            <button class="header-link" id="dataPeriodToggle" onclick="toggleDataPeriod()" title="Data Period" style="cursor:pointer; background:none; border:1px solid rgba(255,255,255,0.3); border-radius:6px; color:#fff; padding:4px 10px; font-size:0.85rem;">📅 <span data-i18n="dataPeriod.final">최종 보고서</span></button>
+        </div>
+        <div class="header-btn-group">
+            <a href="selector.html" class="header-link" data-i18n="common.back"><i class="fas fa-arrow-left"></i> 월 선택</a>
+            <span class="user-email" id="userEmail"></span>
+            <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> <span data-i18n="common.logout">로그아웃</span></button>
+        </div>
     </div>
 </header>
 
 <!-- ============================================================ -->
 <!-- TAB NAVIGATION                                               -->
 <!-- ============================================================ -->
-<div class="tabs" id="mainTabs">
-    <div class="tab active" data-tab="summary" onclick="showTab('summary')"><span data-i18n="tabs.summary">요약</span></div>
-    <div class="tab" data-tab="position" onclick="showTab('position')"><span data-i18n="tabs.position">직급별 상세</span></div>
-    <div class="tab" data-tab="detail" onclick="showTab('detail')"><span data-i18n="tabs.individual">개인별 상세</span></div>
-    <div class="tab" data-tab="criteria" onclick="showTab('criteria')"><span data-i18n="tabs.criteria">인센티브 기준</span></div>
-    <div class="tab" data-tab="orgchart" onclick="showTab('orgchart')"><span data-i18n="tabs.orgchart">조직도</span></div>
-    <div class="tab" data-tab="team" onclick="showTab('team')"><span data-i18n="nav.team">팀 관리</span></div>
-    <div class="tab" data-tab="validation" onclick="showTab('validation')"><span data-i18n="tabs.validation">요약 및 시스템 검증</span></div>
-    <div class="tab" data-tab="attendance-lookup" onclick="showTab('attendance-lookup')"><i class="fas fa-search"></i> <span data-i18n="tabs.attendanceLookup">개인 출결 조회</span></div>
+<div class="tabs" id="mainTabs" role="tablist">
+    <div class="tab active" data-tab="summary" role="tab" aria-selected="true" tabindex="0" onclick="showTab('summary')"><span data-i18n="tabs.summary">요약</span></div>
+    <div class="tab" data-tab="position" role="tab" aria-selected="false" tabindex="-1" onclick="showTab('position')"><span data-i18n="tabs.position">직급별 상세</span></div>
+    <div class="tab" data-tab="detail" role="tab" aria-selected="false" tabindex="-1" onclick="showTab('detail')"><span data-i18n="tabs.individual">개인별 상세</span></div>
+    <div class="tab" data-tab="criteria" role="tab" aria-selected="false" tabindex="-1" onclick="showTab('criteria')"><span data-i18n="tabs.criteria">인센티브 기준</span></div>
+    <div class="tab" data-tab="orgchart" role="tab" aria-selected="false" tabindex="-1" onclick="showTab('orgchart')"><span data-i18n="tabs.orgchart">조직도</span></div>
+    <div class="tab" data-tab="team" role="tab" aria-selected="false" tabindex="-1" onclick="showTab('team')"><span data-i18n="nav.team">팀 관리</span></div>
+    <div class="tab" data-tab="validation" role="tab" aria-selected="false" tabindex="-1" onclick="showTab('validation')"><span data-i18n="tabs.validation">요약 및 시스템 검증</span></div>
+    <div class="tab" data-tab="attendance-lookup" role="tab" aria-selected="false" tabindex="-1" onclick="showTab('attendance-lookup')"><i class="fas fa-search"></i> <span data-i18n="tabs.attendanceLookup">개인 출결 조회</span></div>
+</div>
+
+<!-- Stale Data Warning Banner -->
+<div id="stale-data-banner" class="info-banner stale-data" style="max-width:1400px; margin:10px auto 0;">
+    <span class="banner-icon">⚠️</span>
+    <span class="banner-text" id="stale-data-text"></span>
 </div>
 
 <!-- ============================================================ -->
 <!-- TAB: SUMMARY                                                 -->
 <!-- ============================================================ -->
-<div class="tab-content active-tab" id="summary" style="display: block;">
+<div class="tab-content active-tab" id="summary" role="tabpanel" style="display: block;">
+    <!-- All-Zero Explanation Banner -->
+    <div id="all-zero-banner" class="info-banner all-zero">
+        <span class="banner-icon">ℹ️</span>
+        <span class="banner-text" id="all-zero-text"></span>
+    </div>
     <!-- KPI Cards (4 cards) -->
     <div class="kpi-row">
         <div class="kpi-card">
@@ -488,7 +571,7 @@
 <!-- ============================================================ -->
 <!-- TAB: POSITION DETAIL                                         -->
 <!-- ============================================================ -->
-<div class="tab-content" id="position">
+<div class="tab-content" id="position" role="tabpanel">
     <div id="positionTables">
         <p class="text-muted" data-i18n="loading">데이터를 불러오는 중...</p>
     </div>
@@ -497,7 +580,7 @@
 <!-- ============================================================ -->
 <!-- TAB: INDIVIDUAL DETAIL                                       -->
 <!-- ============================================================ -->
-<div class="tab-content" id="detail">
+<div class="tab-content" id="detail" role="tabpanel">
     <!-- Filters -->
     <div class="filter-row">
         <input type="text" id="employeeSearch" placeholder="사번 또는 이름 검색" data-i18n="filter.search">
@@ -543,7 +626,7 @@
 <!-- ============================================================ -->
 <!-- TAB: CRITERIA                                                -->
 <!-- ============================================================ -->
-<div class="tab-content" id="criteria">
+<div class="tab-content" id="criteria" role="tabpanel">
     <!-- 10 Conditions Overview -->
     <div class="section-card">
         <h3 data-i18n="criteria.conditionsTitle">10가지 조건 개요</h3>
@@ -572,7 +655,7 @@
 <!-- ============================================================ -->
 <!-- TAB: ORG CHART                                               -->
 <!-- ============================================================ -->
-<div class="tab-content" id="orgchart">
+<div class="tab-content" id="orgchart" role="tabpanel">
     <h3 id="orgChartTitle" data-i18n="orgchart.title">조직도 - 인센티브 구조</h3>
 
     <!-- Org Filters -->
@@ -608,7 +691,7 @@
 <!-- ============================================================ -->
 <!-- TAB: TEAM                                                    -->
 <!-- ============================================================ -->
-<div class="tab-content" id="team">
+<div class="tab-content" id="team" role="tabpanel">
     <!-- Task #22: Team Position/Manager Filter Controls -->
     <div id="teamFilterRow" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: flex-end;">
         <div style="flex: 1; min-width: 180px;">
@@ -639,7 +722,7 @@
 <!-- ============================================================ -->
 <!-- TAB: VALIDATION                                              -->
 <!-- ============================================================ -->
-<div class="tab-content" id="validation">
+<div class="tab-content" id="validation" role="tabpanel">
     <!-- 12 KPI Cards -->
     <div class="validation-kpi-grid">
         <div class="validation-kpi-card" onclick="showValidationDetail('totalWorkingDays')">
@@ -714,7 +797,7 @@
 <!-- ============================================================ -->
 <!-- TAB: ATTENDANCE LOOKUP                                       -->
 <!-- ============================================================ -->
-<div class="tab-content" id="attendance-lookup">
+<div class="tab-content" id="attendance-lookup" role="tabpanel">
     <div class="section-card">
         <h3 data-i18n="attendanceLookup.title">개인 출결 조회</h3>
         <div class="lookup-input-row">
@@ -884,14 +967,47 @@
         document.querySelectorAll('.tab-content').forEach(function(c) {
             c.style.display = 'none';
         });
-        document.querySelectorAll('.tab').forEach(function(t) {
+        document.querySelectorAll('.tab[role="tab"]').forEach(function(t) {
             t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+            t.setAttribute('tabindex', '-1');
         });
         var content = document.getElementById(tabName);
         if (content) content.style.display = 'block';
         var tab = document.querySelector('.tab[data-tab="' + tabName + '"]');
-        if (tab) tab.classList.add('active');
+        if (tab) {
+            tab.classList.add('active');
+            tab.setAttribute('aria-selected', 'true');
+            tab.setAttribute('tabindex', '0');
+        }
     }
+
+    // Keyboard navigation for tabs (ArrowLeft/ArrowRight)
+    (function() {
+        var tablist = document.getElementById('mainTabs');
+        if (!tablist) return;
+        tablist.addEventListener('keydown', function(e) {
+            var tabs = Array.prototype.slice.call(tablist.querySelectorAll('.tab[role="tab"]'));
+            var idx = tabs.indexOf(document.activeElement);
+            if (idx === -1) return;
+            var newIdx;
+            if (e.key === 'ArrowRight') {
+                newIdx = (idx + 1) % tabs.length;
+            } else if (e.key === 'ArrowLeft') {
+                newIdx = (idx - 1 + tabs.length) % tabs.length;
+            } else if (e.key === 'Home') {
+                newIdx = 0;
+            } else if (e.key === 'End') {
+                newIdx = tabs.length - 1;
+            } else {
+                return;
+            }
+            e.preventDefault();
+            var newTab = tabs[newIdx];
+            newTab.focus();
+            showTab(newTab.getAttribute('data-tab'));
+        });
+    })();
 
     /**
      * Switch UI language.

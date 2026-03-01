@@ -17,6 +17,17 @@
  */
 
 // ---------------------------------------------------------------------------
+// V9: Org chart expected incentive POSITION_CONFIG
+// ---------------------------------------------------------------------------
+var ORG_POSITION_CONFIG = {
+    'LINE LEADER':   { multiplier: 0.12, isLineLeader: true },
+    'GROUP LEADER':  { multiplier: 2 },
+    'SUPERVISOR':    { multiplier: 2.5 },
+    'A.MANAGER':     { multiplier: 3 },
+    'MANAGER':       { multiplier: 3.5 }
+};
+
+// ---------------------------------------------------------------------------
 // DashboardCharts Namespace
 // ---------------------------------------------------------------------------
 
@@ -159,7 +170,17 @@ var DashboardCharts = {
         this._renderTrend('paymentRateTrend', summary.payment_rate_trend);
         this._renderTrend('totalAmountTrend', summary.total_amount_trend);
 
-
+        // All-zero banner: show when totalAmount is 0 but employees exist
+        var zeroBanner = document.getElementById('all-zero-banner');
+        if (zeroBanner) {
+            if (totalAmount === 0 && totalCount > 0) {
+                zeroBanner.style.display = 'flex';
+                var zeroText = document.getElementById('all-zero-text');
+                if (zeroText) zeroText.textContent = DashboardI18n.t('banner.allZero');
+            } else {
+                zeroBanner.style.display = 'none';
+            }
+        }
     },
 
     // ------------------------------------------------------------------
@@ -357,7 +378,7 @@ var DashboardCharts = {
         }
 
         // Ensure canvas element exists
-        container.innerHTML = '<canvas id="conditionChart" style="max-height: 420px;"></canvas>';
+        container.innerHTML = '<canvas id="conditionChart" style="max-height: 520px;"></canvas>';
         var canvas = document.getElementById('conditionChart');
         if (!canvas) return;
 
@@ -844,12 +865,13 @@ var DashboardCharts = {
         var amAvg = getAvg(['A.MANAGER']);
         var glAvg = getAvg(['GROUP LEADER']);
 
-        // TYPE-2 position definitions with reference and method
+        // TYPE-2 position definitions with reference and method (V9 multipliers)
         var type2Positions = [
-            { pos: '(V) SUPERVISOR', ref: 'TYPE-1 (V) SUPERVISOR', method: '(V) SUPERVISOR ' + t('criteria.receivingAvg'), avg: vsAvg, bg: '' },
-            { pos: 'A.MANAGER', ref: 'TYPE-1 A.MANAGER', method: 'A.MANAGER ' + t('criteria.receivingAvg'), avg: amAvg, bg: '' },
-            { pos: 'GROUP LEADER', ref: 'TYPE-1 LINE LEADER', method: 'TYPE-1 LINE LEADER ' + t('criteria.receivingAvg') + ' × 2', avg: llAvg * 2, bg: '#fff9e6' },
-            { pos: 'LINE LEADER', ref: 'TYPE-1 LINE LEADER', method: 'TYPE-1 LINE LEADER ' + t('criteria.receivingAvg'), avg: llAvg, bg: '#e8f5ff' },
+            { pos: 'MANAGER', ref: 'TYPE-1 LINE LEADER', method: 'LINE LEADER ' + t('criteria.receivingAvg') + ' × 3.5', avg: llAvg * 3.5, bg: '#f3e5f5' },
+            { pos: '(V) SUPERVISOR', ref: 'TYPE-1 LINE LEADER', method: 'LINE LEADER ' + t('criteria.receivingAvg') + ' × 2.5', avg: llAvg * 2.5, bg: '' },
+            { pos: 'A.MANAGER', ref: 'TYPE-1 LINE LEADER', method: 'LINE LEADER ' + t('criteria.receivingAvg') + ' × 3', avg: llAvg * 3, bg: '' },
+            { pos: 'GROUP LEADER', ref: 'TYPE-1 LINE LEADER', method: 'LINE LEADER ' + t('criteria.receivingAvg') + ' × 2', avg: llAvg * 2, bg: '#fff9e6' },
+            { pos: 'LINE LEADER', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: t('criteria.lineLeaderFormula'), avg: llAvg, bg: '#e8f5ff' },
             { pos: 'AQL INSPECTOR', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
             { pos: 'ASSEMBLY INSPECTOR', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
             { pos: 'STITCHING INSPECTOR', ref: 'TYPE-1 ASSEMBLY INSPECTOR', method: 'ASSEMBLY INSPECTOR ' + t('criteria.receivingAvg'), avg: aiAvg, bg: '' },
@@ -1264,6 +1286,90 @@ var DashboardCharts = {
     },
 
     /**
+     * V9: Get position config for expected incentive calculation.
+     */
+    _getPositionConfig: function (position) {
+        var pos = String(position || '').toUpperCase();
+        if (pos.indexOf('LINE LEADER') !== -1) return ORG_POSITION_CONFIG['LINE LEADER'];
+        if (pos.indexOf('GROUP LEADER') !== -1) return ORG_POSITION_CONFIG['GROUP LEADER'];
+        if (pos.indexOf('SUPERVISOR') !== -1) return ORG_POSITION_CONFIG['SUPERVISOR'];
+        if (pos.indexOf('A.MANAGER') !== -1) return ORG_POSITION_CONFIG['A.MANAGER'];
+        if (pos.indexOf('MANAGER') !== -1 && pos.indexOf('A.MANAGER') === -1) return ORG_POSITION_CONFIG['MANAGER'];
+        return null;
+    },
+
+    /**
+     * V9: Calculate expected incentive for a manager node.
+     * LINE LEADER: subordinate INSPECTOR sum × 12% × receiving ratio
+     * Others: subordinate LINE LEADER average × multiplier
+     */
+    _calculateExpectedIncentive: function (node, allEmployees) {
+        var config = this._getPositionConfig(node.position);
+        if (!config) return 0;
+
+        var nodeId = node.id;
+        var subordinates;
+        if (config.isLineLeader) {
+            subordinates = allEmployees.filter(function (e) {
+                return String(e.boss_id || '') === nodeId &&
+                       String(e.position || '').toUpperCase().indexOf('ASSEMBLY INSPECTOR') !== -1;
+            });
+        } else {
+            subordinates = this._findTeamLineLeaders(nodeId, allEmployees);
+        }
+
+        var receiving = subordinates.filter(function (sub) {
+            var inc = window.employeeHelpers
+                ? window.employeeHelpers.getIncentive(sub, 'current')
+                : (sub.currentIncentive || 0);
+            return inc > 0;
+        });
+
+        if (config.isLineLeader) {
+            var total = subordinates.reduce(function (sum, sub) {
+                var inc = window.employeeHelpers
+                    ? window.employeeHelpers.getIncentive(sub, 'current')
+                    : (sub.currentIncentive || 0);
+                return sum + inc;
+            }, 0);
+            var ratio = subordinates.length > 0 ? receiving.length / subordinates.length : 0;
+            return Math.round(total * 0.12 * ratio);
+        } else {
+            if (receiving.length === 0) return 0;
+            var avgInc = receiving.reduce(function (sum, sub) {
+                var inc = window.employeeHelpers
+                    ? window.employeeHelpers.getIncentive(sub, 'current')
+                    : (sub.currentIncentive || 0);
+                return sum + inc;
+            }, 0) / receiving.length;
+            return Math.round(avgInc * config.multiplier);
+        }
+    },
+
+    /**
+     * V9: Recursively find subordinate LINE LEADERs for a manager.
+     */
+    _findTeamLineLeaders: function (managerId, allEmployees) {
+        var result = [];
+        var visited = {};
+        function search(bossId, depth) {
+            if (depth > 5 || visited[bossId]) return;
+            visited[bossId] = true;
+            allEmployees.forEach(function (emp) {
+                if (String(emp.boss_id || '') !== bossId) return;
+                var pos = String(emp.position || '').toUpperCase();
+                if (pos.indexOf('LINE LEADER') !== -1) {
+                    result.push(emp);
+                } else if (pos.indexOf('GROUP LEADER') !== -1 || pos.indexOf('SUPERVISOR') !== -1) {
+                    search(String(emp.emp_no || emp['Employee No'] || ''), depth + 1);
+                }
+            });
+        }
+        search(managerId, 0);
+        return result;
+    },
+
+    /**
      * Build the org hierarchy tree from boss_id relationships.
      * Filters: TYPE-1 managers only, excludes resigned/pregnant employees.
      * Building filter uses boss chain collection for parent managers.
@@ -1382,12 +1488,19 @@ var DashboardCharts = {
                 position: emp.position || '--',
                 type: emp.type || '--',
                 incentive: Number(inc) || 0,
+                expectedIncentive: 0,
                 boss_id: String(emp.boss_id || ''),
                 building: String(emp.building || emp.BUILDING || ''),
                 subordinateCount: directSubs.length,
                 subordinateReceiving: subReceiving.length,
                 children: []
             };
+        });
+
+        // V9: Calculate expected incentive for each node
+        Object.keys(nodeMap).forEach(function (id) {
+            var node = nodeMap[id];
+            node.expectedIncentive = self._calculateExpectedIncentive(node, employees);
         });
 
         // Link parent → child
@@ -1451,6 +1564,15 @@ var DashboardCharts = {
             html += '<button type="button" class="incentive-detail-btn" data-node-id="' + node.id + '" title="Detail">';
             html += '<i class="fas fa-info-circle"></i></button>';
             html += '</div>';
+
+            // V9: Expected incentive display
+            if (node.expectedIncentive > 0) {
+                var expFmt = Number(node.expectedIncentive).toLocaleString('ko-KR');
+                var expColor = node.incentive >= node.expectedIncentive ? '#2e7d32' : '#c62828';
+                html += '<div style="font-size: 0.68rem; color: ' + expColor + '; margin-top: 2px; text-align: center;">';
+                html += '(' + DashboardI18n.t('orgchart.expected') + ': ' + expFmt + ' ' + DashboardI18n.t('unit.currency') + ')';
+                html += '</div>';
+            }
 
             // Subordinate count
             if (node.subordinateCount > 0) {
@@ -2151,12 +2273,26 @@ var DashboardCharts = {
             if (prevAmt > 0) { prevCount++; prevTotal += prevAmt; hasPrevData = true; }
         });
 
-        // Hide section if no previous data
+        // Hide section if no previous data at all
         if (!hasPrevData) {
             section.style.display = 'none';
             return;
         }
         section.style.display = 'block';
+
+        // Remove previous trend overlay if any
+        var existingOverlay = section.querySelector('.trend-overlay');
+        if (existingOverlay) existingOverlay.remove();
+
+        // Show overlay when current month total is 0 but previous has data
+        if (curTotal === 0 && prevTotal > 0) {
+            var trendCard = section;
+            trendCard.style.position = 'relative';
+            var overlay = document.createElement('div');
+            overlay.className = 'trend-overlay';
+            overlay.textContent = t('chart.trendOverlay');
+            trendCard.appendChild(overlay);
+        }
 
         var curAvg = curCount > 0 ? curTotal / curCount : 0;
         var prevAvg = prevCount > 0 ? prevTotal / prevCount : 0;
@@ -2237,13 +2373,9 @@ var DashboardCharts = {
         var employees = data.employees || [];
         var t = DashboardI18n.t.bind(DashboardI18n);
 
-        // Filter: Continuous_Months >= 12 AND currently receiving incentive
+        // Filter: V9 방식 - Python에서 계산한 Talent_Pool_Member 필드 사용
         var members = employees.filter(function (emp) {
-            var months = parseInt(emp.Continuous_Months || emp.continuous_months || 0, 10);
-            var hasIncentive = window.employeeHelpers
-                ? window.employeeHelpers.hasReceivedIncentive(emp)
-                : (emp.currentIncentive > 0);
-            return months >= 12 && hasIncentive;
+            return String(emp.talent_pool_member || emp.Talent_Pool_Member || '') === 'Y';
         });
 
         if (members.length === 0) {
@@ -2259,16 +2391,14 @@ var DashboardCharts = {
                    (parseInt(a.Continuous_Months || a.continuous_months || 0, 10));
         });
 
-        // Calculate KPI statistics
+        // Calculate KPI statistics - V9 방식: talent_pool_bonus 필드 별도 합산
         var totalBonus = 0;
         var totalMonths = 0;
         var maxMonths = 0;
         members.forEach(function (emp) {
-            var inc = window.employeeHelpers
-                ? window.employeeHelpers.getIncentive(emp, 'current')
-                : (emp.currentIncentive || 0);
+            var talentBonus = parseInt(emp.talent_pool_bonus || emp.Talent_Pool_Bonus || 0, 10);
             var m = parseInt(emp.Continuous_Months || emp.continuous_months || 0, 10);
-            totalBonus += inc;
+            totalBonus += talentBonus;
             totalMonths += m;
             if (m > maxMonths) maxMonths = m;
         });
@@ -2408,6 +2538,20 @@ var DashboardCharts = {
                     + '<span style="opacity:0.8; font-size:0.72rem;">' + timeText + '</span>';
                 badge.title = t('freshness.lastSync') + ': ' + timeText
                     + ' | ' + t('freshness.nextSync') + ': ' + nextSyncMin + t('freshness.minutes');
+
+                // Stale data banner: show when data is >24 hours old
+                var staleBanner = document.getElementById('stale-data-banner');
+                if (staleBanner) {
+                    if (minutesAgo >= 1440) { // 24 hours = 1440 minutes
+                        var formattedTime = lastUpdate.toLocaleString();
+                        var staleMsg = t('banner.staleData').replace('{timestamp}', formattedTime);
+                        staleBanner.style.display = 'flex';
+                        var staleText = document.getElementById('stale-data-text');
+                        if (staleText) staleText.textContent = staleMsg;
+                    } else {
+                        staleBanner.style.display = 'none';
+                    }
+                }
 
             } catch (e) {
                 console.error('[DashboardCharts] updateDataFreshness error:', e);
