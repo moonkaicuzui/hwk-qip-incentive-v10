@@ -8380,6 +8380,7 @@ def main():
     except Exception as e:
         print(f"\n❌ 실행 in progress 오류 발생: {e}")
         traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
