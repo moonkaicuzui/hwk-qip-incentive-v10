@@ -72,7 +72,7 @@ def get_stored_hash():
         sa_dict = json.loads(sa_json)
         cred = credentials.Certificate(sa_dict)
         if not firebase_admin._apps:
-            firebase_admin.initialize_app(cred)
+            firebase_admin.initialize_app(cred, {"projectId": "hwk-qip-incentive-dashboard"})
 
         db = firestore.client()
         doc = db.collection('system').document('status').get()
@@ -103,7 +103,7 @@ def save_hash(new_hash):
         sa_dict = json.loads(sa_json)
         cred = credentials.Certificate(sa_dict)
         if not firebase_admin._apps:
-            firebase_admin.initialize_app(cred)
+            firebase_admin.initialize_app(cred, {"projectId": "hwk-qip-incentive-dashboard"})
 
         db = firestore.client()
         db.collection('system').document('status').set({
