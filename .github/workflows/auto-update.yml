@@ -203,6 +203,7 @@ jobs:
         run: |
           echo "🧮 Calculating incentives..."
           echo "Using config: $TARGET_CONFIG"
+          mkdir -p output_files
           python src/step1_인센티브_계산.py --config "$TARGET_CONFIG"
           echo "✅ Incentive calculation complete"
 
