@@ -89,9 +89,9 @@ jobs:
         id: target_month
         run: |
           echo "🎯 Determining target month..."
-          # Find the latest month config by parsing filenames (not file modification time)
+          # Find the latest month config that has actual data (file_paths defined)
           LATEST_CONFIG=$(python3 -c "
-          import glob, re
+          import glob, re, json
           months = {'january':1,'february':2,'march':3,'april':4,'may':5,'june':6,
                     'july':7,'august':8,'september':9,'october':10,'november':11,'december':12}
           configs = glob.glob('config_files/config_*_*.json')
@@ -100,8 +100,17 @@ jobs:
           for f in configs:
               m = re.search(r'config_(\w+)_(\d{4})\.json', f)
               if m:
-                  month_name, year = m.group(1), int(m.group(2))
+                  month_name, year_str = m.group(1), m.group(2)
                   month_num = months.get(month_name, 0)
+                  year = int(year_str)
+                  # Only consider configs with actual downloaded data (file_paths)
+                  try:
+                      with open(f) as fh:
+                          cfg = json.load(fh)
+                      if not cfg.get('file_paths'):
+                          continue  # Skip threshold-only configs
+                  except:
+                      continue
                   if (year, month_num) > best_key:
                       best_key = (year, month_num)
                       best = f
