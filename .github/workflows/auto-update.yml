@@ -160,6 +160,20 @@ jobs:
         run: |
           echo "📊 Converting attendance data for $TARGET_MONTH $TARGET_YEAR..."
           python src/convert_attendance_data.py "$TARGET_MONTH" "$TARGET_YEAR"
+
+          # Also convert previous month's attendance (needed for incentive calculation)
+          PREV_MONTH=$(python3 -c "
+          months = ['january','february','march','april','may','june','july','august','september','october','november','december']
+          idx = months.index('$TARGET_MONTH')
+          prev_idx = (idx - 1) % 12
+          print(months[prev_idx])
+          ")
+          PREV_YEAR=$TARGET_YEAR
+          if [ "$PREV_MONTH" = "december" ]; then
+            PREV_YEAR=$((TARGET_YEAR - 1))
+          fi
+          echo "📊 Converting previous month attendance: $PREV_MONTH $PREV_YEAR..."
+          python src/convert_attendance_data.py "$PREV_MONTH" "$PREV_YEAR" || echo "⚠️ Previous month attendance conversion skipped (data may not exist)"
           echo "✅ Attendance conversion complete"
 
       # ========== Step 6.5: Validate Schema ==========
