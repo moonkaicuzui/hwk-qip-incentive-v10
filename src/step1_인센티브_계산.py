@@ -6999,6 +6999,21 @@ class CompleteQIPCalculator:
             print(f"\n🎯 next month 계산용 파일 자동 created:")
             print(f"  → {target_file}")
             print(f"  ℹ️ {next_year}year {next_korean_month} calculation 시 파일 자동with 사용됩니다.")
+
+            # Final Incentive 파일 자동 생성 (다음 월 계산의 Priority 1 소스)
+            final_incentive_dir = "input_files/final_incentive"
+            os.makedirs(final_incentive_dir, exist_ok=True)
+            final_incentive_file = f"{final_incentive_dir}/Final_{current_month_name}_{current_year}_incentive.xlsx"
+            # Excel 출력 파일에서 복사
+            excel_source = csv_file_path.replace('.csv', '.xlsx')
+            if os.path.exists(excel_source):
+                shutil.copy2(excel_source, final_incentive_file)
+                print(f"  ✅ Final Incentive 파일 생성: {final_incentive_file}")
+            else:
+                # CSV에서 Excel 생성
+                df_final = pd.read_csv(csv_file_path, encoding='utf-8-sig')
+                df_final.to_excel(final_incentive_file, index=False)
+                print(f"  ✅ Final Incentive 파일 생성 (CSV→Excel): {final_incentive_file}")
             
             # next month configuration 정보 created (선택적)
             next_month_info = f"""
@@ -7973,87 +7988,24 @@ class CompleteDataLoader:
             f"{config.month.full_name}_attendance": config.get_file_path("attendance")
         }
         
-        # 자same 변환 configuration withload
-        self.auto_convert_config = self.load_auto_convert_config()
-        self.attendance_converter = None
-    
-    def load_auto_convert_config(self) -> Dict:
-        """자same 변환 configuration withload"""
-        try:
-            config_path = Path('attendance_conversion_config.json')
-            if config_path.exists():
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-        except:
-            pass
-        
-        # default configuration
-        return {
-            "auto_convert": True,
-            "debug_mode": False,
-            "validate_conversion": True,
-            "cache_enabled": True
-        }
-    
     def get_attendance_file_path(self, file_path: str, file_key: str) -> str:
-        """출결 file 경with processing (자same 변환 include)"""
-        # attendance file 아니면 그대with 반환
+        """출결 파일 경로 반환. Config이 converted 경로를 가리키므로 그대로 사용."""
         if 'attendance' not in file_key.lower():
             return file_path
 
-        # Step 1: 이미 변환된 파일이 있으면 우선 사용 (CI Step 6에서 생성)
-        from pathlib import Path
-        original_path = Path(file_path)
-        month_name = self.config.month.full_name
-        converted_candidates = [
-            original_path.parent.parent / 'attendance' / 'converted' / f'attendance data {month_name}_converted.csv',
-            original_path.parent / 'converted' / f'attendance data {month_name}_converted.csv',
-            Path(f'input_files/attendance/converted/attendance data {month_name}_converted.csv'),
-        ]
-        for candidate in converted_candidates:
-            if candidate.exists():
-                print(f"✅ 기존 변환 파일 사용: {candidate.name}")
-                return str(candidate)
-
-        # Step 2: 자same 변환 비활성화면 그대with 반환
-        if not self.auto_convert_config.get('auto_convert', True):
-            return file_path
-
-        # Step 3: 자same 변환기 초기화 (필요시)
-        if self.attendance_converter is None:
+        # Config이 converted 파일을 가리키는지 확인 (SSOT 보장)
+        if os.path.exists(file_path):
+            # converted 파일인지 감지
             try:
-                # Try different import methods
-                try:
-                    from input_files.attendance.attendance_auto_converter import AttendanceAutoConverter
-                except ImportError:
-                    try:
-                        # Alternative import path
-                        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-                        from input_files.attendance.attendance_auto_converter import AttendanceAutoConverter
-                    except ImportError:
-                        # If still fails, set converter to None
-                        AttendanceAutoConverter = None
-                if AttendanceAutoConverter:
-                    self.attendance_converter = AttendanceAutoConverter(
-                        debug_mode=self.auto_convert_config.get('debug_mode', False)
-                    )
-                    print("✅ 출결 자same 변환 모듈 loaded successfully")
-                else:
-                    self.attendance_converter = None
-                    print("⚠️ 자same 변환 모듈 load failed: 수same 변환 경with 사용")
-            except ImportError as e:
-                print(f"⚠️ 자same 변환 모듈 load failed: {e}")
-                return file_path
+                df_check = pd.read_csv(file_path, nrows=1, encoding='utf-8-sig')
+                if 'ACTUAL WORK DAY' in df_check.columns:
+                    print(f"✅ converted attendance file detected")
+                    return file_path
+            except:
+                pass
 
-        # Step 4: 자same 변환 실행
-        try:
-            converted_path = self.attendance_converter.ensure_converted_file(file_path)
-            if converted_path != file_path:
-                print(f"✅ 출결 data 자same 변환 completed: {os.path.basename(converted_path)}")
-            return converted_path
-        except Exception as e:
-            print(f"⚠️ 자same 변환 failure, original file 사용: {e}")
-            return file_path
+        print(f"⚠️ attendance file not found or not converted: {file_path}")
+        return file_path
     
     def load_single_file(self, file_path: str, file_key: str) -> Optional[pd.DataFrame]:
         """단 days file withing (자same 변환 지VND)"""

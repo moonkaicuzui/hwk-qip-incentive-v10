@@ -125,15 +125,19 @@ def aggregate_attendance(df: pd.DataFrame, total_working_days: int = None) -> pd
     return result_df
 
 
-def update_config_working_days(month: str, year: int, actual_working_days: int) -> bool:
+def update_config_after_conversion(month: str, year: int, actual_working_days: int, converted_file_path: str) -> bool:
     """
-    Update config file with actual working days from attendance data
-    This ensures Config is always in sync with the actual data (SSOT principle)
+    Update config file after attendance conversion (SSOT principle)
+
+    Updates:
+    1. working_days: actual working days from attendance data
+    2. file_paths.attendance: points to converted file (not original)
 
     Args:
         month: Month name (e.g., 'january')
         year: Year (e.g., 2026)
         actual_working_days: Actual working days calculated from attendance data
+        converted_file_path: Path to the converted attendance file
 
     Returns:
         bool: True if updated, False if no change needed
@@ -148,20 +152,32 @@ def update_config_working_days(month: str, year: int, actual_working_days: int) 
     with open(config_file, 'r', encoding='utf-8') as f:
         config = json.load(f)
 
-    old_days = config.get('working_days', None)
+    changed = False
 
+    # 1. working_days 갱신
+    old_days = config.get('working_days', None)
     if old_days != actual_working_days:
         config['working_days'] = actual_working_days
         config['working_days_source'] = 'attendance_data_ssot'
         config['working_days_updated_at'] = datetime.now().isoformat()
+        print(f"  🔄 [SSOT] Config working_days 자동 업데이트: {old_days} → {actual_working_days}")
+        changed = True
 
+    # 2. file_paths.attendance → converted 파일 경로로 갱신
+    if 'file_paths' in config:
+        # base_dir 기준 상대 경로로 저장
+        rel_path = str(Path(converted_file_path).relative_to(base_dir))
+        old_path = config['file_paths'].get('attendance', '')
+        if old_path != rel_path:
+            config['file_paths']['attendance'] = rel_path
+            print(f"  🔄 [SSOT] Config attendance 경로 갱신: {Path(old_path).name} → {Path(rel_path).name}")
+            changed = True
+
+    if changed:
         with open(config_file, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=2, ensure_ascii=False)
 
-        print(f"  🔄 [SSOT] Config working_days 자동 업데이트: {old_days} → {actual_working_days}")
-        return True
-
-    return False
+    return changed
 
 
 def convert_attendance(month: str, year: int = 2025) -> bool:
@@ -210,7 +226,6 @@ def convert_attendance(month: str, year: int = 2025) -> bool:
 
         if config_working_days != actual_working_days:
             print(f"  ⚠️ [SSOT] 불일치 감지: Config({config_working_days}일) ≠ 원본({actual_working_days}일)")
-            update_config_working_days(month, year, actual_working_days)
 
         # 항상 원본 데이터의 값을 사용 (SSOT)
         total_working_days = actual_working_days
@@ -231,6 +246,8 @@ def convert_attendance(month: str, year: int = 2025) -> bool:
                         # [SSOT] Converted 파일도 원본과 비교
                         if existing_total_days == actual_working_days:
                             print(f"  ✅ [SSOT] 모든 데이터 동기화됨: {actual_working_days}일")
+                            # Config이 converted 경로를 가리키는지 확인
+                            update_config_after_conversion(month, year, actual_working_days, str(converted_file))
                             return True
                         else:
                             print(f"  🔄 [SSOT] Converted 파일 불일치: {existing_total_days} → {actual_working_days}")
@@ -248,6 +265,7 @@ def convert_attendance(month: str, year: int = 2025) -> bool:
         if 'ACTUAL WORK DAY' in df.columns:
             print(f"  ℹ️ File already in aggregated format")
             df.to_csv(converted_file, index=False, encoding='utf-8-sig')
+            update_config_after_conversion(month, year, actual_working_days, str(converted_file))
             return True
 
         # Aggregate the data
@@ -260,6 +278,9 @@ def convert_attendance(month: str, year: int = 2025) -> bool:
         # Save converted file
         aggregated_df.to_csv(converted_file, index=False, encoding='utf-8-sig')
         print(f"  ✅ Saved: {converted_file.name}")
+
+        # [SSOT] Config 갱신: working_days + file_paths.attendance → converted 경로
+        update_config_after_conversion(month, year, actual_working_days, str(converted_file))
 
         # Print summary
         print(f"\n  📈 Summary:")
