@@ -675,9 +675,9 @@ class DataProcessor:
         
         # employee ID column 찾기 (ID No 우선with)
         emp_col = self.detect_column_names(att_df, [
-            'ID No', 'Employee No', 'EMPLOYEE NO', 'EMPLOYEE_NO', 'EMP_NO', 
+            'ID No', 'Employee No', 'EMPLOYEE NO', 'EMPLOYEE_NO', 'EMP_NO',
             'EMPLOYEE ID', 'EMPLOYEE_ID', 'ID',
-            'WORKER ID', 'STAFF ID'
+            'Personnel Number', 'WORKER ID', 'STAFF ID'
         ])
         
         if not emp_col:
@@ -8000,12 +8000,26 @@ class CompleteDataLoader:
         # attendance file 아니면 그대with 반환
         if 'attendance' not in file_key.lower():
             return file_path
-        
-        # 자same 변환 비활성화면 그대with 반환
+
+        # Step 1: 이미 변환된 파일이 있으면 우선 사용 (CI Step 6에서 생성)
+        from pathlib import Path
+        original_path = Path(file_path)
+        month_name = self.config.month.full_name
+        converted_candidates = [
+            original_path.parent.parent / 'attendance' / 'converted' / f'attendance data {month_name}_converted.csv',
+            original_path.parent / 'converted' / f'attendance data {month_name}_converted.csv',
+            Path(f'input_files/attendance/converted/attendance data {month_name}_converted.csv'),
+        ]
+        for candidate in converted_candidates:
+            if candidate.exists():
+                print(f"✅ 기존 변환 파일 사용: {candidate.name}")
+                return str(candidate)
+
+        # Step 2: 자same 변환 비활성화면 그대with 반환
         if not self.auto_convert_config.get('auto_convert', True):
             return file_path
-        
-        # 자same 변환기 초기화 (필요시)
+
+        # Step 3: 자same 변환기 초기화 (필요시)
         if self.attendance_converter is None:
             try:
                 # Try different import methods
@@ -8030,8 +8044,8 @@ class CompleteDataLoader:
             except ImportError as e:
                 print(f"⚠️ 자same 변환 모듈 load failed: {e}")
                 return file_path
-        
-        # 자same 변환 실행
+
+        # Step 4: 자same 변환 실행
         try:
             converted_path = self.attendance_converter.ensure_converted_file(file_path)
             if converted_path != file_path:
