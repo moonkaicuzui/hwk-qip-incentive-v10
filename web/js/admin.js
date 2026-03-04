@@ -441,6 +441,18 @@ var AdminPage = {
                 var currentMonth = data.current_month || '--';
                 document.getElementById('status-current-month').textContent = currentMonth;
 
+                // Data changed indicator
+                var dataChangedEl = document.getElementById('status-data-changed');
+                if (dataChangedEl) {
+                    if (data.data_changed === true) {
+                        dataChangedEl.innerHTML = '<span class="badge bg-success">Data Updated</span>';
+                    } else if (data.data_changed === false) {
+                        dataChangedEl.innerHTML = '<span class="badge bg-secondary">No Changes</span>';
+                    } else {
+                        dataChangedEl.innerHTML = '<span class="badge bg-light text-dark">N/A</span>';
+                    }
+                }
+
             } else {
                 // No status document
                 document.getElementById('status-last-run').textContent = 'Never';
@@ -498,8 +510,8 @@ var AdminPage = {
             var config = configDoc.data();
             var pat = config.github_pat;
             var owner = config.github_owner || 'moonkaicuzui';
-            var repo = config.github_repo || 'qip-dashboard';
-            var workflow = config.github_workflow || 'auto-update-enhanced.yml';
+            var repo = config.github_repo || 'hwk-qip-incentive-v10';
+            var workflow = config.github_workflow || 'auto-update.yml';
 
             // Call GitHub API to trigger workflow_dispatch
             var response = await fetch(

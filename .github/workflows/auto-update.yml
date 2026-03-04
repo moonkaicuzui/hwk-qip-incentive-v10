@@ -4,6 +4,15 @@ on:
   schedule:
     - cron: '*/30 * * * *'  # Every 30 minutes
   workflow_dispatch:  # Manual trigger from admin page
+    inputs:
+      force_run:
+        description: 'Force full pipeline run (skip change detection)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 permissions:
   contents: write
@@ -29,7 +38,7 @@ jobs:
 
       - name: "Step 2.1: Install dependencies"
         run: |
-          pip install pandas openpyxl numpy gspread google-auth google-auth-oauthlib firebase-admin
+          pip install -r requirements.txt
 
       # ========== Step 3: Download from Google Drive ==========
       - name: "Step 3: Download data from Google Drive"
@@ -75,8 +84,31 @@ jobs:
           python scripts/enhanced_download.py || echo "⚠️ Enhanced download skipped"
           echo "✅ Config update complete"
 
+      # ========== Step 5.5: Change Detection ==========
+      - name: "Step 5.5: Check for data changes"
+        id: change_check
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FORCE_RUN: ${{ github.event.inputs.force_run || 'false' }}
+        run: |
+          if [ "$FORCE_RUN" = "true" ]; then
+            echo "🔧 Force run requested - skipping change detection"
+            echo "data_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "🔍 Checking for data changes..."
+            python scripts/check_drive_changes.py check
+            if [ $? -eq 0 ]; then
+              echo "🔄 Changes detected - continuing pipeline"
+              echo "data_changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "✅ No changes - skipping calculation and upload"
+              echo "data_changed=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
       # ========== Step 6: Convert Attendance Data ==========
       - name: "Step 6: Convert attendance data"
+        if: steps.change_check.outputs.data_changed == 'true'
         run: |
           echo "📊 Converting attendance data..."
           LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
@@ -98,6 +130,7 @@ jobs:
 
       # ========== Step 6.5: Validate Schema ==========
       - name: "Step 6.5: Validate attendance schema"
+        if: steps.change_check.outputs.data_changed == 'true'
         run: |
           echo "🔍 Validating attendance schema..."
           if [ -f "scripts/validate_attendance_schema.py" ]; then
@@ -117,6 +150,7 @@ jobs:
 
       # ========== Step 7: Calculate Incentives ==========
       - name: "Step 7: Calculate incentives"
+        if: steps.change_check.outputs.data_changed == 'true'
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
@@ -133,6 +167,7 @@ jobs:
 
       # ========== Step 7.5: Update AQL Inspector Config ==========
       - name: "Step 7.5: Update AQL Inspector config"
+        if: steps.change_check.outputs.data_changed == 'true'
         run: |
           echo "🔄 Updating AQL Inspector config..."
           if [ -f "scripts/auto_update_aql_config.py" ]; then
@@ -143,8 +178,9 @@ jobs:
           fi
           echo "✅ AQL config update complete"
 
-      # ========== Step 8: Upload to Firestore (NEW - CORE!) ==========
+      # ========== Step 8: Upload to Firestore (CORE!) ==========
       - name: "Step 8: Upload results to Firestore"
+        if: steps.change_check.outputs.data_changed == 'true'
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
@@ -160,10 +196,22 @@ jobs:
           fi
           echo "✅ Firestore upload complete"
 
-      # ========== Step 9: Update System Status ==========
-      - name: "Step 9: Update system status in Firestore"
+      # ========== Step 8.5: Save Input Hash ==========
+      - name: "Step 8.5: Save input hash for change detection"
+        if: steps.change_check.outputs.data_changed == 'true'
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "💾 Saving input hash..."
+          python scripts/check_drive_changes.py save
+          echo "✅ Input hash saved"
+
+      # ========== Step 9: Update System Status ==========
+      - name: "Step 9: Update system status in Firestore"
+        if: always()
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          DATA_CHANGED: ${{ steps.change_check.outputs.data_changed }}
         run: |
           echo "📊 Updating system status..."
           python3 -c "
@@ -171,28 +219,36 @@ jobs:
           import firebase_admin
           from firebase_admin import credentials, firestore
 
-          # Initialize Firebase
           sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '')
+          data_changed = os.environ.get('DATA_CHANGED', 'true')
+
           if sa_json:
               sa_dict = json.loads(sa_json)
               cred = credentials.Certificate(sa_dict)
               if not firebase_admin._apps:
                   firebase_admin.initialize_app(cred)
               db = firestore.client()
-              db.collection('system').document('status').set({
+
+              status_data = {
                   'last_run_at': firestore.SERVER_TIMESTAMP,
                   'status': 'success',
-                  'last_data_update': firestore.SERVER_TIMESTAMP,
                   'run_type': 'github_actions',
-                  'commit': os.environ.get('GITHUB_SHA', 'unknown')[:8]
-              }, merge=True)
-              print('✅ System status updated')
+                  'commit': os.environ.get('GITHUB_SHA', 'unknown')[:8],
+                  'data_changed': data_changed == 'true'
+              }
+
+              if data_changed == 'true':
+                  status_data['last_data_update'] = firestore.SERVER_TIMESTAMP
+
+              db.collection('system').document('status').set(status_data, merge=True)
+              print('✅ System status updated (data_changed=' + data_changed + ')')
           else:
               print('⚠️ FIREBASE_SERVICE_ACCOUNT not set, skipping status update')
           "
 
       # ========== Step 10: Generate Selector Page ==========
       - name: "Step 10: Generate selector page"
+        if: steps.change_check.outputs.data_changed == 'true'
         run: |
           echo "📄 Generating selector page..."
           if [ -f "scripts/create_month_selector.py" ]; then
@@ -202,6 +258,7 @@ jobs:
 
       # ========== Step 11: Deploy to GitHub Pages ==========
       - name: "Step 11: Commit and deploy"
+        if: steps.change_check.outputs.data_changed == 'true'
         run: |
           echo "🚀 Deploying to GitHub Pages..."
 
@@ -245,3 +302,32 @@ jobs:
             done
           fi
           echo "✅ Deployment complete"
+
+      # ========== Failure Notification ==========
+      - name: "Notify on failure"
+        if: failure()
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "❌ Pipeline failed! Updating status..."
+          python3 -c "
+          import os, json
+          import firebase_admin
+          from firebase_admin import credentials, firestore
+
+          sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '')
+          if sa_json:
+              sa_dict = json.loads(sa_json)
+              cred = credentials.Certificate(sa_dict)
+              if not firebase_admin._apps:
+                  firebase_admin.initialize_app(cred)
+              db = firestore.client()
+              db.collection('system').document('status').set({
+                  'last_run_at': firestore.SERVER_TIMESTAMP,
+                  'status': 'failure',
+                  'run_type': 'github_actions',
+                  'commit': os.environ.get('GITHUB_SHA', 'unknown')[:8],
+                  'error': 'Pipeline failed - check GitHub Actions logs'
+              }, merge=True)
+              print('⚠️ Failure status recorded in Firestore')
+          " || true
