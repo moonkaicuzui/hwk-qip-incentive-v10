@@ -84,8 +84,44 @@ jobs:
           python scripts/enhanced_download.py || echo "⚠️ Enhanced download skipped"
           echo "✅ Config update complete"
 
-      # ========== Step 5.5: Change Detection ==========
-      - name: "Step 5.5: Check for data changes"
+      # ========== Step 5.5: Determine Target Month ==========
+      - name: "Step 5.5: Determine target month from config files"
+        id: target_month
+        run: |
+          echo "🎯 Determining target month..."
+          # Find the latest month config by parsing filenames (not file modification time)
+          LATEST_CONFIG=$(python3 -c "
+          import glob, re
+          months = {'january':1,'february':2,'march':3,'april':4,'may':5,'june':6,
+                    'july':7,'august':8,'september':9,'october':10,'november':11,'december':12}
+          configs = glob.glob('config_files/config_*_*.json')
+          best = None
+          best_key = (0, 0)
+          for f in configs:
+              m = re.search(r'config_(\w+)_(\d{4})\.json', f)
+              if m:
+                  month_name, year = m.group(1), int(m.group(2))
+                  month_num = months.get(month_name, 0)
+                  if (year, month_num) > best_key:
+                      best_key = (year, month_num)
+                      best = f
+          print(best or '')
+          ")
+          echo "Latest config: $LATEST_CONFIG"
+          if [ -n "$LATEST_CONFIG" ]; then
+            MONTH=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('month', ''))")
+            YEAR=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('year', ''))")
+            echo "target_config=$LATEST_CONFIG" >> $GITHUB_OUTPUT
+            echo "target_month=$MONTH" >> $GITHUB_OUTPUT
+            echo "target_year=$YEAR" >> $GITHUB_OUTPUT
+            echo "🎯 Target: $MONTH $YEAR ($LATEST_CONFIG)"
+          else
+            echo "❌ No config file found!"
+            exit 1
+          fi
+
+      # ========== Step 5.6: Change Detection ==========
+      - name: "Step 5.6: Check for data changes"
         id: change_check
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -109,40 +145,27 @@ jobs:
       # ========== Step 6: Convert Attendance Data ==========
       - name: "Step 6: Convert attendance data"
         if: steps.change_check.outputs.data_changed == 'true'
+        env:
+          TARGET_MONTH: ${{ steps.target_month.outputs.target_month }}
+          TARGET_YEAR: ${{ steps.target_month.outputs.target_year }}
         run: |
-          echo "📊 Converting attendance data..."
-          LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
-          if [ -n "$LATEST_CONFIG" ]; then
-            MONTH=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('month', ''))")
-            YEAR=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('year', ''))")
-            if [ -n "$MONTH" ] && [ -n "$YEAR" ]; then
-              echo "Converting for $MONTH $YEAR"
-              python src/convert_attendance_data.py "$MONTH" "$YEAR"
-            else
-              echo "⚠️ Month/year not found in config, running without params"
-              python src/convert_attendance_data.py
-            fi
-          else
-            echo "⚠️ No config file found"
-            python src/convert_attendance_data.py
-          fi
+          echo "📊 Converting attendance data for $TARGET_MONTH $TARGET_YEAR..."
+          python src/convert_attendance_data.py "$TARGET_MONTH" "$TARGET_YEAR"
           echo "✅ Attendance conversion complete"
 
       # ========== Step 6.5: Validate Schema ==========
       - name: "Step 6.5: Validate attendance schema"
         if: steps.change_check.outputs.data_changed == 'true'
+        env:
+          TARGET_MONTH: ${{ steps.target_month.outputs.target_month }}
+          TARGET_YEAR: ${{ steps.target_month.outputs.target_year }}
         run: |
-          echo "🔍 Validating attendance schema..."
+          echo "🔍 Validating attendance schema for $TARGET_MONTH $TARGET_YEAR..."
           if [ -f "scripts/validate_attendance_schema.py" ]; then
-            LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
-            MONTH=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('month', ''))" 2>/dev/null)
-            YEAR=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('year', ''))" 2>/dev/null)
-            if [ -n "$MONTH" ] && [ -n "$YEAR" ]; then
-              python scripts/validate_attendance_schema.py "$MONTH" "$YEAR" || {
-                echo "❌ Schema validation failed! Stopping pipeline."
-                exit 1
-              }
-            fi
+            python scripts/validate_attendance_schema.py "$TARGET_MONTH" "$TARGET_YEAR" || {
+              echo "❌ Schema validation failed! Stopping pipeline."
+              exit 1
+            }
           else
             echo "⚠️ Schema validation script not found, skipping"
           fi
@@ -153,28 +176,23 @@ jobs:
         if: steps.change_check.outputs.data_changed == 'true'
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TARGET_CONFIG: ${{ steps.target_month.outputs.target_config }}
         run: |
           echo "🧮 Calculating incentives..."
-          LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
-          if [ -n "$LATEST_CONFIG" ]; then
-            echo "Using config: $LATEST_CONFIG"
-            python src/step1_인센티브_계산.py --config "$LATEST_CONFIG"
-          else
-            echo "❌ No config file found!"
-            exit 1
-          fi
+          echo "Using config: $TARGET_CONFIG"
+          python src/step1_인센티브_계산.py --config "$TARGET_CONFIG"
           echo "✅ Incentive calculation complete"
 
       # ========== Step 7.5: Update AQL Inspector Config ==========
       - name: "Step 7.5: Update AQL Inspector config"
         if: steps.change_check.outputs.data_changed == 'true'
+        env:
+          TARGET_MONTH: ${{ steps.target_month.outputs.target_month }}
+          TARGET_YEAR: ${{ steps.target_month.outputs.target_year }}
         run: |
           echo "🔄 Updating AQL Inspector config..."
           if [ -f "scripts/auto_update_aql_config.py" ]; then
-            LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
-            MONTH=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('month', ''))" 2>/dev/null)
-            YEAR=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('year', ''))" 2>/dev/null)
-            python scripts/auto_update_aql_config.py "$MONTH" "$YEAR" || echo "⚠️ AQL config update skipped"
+            python scripts/auto_update_aql_config.py "$TARGET_MONTH" "$TARGET_YEAR" || echo "⚠️ AQL config update skipped"
           fi
           echo "✅ AQL config update complete"
 
@@ -183,17 +201,11 @@ jobs:
         if: steps.change_check.outputs.data_changed == 'true'
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TARGET_MONTH: ${{ steps.target_month.outputs.target_month }}
+          TARGET_YEAR: ${{ steps.target_month.outputs.target_year }}
         run: |
-          echo "🔥 Uploading calculation results to Firestore..."
-          LATEST_CONFIG=$(ls -t config_files/config_*.json 2>/dev/null | head -1)
-          MONTH=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('month', ''))" 2>/dev/null)
-          YEAR=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('year', ''))" 2>/dev/null)
-          if [ -n "$MONTH" ] && [ -n "$YEAR" ]; then
-            python scripts/upload_to_firestore.py --month "$MONTH" --year "$YEAR"
-          else
-            echo "❌ Cannot determine month/year for Firestore upload"
-            exit 1
-          fi
+          echo "🔥 Uploading results for $TARGET_MONTH $TARGET_YEAR to Firestore..."
+          python scripts/upload_to_firestore.py --month "$TARGET_MONTH" --year "$TARGET_YEAR"
           echo "✅ Firestore upload complete"
 
       # ========== Step 8.5: Save Input Hash ==========
