@@ -3226,10 +3226,11 @@ class CompleteQIPCalculator:
         # attendance related defaultvalue - attendance data 없으면 0with configuration
         if 'Total Working Days' not in self.month_data.columns:
             self.month_data['Total Working Days'] = self.config.working_days
-            self.month_data['Actual Working Days'] = 0  # defaultvalue 0with 변경 (existing 23)
-            # Unapproved Absence Days column 제거 - Unapproved Absences columnonly 사용
+            # Actual Working Days가 이미 merge된 경우 덮어쓰지 않음 (SSOT 보호)
+            if 'Actual Working Days' not in self.month_data.columns:
+                self.month_data['Actual Working Days'] = 0
             self.month_data['결근율_Absence_Rate_Percent'] = 0.0
-            print("  → Applying default value 0 to employees without attendance data")
+            print("  → Applying default value to employees without attendance data")
         
         # Stop Working Date processing - calculation month previous 퇴사자 Actual Working Days = 0
         if 'Stop working Date' in self.month_data.columns:

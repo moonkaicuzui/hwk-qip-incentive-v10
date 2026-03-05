@@ -43,6 +43,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // System Feedback: auth users can create & read own, admin can read/write all
+    match /systemFeedback/{document} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAdmin() ||
+                       (isAuthenticated() && resource.data.createdBy.uid == request.auth.uid);
+    }
+
     // System config: admin only
     match /system/{document} {
       allow read, write: if isAdmin();
