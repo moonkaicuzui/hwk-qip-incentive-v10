@@ -5376,19 +5376,33 @@ class CompleteQIPCalculator:
                         # defaultvalue 사용
                         incentive = 107360  # position_condition_matrix.json 참조
 
-                # SUPERVISOR 특별 processing - TYPE-1 평균 0 days 때 independent calculation
+                # SUPERVISOR: V10 Policy - TYPE-1 LINE LEADER 수령자 평균 × 2.5
                 elif 'SUPERVISOR' in position_upper:
-                    # TYPE-1 SUPERVISOR 평균 checking
-                    type1_supervisor_avg = type1_reference.get(position_upper, 0)
-
-                    if type1_supervisor_avg > 0:
-                        # TYPE-1 평균 있으면 그대with 사용
-                        incentive = type1_supervisor_avg
+                    type1_ll = self.month_data[
+                        (self.month_data['ROLE TYPE STD'] == 'TYPE-1') &
+                        (self.month_data['QIP POSITION 1ST  NAME'] == 'LINE LEADER')
+                    ]
+                    receiving_ll = type1_ll[type1_ll[incentive_col] > 0]
+                    if len(receiving_ll) > 0:
+                        avg = receiving_ll[incentive_col].mean()
+                        incentive = int(avg * 2.5)
+                        print(f"  → TYPE-2 {position} {row.get('Full Name', 'Unknown')} ({emp_id}): TYPE-1 LINE LEADER avg {avg:,.0f} × 2.5 = {incentive:,} VND")
                     else:
-                        # TYPE-1 평균 0면 independent적with calculation
-                        incentive = self.calculate_type2_supervisor_independent(position_upper)
-                        if incentive > 0:
-                            print(f"  → TYPE-2 {position} {row.get('Full Name', 'Unknown')} ({emp_id}): independent calculation → {incentive:,} VND")
+                        incentive = 0
+
+                # A.MANAGER: V10 Policy - TYPE-1 LINE LEADER 수령자 평균 × 3.0
+                elif 'A.MANAGER' in position_upper or 'ASSISTANT MANAGER' in position_upper:
+                    type1_ll = self.month_data[
+                        (self.month_data['ROLE TYPE STD'] == 'TYPE-1') &
+                        (self.month_data['QIP POSITION 1ST  NAME'] == 'LINE LEADER')
+                    ]
+                    receiving_ll = type1_ll[type1_ll[incentive_col] > 0]
+                    if len(receiving_ll) > 0:
+                        avg = receiving_ll[incentive_col].mean()
+                        incentive = int(avg * 3.0)
+                        print(f"  → TYPE-2 {position} {row.get('Full Name', 'Unknown')} ({emp_id}): TYPE-1 LINE LEADER avg {avg:,.0f} × 3.0 = {incentive:,} VND")
+                    else:
+                        incentive = 0
 
                 elif mapped_position and mapped_position in type1_reference:
                     incentive = type1_reference[mapped_position]

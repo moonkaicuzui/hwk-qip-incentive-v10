@@ -5,8 +5,9 @@
       "mapped_to": "ASSEMBLY INSPECTOR"
     },
     "A.MANAGER": {
-      "description": "TYPE-2 A.MANAGER는 TYPE-1 ASSISTANT MANAGER 평균",
-      "mapped_to": "ASSISTANT MANAGER"
+      "description": "TYPE-2 A.MANAGER는 TYPE-1 LINE LEADER 수령자 평균 × 3.0",
+      "mapped_to": "LINE LEADER",
+      "multiplier": 3.0
     },
     "GROUP LEADER": {
       "description": "TYPE-2 GROUP LEADER는 TYPE-1 GROUP LEADER 평균",
@@ -43,8 +44,9 @@
       "mapped_to": "ASSEMBLY INSPECTOR"
     },
     "(V) SUPERVISOR": {
-      "description": "TYPE-2 (V) SUPERVISOR는 TYPE-1 (VICE) SUPERVISOR 평균",
-      "mapped_to": "(VICE) SUPERVISOR"
+      "description": "TYPE-2 (V) SUPERVISOR는 TYPE-1 LINE LEADER 수령자 평균 × 2.5",
+      "mapped_to": "LINE LEADER",
+      "multiplier": 2.5
     },
     "LINE LEADER": {
       "description": "TYPE-2 LINE LEADER는 TYPE-1 LINE LEADER 평균",
