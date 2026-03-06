@@ -173,6 +173,14 @@ var DashboardFilters = {
             });
         }
 
+        // Type (ROLE TYPE STD) filter
+        var typeFilter = document.getElementById('typeFilter');
+        if (typeFilter) {
+            typeFilter.addEventListener('change', function () {
+                self.filterAndRender();
+            });
+        }
+
         // Table header sort clicks (delegated on thead)
         var thead = document.querySelector('#detail .table-container thead');
         if (thead) {
@@ -285,6 +293,19 @@ var DashboardFilters = {
                     return !window.employeeHelpers.hasReceivedIncentive(emp);
                 }
                 return (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0) <= 0;
+            });
+        }
+
+        // --- Type filter ---
+        var typeEl = document.getElementById('typeFilter');
+        var typeVal = typeEl ? typeEl.value : '';
+        if (typeVal) {
+            data = data.filter(function (emp) {
+                var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
+                if (empType === '1') empType = 'TYPE-1';
+                else if (empType === '2') empType = 'TYPE-2';
+                else if (empType === '3') empType = 'TYPE-3';
+                return empType.indexOf(typeVal) !== -1;
             });
         }
 

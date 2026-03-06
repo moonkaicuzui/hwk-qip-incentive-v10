@@ -218,6 +218,7 @@ const DashboardI18n = {
         'filter.all': { ko: '전체', en: 'All', vi: 'Tất cả' },
         'filter.received': { ko: '수령', en: 'Received', vi: 'Đã nhận' },
         'filter.notReceived': { ko: '미수령', en: 'Not Received', vi: 'Chưa nhận' },
+        'filter.allTypes': { ko: '전체 TYPE', en: 'All Types', vi: 'Tất cả loại' },
 
         // Validation KPI labels
         'validation.totalWorkingDays': { ko: '총 근무일수', en: 'Total Working Days', vi: 'Tổng ngày làm việc' },
