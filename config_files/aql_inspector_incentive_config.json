@@ -92,9 +92,9 @@
         "total": 2600000
       },
       "february_2026_incentive": {
-        "part1_months": 2,
-        "part3_months": 2,
-        "total": 950000
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
       }
     },
     "619100307": {
@@ -126,9 +126,9 @@
         "total": 2600000
       },
       "february_2026_incentive": {
-        "part1_months": 2,
-        "part3_months": 2,
-        "total": 950000
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
       }
     },
     "620020923": {
@@ -160,9 +160,9 @@
         "total": 2600000
       },
       "february_2026_incentive": {
-        "part1_months": 2,
-        "part3_months": 2,
-        "total": 950000
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
       }
     },
     "620120306": {
@@ -194,9 +194,9 @@
         "total": 2250000
       },
       "february_2026_incentive": {
-        "part1_months": 2,
-        "part3_months": 2,
-        "total": 950000
+        "part1_months": 11,
+        "part3_months": 11,
+        "total": 2350000
       }
     },
     "621110376": {
@@ -262,9 +262,9 @@
         "total": 2250000
       },
       "february_2026_incentive": {
-        "part1_months": 2,
-        "part3_months": 2,
-        "total": 950000
+        "part1_months": 11,
+        "part3_months": 11,
+        "total": 2350000
       }
     }
   },
