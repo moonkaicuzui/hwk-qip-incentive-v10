@@ -17,7 +17,7 @@
   "thresholds": {
     "attendance_rate": 90,
     "unapproved_absence": 1,
-    "minimum_working_days": 15,
+    "minimum_working_days": 12,
     "area_reject_rate": 2.0,
     "5prs_pass_rate": 97,
     "5prs_min_qty": 150

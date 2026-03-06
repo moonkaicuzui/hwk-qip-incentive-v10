@@ -47,16 +47,16 @@ var THRESHOLD_DEFAULTS = {
 var PROGRESSIVE_TABLE_DEFAULT = [
     0,        // index 0 (unused)
     150000,   // month 1
-    200000,   // month 2
-    250000,   // month 3
-    300000,   // month 4
+    250000,   // month 2
+    300000,   // month 3
+    350000,   // month 4
     400000,   // month 5
     450000,   // month 6
     500000,   // month 7
     650000,   // month 8
-    700000,   // month 9
-    750000,   // month 10
-    850000,   // month 11
+    750000,   // month 9
+    850000,   // month 10
+    950000,   // month 11
     1000000,  // month 12
     1000000,  // month 13
     1000000,  // month 14

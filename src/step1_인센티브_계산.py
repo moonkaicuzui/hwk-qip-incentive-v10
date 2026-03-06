@@ -1359,6 +1359,27 @@ class DataProcessor:
                     print(f"     → Column: {prev_incentive_col}")
                     print(f"     → Recipients: {mapped_count} employees")
                     print(f"     → Total: ₫{total_amount:,.0f}")
+
+                    # Previous_Continuous_Months 보충 로드 (output CSV에서)
+                    prev_mn = prev_month.full_name.lower() if hasattr(prev_month, 'full_name') else str(prev_month).lower()
+                    supplement_csvs = [
+                        f"output_files/output_QIP_incentive_{prev_mn}_{prev_year}_Complete_V10.0_Complete.csv",
+                        f"output_files/output_QIP_incentive_{prev_mn}_{prev_year}_Complete_V9.1_Complete.csv",
+                    ]
+                    for sup_csv in supplement_csvs:
+                        if os.path.exists(sup_csv):
+                            try:
+                                sup_data = pd.read_csv(sup_csv, encoding='utf-8-sig')
+                                if 'Continuous_Months' in sup_data.columns:
+                                    sup_data['Employee No'] = pd.to_numeric(sup_data['Employee No'], errors='coerce')
+                                    cont_map = sup_data.set_index('Employee No')['Continuous_Months'].to_dict()
+                                    month_data['Previous_Continuous_Months'] = month_data['Employee No'].map(cont_map).fillna(0)
+                                    pcm_count = (month_data['Previous_Continuous_Months'] > 0).sum()
+                                    print(f"     → Previous_Continuous_Months supplemented: {pcm_count} employees")
+                            except Exception:
+                                pass
+                            break
+
                     return month_data
                 else:
                     print(f"  ⚠️ [Issue #48] Incentive column not found in Final file")
@@ -1368,6 +1389,41 @@ class DataProcessor:
                 print(f"  ⚠️ [Issue #48] Failed to load Final Incentive file: {e}")
         else:
             print(f"  ⚠️ [Issue #48] Final Incentive file not found: {final_incentive_path}")
+
+        # === Priority 2: Output CSV (download_previous_incentive.py 또는 이전 로컬 실행 결과) ===
+        prev_month_name = prev_month.full_name.lower() if hasattr(prev_month, 'full_name') else str(prev_month).lower()
+        output_csv_patterns = [
+            f"output_files/output_QIP_incentive_{prev_month_name}_{prev_year}_Complete_V10.0_Complete.csv",
+            f"output_files/output_QIP_incentive_{prev_month_name}_{prev_year}_Complete_V9.1_Complete.csv",
+        ]
+        for csv_path in output_csv_patterns:
+            if os.path.exists(csv_path):
+                print(f"  ✅ [Priority 2] Output CSV found: {csv_path}")
+                try:
+                    prev_csv = pd.read_csv(csv_path, encoding='utf-8-sig')
+                    prev_csv['Employee No'] = pd.to_numeric(prev_csv['Employee No'], errors='coerce')
+                    month_data['Employee No'] = pd.to_numeric(month_data['Employee No'], errors='coerce')
+
+                    # Previous_Incentive 로드
+                    for col in [f'{prev_month_name.capitalize()}_Incentive', 'Final Incentive amount']:
+                        if col in prev_csv.columns:
+                            prev_map = prev_csv.set_index('Employee No')[col].to_dict()
+                            month_data['Previous_Incentive'] = month_data['Employee No'].map(prev_map).fillna(0)
+                            mapped_count = (month_data['Previous_Incentive'] > 0).sum()
+                            total_amount = month_data['Previous_Incentive'].sum()
+                            print(f"     → Previous_Incentive: {mapped_count} employees, ₫{total_amount:,.0f}")
+                            break
+
+                    # Previous_Continuous_Months 로드 (핵심 개선: 역산 불필요)
+                    if 'Continuous_Months' in prev_csv.columns:
+                        cont_map = prev_csv.set_index('Employee No')['Continuous_Months'].to_dict()
+                        month_data['Previous_Continuous_Months'] = month_data['Employee No'].map(cont_map).fillna(0)
+                        pcm_count = (month_data['Previous_Continuous_Months'] > 0).sum()
+                        print(f"     → Previous_Continuous_Months: {pcm_count} employees loaded")
+
+                    return month_data
+                except Exception as e:
+                    print(f"  ⚠️ [Priority 2] Failed to load output CSV: {e}")
 
         # === Fallback: 기존 대시보드 CSV ===
         fallback_file_path = self.config.file_paths.get('previous_incentive',
@@ -1620,24 +1676,31 @@ class DataProcessor:
         if not all_conditions_pass:
             return 0
 
-        # 2. Previous_Incentive 가져오기 - row에서 직접 읽기 (Issue #51 수정)
+        # PRIMARY: Previous_Continuous_Months 직접 사용 (정확, 역산 불필요)
+        # 이전 달 output CSV에서 직접 로드한 Continuous_Months 값
+        if row is not None:
+            try:
+                pcm = row.get('Previous_Continuous_Months', 0)
+                if pcm is not None and not pd.isna(pcm) and int(float(pcm)) > 0:
+                    return min(int(float(pcm)) + 1, 15)
+            except (ValueError, TypeError):
+                pass
+
+        # FALLBACK: Previous_Incentive 역산 (Previous_Continuous_Months 없는 레거시 환경)
         previous_incentive = 0
         try:
             if row is not None:
-                # row에서 직접 Previous_Incentive 읽기
                 prev_val = row.get('Previous_Incentive', 0)
                 if prev_val is not None and not pd.isna(prev_val):
                     previous_incentive = float(prev_val)
-        except Exception as e:
-            # 에러 발생 시 기본값 0 사용 → 1개월로 시작
+        except Exception:
             pass
 
-        # 3. Previous_Incentive = 0 → 첫 달
+        # Previous_Incentive = 0 → 첫 달
         if previous_incentive <= 0:
             return 1
 
-        # 4. Previous_Incentive > 0 → 역산 후 +1
-        # progression_table에서 금액 → 개월 수 역산
+        # Previous_Incentive > 0 → 역산 후 +1
         previous_months = self._reverse_calculate_months_from_incentive_unified(
             previous_incentive, position_category
         )
