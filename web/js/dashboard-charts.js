@@ -764,9 +764,10 @@ var DashboardCharts = {
             html += '<th style="text-align:center; padding:6px;">' + m + '</th>';
         });
         html += '</tr></thead><tbody><tr>';
-        var amounts = [150,200,250,300,350,400,450,500,550,600,650,700,800,900,1000];
-        amounts.forEach(function (a) {
-            html += '<td style="text-align:center; padding:6px; font-weight:600;">' + self._formatNumber(a * 1000) + '</td>';
+        var progTable = window.progressiveTable || PROGRESSIVE_TABLE_DEFAULT;
+        months.forEach(function (m) {
+            var amount = progTable[m] || 0;
+            html += '<td style="text-align:center; padding:6px; font-weight:600;">' + self._formatNumber(amount) + '</td>';
         });
         html += '</tr></tbody></table></div>';
         html += '<p style="color: #757575; font-size: 0.82rem; margin-top: 8px;">' + t('criteria.progressiveNote') + '</p>';
