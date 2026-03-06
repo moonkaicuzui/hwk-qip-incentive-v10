@@ -1,38 +1,37 @@
 {
+  "version": "1.0",
+  "last_updated": "2025-08-29",
   "talent_pool": {
     "members": [
       {
-        "reason": "QIP Talent Pool Special Incentive",
-        "end_date": "2025-12-31",
-        "monthly_bonus": 150000,
         "currency": "VND",
-        "notes": "추가 인센티브 지급 대상자",
-        "start_date": "2025-07-01",
-        "status": "active",
         "employee_id": "623060116",
-        "name": "Talent Pool Member 1"
+        "status": "active",
+        "reason": "QIP Talent Pool Special Incentive",
+        "name": "Talent Pool Member 1",
+        "monthly_bonus": 150000,
+        "notes": "추가 인센티브 지급 대상자",
+        "end_date": "2025-12-31",
+        "start_date": "2025-07-01"
       }
     ],
+    "settings": {
+      "payment_timing": "with_regular_incentive",
+      "stack_with_regular": true,
+      "require_conditions": false,
+      "auto_apply": true
+    },
     "eligibility_rules": {
       "minimum_attendance_rate": 0,
       "require_active_status": true,
       "exclude_maternity_leave": false,
       "exclude_resigned": true
-    },
-    "settings": {
-      "stack_with_regular": true,
-      "require_conditions": false,
-      "auto_apply": true,
-      "payment_timing": "with_regular_incentive"
     }
   },
-  "last_updated": "2025-08-29",
+  "description": "QIP Talent Pool 특별 인센티브 관리",
   "bonus_history": {
     "2025": {
       "7": [
-        "623060116"
-      ],
-      "9": [
         "623060116"
       ],
       "11": [
@@ -41,24 +40,25 @@
       "12": [
         "623060116"
       ],
-      "8": [
+      "10": [
         "623060116"
       ],
-      "10": [
+      "9": [
+        "623060116"
+      ],
+      "8": [
         "623060116"
       ]
     }
   },
-  "description": "QIP Talent Pool 특별 인센티브 관리",
   "audit_trail": [
     {
-      "date": "2025-08-29",
-      "action": "created",
       "period": "2025-07 to 2025-12",
-      "authorized_by": "System Admin",
+      "date": "2025-08-29",
       "employee_id": "623060116",
-      "amount": 150000
+      "action": "created",
+      "amount": 150000,
+      "authorized_by": "System Admin"
     }
-  ],
-  "version": "1.0"
+  ]
 }
