@@ -248,7 +248,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -258,10 +257,10 @@
     // System Feedback Page - HWK QIP Incentive V10
     // ============================================================
     const COLLECTION = 'systemFeedback';
-    let storage = null;
-    try { storage = firebase.storage(); } catch(e) { console.warn('Firebase Storage not available:', e.message); }
     const MAX_FILES = 3;
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_IMAGE_DIMENSION = 800; // Resize images to max 800px
+    const JPEG_QUALITY = 0.7;
     let currentUser = null;
     let currentUserIsAdmin = false;
     let allFeedbacks = [];
@@ -407,27 +406,45 @@
         });
     }
 
-    async function uploadAttachments(feedbackId) {
-        if (!storage) {
-            console.warn('Storage not initialized, skipping image upload');
-            return [];
-        }
-        var urls = [];
+    function resizeAndCompressImage(file) {
+        return new Promise(function(resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    var w = img.width, h = img.height;
+                    if (w > MAX_IMAGE_DIMENSION || h > MAX_IMAGE_DIMENSION) {
+                        if (w > h) { h = Math.round(h * MAX_IMAGE_DIMENSION / w); w = MAX_IMAGE_DIMENSION; }
+                        else { w = Math.round(w * MAX_IMAGE_DIMENSION / h); h = MAX_IMAGE_DIMENSION; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    var dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+                    resolve(dataUrl);
+                };
+                img.onerror = function() { reject(new Error('Failed to load image: ' + file.name)); };
+                img.src = e.target.result;
+            };
+            reader.onerror = function() { reject(new Error('Failed to read file: ' + file.name)); };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function convertAttachmentsToBase64() {
+        var attachments = [];
         for (var i = 0; i < selectedFiles.length; i++) {
             var file = selectedFiles[i];
-            var ext = file.name.split('.').pop();
-            var path = 'feedback/' + feedbackId + '/' + Date.now() + '_' + i + '.' + ext;
             try {
-                var ref = storage.ref(path);
-                await ref.put(file);
-                var url = await ref.getDownloadURL();
-                urls.push({ url: url, name: file.name, path: path });
-            } catch(uploadErr) {
-                console.error('Image upload failed:', uploadErr.message);
-                urls.push({ name: file.name, error: uploadErr.message, failed: true });
+                var dataUrl = await resizeAndCompressImage(file);
+                attachments.push({ url: dataUrl, name: file.name, type: 'base64' });
+            } catch(err) {
+                console.error('Image conversion failed:', err.message);
+                attachments.push({ name: file.name, error: err.message, failed: true });
             }
         }
-        return urls;
+        return attachments;
     }
 
     // ============ Submit ============
@@ -458,18 +475,18 @@
 
             var docRef = await db.collection(COLLECTION).add(data);
 
-            // Upload attachments if any
+            // Convert and attach images as base64
             var uploadWarning = '';
             if (selectedFiles.length > 0) {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Uploading images...';
-                var attachments = await uploadAttachments(docRef.id);
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Processing images...';
+                var attachments = await convertAttachmentsToBase64();
                 var successAttachments = attachments.filter(function(a) { return !a.failed; });
                 var failedAttachments = attachments.filter(function(a) { return a.failed; });
                 if (successAttachments.length > 0) {
                     await docRef.update({ attachments: successAttachments });
                 }
                 if (failedAttachments.length > 0) {
-                    uploadWarning = '\n\nNote: ' + failedAttachments.length + ' image(s) could not be uploaded. (Firebase Storage may not be enabled yet)';
+                    uploadWarning = '\n\nNote: ' + failedAttachments.length + ' image(s) could not be processed.';
                 }
             }
 
@@ -516,9 +533,16 @@
             body += '<h6 style="font-weight:700;color:var(--primary-dark);margin-bottom:0.75rem;"><i class="fas fa-image me-1"></i> Attachments (' + f.attachments.length + ')</h6>';
             body += '<div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1rem;">';
             f.attachments.forEach(function(att) {
-                body += '<a href="' + att.url + '" target="_blank" style="display:block; width:160px; height:120px; border-radius:8px; overflow:hidden; border:1.5px solid #e2e8f0; transition:all 0.2s;">';
-                body += '<img src="' + att.url + '" style="width:100%; height:100%; object-fit:cover;" title="' + escapeHtml(att.name || '') + '">';
-                body += '</a>';
+                var isBase64 = att.type === 'base64' || (att.url && att.url.startsWith('data:'));
+                if (isBase64) {
+                    body += '<div onclick="window.open().document.write(\'<img src=&quot;\' + this.querySelector(\'img\').src + \'&quot; style=&quot;max-width:100%&quot;>\')" style="display:block; width:160px; height:120px; border-radius:8px; overflow:hidden; border:1.5px solid #e2e8f0; cursor:pointer; transition:all 0.2s;" title="Click to enlarge">';
+                    body += '<img src="' + att.url + '" style="width:100%; height:100%; object-fit:cover;" title="' + escapeHtml(att.name || '') + '">';
+                    body += '</div>';
+                } else {
+                    body += '<a href="' + att.url + '" target="_blank" style="display:block; width:160px; height:120px; border-radius:8px; overflow:hidden; border:1.5px solid #e2e8f0; transition:all 0.2s;">';
+                    body += '<img src="' + att.url + '" style="width:100%; height:100%; object-fit:cover;" title="' + escapeHtml(att.name || '') + '">';
+                    body += '</a>';
+                }
             });
             body += '</div>';
         }
