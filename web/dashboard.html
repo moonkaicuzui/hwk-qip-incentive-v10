@@ -945,6 +945,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <!-- CDN: D3.js v7 -->
 <script src="https://d3js.org/d3.v7.min.js"></script>
+<!-- CDN: SheetJS (xlsx) for Excel export -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <!-- CDN: Firebase v10.7.1 compat -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -953,13 +955,13 @@
 <!-- ============================================================ -->
 <!-- Local JS Modules (load order matters)                        -->
 <!-- ============================================================ -->
-<script src="js/firebase-config.js?v=aql3part"></script>
-<script src="js/auth.js?v=aql3part"></script>
-<script src="js/dashboard-data.js?v=aql3part"></script>
-<script src="js/dashboard-i18n.js?v=aql3part"></script>
-<script src="js/dashboard-charts.js?v=progtable-fix"></script>
-<script src="js/dashboard-filters.js?v=typefilter"></script>
-<script src="js/dashboard-modals.js?v=aql3part"></script>
+<script src="js/firebase-config.js?v=excelfix"></script>
+<script src="js/auth.js?v=excelfix"></script>
+<script src="js/dashboard-data.js?v=excelfix"></script>
+<script src="js/dashboard-i18n.js?v=excelfix"></script>
+<script src="js/dashboard-charts.js?v=excelfix"></script>
+<script src="js/dashboard-filters.js?v=excelfix"></script>
+<script src="js/dashboard-modals.js?v=excelfix"></script>
 
 <!-- ============================================================ -->
 <!-- Initialization                                               -->
@@ -1090,20 +1092,127 @@
     }
 
     /**
-     * Download Excel file from GitHub Pages.
-     * Uses window._dashboardMonth / _dashboardYear set by dashboard-data.js.
+     * Generate and download Excel file from Firestore employee data.
+     * Uses SheetJS (XLSX) to create .xlsx in browser from window.employeeData.
      */
     function downloadExcel() {
+        if (typeof XLSX === 'undefined') {
+            alert('Excel library not loaded. Please refresh and try again.');
+            return;
+        }
+        var employees = window.employeeData || [];
+        if (!employees.length) {
+            alert('No employee data loaded. Please wait for data to load.');
+            return;
+        }
+
         var month = (window._dashboardMonth || 'february').toLowerCase();
         var year = window._dashboardYear || 2026;
-        var filename = 'output_QIP_incentive_' + month + '_' + year + '_Complete_V10.0_Complete.xlsx';
-        var url = filename;
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        var monthCap = month.charAt(0).toUpperCase() + month.slice(1);
+
+        // Build rows for Excel
+        var rows = employees.map(function(emp) {
+            var att = emp.attendance || {};
+            var aql = emp.aql || {};
+            var prs = emp.prs || {};
+            var cond = emp.conditions || {};
+
+            return {
+                'STT': emp.stt || '',
+                'Employee No': emp.emp_no || emp['Employee No'] || '',
+                'Full Name': emp.full_name || emp['Full Name'] || '',
+                'Entrance Date': emp.entrance_date || '',
+                'Position': emp.position || '',
+                'Position Code': emp.position_code || '',
+                'Building': emp.building || '',
+                'ROLE TYPE STD': emp.type || '',
+                'Boss ID': emp.boss_id || '',
+                'Boss Name': emp.boss_name || '',
+                'CFA Certified': emp.cfa_certified || '',
+                'Talent Pool Member': emp.talent_pool_member || '',
+                'Total Working Days': att.total_days || '',
+                'Approved Leave': att.approved_leave || '',
+                'Unapproved Absence': att.unapproved_absence || '',
+                'Absence Rate (%)': att.absence_rate || 0,
+                'Attendance Rate (%)': att.rate || 0,
+                'AQL Total Tests': aql.total_tests || 0,
+                'AQL Failures': aql.failures || 0,
+                'AQL Fail %': aql.fail_percent || 0,
+                'AQL Area Reject Rate': aql.area_reject_rate || 0,
+                '5PRS Total Qty': prs.total_qty || 0,
+                '5PRS Total Pass': prs.total_pass || 0,
+                '5PRS Pass Rate (%)': prs.pass_rate || 0,
+                'C1': cond.c1 || '',
+                'C2': cond.c2 || '',
+                'C3': cond.c3 || '',
+                'C4': cond.c4 || '',
+                'C5': cond.c5 || '',
+                'C6': cond.c6 || '',
+                'C7': cond.c7 || '',
+                'C8': cond.c8 || '',
+                'C9': cond.c9 || '',
+                'C10': cond.c10 || '',
+                'Conditions Applicable': emp.conditions_applicable || 0,
+                'Conditions Passed': emp.conditions_passed || 0,
+                'Conditions Pass Rate (%)': emp.conditions_pass_rate || 0,
+                'Continuous Months': emp.continuous_months || 0,
+                'Previous Continuous Months': emp.previous_continuous_months || 0,
+                'Previous Incentive': emp.previous_incentive || 0,
+                monthCap + ' Incentive': emp.current_incentive || 0,
+                'AQL Part2 Amount': emp.aql_part2_amount || 0,
+                'AQL Part3 Amount': emp.aql_part3_amount || 0,
+                'Talent Pool Bonus': emp.talent_pool_bonus || 0
+            };
+        });
+
+        // Create workbook and worksheet
+        var ws = XLSX.utils.json_to_sheet(rows);
+
+        // Set column widths
+        ws['!cols'] = [
+            {wch: 5},  // STT
+            {wch: 12}, // Employee No
+            {wch: 25}, // Full Name
+            {wch: 12}, // Entrance Date
+            {wch: 22}, // Position
+            {wch: 8},  // Position Code
+            {wch: 15}, // Building
+            {wch: 10}, // TYPE
+            {wch: 12}, // Boss ID
+            {wch: 25}, // Boss Name
+            {wch: 8},  // CFA
+            {wch: 8},  // Talent Pool
+            {wch: 10}, // Working Days
+            {wch: 10}, // Approved Leave
+            {wch: 10}, // Unapproved
+            {wch: 10}, // Absence Rate
+            {wch: 10}, // Attendance Rate
+            {wch: 10}, // AQL Tests
+            {wch: 10}, // AQL Failures
+            {wch: 10}, // AQL Fail %
+            {wch: 10}, // AQL Area Reject
+            {wch: 10}, // 5PRS Qty
+            {wch: 10}, // 5PRS Pass
+            {wch: 10}, // 5PRS Rate
+            {wch: 6}, {wch: 6}, {wch: 6}, {wch: 6}, {wch: 6},  // C1-C5
+            {wch: 6}, {wch: 6}, {wch: 6}, {wch: 6}, {wch: 6},  // C6-C10
+            {wch: 10}, // Applicable
+            {wch: 10}, // Passed
+            {wch: 10}, // Pass Rate
+            {wch: 10}, // Continuous
+            {wch: 10}, // Prev Continuous
+            {wch: 14}, // Prev Incentive
+            {wch: 14}, // Current Incentive
+            {wch: 12}, // Part2
+            {wch: 12}, // Part3
+            {wch: 12}  // Talent Bonus
+        ];
+
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, monthCap + ' ' + year);
+
+        var filename = 'QIP_Incentive_' + monthCap + '_' + year + '.xlsx';
+        XLSX.writeFile(wb, filename);
     }
 
     /**
