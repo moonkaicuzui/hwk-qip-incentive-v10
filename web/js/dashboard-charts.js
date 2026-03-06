@@ -377,93 +377,96 @@ var DashboardCharts = {
             naCount.push(na);
         }
 
-        // Ensure canvas element exists
-        container.innerHTML = '<canvas id="conditionChart" style="max-height: 520px;"></canvas>';
-        var canvas = document.getElementById('conditionChart');
-        if (!canvas) return;
-
-        // Destroy existing chart
+        // Build HTML table + mini bars (no canvas needed)
         this.destroyChart('conditionChart');
 
-        var ctx = canvas.getContext('2d');
-        var self = this;
+        var total = employees.length;
 
-        this.charts['conditionChart'] = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: conditionLabels,
-                datasets: [
-                    {
-                        label: t('common.pass'),
-                        data: yesCount,
-                        backgroundColor: self.colors.green,
-                        borderColor: self.colors.green,
-                        borderWidth: 1
-                    },
-                    {
-                        label: t('common.fail'),
-                        data: noCount,
-                        backgroundColor: self.colors.red,
-                        borderColor: self.colors.red,
-                        borderWidth: 1
-                    },
-                    {
-                        label: t('common.na'),
-                        data: naCount,
-                        backgroundColor: self.colors.gray,
-                        borderColor: self.colors.gray,
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 16,
-                            font: { size: 12 }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                var total = employees.length;
-                                var val = context.parsed.x || 0;
-                                var pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0.0';
-                                return context.dataset.label + ': ' + val + ' (' + pct + '%)';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        stacked: true,
-                        title: {
-                            display: true,
-                            text: t('chart.employeeCount'),
-                            font: { size: 12 }
-                        },
-                        ticks: {
-                            stepSize: 50,
-                            font: { size: 11 }
-                        },
-                        grid: { color: 'rgba(0,0,0,0.06)' }
-                    },
-                    y: {
-                        stacked: true,
-                        ticks: {
-                            font: { size: 11 }
-                        },
-                        grid: { display: false }
-                    }
-                }
-            }
-        });
+        // Build condition table
+        var html = '<table style="width:100%; border-collapse: collapse; font-size: 13px;">';
+        html += '<thead><tr style="border-bottom: 2px solid #dee2e6;">';
+        html += '<th style="text-align:left; padding: 8px 6px; width: 180px;">' + t('chart.condition') + '</th>';
+        html += '<th style="text-align:center; padding: 8px 4px; width: 50px; color: #28a745;">' + t('common.pass') + '</th>';
+        html += '<th style="text-align:center; padding: 8px 4px; width: 50px; color: #dc3545;">' + t('common.fail') + '</th>';
+        html += '<th style="text-align:center; padding: 8px 4px; width: 50px; color: #6c757d;">' + t('common.na') + '</th>';
+        html += '<th style="padding: 8px 6px;">' + t('chart.passRate') + '</th>';
+        html += '</tr></thead><tbody>';
+
+        for (var i = 0; i < 10; i++) {
+            var y = yesCount[i];
+            var n = noCount[i];
+            var na = naCount[i];
+            var applicable = y + n;
+            var passRate = applicable > 0 ? (y / applicable * 100) : 0;
+            var yPct = total > 0 ? (y / total * 100) : 0;
+            var nPct = total > 0 ? (n / total * 100) : 0;
+            var naPct = total > 0 ? (na / total * 100) : 0;
+
+            // Row background for FAIL-heavy conditions
+            var rowBg = n > y && applicable > 0 ? 'background: rgba(220,53,69,0.04);' : '';
+
+            html += '<tr style="border-bottom: 1px solid #eee; ' + rowBg + '">';
+
+            // Condition label
+            html += '<td style="padding: 10px 6px; font-weight: 500; white-space: nowrap;">' + conditionLabels[i] + '</td>';
+
+            // Counts
+            html += '<td style="text-align:center; padding: 10px 4px; font-weight: 600; color: #28a745;">' + y + '</td>';
+            html += '<td style="text-align:center; padding: 10px 4px; font-weight: 600; color:' + (n > 0 ? ' #dc3545' : ' #aaa') + ';">' + n + '</td>';
+            html += '<td style="text-align:center; padding: 10px 4px; color: #999;">' + na + '</td>';
+
+            // Bar + percentage
+            html += '<td style="padding: 10px 6px;">';
+            html += '<div style="display: flex; align-items: center; gap: 8px;">';
+
+            // Stacked bar
+            html += '<div style="flex: 1; height: 22px; display: flex; border-radius: 4px; overflow: hidden; background: #f0f0f0;">';
+            if (yPct > 0) html += '<div style="width:' + yPct + '%; background: #28a745;" title="PASS: ' + y + '"></div>';
+            if (nPct > 0) html += '<div style="width:' + nPct + '%; background: #dc3545;" title="FAIL: ' + n + '"></div>';
+            if (naPct > 0) html += '<div style="width:' + naPct + '%; background: #ccc;" title="N/A: ' + na + '"></div>';
+            html += '</div>';
+
+            // Pass rate label
+            var rateColor = passRate >= 90 ? '#28a745' : passRate >= 70 ? '#ffc107' : '#dc3545';
+            if (applicable === 0) rateColor = '#999';
+            html += '<span style="min-width: 52px; text-align: right; font-weight: 700; font-size: 13px; color:' + rateColor + ';">';
+            html += applicable > 0 ? passRate.toFixed(1) + '%' : '-';
+            html += '</span>';
+
+            html += '</div></td>';
+            html += '</tr>';
+        }
+
+        // Summary row
+        var totalYes = yesCount.reduce(function(a, b) { return a + b; }, 0);
+        var totalNo = noCount.reduce(function(a, b) { return a + b; }, 0);
+        var totalNa = naCount.reduce(function(a, b) { return a + b; }, 0);
+        var totalApplicable = totalYes + totalNo;
+        var totalRate = totalApplicable > 0 ? (totalYes / totalApplicable * 100) : 0;
+
+        html += '<tr style="border-top: 2px solid #dee2e6; font-weight: 700; background: #f8f9fa;">';
+        html += '<td style="padding: 10px 6px;">' + t('common.total') + '</td>';
+        html += '<td style="text-align:center; padding: 10px 4px; color: #28a745;">' + totalYes + '</td>';
+        html += '<td style="text-align:center; padding: 10px 4px; color: #dc3545;">' + totalNo + '</td>';
+        html += '<td style="text-align:center; padding: 10px 4px; color: #999;">' + totalNa + '</td>';
+        html += '<td style="padding: 10px 6px;">';
+        html += '<div style="display: flex; align-items: center; gap: 8px;">';
+        var tYPct = (totalYes + totalNo + totalNa) > 0 ? (totalYes / (totalYes + totalNo + totalNa) * 100) : 0;
+        var tNPct = (totalYes + totalNo + totalNa) > 0 ? (totalNo / (totalYes + totalNo + totalNa) * 100) : 0;
+        var tNaPct = (totalYes + totalNo + totalNa) > 0 ? (totalNa / (totalYes + totalNo + totalNa) * 100) : 0;
+        html += '<div style="flex: 1; height: 22px; display: flex; border-radius: 4px; overflow: hidden; background: #f0f0f0;">';
+        if (tYPct > 0) html += '<div style="width:' + tYPct + '%; background: #28a745;"></div>';
+        if (tNPct > 0) html += '<div style="width:' + tNPct + '%; background: #dc3545;"></div>';
+        if (tNaPct > 0) html += '<div style="width:' + tNaPct + '%; background: #ccc;"></div>';
+        html += '</div>';
+        var tRateColor = totalRate >= 90 ? '#28a745' : totalRate >= 70 ? '#ffc107' : '#dc3545';
+        html += '<span style="min-width: 52px; text-align: right; font-weight: 700; font-size: 13px; color:' + tRateColor + ';">' + totalRate.toFixed(1) + '%</span>';
+        html += '</div></td>';
+        html += '</tr>';
+
+        html += '</tbody></table>';
+
+        container.innerHTML = html;
 
 
     },

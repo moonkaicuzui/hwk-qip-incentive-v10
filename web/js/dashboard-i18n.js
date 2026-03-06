@@ -543,6 +543,8 @@ const DashboardI18n = {
 
         // Condition chart
         'chart.employeeCount': { ko: '직원 수', en: 'Employee Count', vi: 'Số nhân viên' },
+        'chart.condition': { ko: '조건', en: 'Condition', vi: 'Điều kiện' },
+        'chart.passRate': { ko: '충족률', en: 'Pass Rate', vi: 'Tỷ lệ đạt' },
         'chart.conditionLabel.1': { ko: 'C1: 출근율', en: 'C1: Attendance Rate', vi: 'C1: Tỷ lệ đi làm' },
         'chart.conditionLabel.2': { ko: 'C2: 무단결근', en: 'C2: Unapproved Absence', vi: 'C2: Vắng không phép' },
         'chart.conditionLabel.3': { ko: 'C3: 실제 근무일', en: 'C3: Actual Working Days', vi: 'C3: Ngày làm thực tế' },

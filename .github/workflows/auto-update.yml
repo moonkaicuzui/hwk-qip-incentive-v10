@@ -194,6 +194,19 @@ jobs:
           fi
           echo "✅ Schema validation passed"
 
+      # ========== Step 6.8: Download Previous Incentive from Firestore ==========
+      - name: "Step 6.8: Download Previous Incentive from Firestore"
+        if: steps.change_check.outputs.data_changed == 'true'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TARGET_MONTH: ${{ steps.target_month.outputs.target_month }}
+          TARGET_YEAR: ${{ steps.target_month.outputs.target_year }}
+        run: |
+          echo "📥 Downloading previous month incentive from Firestore..."
+          mkdir -p output_files
+          python scripts/download_previous_incentive.py --month "$TARGET_MONTH" --year "$TARGET_YEAR"
+          echo "✅ Previous incentive download complete"
+
       # ========== Step 7: Calculate Incentives ==========
       - name: "Step 7: Calculate incentives"
         if: steps.change_check.outputs.data_changed == 'true'
