@@ -268,6 +268,12 @@ def row_to_employee(row: pd.Series, month_capitalized: str) -> dict:
         "next_month_expected": safe_int(row.get("Next_Month_Expected")),
         "talent_pool_member": safe_str(row.get("Talent_Pool_Member", ""), "NO"),
         "talent_pool_bonus": safe_float(row.get("Talent_Pool_Bonus")),
+
+        # AQL Inspector 3-Part breakdown (if available)
+        "aql_part2_amount": safe_float(row.get("AQL_Part2_Amount")),
+        "aql_part3_amount": safe_float(row.get("AQL_Part3_Amount")),
+        "aql_part3_months": safe_int(row.get("AQL_Part3_Months")),
+        "cfa_certified": safe_str(row.get("CFA_Certified", ""), "N"),
     }
 
     return employee

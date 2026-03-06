@@ -295,6 +295,22 @@ jobs:
               print('⚠️ FIREBASE_SERVICE_ACCOUNT not set, skipping status update')
           "
 
+      # ========== Step 9.5: Process Pending Notifications ==========
+      - name: "Step 9.5: Process pending email notifications"
+        if: always()
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        run: |
+          echo "📧 Processing pending notifications..."
+          if [ -n "$SMTP_USER" ] && [ -n "$SMTP_PASSWORD" ]; then
+            python scripts/process_notifications.py || echo "⚠️ Notification processing skipped"
+          else
+            echo "⚠️ SMTP credentials not set, skipping notifications"
+          fi
+          echo "✅ Notification processing complete"
+
       # ========== Step 10: Generate Selector Page ==========
       - name: "Step 10: Generate selector page"
         if: steps.change_check.outputs.data_changed == 'true'

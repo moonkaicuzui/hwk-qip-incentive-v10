@@ -192,6 +192,11 @@
                             </select>
                         </div>
                         <div class="col-12">
+                            <label class="form-label">Your Email (for notification) <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="fbReporterEmail" required placeholder="your.email@hsvina.com">
+                            <small class="text-muted">You will receive an email notification when this issue is resolved.</small>
+                        </div>
+                        <div class="col-12">
                             <label class="form-label">Title <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="fbTitle" maxlength="100" required placeholder="Brief description of the issue or request">
                         </div>
@@ -267,6 +272,9 @@
     checkAuth().then(function(user) {
         currentUser = user;
         document.getElementById('userEmail').textContent = user.email;
+        // Auto-fill reporter email field with logged-in user's email
+        var emailField = document.getElementById('fbReporterEmail');
+        if (emailField && user.email) emailField.value = user.email;
         currentUserIsAdmin = isAdmin(user);
         loadFeedbacks();
     });
@@ -436,6 +444,7 @@
                 priority: document.getElementById('fbPriority').value,
                 title: document.getElementById('fbTitle').value.trim(),
                 description: document.getElementById('fbDescription').value.trim(),
+                reporterEmail: document.getElementById('fbReporterEmail').value.trim(),
                 status: 'pending',
                 attachments: [],
                 createdBy: {
@@ -496,6 +505,9 @@
         var body = '<div style="display:flex;gap:0.5rem;margin-bottom:1rem;">' + typeBadge + ' ' + priorityBadge + ' ' + statusBadge + '</div>';
         body += '<div style="background:#f8fafc;border-radius:10px;padding:1rem;margin-bottom:1rem;">';
         body += '<div style="font-size:0.82rem;color:#64748b;margin-bottom:0.5rem;"><i class="fas fa-user me-1"></i>' + escapeHtml(f.createdBy ? f.createdBy.email : 'Unknown') + ' &middot; ' + (f.createdAt ? formatDate(f.createdAt) : '') + '</div>';
+        if (f.reporterEmail) {
+            body += '<div style="font-size:0.82rem;color:#64748b;margin-bottom:0.5rem;"><i class="fas fa-envelope me-1"></i> Notification: ' + escapeHtml(f.reporterEmail) + '</div>';
+        }
         body += '<div style="font-size:0.9rem;color:#334155;white-space:pre-wrap;line-height:1.6;">' + escapeHtml(f.description || '') + '</div>';
         body += '</div>';
 
@@ -570,6 +582,13 @@
             updateData.approvedBy = { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || currentUser.email };
         }
         db.collection(COLLECTION).doc(id).update(updateData).then(function() {
+            // Queue email notification for approved status
+            if (newStatus === 'approved') {
+                var f = allFeedbacks.find(function(item) { return item.id === id; });
+                if (f && f.reporterEmail) {
+                    queueNotification(id, f.title, f.reporterEmail, 'approved', f.completionComment || '');
+                }
+            }
             bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
         });
     }
@@ -584,6 +603,11 @@
             completedBy: { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || currentUser.email },
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(function() {
+            // Queue email notification to reporter
+            var f = allFeedbacks.find(function(item) { return item.id === id; });
+            if (f && f.reporterEmail) {
+                queueNotification(id, f.title, f.reporterEmail, 'completed', comment);
+            }
             bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
         });
     }
@@ -617,6 +641,24 @@
             })
         }).then(function() {
             bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+        });
+    }
+
+    // ============ Email Notification Queue ============
+    function queueNotification(feedbackId, title, reporterEmail, newStatus, comment) {
+        db.collection('pendingNotifications').add({
+            feedbackId: feedbackId,
+            title: title || 'Untitled',
+            reporterEmail: reporterEmail,
+            newStatus: newStatus,
+            comment: comment || '',
+            changedBy: currentUser ? currentUser.email : 'Unknown',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            sent: false
+        }).then(function() {
+            console.log('Notification queued for', reporterEmail);
+        }).catch(function(err) {
+            console.error('Failed to queue notification:', err);
         });
     }
 

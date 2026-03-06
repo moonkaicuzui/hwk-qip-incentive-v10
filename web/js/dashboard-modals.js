@@ -2427,21 +2427,29 @@ var DashboardModals = {
             part1Amount = progressiveTable[Math.min(part1Months, 15)] || 0;
         }
 
-        // Part 2: CFA 자격증 (check config or data)
+        // Part 2: CFA 자격증
         var isCfaCertified = false;
         var part2Amount = 0;
-        if (inspectorData) {
-            isCfaCertified = inspectorData.cfa_certified || false;
-        }
-        if (isCfaCertified && isPaid) {
-            part2Amount = (aqlConfig && aqlConfig.parts && aqlConfig.parts.part2) ? (aqlConfig.parts.part2.amount || 700000) : 700000;
-        }
-
-        // Part 3: HWK 클레임 방지 (from config if available)
         var part3Amount = 0;
         var part3Months = 0;
-        if (inspectorData) {
-            // Try to find current month data in inspector data
+
+        // PRIMARY: Read from employee Firestore data (stored by upload script)
+        var empPart2 = parseFloat(emp.aql_part2_amount || emp.part2_cfa_certificate || 0) || 0;
+        var empPart3 = parseFloat(emp.aql_part3_amount || emp.part3_hwk_prevention || 0) || 0;
+        var empPart3M = parseInt(emp.aql_part3_months || emp.part3_months || 0, 10) || 0;
+
+        if (empPart2 > 0 || empPart3 > 0) {
+            // Direct data from Firestore
+            isCfaCertified = empPart2 > 0;
+            part2Amount = empPart2;
+            part3Amount = empPart3;
+            part3Months = empPart3M;
+        } else if (inspectorData) {
+            // FALLBACK: AQL config (legacy)
+            isCfaCertified = inspectorData.cfa_certified || false;
+            if (isCfaCertified && isPaid) {
+                part2Amount = (aqlConfig && aqlConfig.parts && aqlConfig.parts.part2) ? (aqlConfig.parts.part2.amount || 700000) : 700000;
+            }
             var monthKeys = Object.keys(inspectorData).filter(function (k) { return k.indexOf('_incentive') !== -1; });
             if (monthKeys.length > 0) {
                 var latestKey = monthKeys[monthKeys.length - 1];
@@ -2449,9 +2457,25 @@ var DashboardModals = {
                 if (monthData && typeof monthData === 'object') {
                     part3Months = monthData.part3_months || 0;
                     part3Amount = monthData.part3_amount || 0;
-                    // Override part1 if available
                     if (monthData.part1_months !== undefined) part1Months = monthData.part1_months;
                     if (monthData.part1_amount !== undefined) part1Amount = monthData.part1_amount;
+                }
+            }
+        } else if (isPaid && currentIncentive > part1Amount) {
+            // FALLBACK 2: Derive from total incentive (reverse calculation)
+            var remaining = currentIncentive - part1Amount;
+            if (remaining >= 700000) {
+                isCfaCertified = true;
+                part2Amount = 700000;
+                part3Amount = remaining - 700000;
+            } else {
+                part3Amount = remaining;
+            }
+            // Derive Part 3 months from Part 3 progressive table
+            var part3Table = [0, 0, 0, 0, 150000, 250000, 300000, 350000, 400000, 450000, 500000, 650000, 750000, 850000, 950000, 1000000];
+            if (part3Amount > 0) {
+                for (var m = 15; m >= 4; m--) {
+                    if (part3Table[m] === part3Amount) { part3Months = m; break; }
                 }
             }
         }

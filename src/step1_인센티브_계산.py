@@ -4367,6 +4367,13 @@ class CompleteQIPCalculator:
             # Continuous_Months column updated (Part 1 basis)
             self.month_data.loc[idx, 'Continuous_Months'] = part1_months
 
+            # Store Part breakdown for dashboard display
+            self.month_data.loc[idx, 'AQL_Part1_Amount'] = part1_amount
+            self.month_data.loc[idx, 'AQL_Part2_Amount'] = part2_amount
+            self.month_data.loc[idx, 'AQL_Part3_Amount'] = part3_amount
+            self.month_data.loc[idx, 'AQL_Part3_Months'] = part3_months
+            self.month_data.loc[idx, 'CFA_Certified'] = 'Y' if part2_amount > 0 else 'N'
+
             # debugging 출력
             print(f"    → {row.get('Full Name', 'Unknown')} ({emp_id}):")
             print(f"      Part 1 ({part1_months}month): {part1_amount:,} VND")
