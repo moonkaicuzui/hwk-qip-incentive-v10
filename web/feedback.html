@@ -253,7 +253,8 @@
     // System Feedback Page - HWK QIP Incentive V10
     // ============================================================
     const COLLECTION = 'systemFeedback';
-    const storage = firebase.storage();
+    let storage = null;
+    try { storage = firebase.storage(); } catch(e) { console.warn('Firebase Storage not available:', e.message); }
     const MAX_FILES = 3;
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     let currentUser = null;
@@ -399,15 +400,24 @@
     }
 
     async function uploadAttachments(feedbackId) {
+        if (!storage) {
+            console.warn('Storage not initialized, skipping image upload');
+            return [];
+        }
         var urls = [];
         for (var i = 0; i < selectedFiles.length; i++) {
             var file = selectedFiles[i];
             var ext = file.name.split('.').pop();
             var path = 'feedback/' + feedbackId + '/' + Date.now() + '_' + i + '.' + ext;
-            var ref = storage.ref(path);
-            await ref.put(file);
-            var url = await ref.getDownloadURL();
-            urls.push({ url: url, name: file.name, path: path });
+            try {
+                var ref = storage.ref(path);
+                await ref.put(file);
+                var url = await ref.getDownloadURL();
+                urls.push({ url: url, name: file.name, path: path });
+            } catch(uploadErr) {
+                console.error('Image upload failed:', uploadErr.message);
+                urls.push({ name: file.name, error: uploadErr.message, failed: true });
+            }
         }
         return urls;
     }
@@ -440,13 +450,21 @@
             var docRef = await db.collection(COLLECTION).add(data);
 
             // Upload attachments if any
+            var uploadWarning = '';
             if (selectedFiles.length > 0) {
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Uploading images...';
                 var attachments = await uploadAttachments(docRef.id);
-                await docRef.update({ attachments: attachments });
+                var successAttachments = attachments.filter(function(a) { return !a.failed; });
+                var failedAttachments = attachments.filter(function(a) { return a.failed; });
+                if (successAttachments.length > 0) {
+                    await docRef.update({ attachments: successAttachments });
+                }
+                if (failedAttachments.length > 0) {
+                    uploadWarning = '\n\nNote: ' + failedAttachments.length + ' image(s) could not be uploaded. (Firebase Storage may not be enabled yet)';
+                }
             }
 
-            alert('Feedback submitted successfully!');
+            alert('Feedback submitted successfully!' + uploadWarning);
             document.getElementById('feedbackForm').reset();
             selectedFiles = [];
             document.getElementById('attachPreview').innerHTML = '';
