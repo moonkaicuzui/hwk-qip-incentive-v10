@@ -469,9 +469,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
     <!-- Project modules -->
-    <script src="js/firebase-config.js?v=restapi"></script>
-    <script src="js/auth.js?v=restapi"></script>
-    <script src="js/dashboard-data.js?v=restapi"></script>
+    <script src="js/firebase-config.js?v=rest2"></script>
+    <script src="js/auth.js?v=rest2"></script>
+    <script src="js/dashboard-data.js?v=rest2"></script>
 
     <script>
         // =====================================================================
@@ -692,20 +692,31 @@
                         return;
                     }
 
-                    // Load summary data for each month to get stats
+                    // Load summary data via REST API (avoids SDK WebChannel issues)
+                    var restBase = 'https://firestore.googleapis.com/v1/projects/hwk-qip-incentive-dashboard/databases/(default)/documents/';
                     var summaryPromises = months.map(function(m) {
-                        return db.collection('dashboard_summary')
-                            .doc(m.month_year)
-                            .get()
-                            .then(function(doc) {
-                                return {
-                                    key: m.month_year,
-                                    data: doc.exists ? doc.data() : {}
-                                };
-                            })
-                            .catch(function() {
-                                return { key: m.month_year, data: {} };
+                        return firebase.auth().currentUser.getIdToken().then(function(token) {
+                            return fetch(restBase + 'dashboard_summary/' + m.month_year, {
+                                headers: { 'Authorization': 'Bearer ' + token }
                             });
+                        }).then(function(resp) {
+                            if (!resp.ok) return { key: m.month_year, data: {} };
+                            return resp.json().then(function(json) {
+                                var data = {};
+                                if (json && json.fields) {
+                                    Object.keys(json.fields).forEach(function(k) {
+                                        var v = json.fields[k];
+                                        data[k] = v.stringValue !== undefined ? v.stringValue
+                                            : v.integerValue !== undefined ? Number(v.integerValue)
+                                            : v.doubleValue !== undefined ? v.doubleValue
+                                            : v.booleanValue !== undefined ? v.booleanValue : null;
+                                    });
+                                }
+                                return { key: m.month_year, data: data };
+                            });
+                        }).catch(function() {
+                            return { key: m.month_year, data: {} };
+                        });
                     });
 
                     return Promise.all(summaryPromises)
