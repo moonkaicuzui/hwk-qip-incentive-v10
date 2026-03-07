@@ -17,27 +17,19 @@ const firebaseConfig = {
     storageBucket: "hwk-qip-incentive-dashboard.firebasestorage.app"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase (guard against double-init)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 
 // Export instances
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Fix WebChannel connection failures — auto-detect and fallback to long polling
-// when gRPC-Web (WebChannel) transport is blocked by network/proxy/firewall
+// Force HTTP long polling instead of WebChannel (gRPC-Web).
+// WebChannel fails on certain networks/proxies/firewalls causing infinite loading.
+// Long polling is slower but universally compatible.
 db.settings({
-    experimentalAutoDetectLongPolling: true,
-    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
-});
-
-// Enable offline persistence for resilience
-db.enablePersistence({ synchronizeTabs: true }).catch(function(err) {
-    if (err.code === 'failed-precondition') {
-        // Multiple tabs open — persistence can only be enabled in one tab
-        console.warn('[Firebase] Persistence failed: multiple tabs open');
-    } else if (err.code === 'unimplemented') {
-        // Browser doesn't support persistence
-        console.warn('[Firebase] Persistence not supported in this browser');
-    }
+    experimentalForceLongPolling: true,
+    merge: true
 });
