@@ -26,10 +26,7 @@ if (!firebase.apps.length) {
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// MUST be called before any Firestore operation (.collection, .doc, .get, etc.)
 // Force HTTP long polling instead of WebChannel (gRPC-Web).
 // WebChannel fails on certain networks/proxies/firewalls causing infinite loading.
-// Long polling is slower but universally compatible.
-db.settings({
-    experimentalForceLongPolling: true,
-    merge: true
-});
+db.settings({ experimentalForceLongPolling: true });
