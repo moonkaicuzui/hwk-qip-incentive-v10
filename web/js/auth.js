@@ -105,27 +105,35 @@ function signOut() {
 function _loadAdminEmails() {
     if (_adminEmails !== null) return Promise.resolve(_adminEmails);
 
-    // Timeout wrapper: if Firestore doesn't respond within 8 seconds, use empty list
-    var timeout = new Promise(function(resolve) {
-        setTimeout(function() {
-            console.warn('[Auth] _loadAdminEmails timed out after 8s — using empty list');
-            resolve('TIMEOUT');
-        }, 8000);
-    });
+    // Use REST API to read system/config — avoids Firestore SDK WebChannel issues
+    var user = firebase.auth().currentUser;
+    if (!user) {
+        _adminEmails = [];
+        return Promise.resolve(_adminEmails);
+    }
 
-    var firestoreCall = db.collection('system').doc('config').get()
-        .then(function(doc) {
-            if (doc.exists && doc.data().admin_emails) {
-                return doc.data().admin_emails;
-            }
-            return [];
-        })
-        .catch(function() {
-            return [];
-        });
-
-    return Promise.race([firestoreCall, timeout]).then(function(result) {
-        _adminEmails = (result === 'TIMEOUT') ? [] : result;
+    return user.getIdToken().then(function(token) {
+        var url = 'https://firestore.googleapis.com/v1/projects/hwk-qip-incentive-dashboard' +
+            '/databases/(default)/documents/system/config';
+        return fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+    }).then(function(resp) {
+        if (!resp.ok) {
+            _adminEmails = [];
+            return _adminEmails;
+        }
+        return resp.json();
+    }).then(function(json) {
+        if (json && json.fields && json.fields.admin_emails && json.fields.admin_emails.arrayValue) {
+            _adminEmails = (json.fields.admin_emails.arrayValue.values || []).map(function(v) {
+                return v.stringValue || '';
+            }).filter(Boolean);
+        } else {
+            _adminEmails = [];
+        }
+        return _adminEmails;
+    }).catch(function(err) {
+        console.warn('[Auth] _loadAdminEmails REST failed:', err);
+        _adminEmails = [];
         return _adminEmails;
     });
 }
