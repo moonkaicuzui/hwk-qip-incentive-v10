@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>HWK QIP Incentive Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e3a5f'/%3E%3Ctext x='16' y='23' text-anchor='middle' fill='white' font-size='20' font-family='Arial'%3EQ%3C/text%3E%3C/svg%3E">
 
@@ -956,13 +959,13 @@
 <!-- ============================================================ -->
 <!-- Local JS Modules (load order matters)                        -->
 <!-- ============================================================ -->
-<script src="js/firebase-config.js?v=rest3"></script>
-<script src="js/auth.js?v=rest3"></script>
-<script src="js/dashboard-data.js?v=rest3"></script>
-<script src="js/dashboard-i18n.js?v=rest3"></script>
-<script src="js/dashboard-charts.js?v=rest3"></script>
-<script src="js/dashboard-filters.js?v=rest3"></script>
-<script src="js/dashboard-modals.js?v=rest3"></script>
+<script src="js/firebase-config.js?v=rest4"></script>
+<script src="js/auth.js?v=rest4"></script>
+<script src="js/dashboard-data.js?v=rest4"></script>
+<script src="js/dashboard-i18n.js?v=rest4"></script>
+<script src="js/dashboard-charts.js?v=rest4"></script>
+<script src="js/dashboard-filters.js?v=rest4"></script>
+<script src="js/dashboard-modals.js?v=rest4"></script>
 
 <!-- ============================================================ -->
 <!-- Initialization                                               -->
@@ -1316,17 +1319,86 @@
     }
 
     /**
+     * On-screen debug log (visible to user during loading).
+     */
+    var _dbgEl = null;
+    function _dbg(msg) {
+        console.log('[Dashboard] ' + msg);
+        if (!_dbgEl) {
+            _dbgEl = document.getElementById('debugLog');
+            if (!_dbgEl) return;
+        }
+        var line = document.createElement('div');
+        line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+        _dbgEl.appendChild(line);
+        _dbgEl.scrollTop = _dbgEl.scrollHeight;
+    }
+
+    /**
      * Main initialization — runs after DOM is ready.
+     * Robust version with visible diagnostics and multiple auth fallbacks.
      */
     document.addEventListener('DOMContentLoaded', async function() {
+        // Create debug panel inside loading overlay
+        var overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            var dbgDiv = document.createElement('div');
+            dbgDiv.id = 'debugLog';
+            dbgDiv.style.cssText = 'margin-top:16px;width:340px;max-height:120px;overflow-y:auto;font-size:11px;font-family:monospace;color:#666;text-align:left;background:#f9f9f9;padding:8px;border-radius:6px;border:1px solid #e0e0e0;';
+            overlay.appendChild(dbgDiv);
+        }
+
+        _dbg('v=rest4 init start');
+        _dbg('firebase: ' + (typeof firebase !== 'undefined' ? 'OK (apps=' + firebase.apps.length + ')' : 'MISSING'));
+        _dbg('checkAuth: ' + (typeof checkAuth));
+        _dbg('DashboardData: ' + (typeof DashboardData));
+
         try {
-            // 1. Check authentication
+            // === STEP 1: Authenticate ===
+            _dbg('Step 1: authenticating...');
             var user = null;
+
             if (typeof checkAuth === 'function') {
-                user = await checkAuth();
+                try {
+                    user = await checkAuth();
+                    _dbg('checkAuth OK: ' + (user ? user.email : 'null'));
+                } catch (authErr) {
+                    _dbg('checkAuth FAILED: ' + authErr.message);
+                }
+            } else {
+                _dbg('checkAuth not available');
             }
+
+            // Fallback: try firebase.auth().currentUser directly
+            if (!user && typeof firebase !== 'undefined' && firebase.auth) {
+                _dbg('Trying firebase.auth().currentUser...');
+                var fbUser = firebase.auth().currentUser;
+                if (fbUser) {
+                    user = fbUser;
+                    _dbg('currentUser found: ' + fbUser.email);
+                } else {
+                    _dbg('currentUser is null');
+                }
+            }
+
+            // Fallback: try session storage
             if (!user) {
-                hideLoading();
+                _dbg('Trying sessionStorage...');
+                var cached = sessionStorage.getItem('qip_firebase_session');
+                if (cached) {
+                    try {
+                        var s = JSON.parse(cached);
+                        user = { uid: s.uid, email: s.email, displayName: s.displayName };
+                        _dbg('Session found: ' + s.email);
+                    } catch (e) {
+                        _dbg('Session parse failed');
+                    }
+                }
+            }
+
+            if (!user) {
+                _dbg('No auth - redirecting to auth.html');
+                window.location.href = 'auth.html';
                 return;
             }
 
@@ -1334,56 +1406,62 @@
             var emailEl = document.getElementById('userEmail');
             if (emailEl && user.email) emailEl.textContent = user.email;
 
-            // 2. Get month/year from URL params
+            // === STEP 2: Get params ===
             var params = new URLSearchParams(window.location.search);
             var month = params.get('month') || 'february';
             var year = parseInt(params.get('year')) || 2026;
+            _dbg('Step 2: ' + month + ' ' + year);
 
-            // 3. Update page title with month/year
             var monthYearEl = document.getElementById('dashboard-month-year');
             if (monthYearEl) {
                 monthYearEl.textContent = month.charAt(0).toUpperCase() + month.slice(1) + ' ' + year;
             }
 
-            // 4. Load all data from Firestore
+            // === STEP 3: Load data ===
+            _dbg('Step 3: loading data...');
             var data = null;
+
             if (typeof DashboardData !== 'undefined' && DashboardData.loadAll) {
-                data = await DashboardData.loadAll(month, year);
+                try {
+                    data = await DashboardData.loadAll(month, year);
+                    _dbg('loadAll OK: ' + (data && data.employees ? data.employees.length + ' employees' : 'empty'));
+                } catch (loadErr) {
+                    _dbg('loadAll FAILED: ' + loadErr.message);
+                }
+            } else {
+                _dbg('DashboardData.loadAll not available');
             }
 
-            if (!data) {
-                showError('Failed to load dashboard data. Please try again.');
+            if (!data || !data.employees || data.employees.length === 0) {
+                _dbg('No data loaded - showing error');
+                showError('Failed to load dashboard data. Please try Cmd+Shift+R to hard refresh.');
                 return;
             }
 
-            // 5. Initialize all dashboard components
-            // [CRITICAL] DashboardI18n MUST init BEFORE DashboardCharts
-            // so that t() can resolve criteria.*/faq.* keys during renderCriteriaTab()
+            // === STEP 4: Render ===
+            _dbg('Step 4: rendering...');
             if (typeof DashboardI18n !== 'undefined' && DashboardI18n.init) DashboardI18n.init();
             if (typeof DashboardCharts !== 'undefined' && DashboardCharts.init) DashboardCharts.init(data);
             if (typeof DashboardFilters !== 'undefined' && DashboardFilters.init) DashboardFilters.init(data);
             if (typeof DashboardModals !== 'undefined' && DashboardModals.init) DashboardModals.init(data);
 
-            // 6. Update last-updated and footer timestamp
             var lastUpdatedEl = document.getElementById('last-updated');
             if (lastUpdatedEl && data.metadata && data.metadata.lastUpdated) {
                 try {
-                    var updatedDate = new Date(data.metadata.lastUpdated);
-                    lastUpdatedEl.textContent = updatedDate.toLocaleString();
+                    lastUpdatedEl.textContent = new Date(data.metadata.lastUpdated).toLocaleString();
                 } catch (e) {
                     lastUpdatedEl.textContent = data.metadata.lastUpdated;
                 }
             }
             var footerTs = document.getElementById('footerTimestamp');
-            if (footerTs) {
-                footerTs.textContent = new Date().toLocaleString();
-            }
+            if (footerTs) footerTs.textContent = new Date().toLocaleString();
 
-            // 7. Show default tab and hide loading
             showTab('summary');
             hideLoading();
+            _dbg('DONE - dashboard loaded');
 
         } catch (err) {
+            _dbg('FATAL ERROR: ' + (err.message || err));
             console.error('Dashboard initialization failed:', err);
             showError('Dashboard initialization failed: ' + (err.message || err));
         }
