@@ -23,10 +23,38 @@ var _adminEmails = null; // populated by _loadAdminEmails()
  */
 function checkAuth() {
     return new Promise(function(resolve, reject) {
+        var settled = false;
+
+        // Safety timeout: if auth check takes >10s, use cached session or redirect
+        var timeoutId = setTimeout(function() {
+            if (settled) return;
+            settled = true;
+            console.warn('[Auth] checkAuth timed out after 10s');
+            var cached = sessionStorage.getItem(SESSION_KEY);
+            if (cached) {
+                try {
+                    var s = JSON.parse(cached);
+                    // Return a minimal user-like object from cache
+                    resolve({ uid: s.uid, email: s.email, displayName: s.displayName });
+                } catch (e) {
+                    window.location.href = 'auth.html';
+                    reject(new Error('Auth timeout'));
+                }
+            } else {
+                window.location.href = 'auth.html';
+                reject(new Error('Auth timeout'));
+            }
+        }, 10000);
+
         firebase.auth().onAuthStateChanged(function(user) {
+            if (settled) return;
+
             if (user) {
-                // Load admin emails from Firestore, then update session
+                // Load admin emails, then update session
                 _loadAdminEmails().then(function() {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeoutId);
                     var sessionData = {
                         uid: user.uid,
                         email: user.email,
@@ -38,9 +66,17 @@ function checkAuth() {
                     };
                     sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
                     resolve(user);
+                }).catch(function(err) {
+                    // Admin email load failed — still resolve with user (non-admin)
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timeoutId);
+                    console.warn('[Auth] _loadAdminEmails failed, continuing as non-admin:', err);
+                    resolve(user);
                 });
             } else {
-                // No authenticated user - clear session and redirect
+                settled = true;
+                clearTimeout(timeoutId);
                 sessionStorage.removeItem(SESSION_KEY);
                 window.location.href = 'auth.html';
                 reject(new Error('Not authenticated'));
@@ -115,7 +151,13 @@ function _loadAdminEmails() {
     return user.getIdToken().then(function(token) {
         var url = 'https://firestore.googleapis.com/v1/projects/hwk-qip-incentive-dashboard' +
             '/databases/(default)/documents/system/config';
-        return fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        // AbortController timeout: abort fetch after 8 seconds
+        var controller = new AbortController();
+        var fetchTimeout = setTimeout(function() { controller.abort(); }, 8000);
+        return fetch(url, {
+            headers: { 'Authorization': 'Bearer ' + token },
+            signal: controller.signal
+        }).finally(function() { clearTimeout(fetchTimeout); });
     }).then(function(resp) {
         if (!resp.ok) {
             _adminEmails = [];

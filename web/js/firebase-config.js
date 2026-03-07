@@ -6,11 +6,11 @@
  * Required CDN scripts in HTML (before this file):
  *   - firebase-app-compat.js
  *   - firebase-auth-compat.js
- *   - firebase-firestore-compat.js
+ *   - firebase-firestore-compat.js (optional — only needed for admin/feedback pages)
  */
 
 // Firebase configuration
-const firebaseConfig = {
+var firebaseConfig = {
     apiKey: "AIzaSyDzdmX9kBbeSIX1ROvvNcfu2CzFvnnz3oY",
     authDomain: "hwk-qip-incentive-dashboard.firebaseapp.com",
     projectId: "hwk-qip-incentive-dashboard",
@@ -22,11 +22,17 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-// Export instances
-const auth = firebase.auth();
-const db = firebase.firestore();
+// Auth is always available
+var auth = firebase.auth();
 
-// MUST be called before any Firestore operation (.collection, .doc, .get, etc.)
-// Force HTTP long polling instead of WebChannel (gRPC-Web).
-// WebChannel fails on certain networks/proxies/firewalls causing infinite loading.
-db.settings({ experimentalForceLongPolling: true });
+// Firestore SDK is optional — dashboard.html uses REST API instead.
+// Only admin.html and feedback.html need the SDK.
+var db = null;
+try {
+    if (typeof firebase.firestore === 'function') {
+        db = firebase.firestore();
+        db.settings({ experimentalForceLongPolling: true });
+    }
+} catch (e) {
+    console.warn('[Config] Firestore SDK init skipped:', e.message);
+}
