@@ -105,20 +105,29 @@ function signOut() {
 function _loadAdminEmails() {
     if (_adminEmails !== null) return Promise.resolve(_adminEmails);
 
-    return db.collection('system').doc('config').get()
+    // Timeout wrapper: if Firestore doesn't respond within 8 seconds, use empty list
+    var timeout = new Promise(function(resolve) {
+        setTimeout(function() {
+            console.warn('[Auth] _loadAdminEmails timed out after 8s — using empty list');
+            resolve('TIMEOUT');
+        }, 8000);
+    });
+
+    var firestoreCall = db.collection('system').doc('config').get()
         .then(function(doc) {
             if (doc.exists && doc.data().admin_emails) {
-                _adminEmails = doc.data().admin_emails;
-            } else {
-                // No Firestore config yet — empty list (no hardcoded fallback)
-                _adminEmails = [];
+                return doc.data().admin_emails;
             }
-            return _adminEmails;
+            return [];
         })
         .catch(function() {
-            _adminEmails = [];
-            return _adminEmails;
+            return [];
         });
+
+    return Promise.race([firestoreCall, timeout]).then(function(result) {
+        _adminEmails = (result === 'TIMEOUT') ? [] : result;
+        return _adminEmails;
+    });
 }
 
 /**

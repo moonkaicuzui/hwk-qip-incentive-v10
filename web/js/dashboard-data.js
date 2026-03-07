@@ -31,6 +31,44 @@ var CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 var QIP_DEBUG = (typeof window !== 'undefined' && window.QIP_DEBUG) || false;
 
 // ---------------------------------------------------------------------------
+// Firestore REST API response parser (for SDK fallback)
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse Firestore REST API value format to plain JS value.
+ * REST API returns typed wrappers like { stringValue: "abc" }, { integerValue: "123" }
+ */
+function _parseFirestoreValue(val) {
+    if (val === undefined || val === null) return null;
+    if (val.stringValue !== undefined) return val.stringValue;
+    if (val.integerValue !== undefined) return Number(val.integerValue);
+    if (val.doubleValue !== undefined) return val.doubleValue;
+    if (val.booleanValue !== undefined) return val.booleanValue;
+    if (val.nullValue !== undefined) return null;
+    if (val.arrayValue) {
+        return (val.arrayValue.values || []).map(_parseFirestoreValue);
+    }
+    if (val.mapValue) {
+        return _parseFirestoreRestDoc(val.mapValue.fields || {});
+    }
+    return null;
+}
+
+/**
+ * Parse a Firestore REST API document fields object into a plain JS object.
+ * @param {Object} fields - The "fields" property from REST response
+ * @returns {Object} Plain JS object
+ */
+function _parseFirestoreRestDoc(fields) {
+    if (!fields) return {};
+    var result = {};
+    Object.keys(fields).forEach(function (key) {
+        result[key] = _parseFirestoreValue(fields[key]);
+    });
+    return result;
+}
+
+// ---------------------------------------------------------------------------
 // Centralized Defaults (Single Source of Truth for fallback values)
 // ---------------------------------------------------------------------------
 
@@ -180,6 +218,31 @@ var DashboardData = {
      * @param {number|string} year - 4-digit year
      * @returns {Promise<Array>} Array of employee objects
      */
+    /**
+     * Firestore REST API fallback for when SDK WebChannel fails.
+     * @param {string} path - Firestore document path (e.g. "employees/february_2026/all_data/data")
+     * @returns {Promise<Object|null>} Document fields or null
+     */
+    _restApiFallback: function (path) {
+        var user = firebase.auth().currentUser;
+        if (!user) return Promise.resolve(null);
+
+        return user.getIdToken().then(function (token) {
+            var projectId = 'hwk-qip-incentive-dashboard';
+            var url = 'https://firestore.googleapis.com/v1/projects/' + projectId +
+                '/databases/(default)/documents/' + path;
+            return fetch(url, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(function (resp) {
+                if (!resp.ok) return null;
+                return resp.json();
+            }).then(function (json) {
+                if (!json || !json.fields) return null;
+                return _parseFirestoreRestDoc(json.fields);
+            });
+        }).catch(function () { return null; });
+    },
+
     loadEmployees: function (month, year) {
         var self = this;
         var key = self._cacheKey(month, year, 'employees');
@@ -191,10 +254,10 @@ var DashboardData = {
             return Promise.resolve(cached);
         }
 
-        // 2. Fetch from Firestore
+        // 2. Fetch from Firestore SDK with timeout
         var docPath = 'employees/' + month + '_' + year + '/all_data/data';
 
-        return db.collection('employees')
+        var sdkCall = db.collection('employees')
             .doc(month + '_' + year)
             .collection('all_data')
             .doc('data')
@@ -202,17 +265,28 @@ var DashboardData = {
             .then(function (doc) {
                 if (!doc.exists) {
                     console.warn('[DashboardData] No employee document found at', docPath);
-                    window.employeeData = [];
                     return [];
                 }
+                return doc.data().employees || [];
+            });
 
-                var docData = doc.data();
-                var employees = docData.employees || [];
+        var timeout = new Promise(function (resolve) {
+            setTimeout(function () { resolve('TIMEOUT'); }, 15000);
+        });
 
-                // Store globally and cache
+        return Promise.race([sdkCall, timeout])
+            .then(function (result) {
+                if (result === 'TIMEOUT') {
+                    console.warn('[DashboardData] SDK timed out for employees — trying REST API fallback');
+                    return self._restApiFallback(docPath);
+                }
+                return result;
+            })
+            .then(function (result) {
+                // REST fallback returns { employees: [...] } or array
+                var employees = Array.isArray(result) ? result : (result && result.employees ? result.employees : []);
                 window.employeeData = employees;
-                self._setCache(key, employees);
-
+                if (employees.length > 0) self._setCache(key, employees);
                 return employees;
             })
             .catch(function (error) {
@@ -243,29 +317,37 @@ var DashboardData = {
             return Promise.resolve(cached);
         }
 
-        // 2. Fetch from Firestore
+        // 2. Fetch from Firestore SDK with timeout
         var docId = month + '_' + year;
+        var docPath = 'dashboard_summary/' + docId;
 
-        return db.collection('dashboard_summary')
+        var sdkCall = db.collection('dashboard_summary')
             .doc(docId)
             .get()
             .then(function (doc) {
-                if (!doc.exists) {
-                    console.warn('[DashboardData] No summary document found for', docId);
-                    window.dashboardSummary = {};
-                    return {};
+                if (!doc.exists) return {};
+                return doc.data();
+            });
+
+        var timeout = new Promise(function (resolve) {
+            setTimeout(function () { resolve('TIMEOUT'); }, 15000);
+        });
+
+        return Promise.race([sdkCall, timeout])
+            .then(function (result) {
+                if (result === 'TIMEOUT') {
+                    console.warn('[DashboardData] SDK timed out for summary — trying REST API fallback');
+                    return self._restApiFallback(docPath).then(function (r) { return r || {}; });
                 }
-
-                var summary = doc.data();
-
+                return result;
+            })
+            .then(function (summary) {
                 window.dashboardSummary = summary;
-                self._setCache(key, summary);
-
+                if (Object.keys(summary).length > 0) self._setCache(key, summary);
                 return summary;
             })
             .catch(function (error) {
                 console.error('[DashboardData] Failed to load summary:', error);
-                self._showError(typeof DashboardI18n !== 'undefined' ? DashboardI18n.t('error.loadSummary') : 'Failed to load dashboard summary. Please try again.');
                 window.dashboardSummary = {};
                 return {};
             });
@@ -296,29 +378,42 @@ var DashboardData = {
             return Promise.resolve(cached);
         }
 
-        // 2. Fetch from Firestore
+        // 2. Fetch from Firestore SDK with timeout
         var docId = month + '_' + year;
+        var docPath = 'thresholds/' + docId;
 
-        return db.collection('thresholds')
+        var sdkCall = db.collection('thresholds')
             .doc(docId)
             .get()
             .then(function (doc) {
-                var thresholds;
-                if (!doc.exists) {
-                    thresholds = {};
+                if (!doc.exists) return null;
+                return doc.data();
+            });
+
+        var timeout = new Promise(function (resolve) {
+            setTimeout(function () { resolve('TIMEOUT'); }, 15000);
+        });
+
+        return Promise.race([sdkCall, timeout])
+            .then(function (result) {
+                if (result === 'TIMEOUT') {
+                    console.warn('[DashboardData] SDK timed out for thresholds — trying REST API fallback');
+                    return self._restApiFallback(docPath);
+                }
+                return result;
+            })
+            .then(function (stored) {
+                var thresholds = {};
+                if (!stored) {
                     Object.keys(defaults).forEach(function (k) {
                         thresholds[k] = defaults[k];
                     });
                 } else {
-                    // Merge with defaults so missing keys still have values
-                    var stored = doc.data();
-                    thresholds = {};
                     Object.keys(defaults).forEach(function (k) {
                         thresholds[k] = (stored[k] !== undefined && stored[k] !== null)
                             ? stored[k]
                             : defaults[k];
                     });
-                    // Preserve any extra keys from Firestore (including progressive_table)
                     Object.keys(stored).forEach(function (k) {
                         if (thresholds[k] === undefined) {
                             thresholds[k] = stored[k];
@@ -328,7 +423,7 @@ var DashboardData = {
 
                 window.thresholds = thresholds;
                 window.progressiveTable = thresholds.progressive_table || PROGRESSIVE_TABLE_DEFAULT;
-                self._setCache(key, thresholds);
+                if (Object.keys(thresholds).length > 0) self._setCache(key, thresholds);
 
                 return thresholds;
             })

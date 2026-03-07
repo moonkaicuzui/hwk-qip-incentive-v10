@@ -23,3 +23,21 @@ firebase.initializeApp(firebaseConfig);
 // Export instances
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// Fix WebChannel connection failures — auto-detect and fallback to long polling
+// when gRPC-Web (WebChannel) transport is blocked by network/proxy/firewall
+db.settings({
+    experimentalAutoDetectLongPolling: true,
+    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+});
+
+// Enable offline persistence for resilience
+db.enablePersistence({ synchronizeTabs: true }).catch(function(err) {
+    if (err.code === 'failed-precondition') {
+        // Multiple tabs open — persistence can only be enabled in one tab
+        console.warn('[Firebase] Persistence failed: multiple tabs open');
+    } else if (err.code === 'unimplemented') {
+        // Browser doesn't support persistence
+        console.warn('[Firebase] Persistence not supported in this browser');
+    }
+});
