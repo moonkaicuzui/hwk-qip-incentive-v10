@@ -14,7 +14,7 @@ python src/step0_create_monthly_config.py
 
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import sys
 import pandas as pd
 import os
@@ -46,7 +46,7 @@ def create_config():
     print()
     
     # 1. 연도 입력
-    current_year = datetime.now().year
+    current_year = datetime.now(timezone.utc).year
     year_input = input(f"📌 연도를 입력하세요 (기본값: {current_year}): ").strip()
     year = int(year_input) if year_input else current_year
     
@@ -178,7 +178,7 @@ def create_config():
         "previous_months": previous_months,
         "file_paths": file_paths,
         "output_prefix": f"output_QIP_incentive_{month_name}_{year}",
-        "created_at": datetime.now().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "data_source": "google_drive" if use_drive else "local"
     }
     

@@ -17,25 +17,11 @@ import os
 import sys
 import json
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 
-try:
-    import firebase_admin
-    from firebase_admin import credentials, firestore
-except ImportError:
-    print("=" * 60)
-    print("firebase-admin 패키지가 설치되지 않았습니다.")
-    print("설치: pip install firebase-admin")
-    print("=" * 60)
-    sys.exit(1)
-
-
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-LOCAL_SERVICE_ACCOUNT_PATH = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
-TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
 
 # Config file → Firestore document mapping
 CONFIG_MAPPINGS = [
@@ -60,28 +46,6 @@ CONFIG_MAPPINGS = [
         "description": "Assembly Inspector 연속 근무월 추적"
     },
 ]
-
-
-def init_firebase():
-    """Initialize Firebase Admin SDK."""
-    if firebase_admin._apps:
-        return firestore.client()
-
-    sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
-
-    if sa_json:
-        sa_dict = json.loads(sa_json)
-        cred = credentials.Certificate(sa_dict)
-    elif os.path.exists(LOCAL_SERVICE_ACCOUNT_PATH):
-        cred = credentials.Certificate(LOCAL_SERVICE_ACCOUNT_PATH)
-    else:
-        print("❌ Firebase 서비스 계정을 찾을 수 없습니다.")
-        sys.exit(1)
-
-    firebase_admin.initialize_app(cred, {
-        "projectId": TARGET_FIREBASE_PROJECT
-    })
-    return firestore.client()
 
 
 def seed_config(db, mapping, dry_run=False):
@@ -136,7 +100,7 @@ def main():
     print(f"  모드: {'DRY RUN' if args.dry_run else 'LIVE'}")
     print("=" * 60)
 
-    db = init_firebase()
+    db = init_firestore()
 
     success_count = 0
     for mapping in CONFIG_MAPPINGS:

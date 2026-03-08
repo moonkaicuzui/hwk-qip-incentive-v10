@@ -17,6 +17,10 @@ import os
 import sys
 import glob
 
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
+
 
 def compute_input_hash():
     """Compute a combined MD5 hash of all input files."""
@@ -61,20 +65,7 @@ def compute_input_hash():
 def get_stored_hash():
     """Get the last input hash from Firestore system/status document."""
     try:
-        import firebase_admin
-        from firebase_admin import credentials, firestore
-
-        sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '')
-        if not sa_json:
-            print("⚠️ FIREBASE_SERVICE_ACCOUNT not set")
-            return None
-
-        sa_dict = json.loads(sa_json)
-        cred = credentials.Certificate(sa_dict)
-        if not firebase_admin._apps:
-            firebase_admin.initialize_app(cred, {"projectId": "hwk-qip-incentive-dashboard"})
-
-        db = firestore.client()
+        db = init_firestore()
         doc = db.collection('system').document('status').get()
 
         if doc.exists:
@@ -93,19 +84,7 @@ def get_stored_hash():
 def save_hash(new_hash):
     """Save the new input hash to Firestore."""
     try:
-        import firebase_admin
-        from firebase_admin import credentials, firestore
-
-        sa_json = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '')
-        if not sa_json:
-            return
-
-        sa_dict = json.loads(sa_json)
-        cred = credentials.Certificate(sa_dict)
-        if not firebase_admin._apps:
-            firebase_admin.initialize_app(cred, {"projectId": "hwk-qip-incentive-dashboard"})
-
-        db = firestore.client()
+        db = init_firestore()
         db.collection('system').document('status').set({
             'last_input_hash': new_hash
         }, merge=True)

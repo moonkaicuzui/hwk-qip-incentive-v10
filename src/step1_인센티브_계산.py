@@ -40,8 +40,12 @@ import os
 import sys
 import re
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import glob
+import shutil
+import tempfile
+import argparse
 import warnings
 import traceback
 from typing import Dict, List, Optional, Any, Tuple
@@ -56,7 +60,8 @@ except ImportError:
     # Fallback for different directory structures
     from common_employee_filter import EmployeeFilter
 
-warnings.filterwarnings('ignore')
+import logging
+logging.basicConfig(level=logging.INFO)
 
 # Import common condition check module
 try:
@@ -77,20 +82,21 @@ def load_position_condition_matrix():
                 return matrix
         else:
             print(f"⚠️ Position condition matrix file not found: {config_path}")
-    except Exception as e:
+    except (json.JSONDecodeError, IOError, KeyError) as e:
         print(f"❌ Position condition matrix load failed: {e}")
     return None
 
 # Load matrix as global variable
 POSITION_CONDITION_MATRIX = load_position_condition_matrix()
 
-def get_position_config_from_matrix(emp_type, position):
+def get_position_config_from_matrix(emp_type, position, position_code=None):
     """
     Find and return configuration for the position from JSON matrix
 
     Args:
         emp_type: 'TYPE-1', 'TYPE-2', 'TYPE-3' etc.
         position: Position name
+        position_code: Position code (e.g., 'A1A', 'A1B') for code-specific matching
 
     Returns:
         dict: Position configuration (applicable conditions, excluded conditions, etc.)
@@ -99,11 +105,23 @@ def get_position_config_from_matrix(emp_type, position):
         return None
 
     position_upper = position.upper()
+    position_code_upper = str(position_code).strip().upper() if position_code else ''
     type_config = POSITION_CONDITION_MATRIX.get('position_matrix', {}).get(emp_type, {})
 
-    # Find configuration by position
+    # Priority 1: Match by position_code (more specific, e.g., A1B → RQC_ASSEMBLY_INSPECTOR)
+    if position_code_upper:
+        for pos_key, pos_config in type_config.items():
+            if pos_key == 'default':
+                continue
+            codes = pos_config.get('position_codes', [])
+            if position_code_upper in codes:
+                return pos_config
+
+    # Priority 2: Match by position name pattern (skip entries that require position_code match)
     for pos_key, pos_config in type_config.items():
         if pos_key == 'default':
+            continue
+        if pos_config.get('position_codes'):
             continue
         patterns = pos_config.get('patterns', [])
         for pattern in patterns:
@@ -122,12 +140,12 @@ class Month(Enum):
     APRIL = (4, "april", "apr", "4월")
     MAY = (5, "may", "may", "5월")
     JUNE = (6, "june", "jun", "6월")
-    JULY = (7, "july", "jul", "July")
-    AUGUST = (8, "august", "aug", "August")
-    SEPTEMBER = (9, "september", "sep", "September")
-    OCTOBER = (10, "october", "oct", "October")
-    NOVEMBER = (11, "november", "nov", "November")
-    DECEMBER = (12, "december", "dec", "December")
+    JULY = (7, "july", "jul", "7월")
+    AUGUST = (8, "august", "aug", "8월")
+    SEPTEMBER = (9, "september", "sep", "9월")
+    OCTOBER = (10, "october", "oct", "10월")
+    NOVEMBER = (11, "november", "nov", "11월")
+    DECEMBER = (12, "december", "dec", "12월")
     
     def __init__(self, number, full_name, short_name, korean_name):
         self.number = number
@@ -220,9 +238,6 @@ class ConfigManager:
     @staticmethod
     def create_auto_config(attendance_file: str = None) -> MonthConfig:
         """Auto-detect month from attendance file and create configuration"""
-        import os
-        import glob
-        
         # Auto-find attendance file
         if not attendance_file:
             attendance_patterns = [
@@ -290,8 +305,6 @@ class ConfigManager:
     @staticmethod
     def auto_detect_files(month_name: str, prev_month_korean: str, year: int) -> dict:
         """파일 자동 detection"""
-        import os
-        
         detected_files = {}
         
         # file 패턴 정of
@@ -414,7 +427,7 @@ class SpecialCaseHandler:
             incentive = self._get_manual_input(name)
             print(f"✅ Input incentive: {incentive:,.0f} VND")
             return incentive
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             print(f"❌ Input error: {e}")
             return 0
     
@@ -434,7 +447,7 @@ class SpecialCaseHandler:
             incentive = self._get_manual_input(name)
             print(f"✅ Input incentive: {incentive:,.0f} VND")
             return incentive
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             print(f"❌ Input error: {e}")
             return 0
     
@@ -454,31 +467,15 @@ class SpecialCaseHandler:
             incentive = self._get_manual_input(name)
             print(f"✅ Input incentive: {incentive:,.0f} VND")
             return incentive
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             print(f"❌ Input error: {e}")
             return 0
     
     def _get_manual_input(self, name: str) -> float:
-        """수same 입력 받기"""
-        while True:
-            try:
-                month_str = self.config.get_month_str("korean")
-                user_input = input(f"\n{name}of {month_str} incentive amount 입력 (VND): ")
-                if not user_input.strip():
-                    if input("입력 없음. 0with processing? (y/n): ").lower() == 'y':
-                        return 0
-                    continue
-                
-                # 쉼표 제거 후 숫자 변환
-                amount = float(user_input.replace(',', '').strip())
-                if amount < 0:
-                    print("❌ Cannot input negative numbers.")
-                    continue
-                    
-                return amount
-            except ValueError:
-                print("❌ Please enter a valid number.")
-                continue
+        """수동 입력 대체 - CI/CD 파이프라인 호환"""
+        month_str = self.config.get_month_str("korean")
+        logging.warning(f"{name}의 {month_str} incentive amount를 수동 입력해야 하지만 자동화 모드에서 실행 중. 0 VND로 처리합니다.")
+        return 0
 
 
 class DataProcessor:
@@ -521,7 +518,7 @@ class DataProcessor:
 
             return progression_table
 
-        except Exception as e:
+        except (json.JSONDecodeError, IOError, KeyError, ValueError) as e:
             print(f"⚠️ Error loading progression_table: {e}")
             print("Using default progression table.")
             return {
@@ -650,7 +647,7 @@ class DataProcessor:
 
                     return True
 
-                except Exception as e:
+                except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
                     print(f"  ❌ July incentive file load failed: {e}")
                     return False
             else:
@@ -665,8 +662,7 @@ class DataProcessor:
         print("\n📊 Processing attendance conditions...")
 
         # minimum 근무 days수 condition apply 여부 안내
-        from datetime import datetime
-        current_date = datetime.now()
+        current_date = datetime.now(timezone.utc)
         if current_date.day < 20:
             print(f"  ℹ️ current date {current_date.day} th - Before 20th of every month, so minimum 12 days worked condition not applied.")
             print(f"     (interim exception processing for interim report creation)")
@@ -732,8 +728,7 @@ class DataProcessor:
                     absence_rate = 0
                 
                 # minimum 근무 days수 condition date basedwith apply
-                from datetime import datetime
-                current_date = datetime.now()
+                current_date = datetime.now(timezone.utc)
 
                 # Check if we're calculating for current month or past month
                 is_current_month = (current_date.year == self.config.year and
@@ -911,8 +906,7 @@ class DataProcessor:
                 absence_rate = 0
             
             # date basedwith condition apply 여부 결정
-            from datetime import datetime
-            current_date = datetime.now()
+            current_date = datetime.now(timezone.utc)
 
             # every month 20 days previous: interim 보고서with 간주, condition 완화
             # every month 20 days 후: 정상 condition apply
@@ -1197,7 +1191,7 @@ class DataProcessor:
 
                     return (august_df, 'august')
 
-                except Exception as e:
+                except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
                     print(f"⚠️ Error loading August CSV: {e}")
                     return (None, None)
             else:
@@ -1230,7 +1224,7 @@ class DataProcessor:
                 print(f"   ℹ️ Continuous_Months 컬럼 없음 → 인센티브 금액에서 역산 예정")
                 return (prev_df, prev_month_name)
 
-            except Exception as e:
+            except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
                 print(f"⚠️ Final Incentive 파일 로드 실패: {e}")
                 print(f"   Fallback: Output CSV 파일 사용")
 
@@ -1267,7 +1261,7 @@ class DataProcessor:
 
                     return (prev_df, prev_month_name)
 
-                except Exception as e:
+                except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
                     print(f"⚠️ Error loading {excel_path}: {e}")
                     continue
 
@@ -1291,7 +1285,6 @@ class DataProcessor:
         Returns:
             DataFrame: Previous_Incentive 컬럼이 추가된 month_data
         """
-        import os
 
         # month_data 확인
         if month_data is None:
@@ -1376,7 +1369,7 @@ class DataProcessor:
                                     month_data['Previous_Continuous_Months'] = month_data['Employee No'].map(cont_map).fillna(0)
                                     pcm_count = (month_data['Previous_Continuous_Months'] > 0).sum()
                                     print(f"     → Previous_Continuous_Months supplemented: {pcm_count} employees")
-                            except Exception:
+                            except (KeyError, ValueError, pd.errors.ParserError):
                                 pass
                             break
 
@@ -1385,7 +1378,7 @@ class DataProcessor:
                     print(f"  ⚠️ [Issue #48] Incentive column not found in Final file")
                     print(f"     Available columns: {list(final_incentive_data.columns)[:5]}...")
 
-            except Exception as e:
+            except Exception as e:  # noqa: broad-except - intentional catch-all with logging
                 print(f"  ⚠️ [Issue #48] Failed to load Final Incentive file: {e}")
         else:
             print(f"  ⚠️ [Issue #48] Final Incentive file not found: {final_incentive_path}")
@@ -1422,7 +1415,7 @@ class DataProcessor:
                         print(f"     → Previous_Continuous_Months: {pcm_count} employees loaded")
 
                     return month_data
-                except Exception as e:
+                except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
                     print(f"  ⚠️ [Priority 2] Failed to load output CSV: {e}")
 
         # === Fallback: 기존 대시보드 CSV ===
@@ -1463,7 +1456,7 @@ class DataProcessor:
                 else:
                     print(f"  ⚠️ [Issue #48] No incentive column found in fallback CSV")
                     print(f"     Available columns: {[c for c in prev_incentive_data.columns if 'Incentive' in c]}")
-            except Exception as e:
+            except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
                 print(f"  ⚠️ [Issue #48] Failed to load fallback CSV: {e}")
 
         # === No data found ===
@@ -1531,7 +1524,11 @@ class DataProcessor:
             if pattern in position_name:
                 return 'MODEL_MASTER'
 
-        # 6. ASSEMBLY INSPECTOR (most common TYPE-1)
+        # 6. RQC ASSEMBLY INSPECTOR (position_code A1B — C10 exempted)
+        if position_code == 'A1B' and 'ASSEMBLY INSPECTOR' in position_name:
+            return 'RQC_ASSEMBLY_INSPECTOR'
+
+        # 7. ASSEMBLY INSPECTOR (most common TYPE-1)
         assembly_patterns = ['ASSEMBLY INSPECTOR']
         for pattern in assembly_patterns:
             if pattern in position_name:
@@ -1561,6 +1558,7 @@ class DataProcessor:
         condition_mapping = {
             'AQL_INSPECTOR': [1, 2, 3, 4, 5],                    # 출근 + 당월 AQL
             'ASSEMBLY_INSPECTOR': [1, 2, 3, 4, 5, 6, 9, 10],     # 출근 + 개인 AQL + 5PRS
+            'RQC_ASSEMBLY_INSPECTOR': [1, 2, 3, 4, 5, 6, 9],     # 출근 + 개인 AQL + 5PRS통과율 (C10 면제)
             'AUDITOR_TRAINER': [1, 2, 3, 4, 7, 8],               # 출근 + 팀/구역 AQL + 담당구역
             'MODEL_MASTER': [1, 2, 3, 4, 8],                     # 출근 + 담당구역
             'OTHER': [1, 2, 3, 4]                                # 기본 출근 조건만
@@ -1693,7 +1691,7 @@ class DataProcessor:
                 prev_val = row.get('Previous_Incentive', 0)
                 if prev_val is not None and not pd.isna(prev_val):
                     previous_incentive = float(prev_val)
-        except Exception:
+        except (ValueError, TypeError):
             pass
 
         # Previous_Incentive = 0 → 첫 달
@@ -1735,25 +1733,8 @@ class DataProcessor:
         if position_category == 'AQL_INSPECTOR':
             return self._reverse_calculate_aql_months(incentive_int)
 
-        # 표준 TYPE-1 progression table
-        # progression_table: {1: 150000, 2: 250000, ..., 12: 1000000, ...}
-        progression_table = {
-            1: 150000,
-            2: 250000,
-            3: 300000,
-            4: 350000,
-            5: 400000,
-            6: 450000,
-            7: 500000,
-            8: 650000,
-            9: 750000,
-            10: 850000,
-            11: 950000,
-            12: 1000000,
-            13: 1000000,
-            14: 1000000,
-            15: 1000000
-        }
+        # 표준 TYPE-1 progression table (self.progression_table에서 로드)
+        progression_table = self.progression_table
 
         # 정확히 일치하는 금액 찾기
         for months, amount in progression_table.items():
@@ -1808,12 +1789,8 @@ class DataProcessor:
             13: 900000, 14: 900000, 15: 900000
         }
 
-        # Part 1 테이블
-        part1_table = {
-            1: 150000, 2: 250000, 3: 300000, 4: 350000, 5: 400000,
-            6: 450000, 7: 500000, 8: 650000, 9: 750000, 10: 850000,
-            11: 950000, 12: 1000000, 13: 1000000, 14: 1000000, 15: 1000000
-        }
+        # Part 1 테이블 (self.progression_table에서 로드)
+        part1_table = self.progression_table
 
         # 가능한 조합 찾기 (작은 개월부터 - 더 정확한 매칭)
         for months in range(1, 16):
@@ -1878,24 +1855,8 @@ class DataProcessor:
         Returns:
             dict: 인센티브 계산 결과
         """
-        progression_table = {
-            0: 0,
-            1: 150000,
-            2: 250000,
-            3: 300000,
-            4: 350000,
-            5: 400000,
-            6: 450000,
-            7: 500000,
-            8: 650000,
-            9: 750000,
-            10: 850000,
-            11: 950000,
-            12: 1000000,
-            13: 1000000,
-            14: 1000000,
-            15: 1000000
-        }
+        # self.progression_table에서 로드 (하드코딩 제거)
+        progression_table = self.progression_table
 
         # 최대 15개월로 제한
         months = min(continuous_months, 15)
@@ -1926,12 +1887,8 @@ class DataProcessor:
         Returns:
             dict: 3-Part 계산 결과
         """
-        # Part 1 테이블
-        part1_table = {
-            1: 150000, 2: 250000, 3: 300000, 4: 350000, 5: 400000,
-            6: 450000, 7: 500000, 8: 650000, 9: 750000, 10: 850000,
-            11: 950000, 12: 1000000, 13: 1000000, 14: 1000000, 15: 1000000
-        }
+        # Part 1 테이블 (self.progression_table에서 로드)
+        part1_table = self.progression_table
 
         # Part 3 (HWK) 테이블 - 4개월부터 시작
         part3_table = {
@@ -1984,7 +1941,6 @@ class DataProcessor:
             또는 기본 True (대부분의 AQL Inspector가 CFA 보유)
         """
         try:
-            import json
             config_path = 'config_files/aql_inspector_incentive_config.json'
             with open(config_path, 'r', encoding='utf-8') as f:
                 aql_config = json.load(f)
@@ -1996,7 +1952,7 @@ class DataProcessor:
             # AQL Inspector config에 등록되지 않은 직원은 CFA 미보유로 처리
             # (실제 AQL Inspector는 모두 config에 등록되어 있어야 함)
             return False
-        except Exception as e:
+        except (json.JSONDecodeError, FileNotFoundError, KeyError) as e:
             # 오류 시 보수적으로 False 반환
             return False
 
@@ -2148,10 +2104,6 @@ class DataProcessor:
         """AQL history file 활용한 3-month consecutive failure 체크"""
         print("\n📊 AQL History Checking 3-month consecutive failures based on files...")
         
-        import tempfile
-        import os
-        import glob
-        import re
         
         def load_aql_history(month_name, year=2025):
             """AQL history file withload (헤더 processing include)
@@ -2229,7 +2181,7 @@ class DataProcessor:
 
                 return df
 
-            except Exception as e:
+            except (pd.errors.ParserError, IOError, KeyError) as e:
                 return None
         
         def get_latest_three_months():
@@ -2664,7 +2616,6 @@ class CompleteQIPCalculator:
         self.position_matrix = POSITION_CONDITION_MATRIX
 
         # base_path configuration (프with젝트 루트 directory)
-        from pathlib import Path
         self.base_path = Path.cwd()
 
         # data saved
@@ -2738,7 +2689,7 @@ class CompleteQIPCalculator:
 
                     return True
 
-                except Exception as e:
+                except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
                     print(f"  ❌ July incentive file load failed: {e}")
                     return False
             else:
@@ -2889,7 +2840,6 @@ class CompleteQIPCalculator:
             else:
                 print(f"  ⚠️ previous incentive data not found (key: {prev_incentive_key})")
             # AQL history file 있지 checking
-            import os
             aql_history_path = 'input_files/AQL history'
 
             # current monthand previous 2-monthof AQL history file checking
@@ -3224,8 +3174,6 @@ class CompleteQIPCalculator:
 
     def _recalculate_absence_rate_for_resigned(self):
         """퇴사자 위한 absence rate 재calculation"""
-        import numpy as np
-        from datetime import datetime, timedelta
         
         if 'Stop working Date' not in self.month_data.columns:
             return
@@ -3273,7 +3221,7 @@ class CompleteQIPCalculator:
                             # 레거시 컬럼 삭제:                             self.month_data.loc[idx, 'attendancy condition 1 - acctual working days is zero'] = 'yes'
                             # 레거시 컬럼 삭제: self.month_data.loc[idx, 'attendancy condition 4 - minimum working days'] = 'yes'
                             
-                except Exception as e:
+                except (ValueError, TypeError) as e:
                     print(f"  ⚠️ 퇴사자 absence rate 재calculation 오류 (employee {row.get('Employee No', '')}): {e}")
     
     def _set_improved_default_values(self):
@@ -3316,7 +3264,7 @@ class CompleteQIPCalculator:
                             # 레거시 컬럼 삭제: self.month_data.loc[idx, 'attendancy condition 1 - acctual working days is zero'] = 'yes'
                             self.month_data.loc[idx, '결근율_Absence_Rate_Percent'] = 100.0
                             print(f"  → Stop Working employee {row.get('Employee No', '')}: {stop_date.strftime('%Y-%m-%d')} 퇴사 → Actual Working Days = 0")
-                    except Exception as e:
+                    except (ValueError, TypeError) as e:
                         print(f"  ⚠️ Stop Working Date processing 오류 (employee {row.get('Employee No', '')}): {e}")
         
         # condition column defaultvalue
@@ -3453,7 +3401,6 @@ class CompleteQIPCalculator:
                 raise Exception(f"{prev_month}month config file 없어 {self.config.month.number}month calculation in progressproceed.")
             
             # JSON file withload
-            import json
             with open(prev_config_file, 'r', encoding='utf-8') as f:
                 config_data = json.load(f)
             
@@ -3838,7 +3785,6 @@ class CompleteQIPCalculator:
         유지 이유: 디버깅 참조용, 추후 완전 제거 예정
         대체 함수: CompleteDataLoader.calculate_type1_incentive_unified()
         """
-        import warnings
         warnings.warn(
             "calculate_auditor_trainer_incentive() is deprecated. "
             "Use calculate_type1_incentive_unified() instead. (Issue #51)",
@@ -4212,7 +4158,6 @@ class CompleteQIPCalculator:
             json_path = self.base_path / 'config_files' / 'auditor_trainer_area_mapping.json'
             if not json_path.exists():
                 # 없으면 프with젝트 루트of config_filesfrom 찾기
-                from pathlib import Path
                 json_path = Path('config_files/auditor_trainer_area_mapping.json')
             
             if json_path.exists():
@@ -4220,7 +4165,7 @@ class CompleteQIPCalculator:
                     return json.load(f)
             else:
                 print("⚠️ auditor_trainer_area_mapping.json file not found.")
-        except Exception as e:
+        except (json.JSONDecodeError, FileNotFoundError, IOError) as e:
             print(f"⚠️ JSON file withload in progress Error: {e}")
         return {}
     
@@ -4269,7 +4214,7 @@ class CompleteQIPCalculator:
             else:
                 print(f"⚠️ AQL history file not found: {file_path}")
                 
-        except Exception as e:
+        except (FileNotFoundError, pd.errors.ParserError, KeyError) as e:
             print(f"⚠️ AQL data withload in progress Error: {e}")
         
         return pd.DataFrame()
@@ -4393,13 +4338,12 @@ class CompleteQIPCalculator:
             config_path = self.base_path / 'config_files' / 'aql_inspector_incentive_config.json'
             if not config_path.exists():
                 # 없으면 프with젝트 루트of config_filesfrom 찾기
-                from pathlib import Path
                 config_path = Path('config_files/aql_inspector_incentive_config.json')
             
             if config_path.exists():
                 with open(config_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
-        except Exception as e:
+        except (json.JSONDecodeError, FileNotFoundError, IOError) as e:
             print(f"⚠️ AQL Inspector configuration withload in progress Error: {e}")
         return {}
     
@@ -4511,7 +4455,6 @@ class CompleteQIPCalculator:
         ASSEMBLY INSPECTOR: 8/10 condition apply (6번 condition include)
         AQL INSPECTOR: 5/10 condition apply (6번 condition exclude)
         """
-        import warnings
         warnings.warn(
             "calculate_assembly_inspector_incentive_type1_only() is deprecated. "
             "Use calculate_type1_incentive_unified() instead. (Issue #51)",
@@ -5602,14 +5545,13 @@ class CompleteQIPCalculator:
         """TYPE-2 포지션 matching rule withload"""
         try:
             # 프with젝트 루트from mapping file withload
-            import os
             mapping_path = 'config_files/type2_position_mapping.json'
             if os.path.exists(mapping_path):
                 with open(mapping_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
             else:
                 print(f"⚠️ TYPE-2 matching rule file not found: {mapping_path}")
-        except Exception as e:
+        except (json.JSONDecodeError, FileNotFoundError, IOError) as e:
             print(f"⚠️ TYPE-2 matching rule withload in progress Error: {e}")
         return {}
     
@@ -5792,9 +5734,8 @@ class CompleteQIPCalculator:
             else:
                 print("  → No applicable employees for this month.")
                 
-        except Exception as e:
+        except Exception as e:  # noqa: broad-except - intentional catch-all with logging
             print(f"  ❌ Talent Pool Applying bonuses Error: {e}")
-            import traceback
             traceback.print_exc()
     
     def generate_summary(self):
@@ -5891,7 +5832,6 @@ class CompleteQIPCalculator:
                 try:
                     json_path = Path('config_files/assembly_inspector_continuous_months.json')
                     if json_path.exists():
-                        import json
                         with open(json_path, 'r', encoding='utf-8') as f:
                             config = json.load(f)
 
@@ -5988,8 +5928,8 @@ class CompleteQIPCalculator:
 
             return len(approved_leave)
 
-        except Exception as e:
-            # to러 발생 시 0 반환 (with그 출력하지 않음 - 조용히 processing)
+        except (ValueError, TypeError, KeyError) as e:
+            # 오류 발생 시 0 반환 (조용히 처리)
             return 0
 
     def add_condition_evaluation_to_excel(self):
@@ -6060,8 +6000,7 @@ class CompleteQIPCalculator:
             self.month_data[col] = self.month_data[col].astype('object')
 
         # Interim vs Final report 판정 (조건 1&4 예외 처리용)
-        from datetime import datetime
-        current_date = datetime.now()
+        current_date = datetime.now(timezone.utc)
         is_current_month = (current_date.year == self.config.year and
                            current_date.month == self.config.month.number)
 
@@ -6090,7 +6029,7 @@ class CompleteQIPCalculator:
             is_interim_report = False
 
             # position_condition_matrix.jsonfrom 해당 positionof condition configuration 져오기
-            pos_config = get_position_config_from_matrix(emp_type, position)
+            pos_config = get_position_config_from_matrix(emp_type, position, position_code)
 
             if not pos_config:
                 # defaultvalue configuration (default 사용)
@@ -6385,9 +6324,6 @@ class CompleteQIPCalculator:
 
         try:
             # output_files 폴더 created
-            import os
-            import shutil
-            import json
             output_dir = "output_files"
             os.makedirs(output_dir, exist_ok=True)
             
@@ -6469,7 +6405,7 @@ class CompleteQIPCalculator:
                             print(f"  ⚠️ Final Incentive 파일에서 인센티브 컬럼을 찾을 수 없음")
                             print(f"     사용 가능한 컬럼: {list(final_incentive_data.columns)[:5]}...")
 
-                    except Exception as e:
+                    except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
                         print(f"  ⚠️ Final Incentive 파일 로드 실패: {e}")
 
                 # === Priority 2: Fallback - 기존 대시보드 CSV ===
@@ -6519,7 +6455,7 @@ class CompleteQIPCalculator:
                             prev_incentive_map = prev_incentive_data.set_index('Employee No')[col_name].to_dict()
                             self.month_data['Previous_Incentive'] = self.month_data['Employee No'].map(prev_incentive_map).fillna(0)
                             prev_incentive_loaded = True
-                    except Exception as e:
+                    except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
                         print(f"  ⚠️ {prev_month.korean_name} incentive data load failed: {e}")
 
                 # === No data found ===
@@ -6625,7 +6561,7 @@ class CompleteQIPCalculator:
             self.generate_building_review_analysis(output_dir)
 
             return True
-        except Exception as e:
+        except Exception as e:  # noqa: broad-except - intentional catch-all with logging
             print(f"❌ file saved in progress Error: {e}")
             traceback.print_exc()
             return False
@@ -6638,8 +6574,6 @@ class CompleteQIPCalculator:
         2. 상사 정보없음: 직원은 Building 있지만 상사는 없음
         3. 데이터 소스 불일치: HR과 AQL 파일 간 Building 다름 (A2=A 제외)
         """
-        import json
-        import os
 
         print("\n📊 Building Review Analysis 생성 (Issue #46-B)...")
 
@@ -6788,7 +6722,7 @@ class CompleteQIPCalculator:
 
             return json_path
 
-        except Exception as e:
+        except Exception as e:  # noqa: broad-except - intentional catch-all with logging
             print(f"  ⚠️ Building Review Analysis 생성 실패: {e}")
             traceback.print_exc()
             return None
@@ -6796,8 +6730,6 @@ class CompleteQIPCalculator:
     def save_calculation_metadata(self, output_dir: str) -> Optional[str]:
         """calculation 메타data JSONwith saved (condition 충족 상세 정보 include)"""
         try:
-            import json
-            import os
             
             metadata = {}
             incentive_col = f"{self.config.get_month_str('capital')}_Incentive"
@@ -7019,18 +6951,14 @@ class CompleteQIPCalculator:
                 print(f"⚠️ 메타data file created failure: {metadata_file}")
                 return None
             
-        except Exception as e:
+        except Exception as e:  # noqa: broad-except - intentional catch-all with logging
             print(f"  ⚠️ 메타data saved failure: {e}")
-            import traceback
             traceback.print_exc()
             return None
     
     def prepare_next_month_file(self, csv_file_path):
         """next month 계산용 파일 자동 created (month 자same 순환 include)"""
         try:
-            import shutil
-            import os
-            from datetime import datetime
             
             # month 름 mapping
             month_korean = {
@@ -7112,7 +7040,7 @@ class CompleteQIPCalculator:
             """
             print(next_month_info)
             
-        except Exception as e:
+        except (IOError, KeyError, ValueError, shutil.Error) as e:
             print(f"  ⚠️ next month 파일 자동 created failure: {e}")
             print(f"     수samewith fileemployees 변경해주세요.")
     
@@ -7133,7 +7061,6 @@ class CompleteQIPCalculator:
                     prev_file_path = self.config.file_paths.get('previous_incentive',
                                                                  f"input_files/{self.config.year}year {prev_month.number}month incentive 지급 세부 정보.csv")
 
-                    import os
                     if os.path.exists(prev_file_path):
                         try:
                             prev_incentive_data = pd.read_csv(prev_file_path, encoding='utf-8-sig')
@@ -7150,7 +7077,7 @@ class CompleteQIPCalculator:
                             else:
                                 print(f"  ⚠️ {prev_month.korean_name} incentive column 찾 수 없습니다")
                                 self.month_data['Previous_Incentive'] = 0
-                        except Exception as e:
+                        except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
                             print(f"  ⚠️ {prev_month.korean_name} incentive data load failed: {e}")
                             self.month_data['Previous_Incentive'] = 0
                     else:
@@ -7466,7 +7393,7 @@ class CompleteQIPCalculator:
     <div class="container">
         <div class="header">
             <h1>QIP incentive 계산 결과</h1>
-            <p>{self.config.year}year {month_kr} | created days: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p>{self.config.year}year {month_kr} | created days: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}</p>
         </div>
         
         <div class="content">
@@ -8044,7 +7971,6 @@ class CompleteQIPCalculator:
 </html>"""
             
             # file saved
-            import os
             output_dir = "output_files"
             os.makedirs(output_dir, exist_ok=True)
             html_filename = os.path.join(output_dir, f"QIP_Incentive_Report_{month_str}_{self.config.year}.html")
@@ -8053,7 +7979,7 @@ class CompleteQIPCalculator:
             
             return html_filename
         
-        except Exception as e:
+        except Exception as e:  # noqa: broad-except - intentional catch-all with logging
             print(f"❌ HTML report created in progress Error: {e}")
             traceback.print_exc()
             return None
@@ -8127,7 +8053,7 @@ class CompleteDataLoader:
             print(f"❌ {file_key} load failed")
             return None
         
-        except Exception as e:
+        except (FileNotFoundError, pd.errors.ParserError, IOError, ValueError) as e:
             print(f"❌ file withload 오류 ({file_key}): {e}")
             return None
     
@@ -8149,7 +8075,6 @@ class CompleteDataLoader:
 def detect_month_from_attendance(file_path: str) -> tuple:
     """Attendance fileof Work Datefrom yearalsoand month 자same detection"""
     try:
-        import pandas as pd
         
         # file 읽기
         df = pd.read_csv(file_path, encoding='utf-8-sig')
@@ -8184,7 +8109,7 @@ def detect_month_from_attendance(file_path: str) -> tuple:
         print(f"✅ Attendance 파일에서 detectiondone yearMonth: {year}year {month}month")
         return year, month
         
-    except Exception as e:
+    except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
         print(f"⚠️ Attendance file yearmonth detection failure: {e}")
         return None, None
 
@@ -8192,7 +8117,6 @@ def detect_month_from_attendance(file_path: str) -> tuple:
 def calculate_working_days_from_attendance(file_path: str, year: int, month: int) -> int:
     """Attendance 파일에서 실제 근무 days calculation"""
     try:
-        import pandas as pd
         
         # file 읽기
         df = pd.read_csv(file_path, encoding='utf-8-sig')
@@ -8220,7 +8144,7 @@ def calculate_working_days_from_attendance(file_path: str, year: int, month: int
         print(f"✅ Attendance 파일에서 calculationdone {year}year {month}month Working days: {working_days} days")
         return working_days
         
-    except Exception as e:
+    except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:
         print(f"⚠️ Attendance file 분석 failure: {e}")
         return None
 
@@ -8229,10 +8153,7 @@ def init_command():
     """초기 configuration employees령어 - 파일 자동 detection 및 configuration"""
     print("\n🔧 Initial configuration started...")
     print("📂 current directoryof file 분석합니다...")
-    
-    import os
-    import glob
-    
+
     # current directoryof CSV file 목록
     csv_files = glob.glob("*.csv")
     excel_files = glob.glob("*.xlsx")
@@ -8250,12 +8171,12 @@ def init_command():
             break
     
     if not attendance_file:
-        print("⚠️ Attendance file not found.")
-        attendance_file = input("Attendance file 경with 입력하세요: ").strip()
-    
-    # yearalsoand month 입력
-    year = int(input("\n📅 연also 입력하세요 (예: 2025): "))
-    month_num = int(input("📅 month 입력하세요 (1-12): "))
+        logging.warning("Attendance file not found. 자동 모드에서는 --config 옵션을 사용하세요.")
+        return None
+
+    # yearalsoand month 입력 - CI/CD에서는 --config 사용 권장
+    logging.warning("init_command()는 대화형 모드입니다. CI/CD에서는 --config 옵션을 사용하세요.")
+    return None
     
     # Attendance 파일에서 근무 days 자same calculation
     working_days = None
@@ -8330,10 +8251,6 @@ def main():
     print(f"🚀 QIP Incentive Calculation System v8.02")
     print("="*60)
     
-    # employees령어 체크
-    import sys
-    import argparse
-    
     # argparsewith employees령줄 인자 processing
     parser = argparse.ArgumentParser(description='QIP Incentive Calculation System')
     parser.add_argument('--config', type=str, help='configuration file 경with')
@@ -8353,56 +8270,10 @@ def main():
             print("\n프with그램 종료합니다.")
             return
     else:
-        # month 선택
-        print("\n📅 Select month to calculate:")
-        print("1. 6월 (June)")
-        print("2. July (July)")
-        print("3. Custom configuration")
-        print("4. /init - Auto-configuration (recommended)")
-        
-        choice = input("\n선택 (1/2/3/4): ").strip()
-    
-        if choice == "4":
-            config = init_command()
-            if config is None:
-                print("\n프with그램 종료합니다.")
-                return
-        elif choice == "1":
-            config = ConfigManager.create_june_config()
-        elif choice == "2":
-            config = ConfigManager.create_july_config()
-        elif choice == "3":
-            # Custom configuration configuration
-            year = int(input("연also 입력 (예: 2025): "))
-            month_num = int(input("month 입력 (1-12): "))
-            working_days = int(input("근무 days 수 입력: "))
-            
-            month = Month.from_number(month_num)
-            prev_month1 = Month.from_number((month_num - 2) % 12 or 12)
-            prev_month2 = Month.from_number((month_num - 1) % 12 or 12)
-            
-            config = MonthConfig(
-                year=year,
-                month=month,
-                working_days=working_days,
-                previous_months=[prev_month1, prev_month2],
-                file_paths={
-                    "basic": input(f"{month.korean_name} default data fileemployees: "),
-                    "previous_incentive": input(f"{prev_month2.korean_name} incentive data fileemployees: "),
-                    "aql": input(f"{month.korean_name} AQL data fileemployees: "),
-                    "5prs": input(f"{month.korean_name} 5PRS data fileemployees: "),
-                    "attendance": input(f"{month.korean_name} attendance data fileemployees: ")
-                },
-                output_prefix=f"output_QIP_incentive_{month.full_name}_{year}"
-            )
-        else:
-            print("❌ 잘못done 선택입니다.")
-            return
-    
-    # configuration saved 옵션 (config 파라미터with 실행한 경우to cases너뛰기)
-    if not args.config:
-        if input("\nconfiguration saved하시겠습니까? (y/n): ").lower() == 'y':
-            ConfigManager.save_config(config)
+        # CI/CD 모드: --config 옵션 필수
+        logging.warning("--config 옵션 없이 실행됨. 대화형 모드는 CI/CD에서 지원되지 않습니다.")
+        logging.warning("사용법: python src/step1_인센티브_계산.py --config config_files/config_february_2026.json")
+        return
     
     try:
         # data withload
@@ -8428,7 +8299,7 @@ def main():
         else:
             print("\n⚠️ 결and saved in progress  days부 오류 발생했습니다.")
     
-    except Exception as e:
+    except Exception as e:  # noqa: broad-except - top-level entry point catch-all with traceback
         print(f"\n❌ 실행 in progress 오류 발생: {e}")
         traceback.print_exc()
         sys.exit(1)

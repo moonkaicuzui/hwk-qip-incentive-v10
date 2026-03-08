@@ -20,29 +20,12 @@ import os
 import sys
 import json
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
 
-
-try:
-    import firebase_admin
-    from firebase_admin import credentials, firestore
-except ImportError:
-    print("=" * 60)
-    print("firebase-admin 패키지가 설치되지 않았습니다.")
-    print("설치: pip install firebase-admin")
-    print("=" * 60)
-    sys.exit(1)
-
-
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-LOCAL_SERVICE_ACCOUNT_PATH = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
-
-# 대상 Firebase 프로젝트 ID (서비스 계정과 Firestore 프로젝트가 다름)
-TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
 
 # Default thresholds (Issue #60 참조: 기본 정책 값)
 DEFAULT_THRESHOLDS = {
@@ -65,56 +48,6 @@ THRESHOLD_KEYS = [
     "5prs_min_qty",
     "consecutive_aql_months",
 ]
-
-
-# ---------------------------------------------------------------------------
-# Firebase initialisation (upload_to_firestore.py 패턴 재사용)
-# ---------------------------------------------------------------------------
-
-def init_firestore(dry_run=False):
-    """Firebase Admin SDK 초기화 및 Firestore 클라이언트 반환
-
-    Args:
-        dry_run: True이면 실제 연결도 수행 (읽기 전용이므로)
-
-    Returns:
-        Firestore client 또는 None (인증 실패 시)
-    """
-    # 이미 초기화된 경우 기존 앱 사용
-    if firebase_admin._apps:
-        print("  Firebase 이미 초기화됨 - 기존 앱 사용")
-        return firestore.client()
-
-    # Firebase 앱 초기화 옵션 — 대상 프로젝트 명시
-    app_options = {"projectId": TARGET_FIREBASE_PROJECT}
-
-    # 1) 환경변수에서 서비스 계정 정보 로드
-    sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
-    if sa_json:
-        try:
-            sa_info = json.loads(sa_json)
-            cred = credentials.Certificate(sa_info)
-            firebase_admin.initialize_app(cred, app_options)
-            print(f"  Firebase 초기화 성공 (환경변수 → {TARGET_FIREBASE_PROJECT})")
-            return firestore.client()
-        except Exception as e:
-            print(f"  환경변수 인증 실패: {e}")
-            print("  로컬 파일로 fallback 시도...")
-
-    # 2) 로컬 서비스 계정 파일
-    if os.path.exists(LOCAL_SERVICE_ACCOUNT_PATH):
-        try:
-            cred = credentials.Certificate(LOCAL_SERVICE_ACCOUNT_PATH)
-            firebase_admin.initialize_app(cred, app_options)
-            print(f"  Firebase 초기화 성공 (로컬 파일 → {TARGET_FIREBASE_PROJECT})")
-            return firestore.client()
-        except Exception as e:
-            print(f"  로컬 파일 인증 실패: {e}")
-            return None
-    else:
-        print(f"  서비스 계정 파일 없음: {LOCAL_SERVICE_ACCOUNT_PATH}")
-        print("  FIREBASE_SERVICE_ACCOUNT 환경변수를 설정하거나 로컬 파일을 배치하세요.")
-        return None
 
 
 # ---------------------------------------------------------------------------
@@ -246,7 +179,7 @@ def merge_thresholds(config: dict, thresholds: dict) -> dict:
             config["thresholds"][key] = thresholds[key]
 
     # 동기화 메타 정보 추가
-    config["thresholds_synced_at"] = datetime.utcnow().isoformat() + "Z"
+    config["thresholds_synced_at"] = datetime.now(timezone.utc).isoformat() + "Z"
     config["thresholds_source"] = "firestore"
 
     return config
@@ -326,7 +259,7 @@ def main():
     # -----------------------------------------------------------------------
     print("\n[Step 1] Firestore에서 thresholds 읽기")
 
-    db = init_firestore(dry_run=False)  # dry-run이어도 읽기는 필요
+    db = init_firestore()  # dry-run이어도 읽기는 필요
     if db is None:
         print("  Firebase 초기화 실패 - 기본값(defaults) 사용")
         firestore_thresholds = None

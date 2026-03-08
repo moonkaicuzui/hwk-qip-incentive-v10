@@ -9,7 +9,7 @@
 """
 
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 from scripts.utils.common_date_parser import DateParser
 from typing import Optional, Dict, Any, Tuple
 
@@ -297,7 +297,7 @@ class EmployeeFilter:
             
         # 보고서 생성일 (기본값: 현재 날짜)
         if generation_date is None:
-            generation_date = datetime.now()
+            generation_date = datetime.now(timezone.utc)
         
         # 복사본 생성하여 원본 데이터 보호
         df_copy = df.copy()

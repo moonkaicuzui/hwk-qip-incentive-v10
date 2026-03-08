@@ -2,7 +2,7 @@ name: Auto Update Dashboard
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Every 30 minutes
+    - cron: '0 */6 * * *'  # Every 6 hours
   workflow_dispatch:  # Manual trigger from admin page
     inputs:
       force_run:
@@ -331,11 +331,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Stash any local changes, sync with remote
-          git stash push -m "auto-update-stash" 2>/dev/null || true
-          git fetch origin main
-          git reset --hard origin/main
-          git stash pop 2>/dev/null || true
+          # Sync with remote safely
+          git pull --rebase origin main || {
+            echo "⚠️ Rebase conflict - aborting rebase and retrying with merge"
+            git rebase --abort 2>/dev/null || true
+            git pull origin main --no-rebase || true
+          }
 
           # Stage web files and configs (NOT output_files or input_files)
           git add web/ config_files/ scripts/ src/ .github/ || true
@@ -349,18 +350,16 @@ jobs:
 
             # Push with retry (max 3 attempts)
             for i in 1 2 3; do
-              if git push origin main; then
+              if git push --force-with-lease origin main; then
                 echo "✅ Push successful (attempt $i)"
                 break
               else
                 echo "⚠️ Push failed (attempt $i), retrying..."
                 git fetch origin main
-                git rebase origin/main --strategy-option=theirs || {
-                  git rebase --abort 2>/dev/null
-                  git reset --hard origin/main
-                  git stash pop 2>/dev/null || true
-                  git add web/ config_files/ scripts/ src/ .github/ || true
-                  git commit -m "🔄 Auto update dashboard $TIMESTAMP (retry $i)" || true
+                git rebase origin/main || {
+                  echo "⚠️ Rebase conflict on retry $i, aborting"
+                  git rebase --abort 2>/dev/null || true
+                  break
                 }
                 sleep 5
               fi

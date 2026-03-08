@@ -234,6 +234,15 @@
         "description": "AQL 검사관 - 출근 + 당월 AQL 조건"
       },
 
+      "RQC_ASSEMBLY_INSPECTOR": {
+        "patterns": ["ASSEMBLY INSPECTOR"],
+        "position_codes": ["A1B"],
+        "applicable_conditions": [1, 2, 3, 4, 5, 6, 9],
+        "excluded_conditions": [7, 8, 10],
+        "description": "RQC 조립 검사관 - 출근 + 개인 AQL + 5PRS통과율 (검사량 C10 면제)",
+        "exemption_reason": "RQC inspectors perform process checking and reports, not line inspection"
+      },
+
       "ASSEMBLY_INSPECTOR": {
         "patterns": ["ASSEMBLY INSPECTOR"],
         "applicable_conditions": [1, 2, 3, 4, 5, 6, 9, 10],

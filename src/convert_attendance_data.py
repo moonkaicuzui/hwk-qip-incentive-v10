@@ -15,7 +15,7 @@ import os
 import sys
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def load_config(month: str, year: int = 2025) -> dict:
@@ -159,7 +159,7 @@ def update_config_after_conversion(month: str, year: int, actual_working_days: i
     if old_days != actual_working_days:
         config['working_days'] = actual_working_days
         config['working_days_source'] = 'attendance_data_ssot'
-        config['working_days_updated_at'] = datetime.now().isoformat()
+        config['working_days_updated_at'] = datetime.now(timezone.utc).isoformat()
         print(f"  🔄 [SSOT] Config working_days 자동 업데이트: {old_days} → {actual_working_days}")
         changed = True
 

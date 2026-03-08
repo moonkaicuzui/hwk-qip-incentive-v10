@@ -13,7 +13,10 @@ const SESSION_KEY = 'qip_firebase_session';
 
 // Admin emails loaded from Firestore system/config doc.
 // Checked asynchronously; hardcoded fallback removed for security.
-var _adminEmails = null; // populated by _loadAdminEmails()
+let _adminEmails = null; // populated by _loadAdminEmails()
+
+// Store onAuthStateChanged unsubscribe function for cleanup
+let _authUnsubscribe = null;
 
 /**
  * Check if user is authenticated.
@@ -23,30 +26,18 @@ var _adminEmails = null; // populated by _loadAdminEmails()
  */
 function checkAuth() {
     return new Promise(function(resolve, reject) {
-        var settled = false;
+        let settled = false;
 
-        // Safety timeout: if auth check takes >10s, use cached session or redirect
-        var timeoutId = setTimeout(function() {
+        // Safety timeout: if auth check takes >10s, redirect to login
+        const timeoutId = setTimeout(function() {
             if (settled) return;
             settled = true;
             console.warn('[Auth] checkAuth timed out after 10s');
-            var cached = sessionStorage.getItem(SESSION_KEY);
-            if (cached) {
-                try {
-                    var s = JSON.parse(cached);
-                    // Return a minimal user-like object from cache
-                    resolve({ uid: s.uid, email: s.email, displayName: s.displayName });
-                } catch (e) {
-                    window.location.href = 'auth.html';
-                    reject(new Error('Auth timeout'));
-                }
-            } else {
-                window.location.href = 'auth.html';
-                reject(new Error('Auth timeout'));
-            }
+            window.location.href = 'auth.html';
+            reject(new Error('Auth timeout'));
         }, 10000);
 
-        firebase.auth().onAuthStateChanged(function(user) {
+        _authUnsubscribe = firebase.auth().onAuthStateChanged(function(user) {
             if (settled) return;
 
             if (user) {
@@ -55,7 +46,7 @@ function checkAuth() {
                     if (settled) return;
                     settled = true;
                     clearTimeout(timeoutId);
-                    var sessionData = {
+                    const sessionData = {
                         uid: user.uid,
                         email: user.email,
                         displayName: user.displayName || user.email,
@@ -96,9 +87,9 @@ function checkAuth() {
 function signIn(email, password) {
     return firebase.auth().signInWithEmailAndPassword(email, password)
         .then(function(userCredential) {
-            var user = userCredential.user;
+            const user = userCredential.user;
             return _loadAdminEmails().then(function() {
-                var sessionData = {
+                const sessionData = {
                     uid: user.uid,
                     email: user.email,
                     displayName: user.displayName || user.email,
@@ -142,18 +133,18 @@ function _loadAdminEmails() {
     if (_adminEmails !== null) return Promise.resolve(_adminEmails);
 
     // Use REST API to read system/config — avoids Firestore SDK WebChannel issues
-    var user = firebase.auth().currentUser;
+    const user = firebase.auth().currentUser;
     if (!user) {
         _adminEmails = [];
         return Promise.resolve(_adminEmails);
     }
 
     return user.getIdToken().then(function(token) {
-        var url = 'https://firestore.googleapis.com/v1/projects/hwk-qip-incentive-dashboard' +
-            '/databases/(default)/documents/system/config';
+        const url = (window.FIRESTORE_REST_BASE || 'https://firestore.googleapis.com/v1/projects/hwk-qip-incentive-dashboard/databases/(default)/documents') +
+            '/system/config';
         // AbortController timeout: abort fetch after 8 seconds
-        var controller = new AbortController();
-        var fetchTimeout = setTimeout(function() { controller.abort(); }, 8000);
+        const controller = new AbortController();
+        const fetchTimeout = setTimeout(function() { controller.abort(); }, 8000);
         return fetch(url, {
             headers: { 'Authorization': 'Bearer ' + token },
             signal: controller.signal
@@ -213,3 +204,8 @@ function requireAdmin() {
         });
     });
 }
+
+// Cleanup: unsubscribe onAuthStateChanged listener on page unload
+window.addEventListener('beforeunload', function() {
+    if (typeof _authUnsubscribe === 'function') _authUnsubscribe();
+});

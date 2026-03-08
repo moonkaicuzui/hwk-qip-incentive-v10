@@ -136,7 +136,7 @@ var DashboardCharts = {
         if (totalCount === 0 && summary.total_employees) {
             totalCount = parseInt(summary.total_employees, 10) || 0;
             receivingCount = parseInt(summary.receiving_employees, 10) || 0;
-            totalAmount = parseFloat(summary.total_incentive, 10) || 0;
+            totalAmount = parseFloat(summary.total_incentive) || 0;
         }
 
         var paymentRate = totalCount > 0
@@ -790,6 +790,7 @@ var DashboardCharts = {
         html += '<td>' + t('criteria.type3Conditions') + '</td>';
         html += '<td>' + t('criteria.type3Method') + '</td></tr>';
         html += '</tbody></table></div>';
+        html += '<p style="color: #e65100; font-size: 0.82rem; margin-top: 8px; font-weight: 500;">' + t('criteria.type1RqcNote') + '</p>';
         html += '</div>';
 
         container.innerHTML = html;

@@ -19,31 +19,13 @@ import json
 import argparse
 import math
 import calendar
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pandas as pd
 
-try:
-    import firebase_admin
-    from firebase_admin import credentials, firestore
-except ImportError:
-    print("=" * 60)
-    print("firebase-admin 패키지가 설치되지 않았습니다.")
-    print("설치: pip install firebase-admin")
-    print("=" * 60)
-    sys.exit(1)
-
-
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-LOCAL_SERVICE_ACCOUNT_PATH = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
-
-# 대상 Firebase 프로젝트 ID
-# 서비스 계정은 qip-dashboard 소속이지만, Firestore는 hwk-qip-incentive-dashboard에 위치
-# firebase_admin 초기화 시 대상 프로젝트를 명시적으로 지정해야 함
-TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
 
 CSV_PATTERN = "output_files/output_QIP_incentive_{month}_{year}_Complete_V10.0_Complete.csv"
 
@@ -103,62 +85,6 @@ def safe_str(value, default=""):
     if s.lower() in ("nan", "none", ""):
         return default
     return s
-
-
-# ---------------------------------------------------------------------------
-# Firebase initialisation
-# ---------------------------------------------------------------------------
-
-def init_firestore(dry_run=False):
-    """Firebase Admin SDK 초기화 및 Firestore 클라이언트 반환
-
-    Args:
-        dry_run: True이면 실제 연결 없이 None 반환
-
-    Returns:
-        Firestore client 또는 None (dry-run 시)
-    """
-    if dry_run:
-        print("🔸 [DRY-RUN] Firestore 초기화 건너뜀 (dry-run 모드)")
-        return None
-
-    # 이미 초기화된 경우 기존 앱 사용
-    if firebase_admin._apps:
-        print("✅ Firebase 이미 초기화됨 — 기존 앱 사용")
-        return firestore.client()
-
-    # Firebase 앱 초기화 옵션 — 대상 프로젝트 명시
-    # 서비스 계정(qip-dashboard)과 Firestore 프로젝트(hwk-qip-incentive-dashboard)가 다르므로
-    # projectId를 명시적으로 지정해야 올바른 Firestore에 접근 가능
-    app_options = {"projectId": TARGET_FIREBASE_PROJECT}
-
-    # 1) 환경변수에서 서비스 계정 정보 로드
-    sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
-    if sa_json:
-        try:
-            sa_info = json.loads(sa_json)
-            cred = credentials.Certificate(sa_info)
-            firebase_admin.initialize_app(cred, app_options)
-            print(f"✅ Firebase 초기화 성공 (환경변수 → 프로젝트: {TARGET_FIREBASE_PROJECT})")
-            return firestore.client()
-        except Exception as e:
-            print(f"⚠️ 환경변수 인증 실패: {e}")
-            print("   로컬 파일로 fallback 시도...")
-
-    # 2) 로컬 서비스 계정 파일
-    if os.path.exists(LOCAL_SERVICE_ACCOUNT_PATH):
-        try:
-            cred = credentials.Certificate(LOCAL_SERVICE_ACCOUNT_PATH)
-            firebase_admin.initialize_app(cred, app_options)
-            print(f"✅ Firebase 초기화 성공 (로컬 파일 → 프로젝트: {TARGET_FIREBASE_PROJECT})")
-            return firestore.client()
-        except Exception as e:
-            print(f"❌ 로컬 파일 인증 실패: {e}")
-            sys.exit(1)
-    else:
-        print(f"❌ 서비스 계정 파일 없음: {LOCAL_SERVICE_ACCOUNT_PATH}")
-        print("   FIREBASE_SERVICE_ACCOUNT 환경변수를 설정하거나 로컬 파일을 배치하세요.")
-        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------
@@ -441,7 +367,7 @@ def build_summary(df: pd.DataFrame, month: str, year: int, working_days: int,
         non_resigned = df["Stop working Date"].isna() | (df["Stop working Date"].astype(str).str.strip() == "")
         eligible_count = int(non_resigned.sum())
 
-    now_iso = datetime.utcnow().isoformat() + "Z"
+    now_iso = datetime.now(timezone.utc).isoformat() + "Z"
 
     summary = {
         "total_employees": total_employees,
@@ -487,7 +413,7 @@ def upload_employees(db, month_year: str, employees: list, dry_run: bool = False
         "employees": employees,
         "meta": {
             "count": len(employees),
-            "updated_at": datetime.utcnow().isoformat() + "Z",
+            "updated_at": datetime.now(timezone.utc).isoformat() + "Z",
             "month": month_year.split("_")[0],
             "year": int(month_year.split("_")[1]),
         }
@@ -498,7 +424,10 @@ def upload_employees(db, month_year: str, employees: list, dry_run: bool = False
     estimated_size_kb = len(json.dumps(doc_data, ensure_ascii=False).encode("utf-8")) / 1024
     print(f"   예상 문서 크기: {estimated_size_kb:.1f} KB")
 
-    if estimated_size_kb > 900:
+    if estimated_size_kb > 1024:
+        print(f"❌ 문서 크기가 1MB 초과 ({estimated_size_kb:.1f}KB) - Firestore 제한 위반. 업로드 중단.")
+        raise ValueError(f"Firestore 문서 크기 제한 초과: {estimated_size_kb:.1f}KB > 1024KB")
+    elif estimated_size_kb > 900:
         print(f"⚠️ 문서 크기가 900KB 초과 ({estimated_size_kb:.1f}KB) - Firestore 1MB 제한 주의")
 
     if dry_run:
@@ -615,7 +544,11 @@ def main():
 
     # 2. Firebase 초기화
     print("\n🔑 Step 2: Firebase 초기화")
-    db = init_firestore(dry_run=dry_run)
+    if dry_run:
+        print("🔸 [DRY-RUN] Firestore 초기화 건너뜀 (dry-run 모드)")
+        db = None
+    else:
+        db = init_firestore()
 
     # 3. Employee 데이터 변환
     print(f"\n🔄 Step 3: {len(df)}명 직원 데이터 변환 중...")

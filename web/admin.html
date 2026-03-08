@@ -7,10 +7,10 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e3a5f'/%3E%3Ctext x='16' y='23' text-anchor='middle' fill='white' font-size='20' font-family='Arial'%3EQ%3C/text%3E%3C/svg%3E">
 
     <!-- Bootstrap 5.3.2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
     <!-- Font Awesome 6.4.0 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
 
     <style>
         :root {
@@ -398,6 +398,66 @@
 
         .recipients-table tbody tr:hover {
             background: #f8fafc;
+        }
+
+        /* ============ Condition Matrix Styles ============ */
+        .cond-matrix-table th,
+        .cond-matrix-table td {
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.25rem;
+        }
+        .cond-matrix-table th:first-child,
+        .cond-matrix-table td:first-child {
+            text-align: left;
+            min-width: 140px;
+        }
+        .cond-matrix-table .form-check-input {
+            width: 1.1em;
+            height: 1.1em;
+            margin: 0;
+        }
+        .cond-matrix-section-header {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            background: #eef2ff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .cond-matrix-section-header:hover {
+            background: #e0e7ff;
+        }
+        .cond-matrix-section-header .toggle-icon {
+            transition: transform 0.2s;
+        }
+        .cond-matrix-section-header.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        .inline-edit-input {
+            border: 1px solid #d0d5dd;
+            border-radius: 4px;
+            padding: 0.2rem 0.4rem;
+            font-size: 0.8rem;
+            width: 100%;
+        }
+        .inline-edit-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(40, 53, 147, 0.12);
+        }
+        .prog-table-input {
+            width: 120px;
+            text-align: right;
+        }
+        .patterns-input {
+            min-width: 180px;
         }
 
         .lang-badge {
@@ -1126,6 +1186,75 @@
                 </div>
             </div>
 
+            <!-- ===== Panel A: Position Condition Matrix (full width) ===== -->
+            <div class="panel-card" style="grid-column: 1 / -1;">
+                <div class="panel-header">
+                    <div class="panel-icon settings"><i class="fa-solid fa-table-cells-large"></i></div>
+                    <div class="panel-title" data-i18n="admin.cfgCondMatrix">Position Condition Matrix</div>
+                </div>
+                <div class="panel-body">
+                    <p class="text-muted mb-3" style="font-size:0.85rem;">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        <span data-i18n="admin.cfgGuideMatrix">각 직급별로 적용되는 인센티브 조건(C1~C10)을 설정합니다. 체크된 조건을 모두 충족해야 인센티브가 지급됩니다.</span>
+                    </p>
+                    <div id="condition-matrix-container">
+                        <p class="text-muted"><i class="fa-solid fa-spinner fa-spin me-1"></i> <span data-i18n="loading">Loading...</span></p>
+                    </div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button class="btn btn-primary-admin" id="btn-save-condition-matrix" onclick="AdminConfigs.saveConditionMatrix()">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveMatrix">Save Matrix</span>
+                        </button>
+                    </div>
+                    <div class="message-area" id="condition-matrix-message"></div>
+                </div>
+            </div>
+
+            <!-- ===== Panel B: Progressive Incentive Table ===== -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-icon calendar"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="panel-title" data-i18n="admin.cfgProgTable">Progressive Incentive Table</div>
+                </div>
+                <div class="panel-body">
+                    <p class="text-muted mb-3" style="font-size:0.85rem;">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        <span data-i18n="admin.cfgGuideProgTable">근속 개월 수에 따른 누진 인센티브 금액(VND)을 설정합니다. ASSEMBLY INSPECTOR, MODEL MASTER, AUDITOR/TRAINER에 적용됩니다.</span>
+                    </p>
+                    <div id="progressive-table-container">
+                        <p class="text-muted"><i class="fa-solid fa-spinner fa-spin me-1"></i> <span data-i18n="loading">Loading...</span></p>
+                    </div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button class="btn btn-primary-admin" id="btn-save-progressive-table" onclick="AdminConfigs.saveProgressiveTable()">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveProgTable">Save Table</span>
+                        </button>
+                    </div>
+                    <div class="message-area" id="progressive-table-message"></div>
+                </div>
+            </div>
+
+            <!-- ===== Panel C: TYPE-2 Multipliers ===== -->
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-icon status"><i class="fa-solid fa-calculator"></i></div>
+                    <div class="panel-title" data-i18n="admin.cfgType2Mult">TYPE-2 Multipliers</div>
+                </div>
+                <div class="panel-body">
+                    <p class="text-muted mb-3" style="font-size:0.85rem;">
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        <span data-i18n="admin.cfgGuideType2Mult">TYPE-2 직급(LINE LEADER 이상)의 인센티브 계산 배수를 설정합니다. 기준값에 배수를 곱하여 인센티브가 계산됩니다.</span>
+                    </p>
+                    <div id="type2-multipliers-container">
+                        <p class="text-muted"><i class="fa-solid fa-spinner fa-spin me-1"></i> <span data-i18n="loading">Loading...</span></p>
+                    </div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button class="btn btn-primary-admin" id="btn-save-type2-multipliers" onclick="AdminConfigs.saveType2Multipliers()">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveMultipliers">Save Multipliers</span>
+                        </button>
+                    </div>
+                    <div class="message-area" id="type2-multipliers-message"></div>
+                </div>
+            </div>
+
         </div><!-- /.admin-grid -->
         </div><!-- /#pane-configs -->
 
@@ -1304,12 +1433,12 @@
     </footer>
 
     <!-- Bootstrap 5.3.2 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
     <!-- Firebase v10.7.1 compat SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js" crossorigin="anonymous"></script>
 
     <!-- Project modules -->
     <script src="js/firebase-config.js?v=rest4"></script>

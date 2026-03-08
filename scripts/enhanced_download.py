@@ -14,7 +14,7 @@ Google Drive 다운로드 + Config 자동 업데이트 통합 스크립트
 import os
 import json
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
@@ -231,7 +231,7 @@ def update_config_for_month(year, month_name, downloaded_files):
             old_days = config.get('working_days', 'N/A')
             config['working_days'] = working_days
             config['working_days_source'] = 'attendance_data'
-            config['working_days_updated_at'] = datetime.now().isoformat()
+            config['working_days_updated_at'] = datetime.now(timezone.utc).isoformat()
             print(f"    ✅ Working days 업데이트: {old_days} → {working_days}")
         else:
             print(f"    ❌ [Issue #58] Working days 계산 실패 (결과: {working_days})")
@@ -261,7 +261,7 @@ def update_config_for_month(year, month_name, downloaded_files):
     # 기타 필드 업데이트
     config['output_prefix'] = f"output_QIP_incentive_{month_name}_{year}"
     config['data_source'] = 'google_drive'
-    config['created_at'] = config.get('created_at', datetime.now().isoformat())
+    config['created_at'] = config.get('created_at', datetime.now(timezone.utc).isoformat())
 
     # last_updated: 가장 최근 파일 수정 시간 사용 (Google Drive modifiedTime)
     if files_modified_times:
@@ -269,7 +269,7 @@ def update_config_for_month(year, month_name, downloaded_files):
         config['last_updated'] = latest_modified
         print(f"    📅 가장 최근 파일 수정 시간: {latest_modified}")
     else:
-        config['last_updated'] = datetime.now().isoformat()
+        config['last_updated'] = datetime.now(timezone.utc).isoformat()
 
     # Config 저장
     os.makedirs('config_files', exist_ok=True)

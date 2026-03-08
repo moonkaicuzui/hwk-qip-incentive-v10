@@ -9,7 +9,7 @@ Modern Card Grid - Dark Theme (2026-01-14)
 
 import os
 import glob
-from datetime import datetime
+from datetime import datetime, timezone
 
 def create_month_selector_page():
     """월 선택 페이지 HTML 생성 - Modern Card Grid Dark Theme"""
@@ -554,7 +554,7 @@ def create_month_selector_page():
             <span class="sync-divider">•</span>
             <span class="sync-text">
                 <span data-i18n="sync-last">최근:</span>
-                <span>""" + datetime.now().strftime('%Y-%m-%d %H:%M') + """</span>
+                <span>""" + datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M') + """</span>
             </span>
             <button class="update-btn" onclick="triggerManualUpdate()">
                 <i class="fas fa-refresh"></i>

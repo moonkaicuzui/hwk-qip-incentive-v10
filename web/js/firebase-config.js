@@ -25,6 +25,10 @@ if (!firebase.apps.length) {
 // Auth is always available
 var auth = firebase.auth();
 
+// Firestore REST API base URL (centralized - used by auth.js, dashboard-data.js, etc.)
+var FIRESTORE_REST_BASE = 'https://firestore.googleapis.com/v1/projects/' + firebaseConfig.projectId + '/databases/(default)/documents';
+window.FIRESTORE_REST_BASE = FIRESTORE_REST_BASE;
+
 // Firestore SDK is optional — dashboard.html uses REST API instead.
 // Only admin.html and feedback.html need the SDK.
 var db = null;

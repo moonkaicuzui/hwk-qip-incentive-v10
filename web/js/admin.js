@@ -357,6 +357,9 @@ var AdminPage = {
                 else if (typeLabel === 'position_mapping') typeBadgeClass = 'bg-info';
                 else if (typeLabel === 'talent_pool') typeBadgeClass = 'bg-success';
                 else if (typeLabel === 'area_mapping') typeBadgeClass = 'bg-danger';
+                else if (typeLabel === 'condition_matrix') typeBadgeClass = 'bg-info';
+                else if (typeLabel === 'progressive_table') typeBadgeClass = 'bg-success';
+                else if (typeLabel === 'type2_multipliers') typeBadgeClass = 'bg-warning text-dark';
 
                 if (changes.length === 0) {
                     html += '<tr>' +

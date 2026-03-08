@@ -2,11 +2,14 @@
  * Admin Config Management Module
  * HWK QIP Incentive Dashboard V10
  *
- * Manages 3 CRUD config panels + 1 read-only data panel:
+ * Manages 6 CRUD config panels + 1 read-only data panel:
  *   1. TYPE-2 Position Mapping  (configs/type2_position_mapping)
  *   2. QIP Talent Pool          (configs/talent_pool)
  *   3. Auditor Area Mapping     (configs/auditor_area_mapping)
  *   4. Continuous Months         (configs/continuous_months) [read-only]
+ *   5. Position Condition Matrix (configs/position_condition_matrix) [NEW]
+ *   6. Progressive Incentive Table  (same doc, section)         [NEW]
+ *   7. TYPE-2 Multipliers           (same doc, section)         [NEW]
  *
  * Depends on: firebase-config.js, auth.js, dashboard-i18n.js, admin.js
  */
@@ -18,6 +21,9 @@ var AdminConfigs = {
     auditorData: null,
     continuousData: null,
 
+    // Shared cache for position_condition_matrix Firestore doc
+    _posCondMatrixCache: null,
+
     // Currently editing auditor ID (for condition modal)
     editingAuditorId: null,
 
@@ -28,6 +34,9 @@ var AdminConfigs = {
         this.loadPositionMapping();
         this.loadTalentPool();
         this.loadAuditorMapping();
+        this.loadConditionMatrix();
+        this.loadProgressiveTable();
+        this.loadType2Multipliers();
     },
 
     // =====================================================================
@@ -801,5 +810,488 @@ var AdminConfigs = {
         searchInput.addEventListener('input', function() {
             self.renderContinuousMonths(this.value);
         });
+    },
+
+    // =====================================================================
+    // Shared: Position Condition Matrix Document
+    // =====================================================================
+
+    _loadPosCondMatrix: async function() {
+        if (this._posCondMatrixCache) return this._posCondMatrixCache;
+        var doc = await db.collection('configs').doc('position_condition_matrix').get();
+        this._posCondMatrixCache = doc.exists ? doc.data() : {};
+        return this._posCondMatrixCache;
+    },
+
+    _savePosCondMatrixSection: async function(sectionKey, sectionData, auditType) {
+        var updateObj = {};
+        updateObj[sectionKey] = sectionData;
+        await db.collection('configs').doc('position_condition_matrix').set(updateObj, { merge: true });
+        this._posCondMatrixCache = null;
+        await this._writeAuditLog(auditType, [{
+            field: auditType,
+            field_key: sectionKey,
+            old_value: null,
+            new_value: 'Updated'
+        }]);
+    },
+
+    // =====================================================================
+    // 5. Position Condition Matrix
+    // =====================================================================
+
+    async loadConditionMatrix() {
+        var self = this;
+        var container = document.getElementById('condition-matrix-container');
+        try {
+            var data = await self._loadPosCondMatrix();
+            self.renderConditionMatrix(data.position_matrix || {}, data.conditions || {});
+        } catch (error) {
+            console.error('[AdminConfigs] Failed to load condition matrix:', error);
+            container.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> ' + error.message + '</p>';
+        }
+    },
+
+    renderConditionMatrix: function(matrix, conditions) {
+        var container = document.getElementById('condition-matrix-container');
+        var self = this;
+        var lang = (typeof DashboardI18n !== 'undefined' && DashboardI18n.currentLang) ? DashboardI18n.currentLang : 'ko';
+        var COND_SHORT = {
+            'attendance_rate': { ko: '출근율', en: 'Attend.', vi: 'Chuyên cần' },
+            'attendance_unapproved_absence': { ko: '무단결근', en: 'Absence', vi: 'Vắng' },
+            'actual_working_days': { ko: '실근무일', en: 'Work Days', vi: 'Ngày làm' },
+            'attendance_minimum_days': { ko: '최소근무', en: 'Min Days', vi: 'Tối thiểu' },
+            'aql_personal_failure': { ko: '개인AQL', en: 'Per.AQL', vi: 'AQL CN' },
+            'aql_personal_continuous': { ko: '연속AQL', en: 'Cons.AQL', vi: 'AQL LT' },
+            'aql_team_area': { ko: '팀AQL', en: 'Team AQL', vi: 'AQL nhóm' },
+            'aql_area_reject': { ko: '불량률', en: 'Reject%', vi: 'Lỗi%' },
+            '5prs_pass_rate': { ko: '5PRS률', en: '5PRS%', vi: '5PRS%' },
+            '5prs_inspection_qty': { ko: '5PRS량', en: '5PRS Qty', vi: 'SL 5PRS' }
+        };
+        var condLabels = [];
+        for (var c = 1; c <= 10; c++) {
+            var cond = conditions[String(c)];
+            var shortName = 'C' + c;
+            var tooltip = '';
+            if (cond) {
+                var shortMap = COND_SHORT[cond.id];
+                shortName = shortMap ? (shortMap[lang] || shortMap.ko) : cond.id;
+                tooltip = cond.description + ' (' + cond.name + ')';
+            }
+            condLabels.push({ num: c, short: shortName, tooltip: tooltip });
+        }
+        var html = '';
+
+        var types = ['TYPE-1', 'TYPE-2'];
+        types.forEach(function(typeName) {
+            var section = matrix[typeName] || {};
+            var keys = Object.keys(section);
+
+            html += '<div class="mb-3">';
+            html += '<div class="cond-matrix-section-header" onclick="this.classList.toggle(\'collapsed\'); var b=this.nextElementSibling; b.style.display=b.style.display===\'none\'?\'block\':\'none\';">' +
+                '<span><i class="fa-solid fa-layer-group me-2"></i>' + typeName + ' (' + keys.length + ' ' + self._t('admin.cfgAddPosition') + ')</span>' +
+                '<i class="fa-solid fa-chevron-down toggle-icon"></i></div>';
+            html += '<div class="table-responsive">';
+            html += '<table class="table config-table cond-matrix-table" id="matrix-table-' + typeName.replace('-', '') + '">' +
+                '<thead><tr>' +
+                '<th>' + self._t('admin.cfgPositionName') + '</th>';
+
+            condLabels.forEach(function(cl) {
+                html += '<th title="' + self._escapeHtml(cl.tooltip) + '" style="cursor:help;"><small class="text-muted">C' + cl.num + '</small><br>' + self._escapeHtml(cl.short) + '</th>';
+            });
+            html += '<th>' + self._t('admin.cfgDescription') + '</th>';
+            html += '<th style="width:50px;"></th>';
+            html += '</tr></thead><tbody>';
+
+            keys.forEach(function(posKey) {
+                var pos = section[posKey];
+                var applicable = pos.applicable_conditions || [];
+                var isDefault = (posKey === 'default');
+
+                html += '<tr data-type="' + self._escapeHtml(typeName) + '" data-key="' + self._escapeHtml(posKey) + '">';
+                html += '<td><strong>' + self._escapeHtml(posKey) + '</strong>';
+                if (pos.patterns && pos.patterns.length > 0) {
+                    html += '<br><small class="text-muted">' + self._escapeHtml(pos.patterns.join(', ')) + '</small>';
+                }
+                if (pos.position_codes) {
+                    html += '<br><small class="text-info">' + self._t('admin.cfgPosCode') + ': ' + self._escapeHtml(pos.position_codes.join(', ')) + '</small>';
+                }
+                html += '</td>';
+
+                for (var c = 1; c <= 10; c++) {
+                    var checked = applicable.indexOf(c) !== -1 ? ' checked' : '';
+                    html += '<td><input type="checkbox" class="form-check-input cond-cb" data-cond="' + c + '"' + checked + '></td>';
+                }
+
+                html += '<td><input type="text" class="inline-edit-input" value="' + self._escapeHtml(pos.description || '') + '" data-field="description"></td>';
+                html += '<td>';
+                if (!isDefault) {
+                    html += '<button class="btn-delete-sm" onclick="AdminConfigs.removeMatrixPosition(\'' +
+                        self._escapeHtml(typeName) + '\',\'' + self._escapeHtml(posKey) + '\')"><i class="fa-solid fa-trash-can"></i></button>';
+                }
+                html += '</td></tr>';
+            });
+
+            html += '</tbody></table></div>';
+
+            // Inline add form
+            html += '<div class="d-flex align-items-center gap-2 mb-3">' +
+                '<input type="text" class="form-control form-control-sm" style="width:200px;" ' +
+                'id="add-pos-input-' + typeName.replace('-', '') + '" placeholder="' + self._t('admin.cfgNewPosPlaceholder') + '" ' +
+                'onkeyup="if(event.key===\'Enter\')AdminConfigs.addMatrixPosition(\'' + typeName + '\')">' +
+                '<button class="btn btn-sm btn-outline-admin" onclick="AdminConfigs.addMatrixPosition(\'' + typeName + '\')">' +
+                '<i class="fa-solid fa-plus me-1"></i>' + self._t('admin.cfgAddPosition') + '</button></div>';
+            html += '</div>';
+        });
+
+        container.innerHTML = html;
+    },
+
+    addMatrixPosition: function(typeName) {
+        var input = document.getElementById('add-pos-input-' + typeName.replace('-', ''));
+        var posKey = input ? input.value.trim() : '';
+        if (!posKey) { if (input) input.focus(); return; }
+        posKey = posKey.toUpperCase().replace(/\s+/g, '_');
+
+        var data = this._posCondMatrixCache || {};
+        if (!data.position_matrix) data.position_matrix = {};
+        if (!data.position_matrix[typeName]) data.position_matrix[typeName] = {};
+
+        if (data.position_matrix[typeName][posKey]) {
+            this._showMessage('condition-matrix-message', 'Key "' + posKey + '" already exists.', 'warning');
+            return;
+        }
+
+        data.position_matrix[typeName][posKey] = {
+            applicable_conditions: [1, 2, 3, 4],
+            excluded_conditions: [5, 6, 7, 8, 9, 10],
+            description: posKey + ' - new position'
+        };
+
+        this._posCondMatrixCache = data;
+        this.renderConditionMatrix(data.position_matrix, data.conditions || {});
+        this._showMessage('condition-matrix-message', 'Added "' + posKey + '" to ' + typeName + '. Click Save to persist.', 'success');
+    },
+
+    removeMatrixPosition: function(typeName, posKey) {
+        if (posKey === 'default') {
+            this._showMessage('condition-matrix-message', this._t('admin.cfgDefaultNoDelete'), 'warning');
+            return;
+        }
+        if (!confirm('Remove "' + posKey + '" from ' + typeName + '?')) return;
+
+        var data = this._posCondMatrixCache || {};
+        if (data.position_matrix && data.position_matrix[typeName]) {
+            delete data.position_matrix[typeName][posKey];
+        }
+        this._posCondMatrixCache = data;
+        this.renderConditionMatrix(data.position_matrix || {}, data.conditions || {});
+        this._showMessage('condition-matrix-message', 'Removed "' + posKey + '". Click Save to persist.', 'warning');
+    },
+
+    async saveConditionMatrix() {
+        var self = this;
+        var btn = document.getElementById('btn-save-condition-matrix');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+
+        try {
+            var data = self._posCondMatrixCache || {};
+            if (!data.position_matrix) data.position_matrix = {};
+
+            // Read checkboxes and descriptions from DOM
+            var tables = document.querySelectorAll('.cond-matrix-table');
+            tables.forEach(function(table) {
+                var rows = table.querySelectorAll('tbody tr');
+                rows.forEach(function(row) {
+                    var typeName = row.getAttribute('data-type');
+                    var posKey = row.getAttribute('data-key');
+                    if (!typeName || !posKey) return;
+                    if (!data.position_matrix[typeName]) data.position_matrix[typeName] = {};
+                    if (!data.position_matrix[typeName][posKey]) data.position_matrix[typeName][posKey] = {};
+
+                    var pos = data.position_matrix[typeName][posKey];
+
+                    // Read checkboxes
+                    var applicable = [];
+                    var excluded = [];
+                    row.querySelectorAll('.cond-cb').forEach(function(cb) {
+                        var cond = parseInt(cb.getAttribute('data-cond'), 10);
+                        if (cb.checked) {
+                            applicable.push(cond);
+                        } else {
+                            excluded.push(cond);
+                        }
+                    });
+                    pos.applicable_conditions = applicable;
+                    pos.excluded_conditions = excluded;
+
+                    // Read description
+                    var descInput = row.querySelector('[data-field="description"]');
+                    if (descInput) pos.description = descInput.value;
+                });
+            });
+
+            await self._savePosCondMatrixSection('position_matrix', data.position_matrix, 'condition_matrix');
+            self._showMessage('condition-matrix-message', 'Position Condition Matrix saved successfully.', 'success');
+        } catch (error) {
+            console.error('[AdminConfigs] Save condition matrix failed:', error);
+            self._showMessage('condition-matrix-message', 'Save failed: ' + error.message, 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveMatrix">' + self._t('admin.cfgSaveMatrix') + '</span>';
+        }
+    },
+
+    // =====================================================================
+    // 6. Progressive Incentive Table
+    // =====================================================================
+
+    async loadProgressiveTable() {
+        var self = this;
+        var container = document.getElementById('progressive-table-container');
+        try {
+            var data = await self._loadPosCondMatrix();
+            var progression = (data.incentive_progression && data.incentive_progression.TYPE_1_PROGRESSIVE)
+                ? data.incentive_progression.TYPE_1_PROGRESSIVE.progression_table || {}
+                : {};
+            self.renderProgressiveTable(progression);
+        } catch (error) {
+            console.error('[AdminConfigs] Failed to load progressive table:', error);
+            container.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> ' + error.message + '</p>';
+        }
+    },
+
+    renderProgressiveTable: function(table) {
+        var container = document.getElementById('progressive-table-container');
+        var self = this;
+
+        var html = '<div class="table-responsive"><table class="table config-table">' +
+            '<thead><tr><th>' + self._t('admin.cfgMonth') + '</th><th>' + self._t('admin.cfgAmount') + '</th></tr></thead><tbody>';
+
+        for (var m = 0; m <= 15; m++) {
+            var amount = table[String(m)] !== undefined ? table[String(m)] : 0;
+            var formatted = Number(amount).toLocaleString('vi-VN');
+            html += '<tr><td><strong>' + m + '</strong> ' + self._t('admin.cfgMonth') + '</td>' +
+                '<td><div class="d-flex align-items-center gap-2"><input type="number" class="form-control form-control-admin inline-edit-input prog-table-input" ' +
+                'id="prog-month-' + m + '" value="' + amount + '" min="0" step="10000" ' +
+                'oninput="var s=this.nextElementSibling;if(s)s.textContent=Number(this.value||0).toLocaleString(\'vi-VN\')+\' VND\'">' +
+                '<small class="text-muted" style="white-space:nowrap;">' + formatted + ' VND</small></div></td></tr>';
+        }
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+    },
+
+    async saveProgressiveTable() {
+        var self = this;
+        var btn = document.getElementById('btn-save-progressive-table');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+
+        try {
+            var table = {};
+            var valid = true;
+            for (var m = 0; m <= 15; m++) {
+                var input = document.getElementById('prog-month-' + m);
+                var val = parseInt(input.value, 10);
+                if (isNaN(val) || val < 0) {
+                    input.classList.add('is-invalid');
+                    valid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                    table[String(m)] = val;
+                }
+            }
+
+            if (!valid) {
+                self._showMessage('progressive-table-message', 'Please enter valid positive numbers.', 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveProgTable">' + self._t('admin.cfgSaveProgTable') + '</span>';
+                return;
+            }
+
+            // Build full incentive_progression section preserving metadata
+            var data = self._posCondMatrixCache || {};
+            var progression = (data.incentive_progression && data.incentive_progression.TYPE_1_PROGRESSIVE)
+                ? Object.assign({}, data.incentive_progression.TYPE_1_PROGRESSIVE)
+                : {};
+            progression.progression_table = table;
+
+            var fullSection = Object.assign({}, data.incentive_progression || {});
+            fullSection.TYPE_1_PROGRESSIVE = progression;
+
+            await self._savePosCondMatrixSection('incentive_progression', fullSection, 'progressive_table');
+            self._showMessage('progressive-table-message', 'Progressive Incentive Table saved successfully.', 'success');
+        } catch (error) {
+            console.error('[AdminConfigs] Save progressive table failed:', error);
+            self._showMessage('progressive-table-message', 'Save failed: ' + error.message, 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveProgTable">' + self._t('admin.cfgSaveProgTable') + '</span>';
+        }
+    },
+
+    // =====================================================================
+    // 7. TYPE-2 Multipliers
+    // =====================================================================
+
+    async loadType2Multipliers() {
+        var self = this;
+        var container = document.getElementById('type2-multipliers-container');
+        try {
+            var data = await self._loadPosCondMatrix();
+            self.renderType2Multipliers(data.type_2_multipliers || {});
+        } catch (error) {
+            console.error('[AdminConfigs] Failed to load TYPE-2 multipliers:', error);
+            container.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> ' + error.message + '</p>';
+        }
+    },
+
+    renderType2Multipliers: function(multipliers) {
+        var container = document.getElementById('type2-multipliers-container');
+        var self = this;
+
+        // Filter out metadata keys starting with _
+        var keys = Object.keys(multipliers).filter(function(k) { return k.charAt(0) !== '_'; });
+
+        if (keys.length === 0) {
+            container.innerHTML = '<div class="text-center py-4">' +
+                '<i class="fa-solid fa-calculator fa-2x text-muted mb-2 d-block"></i>' +
+                '<p class="text-muted">' + self._t('admin.cfgEmptyType2') + '</p>' +
+                '<div class="d-flex align-items-center justify-content-center gap-2 mt-2">' +
+                '<input type="text" class="form-control form-control-sm" style="width:200px;" id="add-type2-input" ' +
+                'placeholder="' + self._t('admin.cfgNewPosPlaceholder') + '" onkeyup="if(event.key===\'Enter\')AdminConfigs.addType2Multiplier()">' +
+                '<button class="btn btn-sm btn-outline-admin" onclick="AdminConfigs.addType2Multiplier()">' +
+                '<i class="fa-solid fa-plus me-1"></i>' + self._t('admin.cfgAddPosition') + '</button></div></div>';
+            return;
+        }
+
+        var html = '<div class="table-responsive"><table class="table config-table">' +
+            '<thead><tr>' +
+            '<th>' + self._t('admin.cfgPositionName') + '</th>' +
+            '<th>' + self._t('admin.cfgMultiplier') + '</th>' +
+            '<th>' + self._t('admin.cfgBase') + '</th>' +
+            '<th>' + self._t('admin.cfgFormula') + '</th>' +
+            '<th>' + self._t('admin.cfgPatterns') + '</th>' +
+            '<th style="width:50px;"></th>' +
+            '</tr></thead><tbody>';
+
+        keys.forEach(function(key) {
+            var m = multipliers[key];
+            var patterns = (m.patterns || []).join(', ');
+
+            html += '<tr data-key="' + self._escapeHtml(key) + '">' +
+                '<td><strong>' + self._escapeHtml(key) + '</strong></td>' +
+                '<td><input type="number" class="form-control form-control-admin inline-edit-input" style="width:80px;" ' +
+                'data-field="multiplier" value="' + (m.multiplier || 0) + '" min="0" step="0.1" ' +
+                'oninput="var v=parseFloat(this.value);this.classList.toggle(\'border-warning\',(v<0.01||v>10))"></td>' +
+                '<td><select class="form-select form-select-sm" style="width:200px;" data-field="base">' +
+                '<option value="subordinate_total"' + (m.base === 'subordinate_total' ? ' selected' : '') + '>' + self._t('admin.cfgBaseSubordinate') + '</option>' +
+                '<option value="line_leader_average"' + (m.base === 'line_leader_average' ? ' selected' : '') + '>' + self._t('admin.cfgBaseLineLdrAvg') + '</option>' +
+                '</select></td>' +
+                '<td><input type="text" class="form-control form-control-admin inline-edit-input" ' +
+                'data-field="formula" value="' + self._escapeHtml(m.formula || '') + '"></td>' +
+                '<td><input type="text" class="form-control form-control-admin inline-edit-input patterns-input" ' +
+                'data-field="patterns" value="' + self._escapeHtml(patterns) + '" placeholder="PATTERN1, PATTERN2"></td>' +
+                '<td><button class="btn-delete-sm" onclick="AdminConfigs.removeType2Multiplier(\'' + self._escapeHtml(key) + '\')">' +
+                '<i class="fa-solid fa-trash-can"></i></button></td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+
+        html += '<div class="d-flex align-items-center gap-2 mt-2">' +
+            '<input type="text" class="form-control form-control-sm" style="width:200px;" id="add-type2-input" ' +
+            'placeholder="' + self._t('admin.cfgNewPosPlaceholder') + '" onkeyup="if(event.key===\'Enter\')AdminConfigs.addType2Multiplier()">' +
+            '<button class="btn btn-sm btn-outline-admin" onclick="AdminConfigs.addType2Multiplier()">' +
+            '<i class="fa-solid fa-plus me-1"></i>' + self._t('admin.cfgAddPosition') + '</button></div>';
+
+        container.innerHTML = html;
+    },
+
+    addType2Multiplier: function() {
+        var input = document.getElementById('add-type2-input');
+        var key = input ? input.value.trim() : '';
+        if (!key) { if (input) input.focus(); return; }
+        key = key.toUpperCase().replace(/\s+/g, '_');
+
+        var data = this._posCondMatrixCache || {};
+        if (!data.type_2_multipliers) data.type_2_multipliers = {};
+
+        if (data.type_2_multipliers[key]) {
+            this._showMessage('type2-multipliers-message', 'Key "' + key + '" already exists.', 'warning');
+            return;
+        }
+
+        data.type_2_multipliers[key] = {
+            multiplier: 1.0,
+            base: 'line_leader_average',
+            formula: 'TYPE-1 LINE LEADER average × 1.0',
+            patterns: [key.replace(/_/g, ' ')],
+            description_ko: key,
+            description_en: key
+        };
+
+        this._posCondMatrixCache = data;
+        this.renderType2Multipliers(data.type_2_multipliers);
+        this._showMessage('type2-multipliers-message', 'Added "' + key + '". Click Save to persist.', 'success');
+    },
+
+    removeType2Multiplier: function(key) {
+        if (!confirm('Remove "' + key + '" from TYPE-2 Multipliers?')) return;
+
+        var data = this._posCondMatrixCache || {};
+        if (data.type_2_multipliers) {
+            delete data.type_2_multipliers[key];
+        }
+        this._posCondMatrixCache = data;
+        this.renderType2Multipliers(data.type_2_multipliers || {});
+        this._showMessage('type2-multipliers-message', 'Removed "' + key + '". Click Save to persist.', 'warning');
+    },
+
+    async saveType2Multipliers() {
+        var self = this;
+        var btn = document.getElementById('btn-save-type2-multipliers');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+
+        try {
+            var data = self._posCondMatrixCache || {};
+            if (!data.type_2_multipliers) data.type_2_multipliers = {};
+
+            // Read inline edits from DOM
+            var rows = document.querySelectorAll('#type2-multipliers-container tbody tr');
+            rows.forEach(function(row) {
+                var key = row.getAttribute('data-key');
+                if (!key || !data.type_2_multipliers[key]) return;
+
+                var m = data.type_2_multipliers[key];
+
+                var multInput = row.querySelector('[data-field="multiplier"]');
+                if (multInput) m.multiplier = parseFloat(multInput.value) || 0;
+
+                var baseInput = row.querySelector('[data-field="base"]');
+                if (baseInput) m.base = baseInput.value.trim();
+
+                var formulaInput = row.querySelector('[data-field="formula"]');
+                if (formulaInput) m.formula = formulaInput.value.trim();
+
+                var patternsInput = row.querySelector('[data-field="patterns"]');
+                if (patternsInput) {
+                    var pVal = patternsInput.value.trim();
+                    m.patterns = pVal ? pVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+                }
+            });
+
+            await self._savePosCondMatrixSection('type_2_multipliers', data.type_2_multipliers, 'type2_multipliers');
+            self._showMessage('type2-multipliers-message', 'TYPE-2 Multipliers saved successfully.', 'success');
+        } catch (error) {
+            console.error('[AdminConfigs] Save TYPE-2 multipliers failed:', error);
+            self._showMessage('type2-multipliers-message', 'Save failed: ' + error.message, 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveMultipliers">' + self._t('admin.cfgSaveMultipliers') + '</span>';
+        }
     }
 };

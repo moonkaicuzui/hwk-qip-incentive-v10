@@ -25,25 +25,11 @@ import os
 import sys
 import json
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 
-try:
-    import firebase_admin
-    from firebase_admin import credentials, firestore
-except ImportError:
-    print("=" * 60)
-    print("firebase-admin 패키지가 설치되지 않았습니다.")
-    print("설치: pip install firebase-admin")
-    print("=" * 60)
-    sys.exit(1)
-
-
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-LOCAL_SERVICE_ACCOUNT_PATH = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
-TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
 
 # Firestore doc → local file mapping
 # Note: continuous_months is NOT synced (it's read-only reference data)
@@ -63,32 +49,17 @@ SYNC_MAPPINGS = [
         "local_path": "config_files/auditor_trainer_area_mapping.json",
         "description": "Auditor/Trainer 구역 매핑"
     },
+    {
+        "firestore_doc": "configs/position_condition_matrix",
+        "local_path": "config_files/position_condition_matrix.json",
+        "description": "Position Condition Matrix (merge)",
+        "merge_mode": True,
+        "merge_keys": ["position_matrix", "incentive_progression", "type_2_multipliers"]
+    },
 ]
 
 # Metadata keys to strip from Firestore data before saving locally
 METADATA_KEYS = ["_metadata"]
-
-
-def init_firebase():
-    """Initialize Firebase Admin SDK."""
-    if firebase_admin._apps:
-        return firestore.client()
-
-    sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
-
-    if sa_json:
-        sa_dict = json.loads(sa_json)
-        cred = credentials.Certificate(sa_dict)
-    elif os.path.exists(LOCAL_SERVICE_ACCOUNT_PATH):
-        cred = credentials.Certificate(LOCAL_SERVICE_ACCOUNT_PATH)
-    else:
-        print("❌ Firebase 서비스 계정을 찾을 수 없습니다.")
-        sys.exit(1)
-
-    firebase_admin.initialize_app(cred, {
-        "projectId": TARGET_FIREBASE_PROJECT
-    })
-    return firestore.client()
 
 
 def strip_metadata(data):
@@ -99,14 +70,22 @@ def strip_metadata(data):
 
 
 def sync_config(db, mapping, dry_run=False):
-    """Sync a single config from Firestore to local JSON."""
+    """Sync a single config from Firestore to local JSON.
+
+    If merge_mode is True, only merge_keys sections from Firestore
+    overwrite the local file; other sections in the local file are preserved.
+    """
     firestore_doc = mapping["firestore_doc"]
     local_path = mapping["local_path"]
     description = mapping["description"]
+    merge_mode = mapping.get("merge_mode", False)
+    merge_keys = mapping.get("merge_keys", [])
 
     print(f"\n  {description}")
     print(f"    Firestore: {firestore_doc}")
     print(f"    Local:     {local_path}")
+    if merge_mode:
+        print(f"    Mode:      MERGE (keys: {merge_keys})")
 
     # Parse collection/document
     parts = firestore_doc.split("/")
@@ -129,15 +108,34 @@ def sync_config(db, mapping, dry_run=False):
     if dry_run:
         print(f"    [DRY RUN] {len(json.dumps(clean_data, ensure_ascii=False))} bytes 다운로드 예정")
         print(f"    Top-level keys: {list(clean_data.keys())}")
+        if merge_mode:
+            print(f"    Merge keys to overwrite: {[k for k in merge_keys if k in clean_data]}")
         return True
 
     # Ensure directory exists
     os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
-    with open(local_path, "w", encoding="utf-8") as f:
-        json.dump(clean_data, f, ensure_ascii=False, indent=2)
+    if merge_mode and os.path.exists(local_path):
+        # Load existing local JSON and merge only specified keys
+        with open(local_path, "r", encoding="utf-8") as f:
+            local_data = json.load(f)
 
-    print(f"    ✅ 동기화 완료")
+        merged_count = 0
+        for key in merge_keys:
+            if key in clean_data:
+                local_data[key] = clean_data[key]
+                merged_count += 1
+                print(f"    🔄 Merged: {key}")
+
+        with open(local_path, "w", encoding="utf-8") as f:
+            json.dump(local_data, f, ensure_ascii=False, indent=2)
+
+        print(f"    ✅ 병합 완료 ({merged_count}/{len(merge_keys)} sections)")
+    else:
+        with open(local_path, "w", encoding="utf-8") as f:
+            json.dump(clean_data, f, ensure_ascii=False, indent=2)
+        print(f"    ✅ 동기화 완료")
+
     return True
 
 
@@ -149,10 +147,10 @@ def main():
     print("=" * 60)
     print("  Firestore 설정 동기화")
     print(f"  모드: {'DRY RUN' if args.dry_run else 'LIVE'}")
-    print(f"  시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"  시간: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
 
-    db = init_firebase()
+    db = init_firestore()
 
     success_count = 0
     for mapping in SYNC_MAPPINGS:

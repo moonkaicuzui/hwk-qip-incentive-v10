@@ -127,7 +127,7 @@ var DashboardModals = {
                     DashboardCharts.destroyChart('conditionDoughnutChart');
                     var total = cd.pass + cd.fail;
                     var pct = total > 0 ? Math.round((cd.pass / total) * 100) : 0;
-                    new Chart(cdCanvas.getContext('2d'), {
+                    DashboardCharts.charts['conditionDoughnutChart'] = new Chart(cdCanvas.getContext('2d'), {
                         type: 'doughnut',
                         data: {
                             labels: [DashboardI18n.t('status.pass'), DashboardI18n.t('status.fail')],

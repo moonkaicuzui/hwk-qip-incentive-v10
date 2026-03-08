@@ -8,7 +8,7 @@ import json
 import pandas as pd
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 def load_config():
     """기존 config 파일 로드"""
@@ -163,7 +163,7 @@ def save_config(config):
     config_path = Path("config_files/aql_inspector_incentive_config.json")
 
     # 백업 생성
-    backup_path = config_path.with_suffix(f'.json.backup.{datetime.now().strftime("%Y%m%d_%H%M%S")}')
+    backup_path = config_path.with_suffix(f'.json.backup.{datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")}')
     if config_path.exists():
         import shutil
         shutil.copy2(config_path, backup_path)

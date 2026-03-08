@@ -4,6 +4,13 @@
 
 set -e
 
+# Check for required credentials
+if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ ! -f "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json" ]; then
+    echo "ERROR: Firebase service account not found."
+    echo "Set GOOGLE_APPLICATION_CREDENTIALS or place file at /Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
+    exit 1
+fi
+
 echo "=============================================="
 echo "  HWK QIP INCENTIVE SYSTEM - Version 10"
 echo "  Firestore-based Secure Architecture"

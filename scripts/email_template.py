@@ -694,8 +694,8 @@ def generate_email_html(action_data, month="february", year=2026, dashboard_url=
     """
     month_ko = MONTH_KO.get(month, month)
     if generated_at is None:
-        from datetime import datetime
-        generated_at = datetime.now().strftime("%Y-%m-%d %H:%M")
+        from datetime import datetime, timezone
+        generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
 
     # Render all sections
     s1 = _section_1_kpi(action_data)

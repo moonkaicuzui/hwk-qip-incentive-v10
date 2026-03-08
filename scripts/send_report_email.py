@@ -29,29 +29,15 @@ import hashlib
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime
+from datetime import datetime, timezone
 
-try:
-    import firebase_admin
-    from firebase_admin import credentials, firestore
-except ImportError:
-    print("=" * 60)
-    print("firebase-admin 패키지가 설치되지 않았습니다.")
-    print("설치: pip install firebase-admin")
-    print("=" * 60)
-    sys.exit(1)
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
 
 # Add parent dir to path for email_template import
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from email_template import generate_email_html
-
-
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-LOCAL_SERVICE_ACCOUNT_PATH = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
-TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
 
 # Default SMTP settings (overridden by Firestore system/config)
 DEFAULT_SMTP = {
@@ -60,44 +46,6 @@ DEFAULT_SMTP = {
     "from_name": "QIP Incentive Dashboard",
     "from_email": "ksmoon@hsvina.com",
 }
-
-
-# ---------------------------------------------------------------------------
-# Firebase initialisation (reuse pattern from upload_to_firestore.py)
-# ---------------------------------------------------------------------------
-
-def init_firestore():
-    """Firebase Admin SDK 초기화 및 Firestore 클라이언트 반환"""
-    if firebase_admin._apps:
-        return firestore.client()
-
-    app_options = {"projectId": TARGET_FIREBASE_PROJECT}
-
-    # 1) 환경변수
-    sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
-    if sa_json:
-        try:
-            sa_info = json.loads(sa_json)
-            cred = credentials.Certificate(sa_info)
-            firebase_admin.initialize_app(cred, app_options)
-            print(f"  Firebase 초기화 (환경변수 -> {TARGET_FIREBASE_PROJECT})")
-            return firestore.client()
-        except Exception as e:
-            print(f"  환경변수 인증 실패: {e}, 로컬 파일 시도...")
-
-    # 2) 로컬 파일
-    if os.path.exists(LOCAL_SERVICE_ACCOUNT_PATH):
-        try:
-            cred = credentials.Certificate(LOCAL_SERVICE_ACCOUNT_PATH)
-            firebase_admin.initialize_app(cred, app_options)
-            print(f"  Firebase 초기화 (로컬 파일 -> {TARGET_FIREBASE_PROJECT})")
-            return firestore.client()
-        except Exception as e:
-            print(f"  로컬 파일 인증 실패: {e}")
-            sys.exit(1)
-
-    print("  서비스 계정을 찾을 수 없습니다.")
-    sys.exit(1)
 
 
 # ---------------------------------------------------------------------------

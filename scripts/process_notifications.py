@@ -20,17 +20,11 @@ import ssl
 import base64
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime
+from datetime import datetime, timezone
 
-try:
-    import firebase_admin
-    from firebase_admin import credentials, firestore
-except ImportError:
-    print("firebase-admin required: pip install firebase-admin")
-    sys.exit(1)
-
-LOCAL_SERVICE_ACCOUNT_PATH = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
-TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
 
 SMTP_HOST = "mail.hsvina.com"
 SMTP_PORT = 465
@@ -38,26 +32,6 @@ FROM_NAME = "QIP Incentive Dashboard"
 FROM_EMAIL = "ksmoon@hsvina.com"
 
 DASHBOARD_URL = "https://moonkaicuzui.github.io/hwk-qip-incentive-v10/"
-
-
-def init_firestore():
-    if firebase_admin._apps:
-        return firestore.client()
-    app_options = {"projectId": TARGET_FIREBASE_PROJECT}
-    sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
-    if sa_json:
-        try:
-            cred = credentials.Certificate(json.loads(sa_json))
-            firebase_admin.initialize_app(cred, app_options)
-            return firestore.client()
-        except Exception:
-            pass
-    if os.path.exists(LOCAL_SERVICE_ACCOUNT_PATH):
-        cred = credentials.Certificate(LOCAL_SERVICE_ACCOUNT_PATH)
-        firebase_admin.initialize_app(cred, app_options)
-        return firestore.client()
-    print("Service account not found.")
-    sys.exit(1)
 
 
 def get_smtp_credentials(db):

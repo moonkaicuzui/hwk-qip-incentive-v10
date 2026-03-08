@@ -7,7 +7,7 @@ Single Source of Truth 원칙: attendance 데이터가 진실의 유일한 소�
 import json
 import pandas as pd
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 import argparse
 import sys
 
@@ -121,10 +121,10 @@ def update_config_working_days(month, year, force_update=False):
     # Config 업데이트
     config['working_days'] = actual_working_days
     config['working_days_source'] = 'attendance_data'
-    config['working_days_updated_at'] = datetime.now().isoformat()
+    config['working_days_updated_at'] = datetime.now(timezone.utc).isoformat()
 
     # 백업 생성
-    backup_path = config_path.replace('.json', f'_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json')
+    backup_path = config_path.replace('.json', f'_backup_{datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")}.json')
     with open(backup_path, 'w', encoding='utf-8') as f:
         with open(config_path, 'r', encoding='utf-8') as orig:
             f.write(orig.read())

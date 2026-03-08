@@ -865,7 +865,7 @@ var DashboardFilters = {
                     + '<td>' + dateStr + '</td>'
                     + '<td>' + weekdays[dayOfWeek] + '</td>'
                     + '<td>' + statusBadge + '</td>'
-                    + '<td>' + reason + '</td>'
+                    + '<td>' + this._escapeHtml(reason) + '</td>'
                     + '</tr>';
             }
         } else {

@@ -14,44 +14,13 @@ import sys
 import json
 import argparse
 
-try:
-    import firebase_admin
-    from firebase_admin import credentials, firestore
-except ImportError:
-    print("firebase-admin 패키지 필요: pip install firebase-admin")
-    sys.exit(1)
-
-LOCAL_SERVICE_ACCOUNT_PATH = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
-TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
 
 ADMIN_EMAILS = [
     "ksmoon@hsvina.com"
 ]
-
-
-def init_firestore():
-    if firebase_admin._apps:
-        return firestore.client()
-
-    app_options = {"projectId": TARGET_FIREBASE_PROJECT}
-
-    sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
-    if sa_json:
-        try:
-            sa_info = json.loads(sa_json)
-            cred = credentials.Certificate(sa_info)
-            firebase_admin.initialize_app(cred, app_options)
-            return firestore.client()
-        except Exception as e:
-            print(f"환경변수 인증 실패: {e}")
-
-    if os.path.exists(LOCAL_SERVICE_ACCOUNT_PATH):
-        cred = credentials.Certificate(LOCAL_SERVICE_ACCOUNT_PATH)
-        firebase_admin.initialize_app(cred, app_options)
-        return firestore.client()
-
-    print("서비스 계정을 찾을 수 없습니다.")
-    sys.exit(1)
 
 
 def main():

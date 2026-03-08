@@ -19,68 +19,18 @@ import os
 import sys
 import json
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pandas as pd
 
-try:
-    import firebase_admin
-    from firebase_admin import credentials, firestore
-except ImportError:
-    print("firebase-admin 패키지가 설치되지 않았습니다.")
-    print("설치: pip install firebase-admin")
-    sys.exit(1)
-
-
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-LOCAL_SERVICE_ACCOUNT_PATH = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
-TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
 
 MONTHS = [
     "january", "february", "march", "april", "may", "june",
     "july", "august", "september", "october", "november", "december"
 ]
-
-
-# ---------------------------------------------------------------------------
-# Firebase initialisation (upload_to_firestore.py와 동일 패턴)
-# ---------------------------------------------------------------------------
-
-def init_firestore():
-    """Firebase Admin SDK 초기화 및 Firestore 클라이언트 반환"""
-    if firebase_admin._apps:
-        return firestore.client()
-
-    app_options = {"projectId": TARGET_FIREBASE_PROJECT}
-
-    # 1) 환경변수
-    sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
-    if sa_json:
-        try:
-            sa_info = json.loads(sa_json)
-            cred = credentials.Certificate(sa_info)
-            firebase_admin.initialize_app(cred, app_options)
-            print(f"✅ Firebase 초기화 성공 (환경변수 → {TARGET_FIREBASE_PROJECT})")
-            return firestore.client()
-        except Exception as e:
-            print(f"⚠️ 환경변수 인증 실패: {e}")
-
-    # 2) 로컬 서비스 계정 파일
-    if os.path.exists(LOCAL_SERVICE_ACCOUNT_PATH):
-        try:
-            cred = credentials.Certificate(LOCAL_SERVICE_ACCOUNT_PATH)
-            firebase_admin.initialize_app(cred, app_options)
-            print(f"✅ Firebase 초기화 성공 (로컬 파일 → {TARGET_FIREBASE_PROJECT})")
-            return firestore.client()
-        except Exception as e:
-            print(f"❌ 로컬 파일 인증 실패: {e}")
-            sys.exit(1)
-    else:
-        print(f"❌ 서비스 계정 없음. FIREBASE_SERVICE_ACCOUNT 환경변수를 설정하세요.")
-        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------

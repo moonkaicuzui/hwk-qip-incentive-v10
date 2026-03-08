@@ -22,15 +22,15 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
+
 # SMTP settings
 SMTP_HOST = "mail.hsvina.com"
 SMTP_PORT = 465
 FROM_NAME = "QIP Incentive Dashboard"
 FROM_EMAIL = "ksmoon@hsvina.com"
-
-# Firebase for SMTP credentials
-LOCAL_SERVICE_ACCOUNT_PATH = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
-TARGET_FIREBASE_PROJECT = "hwk-qip-incentive-dashboard"
 
 
 def get_smtp_credentials():
@@ -42,16 +42,7 @@ def get_smtp_credentials():
 
     # Try Firestore
     try:
-        import firebase_admin
-        from firebase_admin import credentials, firestore
-
-        if not firebase_admin._apps:
-            app_options = {"projectId": TARGET_FIREBASE_PROJECT}
-            if os.path.exists(LOCAL_SERVICE_ACCOUNT_PATH):
-                cred = credentials.Certificate(LOCAL_SERVICE_ACCOUNT_PATH)
-                firebase_admin.initialize_app(cred, app_options)
-
-        db = firestore.client()
+        db = init_firestore()
         doc = db.collection("system").document("config").get()
         if doc.exists:
             config = doc.to_dict()

@@ -21,7 +21,11 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
-from datetime import datetime
+from datetime import datetime, timezone
+
+# Add project root to path for utils import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from scripts.utils.firebase_common import init_firestore
 
 try:
     from pptx import Presentation
@@ -235,7 +239,7 @@ def create_manual_pptx():
     txBox3 = slide.shapes.add_textbox(Inches(1), Inches(5.5), Inches(11), Inches(1))
     tf3 = txBox3.text_frame
     p5 = tf3.paragraphs[0]
-    p5.text = f"Date: {datetime.now().strftime('%Y-%m-%d')}  |  Version 10.0  |  HWK QA Team"
+    p5.text = f"Date: {datetime.now(timezone.utc).strftime('%Y-%m-%d')}  |  Version 10.0  |  HWK QA Team"
     p5.font.size = Pt(16)
     p5.font.color.rgb = RGBColor(0x99, 0x99, 0xCC)
 
@@ -484,7 +488,7 @@ def generate_email_html_ko():
 </td></tr>"""
     return _email_wrapper(
         "Admin 설정 관리 기능 업데이트", body,
-        f"HWK QIP Incentive System V10 — {datetime.now().strftime('%Y-%m-%d')}<br>문의: ksmoon@hsvina.com"
+        f"HWK QIP Incentive System V10 — {datetime.now(timezone.utc).strftime('%Y-%m-%d')}<br>문의: ksmoon@hsvina.com"
     )
 
 
@@ -507,7 +511,7 @@ def generate_email_html_en():
 </td></tr>"""
     return _email_wrapper(
         "Admin Configuration Management Update", body,
-        f"HWK QIP Incentive System V10 — {datetime.now().strftime('%Y-%m-%d')}<br>Contact: ksmoon@hsvina.com"
+        f"HWK QIP Incentive System V10 — {datetime.now(timezone.utc).strftime('%Y-%m-%d')}<br>Contact: ksmoon@hsvina.com"
     )
 
 
@@ -530,7 +534,7 @@ def generate_email_html_vn():
 </td></tr>"""
     return _email_wrapper(
         "Cập nhật quản lý cấu hình Admin", body,
-        f"HWK QIP Incentive System V10 — {datetime.now().strftime('%Y-%m-%d')}<br>Liên hệ: ksmoon@hsvina.com"
+        f"HWK QIP Incentive System V10 — {datetime.now(timezone.utc).strftime('%Y-%m-%d')}<br>Liên hệ: ksmoon@hsvina.com"
     )
 
 
@@ -589,17 +593,8 @@ def send_update_email(pptx_path):
     if not smtp_user or not smtp_password:
         # Try Firestore
         try:
-            import firebase_admin
-            from firebase_admin import credentials, firestore
-            sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT", "")
-            if not firebase_admin._apps:
-                if sa_json:
-                    cred = credentials.Certificate(json.loads(sa_json))
-                else:
-                    local_sa = "/Users/ksmoon/Downloads/qip-dashboard-dabdc4d51ac9.json"
-                    cred = credentials.Certificate(local_sa)
-                firebase_admin.initialize_app(cred, {"projectId": "hwk-qip-incentive-dashboard"})
-            db = firestore.client()
+            from firebase_admin import firestore
+            db = init_firestore()
             config = db.collection("system").document("config").get()
             if config.exists:
                 data = config.to_dict()
@@ -675,7 +670,7 @@ def main():
 
     print("=" * 60)
     print("  QIP Dashboard V10 - Admin 업데이트 매뉴얼")
-    print(f"  시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"  시간: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
 
     # Step 1: Create PPTX
