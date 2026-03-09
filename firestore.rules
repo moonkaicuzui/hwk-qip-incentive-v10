@@ -44,6 +44,15 @@ service cloud.firestore {
     }
 
     // System Feedback: auth users can create & read, admin can update, creator can update own
+    // Collection name: system_feedback (snake_case convention)
+    match /system_feedback/{document} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin() ||
+                       (isAuthenticated() && resource.data.createdBy.uid == request.auth.uid);
+    }
+
+    // Legacy collection name (backward compat)
     match /systemFeedback/{document} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();

@@ -65,6 +65,13 @@
         /* Feedback cards */
         .feedback-card { background:#fff; border-radius:12px; padding:1.25rem; box-shadow:var(--card-shadow); margin-bottom:1rem; cursor:pointer; transition:all 0.2s; border-left:4px solid transparent; }
         .feedback-card:hover { box-shadow:var(--card-shadow-hover); transform:translateY(-2px); }
+        .feedback-card.type-BUG { border-left-color:#ef4444; }
+        .feedback-card.type-IMPROVEMENT { border-left-color:#3b82f6; }
+        .feedback-card.type-NEW_FEATURE { border-left-color:#10b981; }
+        .feedback-card.type-UI_UX { border-left-color:#8b5cf6; }
+        .feedback-card.type-DATA { border-left-color:#f59e0b; }
+        .feedback-card.type-OTHER { border-left-color:#64748b; }
+        /* Legacy support */
         .feedback-card.type-bug { border-left-color:#ef4444; }
         .feedback-card.type-improvement { border-left-color:#3b82f6; }
         .feedback-card.type-question { border-left-color:#8b5cf6; }
@@ -75,15 +82,21 @@
 
         /* Badges */
         .badge-type { font-size:0.7rem; padding:0.2rem 0.6rem; border-radius:20px; font-weight:600; }
-        .badge-bug { background:#fef2f2; color:#dc2626; }
-        .badge-improvement { background:#eff6ff; color:#2563eb; }
+        .badge-BUG, .badge-bug { background:#fef2f2; color:#dc2626; }
+        .badge-IMPROVEMENT, .badge-improvement { background:#eff6ff; color:#2563eb; }
+        .badge-NEW_FEATURE { background:#ecfdf5; color:#047857; }
+        .badge-UI_UX { background:#f5f3ff; color:#7c3aed; }
+        .badge-DATA { background:#fffbeb; color:#b45309; }
+        .badge-OTHER { background:#f1f5f9; color:#475569; }
         .badge-question { background:#f5f3ff; color:#7c3aed; }
         .badge-status { font-size:0.7rem; padding:0.2rem 0.6rem; border-radius:20px; font-weight:600; }
-        .badge-pending { background:#fef3c7; color:#d97706; }
-        .badge-accepted { background:#dbeafe; color:#2563eb; }
-        .badge-completed { background:#d1fae5; color:#059669; }
+        /* New statuses */
+        .badge-SUBMITTED, .badge-pending { background:#fef3c7; color:#d97706; }
+        .badge-REVIEWING, .badge-accepted { background:#dbeafe; color:#2563eb; }
+        .badge-IN_PROGRESS { background:#e0e7ff; color:#4338ca; }
+        .badge-COMPLETED, .badge-completed { background:#d1fae5; color:#059669; }
+        .badge-REJECTED, .badge-rejected { background:#fef2f2; color:#dc2626; }
         .badge-approved { background:#e0e7ff; color:#4338ca; }
-        .badge-rejected { background:#fef2f2; color:#dc2626; }
         .badge-resolved { background:#ecfdf5; color:#047857; }
 
         /* Priority */
@@ -157,10 +170,10 @@
         <!-- Stats -->
         <div class="stats-row" id="statsRow">
             <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total</div></div>
-            <div class="stat-card"><div class="stat-value" id="statPending" style="color:#d97706">0</div><div class="stat-label">Pending</div></div>
-            <div class="stat-card"><div class="stat-value" id="statAccepted" style="color:#2563eb">0</div><div class="stat-label">Accepted</div></div>
-            <div class="stat-card"><div class="stat-value" id="statOther" style="color:#dc2626">0</div><div class="stat-label">Other</div></div>
-            <div class="stat-card"><div class="stat-value" id="statCompleted" style="color:#059669">0</div><div class="stat-label">Completed / Approved</div></div>
+            <div class="stat-card"><div class="stat-value" id="statSubmitted" style="color:#d97706">0</div><div class="stat-label">Submitted</div></div>
+            <div class="stat-card"><div class="stat-value" id="statReviewing" style="color:#2563eb">0</div><div class="stat-label">Reviewing</div></div>
+            <div class="stat-card"><div class="stat-value" id="statInProgress" style="color:#4338ca">0</div><div class="stat-label">In Progress</div></div>
+            <div class="stat-card"><div class="stat-value" id="statCompleted" style="color:#059669">0</div><div class="stat-label">Completed</div></div>
         </div>
 
         <!-- Tabs -->
@@ -173,11 +186,11 @@
         <div class="tab-content active" id="tab-list">
             <div class="filter-bar">
                 <button class="filter-btn active" data-filter="all">All</button>
-                <button class="filter-btn" data-filter="pending">Pending</button>
-                <button class="filter-btn" data-filter="accepted">Accepted</button>
-                <button class="filter-btn" data-filter="resolved">Resolved</button>
-                <button class="filter-btn" data-filter="completed">Completed</button>
-                <button class="filter-btn" data-filter="approved">Approved</button>
+                <button class="filter-btn" data-filter="SUBMITTED">Submitted</button>
+                <button class="filter-btn" data-filter="REVIEWING">Reviewing</button>
+                <button class="filter-btn" data-filter="IN_PROGRESS">In Progress</button>
+                <button class="filter-btn" data-filter="COMPLETED">Completed</button>
+                <button class="filter-btn" data-filter="REJECTED">Rejected</button>
             </div>
             <div id="feedbackList">
                 <div class="empty-state"><i class="fas fa-inbox"></i><p>Loading...</p></div>
@@ -194,9 +207,12 @@
                             <label class="form-label">Type <span class="text-danger">*</span></label>
                             <select class="form-select" id="fbType" required>
                                 <option value="">-- Select --</option>
-                                <option value="bug">Bug Report</option>
-                                <option value="improvement">Improvement Request</option>
-                                <option value="question">Question</option>
+                                <option value="BUG">Bug Report</option>
+                                <option value="IMPROVEMENT">Improvement Request</option>
+                                <option value="NEW_FEATURE">New Feature</option>
+                                <option value="UI_UX">UI/UX</option>
+                                <option value="DATA">Data Issue</option>
+                                <option value="OTHER">Other</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -284,7 +300,7 @@
     // ============================================================
     // System Feedback Page - HWK QIP Incentive V10
     // ============================================================
-    const COLLECTION = 'systemFeedback';
+    const COLLECTION = 'system_feedback';
     const MAX_FILES = 3;
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     const MAX_IMAGE_DIMENSION = 800; // Resize images to max 800px
@@ -457,19 +473,26 @@
     })();
 
     // ============ Stats ============
+    // Map legacy statuses to new ones
+    function normalizeStatus(s) {
+        if (!s) return 'SUBMITTED';
+        var map = { 'pending': 'SUBMITTED', 'accepted': 'REVIEWING', 'completed': 'COMPLETED', 'approved': 'COMPLETED', 'resolved': 'COMPLETED', 'rejected': 'REJECTED' };
+        return map[s] || s; // Return as-is if already new format
+    }
+
     function updateStats() {
-        var pending = 0, accepted = 0, completed = 0, other = 0;
+        var submitted = 0, reviewing = 0, inProgress = 0, completed = 0;
         allFeedbacks.forEach(function(f) {
-            var s = f.status || '';
-            if (s === 'pending') pending++;
-            else if (s === 'accepted') accepted++;
-            else if (s === 'completed' || s === 'approved' || s === 'resolved') completed++;
-            else other++; // unknown, empty, null
+            var s = normalizeStatus(f.status);
+            if (s === 'SUBMITTED') submitted++;
+            else if (s === 'REVIEWING') reviewing++;
+            else if (s === 'IN_PROGRESS') inProgress++;
+            else if (s === 'COMPLETED') completed++;
         });
         document.getElementById('statTotal').textContent = allFeedbacks.length;
-        document.getElementById('statPending').textContent = pending;
-        document.getElementById('statAccepted').textContent = accepted;
-        document.getElementById('statOther').textContent = other;
+        document.getElementById('statSubmitted').textContent = submitted;
+        document.getElementById('statReviewing').textContent = reviewing;
+        document.getElementById('statInProgress').textContent = inProgress;
         document.getElementById('statCompleted').textContent = completed;
     }
 
@@ -478,7 +501,10 @@
         var container = document.getElementById('feedbackList');
         var filtered = allFeedbacks;
         if (currentFilter !== 'all') {
-            filtered = allFeedbacks.filter(function(f) { return f.status === currentFilter; });
+            filtered = allFeedbacks.filter(function(f) {
+                var s = normalizeStatus(f.status);
+                return s === currentFilter || f.status === currentFilter;
+            });
         }
 
         if (filtered.length === 0) {
@@ -629,7 +655,7 @@
                 description: document.getElementById('fbDescription').value.trim(),
                 reporterEmail: reporterEmail,
                 notificationEmails: notificationEmails,
-                status: 'pending',
+                status: 'SUBMITTED',
                 attachments: [],
                 createdBy: {
                     uid: currentUser.uid,
@@ -645,7 +671,7 @@
             // Queue notification emails to all recipients on submit
             if (currentUserIsAdmin) {
                 notificationEmails.forEach(function(email) {
-                    queueNotification(docRef.id, data.title, email, 'pending', 'New feedback submitted by ' + currentUser.email);
+                    queueNotification(docRef.id, data.title, email, 'SUBMITTED', 'New feedback submitted by ' + currentUser.email);
                 });
             }
 
@@ -744,23 +770,28 @@
         var footer = '';
         var isCreator = currentUser && f.createdBy && currentUser.uid === f.createdBy.uid;
 
+        var ns = normalizeStatus(f.status);
         if (currentUserIsAdmin) {
-            if (f.status === 'pending') {
-                footer += '<button class="btn btn-primary btn-sm" onclick="updateStatus(\'' + id + '\',\'accepted\')"><i class="fas fa-check me-1"></i>Accept</button>';
+            if (ns === 'SUBMITTED') {
+                footer += '<button class="btn btn-primary btn-sm me-1" onclick="updateStatus(\'' + id + '\',\'REVIEWING\')"><i class="fas fa-search me-1"></i>Start Review</button>';
+                footer += '<button class="btn btn-outline-danger btn-sm me-1" onclick="rejectFeedback(\'' + id + '\')"><i class="fas fa-times me-1"></i>Reject</button>';
             }
-            if (f.status === 'accepted') {
+            if (ns === 'REVIEWING') {
+                footer += '<button class="btn btn-info btn-sm text-white me-1" onclick="updateStatus(\'' + id + '\',\'IN_PROGRESS\')"><i class="fas fa-cog me-1"></i>Start Work</button>';
+                footer += '<button class="btn btn-outline-danger btn-sm me-1" onclick="rejectFeedback(\'' + id + '\')"><i class="fas fa-times me-1"></i>Reject</button>';
+            }
+            if (ns === 'IN_PROGRESS') {
                 footer += '<input type="text" class="form-control form-control-sm me-2" id="completionComment" placeholder="Resolution comment..." style="max-width:300px;">';
-                footer += '<button class="btn btn-success btn-sm" onclick="completeWithComment(\'' + id + '\')"><i class="fas fa-check-double me-1"></i>Complete</button>';
+                footer += '<button class="btn btn-success btn-sm me-1" onclick="completeWithComment(\'' + id + '\')"><i class="fas fa-check-double me-1"></i>Complete</button>';
             }
         }
 
         if (isCreator || currentUserIsAdmin) {
-            if (f.status === 'completed') {
-                footer += '<button class="btn btn-outline-success btn-sm me-2" onclick="updateStatus(\'' + id + '\',\'approved\')"><i class="fas fa-thumbs-up me-1"></i>Approve</button>';
-                footer += '<button class="btn btn-outline-danger btn-sm" onclick="rejectFeedback(\'' + id + '\')"><i class="fas fa-redo me-1"></i>Reject</button>';
+            if (ns === 'COMPLETED') {
+                footer += '<button class="btn btn-outline-warning btn-sm me-1" onclick="reopenFeedback(\'' + id + '\')"><i class="fas fa-redo me-1"></i>Reopen</button>';
             }
-            if (f.status === 'approved') {
-                footer += '<button class="btn btn-outline-warning btn-sm" onclick="reopenFeedback(\'' + id + '\')"><i class="fas fa-redo me-1"></i>Reopen</button>';
+            if (ns === 'REJECTED') {
+                footer += '<button class="btn btn-outline-warning btn-sm me-1" onclick="reopenFeedback(\'' + id + '\')"><i class="fas fa-redo me-1"></i>Reopen</button>';
             }
         }
 
@@ -776,24 +807,22 @@
             status: newStatus,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
-        if (newStatus === 'accepted') {
-            updateData.acceptedAt = firebase.firestore.FieldValue.serverTimestamp();
-            updateData.acceptedBy = { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || currentUser.email };
+        if (newStatus === 'REVIEWING') {
+            updateData.reviewingAt = firebase.firestore.FieldValue.serverTimestamp();
+            updateData.reviewingBy = { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || currentUser.email };
         }
-        if (newStatus === 'approved') {
-            updateData.approvedAt = firebase.firestore.FieldValue.serverTimestamp();
-            updateData.approvedBy = { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || currentUser.email };
+        if (newStatus === 'IN_PROGRESS') {
+            updateData.inProgressAt = firebase.firestore.FieldValue.serverTimestamp();
+            updateData.inProgressBy = { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || currentUser.email };
         }
         db.collection(COLLECTION).doc(id).update(updateData).then(function() {
-            // Queue email notification for approved status
-            if (newStatus === 'approved') {
-                var f = allFeedbacks.find(function(item) { return item.id === id; });
-                if (f) {
-                    var emails = (f.notificationEmails && f.notificationEmails.length > 0) ? f.notificationEmails : (f.reporterEmail ? [f.reporterEmail] : []);
-                    emails.forEach(function(email) {
-                        queueNotification(id, f.title, email, 'approved', f.completionComment || '');
-                    });
-                }
+            // Queue notification on status change
+            var f = allFeedbacks.find(function(item) { return item.id === id; });
+            if (f) {
+                var emails = (f.notificationEmails && f.notificationEmails.length > 0) ? f.notificationEmails : (f.reporterEmail ? [f.reporterEmail] : []);
+                emails.forEach(function(email) {
+                    queueNotification(id, f.title, email, newStatus, '');
+                });
             }
             bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
         });
@@ -803,7 +832,7 @@
         var comment = document.getElementById('completionComment').value.trim();
         if (!comment) { alert('Please enter a resolution comment.'); return; }
         db.collection(COLLECTION).doc(id).update({
-            status: 'completed',
+            status: 'COMPLETED',
             completionComment: comment,
             completedAt: firebase.firestore.FieldValue.serverTimestamp(),
             completedBy: { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || currentUser.email },
@@ -814,7 +843,7 @@
             if (f) {
                 var emails = (f.notificationEmails && f.notificationEmails.length > 0) ? f.notificationEmails : (f.reporterEmail ? [f.reporterEmail] : []);
                 emails.forEach(function(email) {
-                    queueNotification(id, f.title, email, 'completed', comment);
+                    queueNotification(id, f.title, email, 'COMPLETED', comment);
                 });
             }
             bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
@@ -825,7 +854,10 @@
         var reason = prompt('Rejection reason:');
         if (!reason) return;
         db.collection(COLLECTION).doc(id).update({
-            status: 'pending',
+            status: 'REJECTED',
+            rejectionComment: reason,
+            rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            rejectedBy: { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || currentUser.email },
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             rejectionHistory: firebase.firestore.FieldValue.arrayUnion({
                 rejectedAt: new Date().toISOString(),
@@ -833,6 +865,13 @@
                 comment: reason
             })
         }).then(function() {
+            var f = allFeedbacks.find(function(item) { return item.id === id; });
+            if (f) {
+                var emails = (f.notificationEmails && f.notificationEmails.length > 0) ? f.notificationEmails : (f.reporterEmail ? [f.reporterEmail] : []);
+                emails.forEach(function(email) {
+                    queueNotification(id, f.title, email, 'REJECTED', reason);
+                });
+            }
             bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
         });
     }
@@ -841,7 +880,7 @@
         var reason = prompt('Reopen reason:');
         if (!reason) return;
         db.collection(COLLECTION).doc(id).update({
-            status: 'pending',
+            status: 'SUBMITTED',
             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             reopenHistory: firebase.firestore.FieldValue.arrayUnion({
                 reopenedAt: new Date().toISOString(),
@@ -874,9 +913,13 @@
     // ============ Helpers ============
     function buildTimeline(f) {
         var items = [];
-        if (f.createdAt) items.push({ date: f.createdAt, text: 'Created by ' + (f.createdBy ? f.createdBy.email : 'Unknown'), color: '#94a3b8' });
-        if (f.acceptedAt) items.push({ date: f.acceptedAt, text: 'Accepted by ' + (f.acceptedBy ? f.acceptedBy.email : 'Admin'), color: '#3b82f6' });
+        if (f.createdAt) items.push({ date: f.createdAt, text: 'Submitted by ' + (f.createdBy ? f.createdBy.email : 'Unknown'), color: '#94a3b8' });
+        if (f.reviewingAt) items.push({ date: f.reviewingAt, text: 'Review started by ' + (f.reviewingBy ? f.reviewingBy.email : 'Admin'), color: '#3b82f6' });
+        if (f.inProgressAt) items.push({ date: f.inProgressAt, text: 'Work started by ' + (f.inProgressBy ? f.inProgressBy.email : 'Admin'), color: '#4338ca' });
         if (f.completedAt) items.push({ date: f.completedAt, text: 'Completed by ' + (f.completedBy ? f.completedBy.email : 'Admin'), color: '#10b981' });
+        if (f.rejectedAt) items.push({ date: f.rejectedAt, text: 'Rejected by ' + (f.rejectedBy ? f.rejectedBy.email : 'Admin') + (f.rejectionComment ? ': ' + f.rejectionComment : ''), color: '#ef4444' });
+        // Legacy fields
+        if (f.acceptedAt) items.push({ date: f.acceptedAt, text: 'Accepted by ' + (f.acceptedBy ? f.acceptedBy.email : 'Admin'), color: '#3b82f6' });
         if (f.approvedAt) items.push({ date: f.approvedAt, text: 'Approved by ' + (f.approvedBy ? f.approvedBy.email : ''), color: '#6366f1' });
 
         // Rejections

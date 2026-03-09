@@ -1,0 +1,13 @@
+{
+  "name": "hwk-qip-incentive-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js scripts for HWK QIP Incentive System V10",
+  "scripts": {
+    "send-email": "node sendEmail.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "nodemailer": "^6.9.16"
+  }
+}
