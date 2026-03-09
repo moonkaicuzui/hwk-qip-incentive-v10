@@ -514,7 +514,7 @@ var DashboardCharts = {
         });
 
         // Sort by type priority (TYPE-1 > TYPE-2 > TYPE-3), then by employee count
-        var typePriority = { 'TYPE-1': 0, 'TYPE-2': 1, 'TYPE-3': 2, 'N/A': 3 };
+        var typePriority = { 'TYPE-1': 1, 'TYPE-2': 2, 'TYPE-3': 3, 'N/A': 4 };
         var positions = Object.keys(positionMap).sort(function (a, b) {
             var ga = positionMap[a], gb = positionMap[b];
             var tDiff = (typePriority[ga.type] || 3) - (typePriority[gb.type] || 3);
