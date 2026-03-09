@@ -227,9 +227,19 @@ var DashboardModals = {
         var avgIncentive = receivingCount > 0 ? totalIncentive / receivingCount : 0;
         var notReceiving = filtered.length - receivingCount;
 
-        // Determine TYPE for icon
-        var sampleType = filtered.length > 0 ? String(filtered[0].type || filtered[0].TYPE || filtered[0]['ROLE TYPE STD'] || '').toUpperCase() : '';
-        var typeIcon = sampleType.indexOf('1') >= 0 ? '🏆' : sampleType.indexOf('2') >= 0 ? '📊' : '🆕';
+        // Determine TYPE composition for icon (count actual types, not just first employee)
+        var _typeCounts = { t1: 0, t2: 0, t3: 0 };
+        filtered.forEach(function (emp) {
+            var et = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
+            if (et.indexOf('TYPE-1') !== -1 || et === '1') _typeCounts.t1++;
+            else if (et.indexOf('TYPE-2') !== -1 || et === '2') _typeCounts.t2++;
+            else _typeCounts.t3++;
+        });
+        var typeIcon = '';
+        if (_typeCounts.t1 > 0) typeIcon += '🏆';
+        if (_typeCounts.t2 > 0) typeIcon += '📊';
+        if (_typeCounts.t3 > 0) typeIcon += '🆕';
+        if (!typeIcon) typeIcon = '📊';
 
         // Find max/min incentive
         var maxIncentive = 0, minIncentive = Infinity;

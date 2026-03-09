@@ -2404,8 +2404,9 @@ class DataProcessor:
         aql_results = []
         current_month_fail_col = f"{self.config.get_month_str('capital')} AQL Failures"
         
-        # 최신 month(3번째 month) datafrom BUILDING 정보 추출
-        employee_buildings = {}
+        # 최신 month(3번째 month)부터 BUILDING 정보 추출 (직원별 최빈값 사용)
+        from collections import Counter
+        _emp_building_lists = {}  # emp_no -> [building, building, ...]
         if 'BUILDING' in month3_df.columns:
             for _, row in month3_df.iterrows():
                 emp_no = str(row['EMPLOYEE NO']).strip()
@@ -2413,10 +2414,11 @@ class DataProcessor:
                     if '.' in emp_no:
                         emp_no = str(int(float(emp_no)))
                     emp_no = emp_no.zfill(9)
-                    if emp_no not in employee_buildings:
-                        employee_buildings[emp_no] = row['BUILDING']
-        
-        # previous monthfromalso BUILDING 정보 수집 (최신 monthto 없 경우 대비)
+                    if emp_no not in _emp_building_lists:
+                        _emp_building_lists[emp_no] = []
+                    _emp_building_lists[emp_no].append(row['BUILDING'])
+
+        # 이전 월 BUILDING 정보 수집 (최신 월에 없는 직원만)
         for month_df in [month2_df, month1_df]:
             if 'BUILDING' in month_df.columns:
                 for _, row in month_df.iterrows():
@@ -2425,8 +2427,16 @@ class DataProcessor:
                         if '.' in emp_no:
                             emp_no = str(int(float(emp_no)))
                         emp_no = emp_no.zfill(9)
-                        if emp_no not in employee_buildings:
-                            employee_buildings[emp_no] = row['BUILDING']
+                        if emp_no not in _emp_building_lists:
+                            _emp_building_lists[emp_no] = []
+                            _emp_building_lists[emp_no].append(row['BUILDING'])
+
+        # 각 직원별 최빈 BUILDING 선택
+        employee_buildings = {}
+        for emp_no, buildings in _emp_building_lists.items():
+            if buildings:
+                counter = Counter(buildings)
+                employee_buildings[emp_no] = counter.most_common(1)[0][0]
         
         # 모든 employeeof 결and include (failure 없더라also)
         # first default data프레임from 모든 employee ID 져오기
@@ -8099,14 +8109,22 @@ def detect_month_from_attendance(file_path: str) -> tuple:
             print("⚠️ 유효한 date 찾 수 없습니다.")
             return None, None
         
-        # 장 많 나타나 yearmonth 찾기
+        # 월별 데이터 분포 확인
         year_months = dates.dt.to_period('M')
-        most_common = year_months.value_counts().index[0]
-        
+        month_counts = year_months.value_counts()
+
+        if len(month_counts) > 1:
+            total = month_counts.sum()
+            top_ratio = month_counts.iloc[0] / total
+            print(f"⚠️ 복수 월 데이터 감지: {dict(month_counts)}")
+            if top_ratio < 0.9:
+                print(f"⚠️ 주의: 최다 월({month_counts.index[0]})의 비율이 {top_ratio:.1%}로 낮음. 데이터 혼재 가능성 확인 필요.")
+
+        most_common = month_counts.index[0]
         year = most_common.year
         month = most_common.month
-        
-        print(f"✅ Attendance 파일에서 detectiondone yearMonth: {year}year {month}month")
+
+        print(f"✅ Attendance 파일에서 감지된 연월: {year}년 {month}월 ({month_counts.iloc[0]}건/{month_counts.sum()}건)")
         return year, month
         
     except (FileNotFoundError, pd.errors.ParserError, KeyError, ValueError) as e:

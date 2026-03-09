@@ -885,22 +885,16 @@ var DashboardCharts = {
             }
         });
 
-        // Helper to find average by position pattern
-        function getAvg(patterns) {
-            for (var i = 0; i < patterns.length; i++) {
-                var keys = Object.keys(type1Averages);
-                for (var j = 0; j < keys.length; j++) {
-                    if (keys[j].indexOf(patterns[i]) !== -1) return type1Averages[keys[j]];
-                }
-            }
-            return 0;
+        // Helper to find average by exact position name match
+        function getAvg(positionName) {
+            return type1Averages[positionName] || 0;
         }
 
-        var llAvg = getAvg(['LINE LEADER']);
-        var aiAvg = getAvg(['ASSEMBLY INSPECTOR']);
-        var vsAvg = getAvg(['(V) SUPERVISOR', 'V) SUPERVISOR', 'SUPERVISOR']);
-        var amAvg = getAvg(['A.MANAGER']);
-        var glAvg = getAvg(['GROUP LEADER']);
+        var llAvg = getAvg('LINE LEADER');
+        var aiAvg = getAvg('ASSEMBLY INSPECTOR');
+        var vsAvg = getAvg('(V) SUPERVISOR');
+        var amAvg = getAvg('A.MANAGER');
+        var glAvg = getAvg('GROUP LEADER');
 
         // TYPE-2 position definitions with reference and method (V9 multipliers)
         var type2Positions = [
