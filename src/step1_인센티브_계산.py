@@ -1524,9 +1524,12 @@ class DataProcessor:
             if pattern in position_name:
                 return 'MODEL_MASTER'
 
-        # 6. RQC ASSEMBLY INSPECTOR (position_code A1B — C10 exempted)
+        # 6. RQC ASSEMBLY INSPECTOR (position_code A1B — C10 exempted, 2026년 2월부터 적용)
         if position_code == 'A1B' and 'ASSEMBLY INSPECTOR' in position_name:
-            return 'RQC_ASSEMBLY_INSPECTOR'
+            # 2026년 2월 이전에는 일반 ASSEMBLY_INSPECTOR로 분류 (Condition 10 적용)
+            if self.config.year > 2026 or (self.config.year == 2026 and self.config.month.number >= 2):
+                return 'RQC_ASSEMBLY_INSPECTOR'
+            # 2026년 1월 이전: 기존대로 ASSEMBLY_INSPECTOR (아래 패턴 매칭으로 진행)
 
         # 7. ASSEMBLY INSPECTOR (most common TYPE-1)
         assembly_patterns = ['ASSEMBLY INSPECTOR']
