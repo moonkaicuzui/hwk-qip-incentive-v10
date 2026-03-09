@@ -176,8 +176,15 @@ def main():
             })
             continue
 
-        subject = f"[QIP Feedback] Your issue '{title}' has been {new_status}"
-        html = build_notification_html(title, new_status, comment, changed_by)
+        # Support custom HTML for weekly reports etc.
+        custom_html = n.get("customHtml", "")
+        custom_subject = n.get("customSubject", "")
+        if custom_html and custom_subject:
+            subject = custom_subject
+            html = custom_html
+        else:
+            subject = f"[QIP Feedback] Your issue '{title}' has been {new_status}"
+            html = build_notification_html(title, new_status, comment, changed_by)
 
         print(f"\n  Sending to {to_email}...")
         if send_notification(to_email, subject, html, smtp_user, smtp_password):
