@@ -848,7 +848,7 @@ var AdminConfigs = {
             self.renderConditionMatrix(data.position_matrix || {}, data.conditions || {});
         } catch (error) {
             console.error('[AdminConfigs] Failed to load condition matrix:', error);
-            container.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> ' + error.message + '</p>';
+            container.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> ' + self._escapeHtml(error.message) + '</p>';
         }
     },
 
@@ -1058,7 +1058,7 @@ var AdminConfigs = {
             self.renderProgressiveTable(progression);
         } catch (error) {
             console.error('[AdminConfigs] Failed to load progressive table:', error);
-            container.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> ' + error.message + '</p>';
+            container.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> ' + self._escapeHtml(error.message) + '</p>';
         }
     },
 

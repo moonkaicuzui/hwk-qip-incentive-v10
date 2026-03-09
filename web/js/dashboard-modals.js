@@ -231,8 +231,8 @@ var DashboardModals = {
         var _typeCounts = { t1: 0, t2: 0, t3: 0 };
         filtered.forEach(function (emp) {
             var et = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-            if (et.indexOf('TYPE-1') !== -1 || et === '1') _typeCounts.t1++;
-            else if (et.indexOf('TYPE-2') !== -1 || et === '2') _typeCounts.t2++;
+            if (et === 'TYPE-1' || et === '1' || et === 'TYPE 1') _typeCounts.t1++;
+            else if (et === 'TYPE-2' || et === '2' || et === 'TYPE 2') _typeCounts.t2++;
             else _typeCounts.t3++;
         });
         var typeIcon = '';
@@ -462,8 +462,8 @@ var DashboardModals = {
 
         var typeBadgeClass = 'badge-type ';
         var typeUpper = String(empType).toUpperCase();
-        if (typeUpper.indexOf('TYPE-1') !== -1) typeBadgeClass += 'badge-type1';
-        else if (typeUpper.indexOf('TYPE-2') !== -1) typeBadgeClass += 'badge-type2';
+        if (typeUpper === 'TYPE-1' || typeUpper === '1' || typeUpper === 'TYPE 1') typeBadgeClass += 'badge-type1';
+        else if (typeUpper === 'TYPE-2' || typeUpper === '2' || typeUpper === 'TYPE 2') typeBadgeClass += 'badge-type2';
         else typeBadgeClass += 'badge-type3';
 
         var html = '<div class="section-card" style="margin-bottom: 16px;">';
@@ -527,7 +527,7 @@ var DashboardModals = {
         var t = this._t;
         var helpers = window.employeeHelpers;
         var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-        var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+        var isType1 = empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
 
         var conditionNames = [
             t('condition.1'),   // 1: Attendance Rate
@@ -651,7 +651,7 @@ var DashboardModals = {
         var previousIncentive = this._getIncentive(emp, 'previous');
         var continuousMonths = parseInt(emp.continuous_months || emp.Continuous_Months || 0, 10) || 0;
         var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-        var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+        var isType1 = empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
 
         var html = '<div class="section-card" style="margin-bottom: 16px;">';
         html += '<h3 style="font-size: 1rem; margin: 0 0 12px;">' + t('modal.incentiveInfo') + '</h3>';
@@ -741,7 +741,7 @@ var DashboardModals = {
     _renderAqlInfo: function (emp) {
         var t = this._t;
         var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-        var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+        var isType1 = empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
 
         // Issue #56: Show N/A for TYPE-2 and TYPE-3
         if (!isType1) {
@@ -789,7 +789,7 @@ var DashboardModals = {
     _render5PrsInfo: function (emp) {
         var t = this._t;
         var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-        var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+        var isType1 = empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
 
         // Issue #56: Show N/A for TYPE-2 and TYPE-3
         if (!isType1) {
@@ -915,7 +915,7 @@ var DashboardModals = {
                 // TYPE-1 only (Issue #56)
                 return employees.filter(function (emp) {
                     var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-                    var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+                    var isType1 = empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
                     if (!isType1) return false;
                     var val = parseFloat(emp.prs ? emp.prs.pass_rate : (emp.prs_pass_rate || emp['5PRS_Pass_Rate'] || 0)) || 0;
                     return val < thPassRate && val > 0;
@@ -925,7 +925,7 @@ var DashboardModals = {
                 // TYPE-1 only (Issue #56)
                 return employees.filter(function (emp) {
                     var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-                    var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+                    var isType1 = empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
                     if (!isType1) return false;
                     var val = parseFloat(emp.prs ? emp.prs.inspection_qty : (emp.prs_inspection_qty || emp['5PRS_Inspection_Qty'] || 0)) || 0;
                     return val < thInspQty && val > 0;
@@ -1417,7 +1417,7 @@ var DashboardModals = {
         if (!helpers) return '--';
 
         var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-        var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+        var isType1 = empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
         var maxCond = isType1 ? 10 : 4;
 
         var passed = 0;
@@ -1684,7 +1684,7 @@ var DashboardModals = {
         // Get TYPE-1 employees with AQL data
         var type1Emps = employees.filter(function (emp) {
             var empType = String(emp.type || emp.TYPE || '').toUpperCase();
-            return empType.indexOf('TYPE-1') !== -1 || empType === '1';
+            return empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
         });
 
         // --- Compute building-level AQL statistics ---
@@ -1925,7 +1925,7 @@ var DashboardModals = {
         // Get all TYPE-1 inspectors
         var allType1 = this.employees.filter(function (emp) {
             var empType = String(emp.type || emp.TYPE || '').toUpperCase();
-            var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+            var isType1 = empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
             var hasData = parseFloat(emp.prs ? emp.prs.pass_rate : (emp.prs_pass_rate || 0)) > 0;
             return isType1 && hasData;
         });
@@ -2561,7 +2561,7 @@ var DashboardModals = {
     _renderContinuousMonthsReset: function (emp, currentMonths) {
         var t = this._t;
         var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-        var isType1 = empType.indexOf('TYPE-1') !== -1 || empType === '1';
+        var isType1 = empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
         if (!isType1) return '';
 
         var prevMonths = parseInt(emp.previous_continuous_months || emp.Previous_Continuous_Months || emp['Previous_Continuous_Months'] || 0, 10) || 0;
@@ -2657,7 +2657,7 @@ var DashboardModals = {
     _renderType3Roadmap: function (emp) {
         var t = this._t;
         var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-        if (empType.indexOf('TYPE-3') === -1 && empType !== '3') return '';
+        if (empType !== 'TYPE-3' && empType !== '3' && empType !== 'TYPE 3') return '';
 
         // Calculate D-day (days until next month 1st)
         var now = new Date();

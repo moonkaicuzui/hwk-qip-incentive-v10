@@ -445,13 +445,13 @@ var DashboardFilters = {
             // --- TYPE ---
             var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '--').toUpperCase();
             var typeBadgeClass = 'badge-type3';
-            if (empType.indexOf('TYPE-1') !== -1 || empType === '1') {
+            if (empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1') {
                 typeBadgeClass = 'badge-type1';
                 if (empType === '1') empType = 'TYPE-1';
-            } else if (empType.indexOf('TYPE-2') !== -1 || empType === '2') {
+            } else if (empType === 'TYPE-2' || empType === '2' || empType === 'TYPE 2') {
                 typeBadgeClass = 'badge-type2';
                 if (empType === '2') empType = 'TYPE-2';
-            } else if (empType.indexOf('TYPE-3') !== -1 || empType === '3') {
+            } else if (empType === 'TYPE-3' || empType === '3' || empType === 'TYPE 3') {
                 typeBadgeClass = 'badge-type3';
                 if (empType === '3') empType = 'TYPE-3';
             }
@@ -468,7 +468,7 @@ var DashboardFilters = {
             // --- AQL Status ---
             // Issue #56: TYPE별 N/A 표시 (TYPE-2, TYPE-3는 AQL 조건 미적용)
             var aqlHtml;
-            var isType1 = (empType.indexOf('TYPE-1') !== -1);
+            var isType1 = (empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1');
 
             if (isType1) {
                 // Check AQL failures from multiple field sources
@@ -1454,7 +1454,7 @@ var DashboardFilters = {
 
                 // AQL/5PRS - TYPE-based N/A (Issue #56)
                 var aqlStatus, prsStatus;
-                if (empType.indexOf('TYPE-1') !== -1) {
+                if (empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1') {
                     var aqlFail = parseFloat(emp.aql ? emp.aql.personal_fail : (emp.personal_fail || emp['AQL_Personal_Fail'] || 0)) || 0;
                     aqlStatus = aqlFail === 0 ? '<span style="color:#2e7d32;">✅</span>' : '<span style="color:#c62828;">❌ ' + aqlFail + '</span>';
                     var prsRate = parseFloat(emp.prs ? emp.prs.pass_rate : (emp.prs_pass_rate || 0)) || 0;

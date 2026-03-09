@@ -501,9 +501,9 @@ var DashboardCharts = {
         employees.forEach(function (emp) {
             var pos = String(emp.position || emp.Position || emp['Position Name'] || 'Unknown').trim();
             var t = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-            if (t.indexOf('TYPE-1') !== -1 || t === '1') t = 'TYPE-1';
-            else if (t.indexOf('TYPE-2') !== -1 || t === '2') t = 'TYPE-2';
-            else if (t.indexOf('TYPE-3') !== -1 || t === '3') t = 'TYPE-3';
+            if (t === 'TYPE-1' || t === '1' || t === 'TYPE 1') t = 'TYPE-1';
+            else if (t === 'TYPE-2' || t === '2' || t === 'TYPE 2') t = 'TYPE-2';
+            else if (t === 'TYPE-3' || t === '3' || t === 'TYPE 3') t = 'TYPE-3';
             else t = 'N/A';
             var key = pos + '||' + t;
             if (!positionMap[key]) {
@@ -859,7 +859,7 @@ var DashboardCharts = {
 
         employees.forEach(function (emp) {
             var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-            if (empType.indexOf('TYPE-1') === -1 && empType !== '1') return;
+            if (empType !== 'TYPE-1' && empType !== '1' && empType !== 'TYPE 1') return;
 
             var position = String(emp.position || emp.POSITION || emp['Position'] || '').toUpperCase().trim();
             var incentive = 0;
@@ -1140,8 +1140,8 @@ var DashboardCharts = {
                         : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
                     if (incentive > 0) { receiving++; amount += incentive; }
                     var t = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-                    if (t.indexOf('TYPE-1') !== -1 || t === '1') type1++;
-                    else if (t.indexOf('TYPE-2') !== -1 || t === '2') type2++;
+                    if (t === 'TYPE-1' || t === '1' || t === 'TYPE 1') type1++;
+                    else if (t === 'TYPE-2' || t === '2' || t === 'TYPE 2') type2++;
                     else type3++;
                 });
 
@@ -1930,7 +1930,7 @@ var DashboardCharts = {
             ]);
             // Only count TYPE-1 employees who have 5PRS data
             var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-            if (empType.indexOf('TYPE-1') !== -1 || empType === '1') {
+            if (empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1') {
                 if (passRate > 0 && passRate < th5prsPassRate) {
                     lowPassRateCount++;
                 }
@@ -1947,7 +1947,7 @@ var DashboardCharts = {
                 '5PRS_Inspection_Qty', '5PRS Inspection Qty'
             ]);
             var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-            if (empType.indexOf('TYPE-1') !== -1 || empType === '1') {
+            if (empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1') {
                 if (qty > 0 && qty < th5prsMinQty) {
                     lowInspectionQtyCount++;
                 }
