@@ -2016,7 +2016,7 @@ class DataProcessor:
             row = month_data.loc[idx]
 
             # 1. 직급 카테고리 결정
-            position_code = str(row.get('QIP POSITION 1ST  CODE', '')).strip()
+            position_code = str(row.get('FINAL QIP POSITION NAME CODE', '')).strip()
             position_name = str(row.get('QIP POSITION 1ST  NAME', '')).strip()
             position_category = self._get_type1_position_category(position_code, position_name)
 
