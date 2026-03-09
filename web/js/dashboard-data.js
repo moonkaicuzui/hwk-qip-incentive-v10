@@ -392,7 +392,8 @@ var DashboardData = {
             .catch(function (error) {
                 console.error('[DashboardData] loadAll failed:', error);
                 self._hideLoading();
-                self._showError('Failed to load dashboard data. Please refresh the page or try again later.');
+                var t = window.DashboardI18n ? DashboardI18n.t.bind(DashboardI18n) : function() { return ''; };
+                self._showError(t('error.loadAll') || 'Failed to load dashboard data. Please refresh the page or try again later.');
                 return { employees: [], summary: {}, thresholds: window.thresholds || {} };
             });
     },

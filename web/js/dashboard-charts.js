@@ -213,12 +213,12 @@ var DashboardCharts = {
         var types = { 'TYPE-1': [], 'TYPE-2': [], 'TYPE-3': [] };
 
         employees.forEach(function (emp) {
-            var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-            if (empType.indexOf('TYPE-1') !== -1 || empType === '1') {
+            var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase().trim();
+            if (empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1') {
                 types['TYPE-1'].push(emp);
-            } else if (empType.indexOf('TYPE-2') !== -1 || empType === '2') {
+            } else if (empType === 'TYPE-2' || empType === '2' || empType === 'TYPE 2') {
                 types['TYPE-2'].push(emp);
-            } else if (empType.indexOf('TYPE-3') !== -1 || empType === '3') {
+            } else if (empType === 'TYPE-3' || empType === '3' || empType === 'TYPE 3') {
                 types['TYPE-3'].push(emp);
             } else {
                 // Unknown type - default to TYPE-3

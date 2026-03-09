@@ -7,6 +7,7 @@
  */
 
 const nodemailer = require("nodemailer");
+const { logger } = require("firebase-functions");
 
 const MAX_RETRIES = 2;
 
@@ -65,6 +66,15 @@ async function sendEmail(smtpUser, smtpPassword, options) {
       return { messageId: info.messageId };
     } catch (err) {
       lastError = err;
+      // 인증 오류는 재시도하지 않음
+      if (err.code === "EAUTH" || (err.responseCode && err.responseCode === 535)) {
+        logger.error("SMTP 인증 실패 (재시도 불가):", { error: err.message });
+        throw err;
+      }
+      logger.warn("이메일 발송 시도 " + (attempt + 1) + "/" + (MAX_RETRIES + 1) + " 실패:", {
+        error: err.message,
+        to: mailOptions.to,
+      });
       if (attempt < MAX_RETRIES) {
         var delay = getBackoffDelay(attempt);
         await new Promise(function (resolve) {
@@ -74,6 +84,11 @@ async function sendEmail(smtpUser, smtpPassword, options) {
     }
   }
 
+  logger.error("이메일 발송 최종 실패:", {
+    error: lastError.message,
+    to: mailOptions.to,
+    attempts: MAX_RETRIES + 1,
+  });
   throw lastError;
 }
 

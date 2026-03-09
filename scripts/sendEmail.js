@@ -74,8 +74,16 @@ async function sendEmail(options) {
   };
 
   // HTML 본문 결정: --html-file > --html > --body
-  if (options['html-file'] && fs.existsSync(options['html-file'])) {
-    mailOptions.html = fs.readFileSync(options['html-file'], 'utf-8');
+  if (options['html-file']) {
+    var resolvedPath = path.resolve(options['html-file']);
+    var allowedBase = path.resolve(__dirname, '..');
+    if (!resolvedPath.startsWith(allowedBase)) {
+      throw new Error('html-file path must be within the project directory');
+    }
+    if (!fs.existsSync(resolvedPath)) {
+      throw new Error('html-file not found: ' + resolvedPath);
+    }
+    mailOptions.html = fs.readFileSync(resolvedPath, 'utf-8');
   } else if (options.html) {
     mailOptions.html = options.html;
   } else {
@@ -85,11 +93,19 @@ async function sendEmail(options) {
   if (options.cc) mailOptions.cc = options.cc;
   if (options.bcc) mailOptions.bcc = options.bcc;
 
-  // 첨부파일 (--attachment 경로)
-  if (options.attachment && fs.existsSync(options.attachment)) {
+  // 첨부파일 (--attachment 경로) — 프로젝트 디렉토리 내로 제한
+  if (options.attachment) {
+    var attachPath = path.resolve(options.attachment);
+    var projBase = path.resolve(__dirname, '..');
+    if (!attachPath.startsWith(projBase)) {
+      throw new Error('attachment path must be within the project directory');
+    }
+    if (!fs.existsSync(attachPath)) {
+      throw new Error('attachment not found: ' + attachPath);
+    }
     mailOptions.attachments = [{
-      filename: path.basename(options.attachment),
-      path: options.attachment,
+      filename: path.basename(attachPath),
+      path: attachPath,
     }];
   }
 

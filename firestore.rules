@@ -72,10 +72,10 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Email logs: Cloud Functions create (server-side), admin read
+    // Email logs: Cloud Functions create (server-side bypasses rules), admin read only
     match /email_logs/{document} {
       allow read: if isAdmin();
-      allow create: if isAuthenticated();
+      allow create: if isAdmin();
     }
 
     // System config: admin only (contains admin_emails list)
