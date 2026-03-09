@@ -513,13 +513,20 @@ var DashboardCharts = {
             uniquePositions[pos] = true;
         });
 
-        // Sort by type priority (TYPE-1 > TYPE-2 > TYPE-3), then by employee count
-        var typePriority = { 'TYPE-1': 1, 'TYPE-2': 2, 'TYPE-3': 3, 'N/A': 4 };
-        var positions = Object.keys(positionMap).sort(function (a, b) {
-            var ga = positionMap[a], gb = positionMap[b];
-            var tDiff = (typePriority[ga.type] || 3) - (typePriority[gb.type] || 3);
-            if (tDiff !== 0) return tDiff;
-            return gb.employees.length - ga.employees.length;
+        // Build type-grouped structure: { 'TYPE-1': [...keys], 'TYPE-2': [...], ... }
+        var typeOrder = ['TYPE-1', 'TYPE-2', 'TYPE-3', 'N/A'];
+        var typeGroups = {};
+        typeOrder.forEach(function (tp) { typeGroups[tp] = []; });
+        Object.keys(positionMap).forEach(function (key) {
+            var tp = positionMap[key].type;
+            if (!typeGroups[tp]) typeGroups[tp] = [];
+            typeGroups[tp].push(key);
+        });
+        // Sort positions within each type by employee count (descending)
+        typeOrder.forEach(function (tp) {
+            typeGroups[tp].sort(function (a, b) {
+                return positionMap[b].employees.length - positionMap[a].employees.length;
+            });
         });
         var uniquePositionCount = Object.keys(uniquePositions).length;
 
@@ -528,7 +535,6 @@ var DashboardCharts = {
         html += '<div class="table-container"><table>';
         html += '<thead><tr>';
         html += '<th>' + t('table.position') + '</th>';
-        html += '<th style="text-align:center;">' + t('table.type') + '</th>';
         html += '<th style="text-align:right;">' + t('typeTable.total') + '</th>';
         html += '<th style="text-align:right;">' + t('typeTable.receiving') + '</th>';
         html += '<th style="text-align:right;">' + t('typeTable.rate') + ' (%)</th>';
@@ -538,44 +544,69 @@ var DashboardCharts = {
 
         var grandTotal = 0, grandReceiving = 0, grandAmount = 0;
 
-        positions.forEach(function (key) {
-            var group = positionMap[key];
-            var pos = group.position;
-            var mainType = group.type;
-            var emps = group.employees;
-            var total = emps.length;
-            var receiving = 0;
-            var amount = 0;
+        typeOrder.forEach(function (tp) {
+            var keys = typeGroups[tp];
+            if (!keys || keys.length === 0) return;
 
-            emps.forEach(function (emp) {
-                var incentive = window.employeeHelpers
-                    ? window.employeeHelpers.getIncentive(emp, 'current')
-                    : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
-                if (incentive > 0) {
-                    receiving++;
-                    amount += incentive;
-                }
+            // Calculate type subtotals
+            var subTotal = 0, subReceiving = 0, subAmount = 0;
+            keys.forEach(function (key) {
+                var emps = positionMap[key].employees;
+                emps.forEach(function (emp) {
+                    var incentive = window.employeeHelpers
+                        ? window.employeeHelpers.getIncentive(emp, 'current')
+                        : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
+                    subTotal++;
+                    if (incentive > 0) { subReceiving++; subAmount += incentive; }
+                });
             });
+            var subRate = subTotal > 0 ? ((subReceiving / subTotal) * 100) : 0;
+            var subAvg = subReceiving > 0 ? (subAmount / subReceiving) : 0;
 
-            var rate = total > 0 ? ((receiving / total) * 100) : 0;
-            var avgReceiving = receiving > 0 ? (amount / receiving) : 0;
-            var rateColor = rate >= 80 ? self.colors.green : (rate >= 50 ? self.colors.yellow : self.colors.red);
+            var badgeClass = tp === 'TYPE-1' ? 'badge-type1' : (tp === 'TYPE-2' ? 'badge-type2' : 'badge-type3');
 
-            var badgeClass = mainType === 'TYPE-1' ? 'badge-type1' : (mainType === 'TYPE-2' ? 'badge-type2' : 'badge-type3');
-
-            html += '<tr style="cursor: pointer;" onclick="if(typeof DashboardModals!==\'undefined\' && DashboardModals.showPositionDetail) DashboardModals.showPositionDetail(\'' + self._escapeAttr(pos) + '\')">';
-            html += '<td style="font-weight:600; color: var(--header-dark);">' + self._escapeHtml(pos) + ' <i class="fas fa-external-link-alt" style="font-size:0.7rem; opacity:0.5;"></i></td>';
-            html += '<td style="text-align:center;"><span class="badge-type ' + badgeClass + '">' + mainType + '</span></td>';
-            html += '<td style="text-align:right;">' + total + '</td>';
-            html += '<td style="text-align:right;">' + receiving + '</td>';
-            html += '<td style="text-align:right; color:' + rateColor + '; font-weight:600;">' + self.formatPercent(rate) + '%</td>';
-            html += '<td style="text-align:right;">' + self.formatVND(amount) + '</td>';
-            html += '<td style="text-align:right;">' + self.formatVND(avgReceiving) + '</td>';
+            // TYPE section header row
+            html += '<tr style="background: ' + (tp === 'TYPE-1' ? '#e8f5e9' : tp === 'TYPE-2' ? '#e3f2fd' : '#fff3e0') + '; font-weight: 700; cursor: default;">';
+            html += '<td><span class="badge-type ' + badgeClass + '" style="margin-right:8px;">' + tp + '</span> ' + keys.length + t('position.positions') + '</td>';
+            html += '<td style="text-align:right;">' + self._formatNumber(subTotal) + '</td>';
+            html += '<td style="text-align:right;">' + self._formatNumber(subReceiving) + '</td>';
+            html += '<td style="text-align:right; font-weight:700;">' + self.formatPercent(subRate) + '%</td>';
+            html += '<td style="text-align:right;">' + self.formatVND(subAmount) + '</td>';
+            html += '<td style="text-align:right;">' + self.formatVND(subAvg) + '</td>';
             html += '</tr>';
 
-            grandTotal += total;
-            grandReceiving += receiving;
-            grandAmount += amount;
+            // Position rows under this type
+            keys.forEach(function (key) {
+                var group = positionMap[key];
+                var pos = group.position;
+                var emps = group.employees;
+                var total = emps.length;
+                var receiving = 0, amount = 0;
+
+                emps.forEach(function (emp) {
+                    var incentive = window.employeeHelpers
+                        ? window.employeeHelpers.getIncentive(emp, 'current')
+                        : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
+                    if (incentive > 0) { receiving++; amount += incentive; }
+                });
+
+                var rate = total > 0 ? ((receiving / total) * 100) : 0;
+                var avgReceiving = receiving > 0 ? (amount / receiving) : 0;
+                var rateColor = rate >= 80 ? self.colors.green : (rate >= 50 ? self.colors.yellow : self.colors.red);
+
+                html += '<tr style="cursor: pointer;" onclick="if(typeof DashboardModals!==\'undefined\' && DashboardModals.showPositionDetail) DashboardModals.showPositionDetail(\'' + self._escapeAttr(pos) + '\')">';
+                html += '<td style="padding-left: 28px; color: var(--header-dark);">' + self._escapeHtml(pos) + ' <i class="fas fa-external-link-alt" style="font-size:0.7rem; opacity:0.5;"></i></td>';
+                html += '<td style="text-align:right;">' + total + '</td>';
+                html += '<td style="text-align:right;">' + receiving + '</td>';
+                html += '<td style="text-align:right; color:' + rateColor + '; font-weight:600;">' + self.formatPercent(rate) + '%</td>';
+                html += '<td style="text-align:right;">' + self.formatVND(amount) + '</td>';
+                html += '<td style="text-align:right;">' + self.formatVND(avgReceiving) + '</td>';
+                html += '</tr>';
+            });
+
+            grandTotal += subTotal;
+            grandReceiving += subReceiving;
+            grandAmount += subAmount;
         });
 
         // Grand total row
@@ -584,7 +615,6 @@ var DashboardCharts = {
 
         html += '<tr style="font-weight: 700; background: #f0f4ff;">';
         html += '<td>' + t('typeTable.total') + ' (' + uniquePositionCount + t('position.positions') + ')</td>';
-        html += '<td></td>';
         html += '<td style="text-align:right;">' + self._formatNumber(grandTotal) + '</td>';
         html += '<td style="text-align:right;">' + self._formatNumber(grandReceiving) + '</td>';
         html += '<td style="text-align:right;">' + self.formatPercent(grandRate) + '%</td>';
