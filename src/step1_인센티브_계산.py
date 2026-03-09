@@ -2000,6 +2000,7 @@ class DataProcessor:
         category_stats = {
             'AQL_INSPECTOR': {'count': 0, 'received': 0, 'total': 0},
             'ASSEMBLY_INSPECTOR': {'count': 0, 'received': 0, 'total': 0},
+            'RQC_ASSEMBLY_INSPECTOR': {'count': 0, 'received': 0, 'total': 0},
             'AUDITOR_TRAINER': {'count': 0, 'received': 0, 'total': 0},
             'MODEL_MASTER': {'count': 0, 'received': 0, 'total': 0},
             'OTHER': {'count': 0, 'received': 0, 'total': 0}
