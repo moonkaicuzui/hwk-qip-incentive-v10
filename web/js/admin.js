@@ -168,34 +168,37 @@ var AdminPage = {
                 // Also load working_days_override if present
                 var wdInput = document.getElementById('wd-override-value');
                 var wdCurrent = document.getElementById('wd-current-value');
+                var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
                 if (data.working_days_override !== undefined) {
-                    wdCurrent.textContent = data.working_days_override + ' days (override)';
+                    wdCurrent.textContent = data.working_days_override + ' ' + t('admin.msg.daysOverride');
                     wdInput.value = data.working_days_override;
                 } else if (data.working_days !== undefined) {
-                    wdCurrent.textContent = data.working_days + ' days';
+                    wdCurrent.textContent = data.working_days + ' ' + t('admin.msg.days');
                     wdInput.value = '';
                 } else {
-                    wdCurrent.textContent = 'Not set';
+                    wdCurrent.textContent = t('admin.msg.notSet');
                     wdInput.value = '';
                 }
 
-                self.showMessage('threshold-message', 'Thresholds loaded for ' + docId.replace('_', ' ').toUpperCase(), 'success');
+                self.showMessage('threshold-message', t('admin.msg.thresholdsLoaded') + docId.replace('_', ' ').toUpperCase(), 'success');
             } else {
                 // No document exists - set defaults
+                var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
                 self.THRESHOLD_FIELDS.forEach(function(field) {
                     var input = document.getElementById(field.id);
                     if (input) {
                         input.value = field.defaultVal;
                     }
                 });
-                document.getElementById('wd-current-value').textContent = 'Not set';
+                document.getElementById('wd-current-value').textContent = t('admin.msg.notSet');
                 document.getElementById('wd-override-value').value = '';
 
-                self.showMessage('threshold-message', 'No thresholds saved for ' + docId.replace('_', ' ').toUpperCase() + '. Showing defaults.', 'warning');
+                self.showMessage('threshold-message', t('admin.msg.noThresholdsSaved') + docId.replace('_', ' ').toUpperCase() + t('admin.msg.showingDefaults'), 'warning');
             }
         } catch (error) {
             console.error('[Admin] Failed to load thresholds:', error);
-            self.showMessage('threshold-message', 'Failed to load thresholds: ' + error.message, 'danger');
+            var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+            self.showMessage('threshold-message', t('admin.msg.failedLoadThresholds') + error.message, 'danger');
         } finally {
             btn.disabled = false;
             var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
@@ -213,7 +216,8 @@ var AdminPage = {
 
         var btn = document.getElementById('btn-save-thresholds');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + t('admin.msg.saving');
 
         try {
             // Read and validate values
@@ -234,7 +238,7 @@ var AdminPage = {
             });
 
             if (!valid) {
-                self.showMessage('threshold-message', 'Please enter valid positive numbers for all fields.', 'danger');
+                self.showMessage('threshold-message', t('admin.msg.invalidNumbers'), 'danger');
                 btn.disabled = false;
                 var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
                 btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.saveThresholds">' + t('admin.saveThresholds') + '</span>';
@@ -281,8 +285,8 @@ var AdminPage = {
 
             self.showMessage(
                 'threshold-message',
-                'Thresholds saved for ' + docId.replace('_', ' ').toUpperCase() +
-                (changes.length > 0 ? ' (' + changes.length + ' field(s) changed)' : ' (no changes)'),
+                t('admin.msg.thresholdsSaved') + docId.replace('_', ' ').toUpperCase() +
+                (changes.length > 0 ? ' (' + changes.length + t('admin.msg.fieldsChanged') : t('admin.msg.noFieldChanges')),
                 'success'
             );
 
@@ -291,7 +295,7 @@ var AdminPage = {
 
         } catch (error) {
             console.error('[Admin] Failed to save thresholds:', error);
-            self.showMessage('threshold-message', 'Failed to save: ' + error.message, 'danger');
+            self.showMessage('threshold-message', t('admin.msg.failedSave') + error.message, 'danger');
         } finally {
             btn.disabled = false;
             var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
@@ -305,6 +309,8 @@ var AdminPage = {
      */
     async loadChangeHistory() {
         var tbody = document.getElementById('history-table-body');
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+        var self = this;
 
         try {
             var snapshot = await db.collection('threshold_history')
@@ -381,7 +387,7 @@ var AdminPage = {
         } catch (error) {
             console.error('[Admin] Failed to load change history:', error);
             tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-3">' +
-                '<i class="fa-solid fa-triangle-exclamation me-1"></i> Failed to load history: ' + error.message + '</td></tr>';
+                '<i class="fa-solid fa-triangle-exclamation me-1"></i> ' + self.escapeHtml(t('admin.msg.failedLoadHistory') + error.message) + '</td></tr>';
         }
     },
 
@@ -411,10 +417,11 @@ var AdminPage = {
                 var status = data.status || 'unknown';
                 var badgeArea = document.getElementById('status-badge-area');
 
+                var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
                 if (status === 'success') {
-                    badgeArea.innerHTML = '<span class="status-badge success"><i class="fa-solid fa-circle-check"></i> Success</span>';
+                    badgeArea.innerHTML = '<span class="status-badge success"><i class="fa-solid fa-circle-check"></i> ' + this.escapeHtml(t('admin.msg.success')) + '</span>';
                 } else if (status === 'failure' || status === 'error') {
-                    badgeArea.innerHTML = '<span class="status-badge failure"><i class="fa-solid fa-circle-xmark"></i> Failure</span>';
+                    badgeArea.innerHTML = '<span class="status-badge failure"><i class="fa-solid fa-circle-xmark"></i> ' + this.escapeHtml(t('admin.msg.failure')) + '</span>';
                 } else {
                     badgeArea.innerHTML = '<span class="status-badge unknown"><i class="fa-solid fa-circle-question"></i> ' + status + '</span>';
                 }
@@ -438,27 +445,29 @@ var AdminPage = {
                 var dataChangedEl = document.getElementById('status-data-changed');
                 if (dataChangedEl) {
                     if (data.data_changed === true) {
-                        dataChangedEl.innerHTML = '<span class="badge bg-success">Data Updated</span>';
+                        dataChangedEl.innerHTML = '<span class="badge bg-success">' + this.escapeHtml(t('admin.msg.dataUpdated')) + '</span>';
                     } else if (data.data_changed === false) {
-                        dataChangedEl.innerHTML = '<span class="badge bg-secondary">No Changes</span>';
+                        dataChangedEl.innerHTML = '<span class="badge bg-secondary">' + this.escapeHtml(t('admin.msg.noChanges')) + '</span>';
                     } else {
-                        dataChangedEl.innerHTML = '<span class="badge bg-light text-dark">N/A</span>';
+                        dataChangedEl.innerHTML = '<span class="badge bg-light text-dark">' + this.escapeHtml(t('admin.msg.na')) + '</span>';
                     }
                 }
 
             } else {
                 // No status document
-                document.getElementById('status-last-run').textContent = 'Never';
+                var t2 = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+                document.getElementById('status-last-run').textContent = t2('admin.msg.never');
                 document.getElementById('status-badge-area').innerHTML =
-                    '<span class="status-badge unknown"><i class="fa-solid fa-circle-question"></i> No data</span>';
-                document.getElementById('status-last-data-update').textContent = 'Never';
-                document.getElementById('status-current-month').textContent = 'Not set';
+                    '<span class="status-badge unknown"><i class="fa-solid fa-circle-question"></i> ' + this.escapeHtml(t2('admin.msg.noData')) + '</span>';
+                document.getElementById('status-last-data-update').textContent = t2('admin.msg.never');
+                document.getElementById('status-current-month').textContent = t2('admin.msg.notSet');
             }
         } catch (error) {
             console.error('[Admin] Failed to load system status:', error);
-            document.getElementById('status-last-run').textContent = 'Error loading';
+            var t3 = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+            document.getElementById('status-last-run').textContent = t3('admin.msg.errorLoading');
             document.getElementById('status-badge-area').innerHTML =
-                '<span class="status-badge failure"><i class="fa-solid fa-triangle-exclamation"></i> Load Error</span>';
+                '<span class="status-badge failure"><i class="fa-solid fa-triangle-exclamation"></i> ' + this.escapeHtml(t3('admin.msg.loadError')) + '</span>';
         }
     },
 
@@ -470,21 +479,15 @@ var AdminPage = {
      */
     async triggerPipeline() {
         // Confirmation dialog
-        var confirmed = confirm(
-            'Run Pipeline Now?\n\n' +
-            'This will:\n' +
-            '  1. Log a trigger request (audit trail)\n' +
-            '  2. Open GitHub Actions page\n' +
-            '  3. Click "Run workflow" button on GitHub\n\n' +
-            'Continue?'
-        );
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+        var confirmed = confirm(t('admin.msg.pipelineConfirm'));
 
         if (!confirmed) return;
 
         var self = this;
         var btn = document.getElementById('btn-run-pipeline');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Processing...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + t('admin.msg.processing');
 
         try {
             // Log trigger request to Firestore (audit trail only)
@@ -512,7 +515,7 @@ var AdminPage = {
 
             self.showMessage(
                 'pipeline-message',
-                'GitHub Actions page opened in a new tab. Click the "Run workflow" button to start the pipeline.',
+                t('admin.msg.pipelineOpened'),
                 'success'
             );
 
@@ -525,7 +528,7 @@ var AdminPage = {
             console.error('[Admin] Failed to process pipeline trigger:', error);
             self.showMessage(
                 'pipeline-message',
-                'Failed to process: ' + self.escapeHtml(error.message),
+                t('admin.msg.failedProcess') + error.message,
                 'danger'
             );
         } finally {
@@ -556,14 +559,16 @@ var AdminPage = {
         var overrideInput = document.getElementById('wd-override-value');
         var overrideValue = parseInt(overrideInput.value, 10);
 
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+
         if (isNaN(overrideValue) || overrideValue < 0 || overrideValue > 31) {
-            self.showMessage('working-days-message', 'Please enter a valid number between 0 and 31.', 'danger');
+            self.showMessage('working-days-message', t('admin.msg.invalidWorkingDays'), 'danger');
             return;
         }
 
         var btn = document.getElementById('btn-update-working-days');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Updating...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + t('admin.msg.updating');
 
         try {
             // Read current value for history
@@ -598,11 +603,11 @@ var AdminPage = {
             });
 
             // Update display
-            document.getElementById('wd-current-value').textContent = overrideValue + ' days (override)';
+            document.getElementById('wd-current-value').textContent = overrideValue + ' ' + t('admin.msg.daysOverride');
 
             self.showMessage(
                 'working-days-message',
-                'Working days override set to ' + overrideValue + ' for ' + docId.replace('_', ' ').toUpperCase(),
+                t('admin.msg.workingDaysSet') + overrideValue + t('admin.msg.for') + docId.replace('_', ' ').toUpperCase(),
                 'success'
             );
 
@@ -611,7 +616,7 @@ var AdminPage = {
 
         } catch (error) {
             console.error('[Admin] Failed to update working days:', error);
-            self.showMessage('working-days-message', 'Failed to update: ' + error.message, 'danger');
+            self.showMessage('working-days-message', t('admin.msg.failedUpdate') + error.message, 'danger');
         } finally {
             btn.disabled = false;
             var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
@@ -715,6 +720,7 @@ var AdminPage = {
      */
     async loadEmailSettings() {
         var container = document.getElementById('email-recipients-list');
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
 
         try {
             var doc = await db.collection('system').doc('config').get();
@@ -723,7 +729,6 @@ var AdminPage = {
                 var recipients = doc.data().email_recipients;
                 this.renderRecipients(recipients);
             } else {
-                var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
                 container.innerHTML =
                     '<p class="text-muted text-center py-3">' +
                     '<i class="fa-regular fa-envelope me-1"></i> ' + t('admin.noRecipients') + '</p>';
@@ -732,7 +737,7 @@ var AdminPage = {
             console.error('[Admin] Failed to load email settings:', error);
             container.innerHTML =
                 '<p class="text-danger text-center py-3">' +
-                '<i class="fa-solid fa-triangle-exclamation me-1"></i> Failed to load: ' + this.escapeHtml(error.message) + '</p>';
+                '<i class="fa-solid fa-triangle-exclamation me-1"></i> ' + this.escapeHtml(t('admin.msg.failedLoad') + error.message) + '</p>';
         }
     },
 
@@ -774,7 +779,7 @@ var AdminPage = {
                 '<td>' + safeName + '</td>' +
                 '<td><code style="font-size: 0.8rem;">' + safeEmail + '</code></td>' +
                 '<td><span class="lang-badge ' + self.escapeHtml(lang) + '">' + self.escapeHtml(langLabel) + '</span></td>' +
-                '<td><button class="btn-remove-sm" onclick="AdminPage.removeRecipient(\'' + safeEmail.replace(/'/g, "\\'") + '\')" title="Remove">' +
+                '<td><button class="btn-remove-sm" onclick="AdminPage.removeRecipient(\'' + safeEmail.replace(/'/g, "\\'") + '\')" title="' + self.escapeHtml(t('admin.cfgDelete')) + '">' +
                 '<i class="fa-solid fa-trash-can"></i></button></td>' +
                 '</tr>';
         });
@@ -799,15 +804,17 @@ var AdminPage = {
         var lang = langSelect.value;
 
         // Validate email
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            self.showMessage('email-settings-message', 'Please enter a valid email address.', 'danger');
+            self.showMessage('email-settings-message', t('admin.msg.invalidEmail'), 'danger');
             emailInput.focus();
             return;
         }
 
         // Validate name
         if (!name) {
-            self.showMessage('email-settings-message', 'Please enter a name.', 'danger');
+            self.showMessage('email-settings-message', t('admin.msg.enterName'), 'danger');
             nameInput.focus();
             return;
         }
@@ -819,7 +826,7 @@ var AdminPage = {
             var isDuplicate = existing.some(function(r) { return r.email === email; });
 
             if (isDuplicate) {
-                self.showMessage('email-settings-message', 'This email is already in the recipient list.', 'warning');
+                self.showMessage('email-settings-message', t('admin.msg.duplicateEmail'), 'warning');
                 return;
             }
 
@@ -835,14 +842,14 @@ var AdminPage = {
             nameInput.value = '';
             langSelect.value = 'ko';
 
-            self.showMessage('email-settings-message', 'Added ' + self.escapeHtml(name) + ' (' + self.escapeHtml(email) + ')', 'success');
+            self.showMessage('email-settings-message', t('admin.msg.added') + self.escapeHtml(name) + ' (' + self.escapeHtml(email) + ')', 'success');
 
             // Reload list
             self.loadEmailSettings();
 
         } catch (error) {
             console.error('[Admin] Failed to add recipient:', error);
-            self.showMessage('email-settings-message', 'Failed to add: ' + error.message, 'danger');
+            self.showMessage('email-settings-message', t('admin.msg.failedAdd') + error.message, 'danger');
         }
     },
 
@@ -853,7 +860,8 @@ var AdminPage = {
      * @param {string} email - Email address to remove
      */
     async removeRecipient(email) {
-        if (!confirm('Remove ' + email + ' from the recipient list?')) return;
+        var t = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.t.bind(DashboardI18n) : function(k) { return k; };
+        if (!confirm(t('admin.msg.confirmRemove') + email + '?')) return;
 
         var self = this;
 
@@ -868,14 +876,14 @@ var AdminPage = {
                 email_recipients: updated
             }, { merge: true });
 
-            self.showMessage('email-settings-message', 'Removed ' + self.escapeHtml(email), 'success');
+            self.showMessage('email-settings-message', t('admin.msg.removed') + self.escapeHtml(email), 'success');
 
             // Reload list
             self.loadEmailSettings();
 
         } catch (error) {
             console.error('[Admin] Failed to remove recipient:', error);
-            self.showMessage('email-settings-message', 'Failed to remove: ' + error.message, 'danger');
+            self.showMessage('email-settings-message', t('admin.msg.failedRemove') + error.message, 'danger');
         }
     },
 

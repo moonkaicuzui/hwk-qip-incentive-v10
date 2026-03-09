@@ -148,7 +148,7 @@ var AdminConfigs = {
         var mapped = mappedSelect.value;
 
         if (!name) {
-            this._showMessage('position-mapping-message', 'Please enter a position name.', 'danger');
+            this._showMessage('position-mapping-message', this._t('admin.cfg.enterPosition'), 'danger');
             return;
         }
 
@@ -160,23 +160,23 @@ var AdminConfigs = {
 
         nameInput.value = '';
         this.renderPositionMapping();
-        this._showMessage('position-mapping-message', 'Added "' + name + '". Click Save to persist.', 'success');
+        this._showMessage('position-mapping-message', this._t('admin.cfg.added') + name + this._t('admin.cfg.clickSave'), 'success');
     },
 
     removePositionMapping: function(name) {
-        if (!confirm('Remove "' + name + '" from position mapping?')) return;
+        if (!confirm(this._t('admin.cfg.confirmRemove') + '"' + name + '"?')) return;
         if (this.positionData && this.positionData.position_mappings) {
             delete this.positionData.position_mappings[name];
         }
         this.renderPositionMapping();
-        this._showMessage('position-mapping-message', 'Removed "' + name + '". Click Save to persist.', 'warning');
+        this._showMessage('position-mapping-message', this._t('admin.cfg.removed') + name + this._t('admin.cfg.removedClickSave'), 'warning');
     },
 
     async savePositionMapping() {
         var self = this;
         var btn = document.getElementById('btn-save-position-mapping');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + self._t('admin.msg.saving');
 
         try {
             var saveData = Object.assign({}, self.positionData);
@@ -195,10 +195,10 @@ var AdminConfigs = {
                 new_value: 'Updated (' + Object.keys(saveData.position_mappings || {}).length + ' mappings)'
             }]);
 
-            self._showMessage('position-mapping-message', 'Position mapping saved successfully.', 'success');
+            self._showMessage('position-mapping-message', self._t('admin.cfg.positionMappingSaved'), 'success');
         } catch (error) {
             console.error('[AdminConfigs] Save position mapping failed:', error);
-            self._showMessage('position-mapping-message', 'Save failed: ' + error.message, 'danger');
+            self._showMessage('position-mapping-message', self._t('admin.cfg.saveFailed') + error.message, 'danger');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSave">' + self._t('admin.cfgSave') + '</span>';
@@ -285,7 +285,7 @@ var AdminConfigs = {
         var endDate = document.getElementById('tp-end-date').value;
 
         if (!empId || !name) {
-            this._showMessage('talent-pool-message', 'Employee No and Name are required.', 'danger');
+            this._showMessage('talent-pool-message', this._t('admin.cfg.empNoNameRequired'), 'danger');
             return;
         }
 
@@ -310,23 +310,23 @@ var AdminConfigs = {
         document.getElementById('tp-end-date').value = '';
 
         this.renderTalentPool();
-        this._showMessage('talent-pool-message', 'Added member. Click Save to persist.', 'success');
+        this._showMessage('talent-pool-message', this._t('admin.cfg.addedMember'), 'success');
     },
 
     removeTalentPoolMember: function(idx) {
-        if (!confirm('Remove this member from Talent Pool?')) return;
+        if (!confirm(this._t('admin.cfgConfirmDelete'))) return;
         if (this.talentPoolData && this.talentPoolData.talent_pool && this.talentPoolData.talent_pool.members) {
             this.talentPoolData.talent_pool.members.splice(idx, 1);
         }
         this.renderTalentPool();
-        this._showMessage('talent-pool-message', 'Member removed. Click Save to persist.', 'warning');
+        this._showMessage('talent-pool-message', this._t('admin.cfg.memberRemoved'), 'warning');
     },
 
     async saveTalentPool() {
         var self = this;
         var btn = document.getElementById('btn-save-talent-pool');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + self._t('admin.msg.saving');
 
         try {
             // Read toggle states
@@ -357,10 +357,10 @@ var AdminConfigs = {
                 new_value: 'Updated (' + memberCount + ' members)'
             }]);
 
-            self._showMessage('talent-pool-message', 'Talent Pool saved successfully.', 'success');
+            self._showMessage('talent-pool-message', self._t('admin.cfg.talentPoolSaved'), 'success');
         } catch (error) {
             console.error('[AdminConfigs] Save talent pool failed:', error);
-            self._showMessage('talent-pool-message', 'Save failed: ' + error.message, 'danger');
+            self._showMessage('talent-pool-message', self._t('admin.cfg.saveFailed') + error.message, 'danger');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSave">' + self._t('admin.cfgSave') + '</span>';
@@ -428,12 +428,12 @@ var AdminConfigs = {
     },
 
     removeModelMaster: function(empId) {
-        if (!confirm('Remove Model Master ' + empId + '?')) return;
+        if (!confirm(this._t('admin.cfg.confirmRemove') + empId + '?')) return;
         if (this.auditorData && this.auditorData.model_master && this.auditorData.model_master.employees) {
             delete this.auditorData.model_master.employees[empId];
         }
         this.renderModelMasters();
-        this._showMessage('auditor-mapping-message', 'Removed. Click Save to persist.', 'warning');
+        this._showMessage('auditor-mapping-message', this._t('admin.cfg.removedSave'), 'warning');
     },
 
     renderAuditors: function() {
@@ -500,12 +500,12 @@ var AdminConfigs = {
     },
 
     removeAuditor: function(empId) {
-        if (!confirm('Remove Auditor ' + empId + '?')) return;
+        if (!confirm(this._t('admin.cfg.confirmRemove') + empId + '?')) return;
         if (this.auditorData && this.auditorData.auditor_trainer_areas) {
             delete this.auditorData.auditor_trainer_areas[empId];
         }
         this.renderAuditors();
-        this._showMessage('auditor-mapping-message', 'Removed. Click Save to persist.', 'warning');
+        this._showMessage('auditor-mapping-message', this._t('admin.cfg.removedSave'), 'warning');
     },
 
     // Condition Edit Modal
@@ -669,14 +669,14 @@ var AdminConfigs = {
         if (modal) modal.hide();
 
         this.renderAuditors();
-        this._showMessage('auditor-mapping-message', 'Conditions updated for ' + empId + '. Click Save to persist.', 'success');
+        this._showMessage('auditor-mapping-message', this._t('admin.cfg.conditionsUpdated') + empId + this._t('admin.cfg.conditionsClickSave'), 'success');
     },
 
     async saveAuditorMapping() {
         var self = this;
         var btn = document.getElementById('btn-save-auditor-mapping');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + self._t('admin.msg.saving');
 
         try {
             // Update reject rate from input
@@ -703,10 +703,10 @@ var AdminConfigs = {
                 new_value: 'Updated (' + masterCount + ' masters, ' + auditorCount + ' auditors)'
             }]);
 
-            self._showMessage('auditor-mapping-message', 'Auditor mapping saved successfully.', 'success');
+            self._showMessage('auditor-mapping-message', self._t('admin.cfg.auditorMappingSaved'), 'success');
         } catch (error) {
             console.error('[AdminConfigs] Save auditor mapping failed:', error);
-            self._showMessage('auditor-mapping-message', 'Save failed: ' + error.message, 'danger');
+            self._showMessage('auditor-mapping-message', self._t('admin.cfg.saveFailed') + error.message, 'danger');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSave">' + self._t('admin.cfgSave') + '</span>';
@@ -958,7 +958,7 @@ var AdminConfigs = {
         if (!data.position_matrix[typeName]) data.position_matrix[typeName] = {};
 
         if (data.position_matrix[typeName][posKey]) {
-            this._showMessage('condition-matrix-message', 'Key "' + posKey + '" already exists.', 'warning');
+            this._showMessage('condition-matrix-message', this._t('admin.cfg.keyExists') + posKey + this._t('admin.cfg.alreadyExists'), 'warning');
             return;
         }
 
@@ -970,7 +970,7 @@ var AdminConfigs = {
 
         this._posCondMatrixCache = data;
         this.renderConditionMatrix(data.position_matrix, data.conditions || {});
-        this._showMessage('condition-matrix-message', 'Added "' + posKey + '" to ' + typeName + '. Click Save to persist.', 'success');
+        this._showMessage('condition-matrix-message', this._t('admin.cfg.added') + posKey + this._t('admin.cfg.addedTo') + typeName + '). ' + this._t('admin.cfg.clickSave'), 'success');
     },
 
     removeMatrixPosition: function(typeName, posKey) {
@@ -978,7 +978,7 @@ var AdminConfigs = {
             this._showMessage('condition-matrix-message', this._t('admin.cfgDefaultNoDelete'), 'warning');
             return;
         }
-        if (!confirm('Remove "' + posKey + '" from ' + typeName + '?')) return;
+        if (!confirm(this._t('admin.cfg.confirmRemove') + '"' + posKey + '"?')) return;
 
         var data = this._posCondMatrixCache || {};
         if (data.position_matrix && data.position_matrix[typeName]) {
@@ -986,14 +986,14 @@ var AdminConfigs = {
         }
         this._posCondMatrixCache = data;
         this.renderConditionMatrix(data.position_matrix || {}, data.conditions || {});
-        this._showMessage('condition-matrix-message', 'Removed "' + posKey + '". Click Save to persist.', 'warning');
+        this._showMessage('condition-matrix-message', this._t('admin.cfg.removed') + posKey + this._t('admin.cfg.removedClickSave'), 'warning');
     },
 
     async saveConditionMatrix() {
         var self = this;
         var btn = document.getElementById('btn-save-condition-matrix');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + self._t('admin.msg.saving');
 
         try {
             var data = self._posCondMatrixCache || {};
@@ -1033,10 +1033,10 @@ var AdminConfigs = {
             });
 
             await self._savePosCondMatrixSection('position_matrix', data.position_matrix, 'condition_matrix');
-            self._showMessage('condition-matrix-message', 'Position Condition Matrix saved successfully.', 'success');
+            self._showMessage('condition-matrix-message', self._t('admin.cfg.condMatrixSaved'), 'success');
         } catch (error) {
             console.error('[AdminConfigs] Save condition matrix failed:', error);
-            self._showMessage('condition-matrix-message', 'Save failed: ' + error.message, 'danger');
+            self._showMessage('condition-matrix-message', self._t('admin.cfg.saveFailed') + error.message, 'danger');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveMatrix">' + self._t('admin.cfgSaveMatrix') + '</span>';
@@ -1087,7 +1087,7 @@ var AdminConfigs = {
         var self = this;
         var btn = document.getElementById('btn-save-progressive-table');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + self._t('admin.msg.saving');
 
         try {
             var table = {};
@@ -1105,7 +1105,7 @@ var AdminConfigs = {
             }
 
             if (!valid) {
-                self._showMessage('progressive-table-message', 'Please enter valid positive numbers.', 'danger');
+                self._showMessage('progressive-table-message', self._t('admin.cfg.invalidNumbers'), 'danger');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveProgTable">' + self._t('admin.cfgSaveProgTable') + '</span>';
                 return;
@@ -1122,10 +1122,10 @@ var AdminConfigs = {
             fullSection.TYPE_1_PROGRESSIVE = progression;
 
             await self._savePosCondMatrixSection('incentive_progression', fullSection, 'progressive_table');
-            self._showMessage('progressive-table-message', 'Progressive Incentive Table saved successfully.', 'success');
+            self._showMessage('progressive-table-message', self._t('admin.cfg.progTableSaved'), 'success');
         } catch (error) {
             console.error('[AdminConfigs] Save progressive table failed:', error);
-            self._showMessage('progressive-table-message', 'Save failed: ' + error.message, 'danger');
+            self._showMessage('progressive-table-message', self._t('admin.cfg.saveFailed') + error.message, 'danger');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveProgTable">' + self._t('admin.cfgSaveProgTable') + '</span>';
@@ -1220,7 +1220,7 @@ var AdminConfigs = {
         if (!data.type_2_multipliers) data.type_2_multipliers = {};
 
         if (data.type_2_multipliers[key]) {
-            this._showMessage('type2-multipliers-message', 'Key "' + key + '" already exists.', 'warning');
+            this._showMessage('type2-multipliers-message', this._t('admin.cfg.keyExists') + key + this._t('admin.cfg.alreadyExists'), 'warning');
             return;
         }
 
@@ -1235,11 +1235,11 @@ var AdminConfigs = {
 
         this._posCondMatrixCache = data;
         this.renderType2Multipliers(data.type_2_multipliers);
-        this._showMessage('type2-multipliers-message', 'Added "' + key + '". Click Save to persist.', 'success');
+        this._showMessage('type2-multipliers-message', this._t('admin.cfg.added') + key + this._t('admin.cfg.clickSave'), 'success');
     },
 
     removeType2Multiplier: function(key) {
-        if (!confirm('Remove "' + key + '" from TYPE-2 Multipliers?')) return;
+        if (!confirm(this._t('admin.cfg.confirmRemove') + '"' + key + '"?')) return;
 
         var data = this._posCondMatrixCache || {};
         if (data.type_2_multipliers) {
@@ -1247,14 +1247,14 @@ var AdminConfigs = {
         }
         this._posCondMatrixCache = data;
         this.renderType2Multipliers(data.type_2_multipliers || {});
-        this._showMessage('type2-multipliers-message', 'Removed "' + key + '". Click Save to persist.', 'warning');
+        this._showMessage('type2-multipliers-message', this._t('admin.cfg.removed') + key + this._t('admin.cfg.removedClickSave'), 'warning');
     },
 
     async saveType2Multipliers() {
         var self = this;
         var btn = document.getElementById('btn-save-type2-multipliers');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> ' + self._t('admin.msg.saving');
 
         try {
             var data = self._posCondMatrixCache || {};
@@ -1285,10 +1285,10 @@ var AdminConfigs = {
             });
 
             await self._savePosCondMatrixSection('type_2_multipliers', data.type_2_multipliers, 'type2_multipliers');
-            self._showMessage('type2-multipliers-message', 'TYPE-2 Multipliers saved successfully.', 'success');
+            self._showMessage('type2-multipliers-message', self._t('admin.cfg.type2MultSaved'), 'success');
         } catch (error) {
             console.error('[AdminConfigs] Save TYPE-2 multipliers failed:', error);
-            self._showMessage('type2-multipliers-message', 'Save failed: ' + error.message, 'danger');
+            self._showMessage('type2-multipliers-message', self._t('admin.cfg.saveFailed') + error.message, 'danger');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span data-i18n="admin.cfgSaveMultipliers">' + self._t('admin.cfgSaveMultipliers') + '</span>';
