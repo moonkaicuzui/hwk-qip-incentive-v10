@@ -423,7 +423,7 @@ var AdminPage = {
                 } else if (status === 'failure' || status === 'error') {
                     badgeArea.innerHTML = '<span class="status-badge failure"><i class="fa-solid fa-circle-xmark"></i> ' + this.escapeHtml(t('admin.msg.failure')) + '</span>';
                 } else {
-                    badgeArea.innerHTML = '<span class="status-badge unknown"><i class="fa-solid fa-circle-question"></i> ' + status + '</span>';
+                    badgeArea.innerHTML = '<span class="status-badge unknown"><i class="fa-solid fa-circle-question"></i> ' + this.escapeHtml(status) + '</span>';
                 }
 
                 // Last data update

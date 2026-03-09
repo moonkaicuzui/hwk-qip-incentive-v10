@@ -1144,7 +1144,7 @@ var AdminConfigs = {
             self.renderType2Multipliers(data.type_2_multipliers || {});
         } catch (error) {
             console.error('[AdminConfigs] Failed to load TYPE-2 multipliers:', error);
-            container.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> ' + error.message + '</p>';
+            container.innerHTML = '<p class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> ' + self._escapeHtml(error.message) + '</p>';
         }
     },
 
