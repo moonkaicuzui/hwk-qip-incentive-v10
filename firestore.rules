@@ -66,6 +66,18 @@ service cloud.firestore {
       allow read, update: if isAdmin();
     }
 
+    // Email config: Cloud Functions read (server-side), admin write
+    match /config/{document} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Email logs: Cloud Functions create (server-side), admin read
+    match /email_logs/{document} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+    }
+
     // System config: admin only (contains admin_emails list)
     // Note: isAdmin() reads this document, so we use a direct email check here
     // to avoid circular dependency. Update these emails when admins change.
