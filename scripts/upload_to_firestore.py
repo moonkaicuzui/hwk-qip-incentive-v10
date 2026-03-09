@@ -57,9 +57,15 @@ CONDITION_VALUE_MAP = {
 # ---------------------------------------------------------------------------
 
 def safe_float(value, default=0.0):
-    """NaN/None/empty 안전 float 변환"""
+    """NaN/None/empty 안전 float 변환 (pandas NA 포함)"""
     if value is None:
         return default
+    # pandas NA/NaT 처리 (pd.isna handles None, np.nan, pd.NA, pd.NaT)
+    try:
+        if pd.isna(value):
+            return default
+    except (ValueError, TypeError):
+        pass  # pd.isna can fail on some types, fall through to manual check
     if isinstance(value, float) and math.isnan(value):
         return default
     try:
@@ -443,8 +449,12 @@ def upload_employees(db, month_year: str, employees: list, dry_run: bool = False
         return
 
     doc_ref = db.collection("employees").document(month_year).collection("all_data").document("data")
-    doc_ref.set(doc_data)
-    print(f"✅ employees/{month_year}/all_data 업로드 완료 ({len(employees)}명)")
+    try:
+        doc_ref.set(doc_data)
+        print(f"✅ employees/{month_year}/all_data 업로드 완료 ({len(employees)}명)")
+    except Exception as e:
+        print(f"❌ employees/{month_year}/all_data 업로드 실패: {e}")
+        raise
 
 
 def upload_summary(db, month_year: str, summary: dict, dry_run: bool = False):
@@ -471,8 +481,12 @@ def upload_summary(db, month_year: str, summary: dict, dry_run: bool = False):
         return
 
     doc_ref = db.collection("dashboard_summary").document(month_year)
-    doc_ref.set(summary)
-    print(f"✅ dashboard_summary/{month_year} 업로드 완료")
+    try:
+        doc_ref.set(summary)
+        print(f"✅ dashboard_summary/{month_year} 업로드 완료")
+    except Exception as e:
+        print(f"❌ dashboard_summary/{month_year} 업로드 실패: {e}")
+        raise
 
 
 # ---------------------------------------------------------------------------

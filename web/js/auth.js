@@ -13,7 +13,10 @@ const SESSION_KEY = 'qip_firebase_session';
 
 // Admin emails loaded from Firestore system/config doc.
 // Checked asynchronously; hardcoded fallback removed for security.
+// Cache TTL: re-fetch admin emails every 5 minutes.
 let _adminEmails = null; // populated by _loadAdminEmails()
+let _adminEmailsLoadedAt = 0; // timestamp of last successful load
+const _ADMIN_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 // Store onAuthStateChanged unsubscribe function for cleanup
 let _authUnsubscribe = null;
@@ -109,6 +112,10 @@ function signIn(email, password) {
  * @returns {Promise<void>}
  */
 function signOut() {
+    // Clear admin email cache on logout
+    _adminEmails = null;
+    _adminEmailsLoadedAt = 0;
+
     return firebase.auth().signOut()
         .then(function() {
             sessionStorage.removeItem(SESSION_KEY);
@@ -130,7 +137,10 @@ function signOut() {
  * @returns {Promise<string[]>} Array of admin email addresses
  */
 function _loadAdminEmails() {
-    if (_adminEmails !== null) return Promise.resolve(_adminEmails);
+    // Return cached if still valid (within TTL)
+    if (_adminEmails !== null && (Date.now() - _adminEmailsLoadedAt) < _ADMIN_CACHE_TTL_MS) {
+        return Promise.resolve(_adminEmails);
+    }
 
     // Use REST API to read system/config — avoids Firestore SDK WebChannel issues
     const user = firebase.auth().currentUser;
@@ -163,10 +173,12 @@ function _loadAdminEmails() {
         } else {
             _adminEmails = [];
         }
+        _adminEmailsLoadedAt = Date.now();
         return _adminEmails;
     }).catch(function(err) {
         console.warn('[Auth] _loadAdminEmails REST failed:', err);
-        _adminEmails = [];
+        // On failure: keep previous cache if available, otherwise empty
+        if (_adminEmails === null) _adminEmails = [];
         return _adminEmails;
     });
 }

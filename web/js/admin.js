@@ -12,11 +12,9 @@
  *   - system/config                   : System config (github_pat, etc.)
  *
  * Access Control:
- *   - Only ksmoon@hsvina.com has admin access (hardcoded safety check)
+ *   - Admin access controlled by Firestore system/config admin_emails list
+ *   - Security: GitHub PAT is NOT stored in or accessed from client code
  */
-
-// Hardcoded admin email for safety (in addition to Firestore admin_emails list)
-var ADMIN_ALLOWED_EMAIL = 'ksmoon@hsvina.com';
 
 var AdminPage = {
     currentMonth: null,
@@ -41,14 +39,6 @@ var AdminPage = {
         try {
             var user = await requireAdmin();
             if (!user) return;
-
-            // Hardcoded admin email check (safety layer)
-            if (user.email !== ADMIN_ALLOWED_EMAIL) {
-                alert('Access denied. Admin access is restricted.');
-                sessionStorage.removeItem(SESSION_KEY);
-                window.location.href = 'auth.html';
-                return;
-            }
 
             // Hide auth loading overlay
             document.getElementById('auth-loading').style.display = 'none';
@@ -473,20 +463,19 @@ var AdminPage = {
     },
 
     /**
-     * Trigger GitHub Actions pipeline via workflow_dispatch.
-     * Reads GitHub PAT from Firestore system/config document.
-     * Shows confirmation dialog before triggering.
+     * Trigger GitHub Actions pipeline.
+     * Logs trigger request to Firestore for audit trail,
+     * then opens GitHub Actions page for secure manual dispatch.
+     * (GitHub PAT is never exposed to the client browser.)
      */
     async triggerPipeline() {
         // Confirmation dialog
         var confirmed = confirm(
             'Run Pipeline Now?\n\n' +
-            'This will trigger the GitHub Actions auto-update workflow.\n' +
-            'The pipeline will:\n' +
-            '  1. Download latest data from Google Drive\n' +
-            '  2. Recalculate incentives\n' +
-            '  3. Regenerate dashboard\n' +
-            '  4. Deploy to web\n\n' +
+            'This will:\n' +
+            '  1. Log a trigger request (audit trail)\n' +
+            '  2. Open GitHub Actions page\n' +
+            '  3. Click "Run workflow" button on GitHub\n\n' +
             'Continue?'
         );
 
@@ -495,64 +484,48 @@ var AdminPage = {
         var self = this;
         var btn = document.getElementById('btn-run-pipeline');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Triggering...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Processing...';
 
         try {
-            // Read GitHub PAT from Firestore
+            // Log trigger request to Firestore (audit trail only)
+            await db.collection('system').doc('pipeline_trigger').set({
+                requested_at: firebase.firestore.FieldValue.serverTimestamp(),
+                requested_by: firebase.auth().currentUser.email,
+                status: 'requested'
+            });
+
+            // Read config for GitHub repo info
             var configDoc = await db.collection('system').doc('config').get();
-
-            if (!configDoc.exists || !configDoc.data().github_pat) {
-                self.showMessage(
-                    'pipeline-message',
-                    'GitHub PAT not configured. Please set the "github_pat" field in Firebase Console under system/config document.',
-                    'warning'
-                );
-                return;
+            var owner = 'moonkaicuzui';
+            var repo = 'hwk-qip-incentive-v10';
+            var workflow = 'auto-update.yml';
+            if (configDoc.exists) {
+                var config = configDoc.data();
+                owner = config.github_owner || owner;
+                repo = config.github_repo || repo;
+                workflow = config.github_workflow || workflow;
             }
 
-            var config = configDoc.data();
-            var pat = config.github_pat;
-            var owner = config.github_owner || 'moonkaicuzui';
-            var repo = config.github_repo || 'hwk-qip-incentive-v10';
-            var workflow = config.github_workflow || 'auto-update.yml';
+            // Open GitHub Actions page for secure manual dispatch
+            var actionsUrl = 'https://github.com/' + owner + '/' + repo + '/actions/workflows/' + workflow;
+            window.open(actionsUrl, '_blank');
 
-            // Call GitHub API to trigger workflow_dispatch
-            var response = await fetch(
-                'https://api.github.com/repos/' + owner + '/' + repo + '/actions/workflows/' + workflow + '/dispatches',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'token ' + pat,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ ref: 'main' })
-                }
-            );
-
-            if (response.status === 204) {
-                // Success - 204 No Content is the expected response
-                self.showMessage(
-                    'pipeline-message',
-                    'Pipeline triggered successfully! The workflow will start shortly. Check GitHub Actions for progress.',
-                    'success'
-                );
-
-                // Update system status after a brief delay
-                setTimeout(function() {
-                    self.loadSystemStatus();
-                }, 5000);
-
-            } else {
-                var errorBody = await response.text();
-                throw new Error('GitHub API returned status ' + response.status + ': ' + errorBody);
-            }
-
-        } catch (error) {
-            console.error('[Admin] Failed to trigger pipeline:', error);
             self.showMessage(
                 'pipeline-message',
-                'Failed to trigger pipeline: ' + error.message,
+                'GitHub Actions page opened in a new tab. Click the "Run workflow" button to start the pipeline.',
+                'success'
+            );
+
+            // Update system status after a brief delay
+            setTimeout(function() {
+                self.loadSystemStatus();
+            }, 3000);
+
+        } catch (error) {
+            console.error('[Admin] Failed to process pipeline trigger:', error);
+            self.showMessage(
+                'pipeline-message',
+                'Failed to process: ' + self.escapeHtml(error.message),
                 'danger'
             );
         } finally {
@@ -708,9 +681,9 @@ var AdminPage = {
         var icon = iconMap[type] || iconMap.warning;
 
         container.innerHTML =
-            '<div class="alert alert-' + type + ' d-flex align-items-center" role="alert">' +
-            '<i class="' + icon + ' me-2"></i>' +
-            '<span>' + message + '</span>' +
+            '<div class="alert alert-' + this.escapeHtml(type) + ' d-flex align-items-center" role="alert">' +
+            '<i class="' + this.escapeHtml(icon) + ' me-2"></i>' +
+            '<span>' + this.escapeHtml(message) + '</span>' +
             '</div>';
 
         // Auto-hide after 5 seconds

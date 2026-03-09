@@ -172,8 +172,9 @@ def main():
         if not to_email or "@" not in to_email:
             print(f"  Skip (invalid email): {to_email}")
             db.collection("pendingNotifications").document(n["_id"]).update({
-                "sent": True, "sentAt": datetime.utcnow().isoformat() + "Z", "error": "Invalid email"
+                "sent": False, "error": "Invalid email address", "lastAttempt": datetime.utcnow().isoformat() + "Z"
             })
+            failed += 1
             continue
 
         # Support custom HTML for weekly reports etc.

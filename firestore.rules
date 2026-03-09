@@ -7,10 +7,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Helper: Admin user (authorized emails)
+    // Helper: Admin user — reads admin_emails from system/config dynamically
     function isAdmin() {
       return request.auth != null &&
-             request.auth.token.email in ['ksmoon@hsvina.com', 'huynhnhurgqa04@hsvina.com'];
+             request.auth.token.email in get(/databases/$(database)/documents/system/config).data.admin_emails;
     }
 
     // Employee data: auth read, admin write
@@ -43,11 +43,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // System Feedback: auth users can create & read own, admin can read/write all
+    // System Feedback: auth users can create & read, admin can update, creator can update own
     match /systemFeedback/{document} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update: if isAdmin() ||
+      allow update, delete: if isAdmin() ||
                        (isAuthenticated() && resource.data.createdBy.uid == request.auth.uid);
     }
 
@@ -57,9 +57,13 @@ service cloud.firestore {
       allow read, update: if isAdmin();
     }
 
-    // System config: admin only
+    // System config: admin only (contains admin_emails list)
+    // Note: isAdmin() reads this document, so we use a direct email check here
+    // to avoid circular dependency. Update these emails when admins change.
     match /system/{document} {
-      allow read, write: if isAdmin();
+      allow read: if isAuthenticated();
+      allow write: if request.auth != null &&
+                      request.auth.token.email in ['ksmoon@hsvina.com', 'huynhnhurgqa04@hsvina.com'];
     }
 
     // Default: deny all
