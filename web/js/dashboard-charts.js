@@ -495,23 +495,36 @@ var DashboardCharts = {
         // i18n helper
         var t = DashboardI18n.t.bind(DashboardI18n);
 
-        // Group employees by position
+        // Group employees by position + type (composite key)
         var positionMap = {};
+        var uniquePositions = {};
         employees.forEach(function (emp) {
             var pos = String(emp.position || emp.Position || emp['Position Name'] || 'Unknown').trim();
-            if (!positionMap[pos]) {
-                positionMap[pos] = [];
+            var t = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
+            if (t.indexOf('TYPE-1') !== -1 || t === '1') t = 'TYPE-1';
+            else if (t.indexOf('TYPE-2') !== -1 || t === '2') t = 'TYPE-2';
+            else if (t.indexOf('TYPE-3') !== -1 || t === '3') t = 'TYPE-3';
+            else t = 'N/A';
+            var key = pos + '||' + t;
+            if (!positionMap[key]) {
+                positionMap[key] = { position: pos, type: t, employees: [] };
             }
-            positionMap[pos].push(emp);
+            positionMap[key].employees.push(emp);
+            uniquePositions[pos] = true;
         });
 
-        // Sort positions by employee count (descending)
+        // Sort by type priority (TYPE-1 > TYPE-2 > TYPE-3), then by employee count
+        var typePriority = { 'TYPE-1': 0, 'TYPE-2': 1, 'TYPE-3': 2, 'N/A': 3 };
         var positions = Object.keys(positionMap).sort(function (a, b) {
-            return positionMap[b].length - positionMap[a].length;
+            var ga = positionMap[a], gb = positionMap[b];
+            var tDiff = (typePriority[ga.type] || 3) - (typePriority[gb.type] || 3);
+            if (tDiff !== 0) return tDiff;
+            return gb.employees.length - ga.employees.length;
         });
+        var uniquePositionCount = Object.keys(uniquePositions).length;
 
         var self = this;
-        var html = '<h4 style="margin-bottom: 16px; color: var(--header-dark);">' + t('position.summary') + ' (' + positions.length + t('position.positions') + ')</h4>';
+        var html = '<h4 style="margin-bottom: 16px; color: var(--header-dark);">' + t('position.summary') + ' (' + uniquePositionCount + t('position.positions') + ')</h4>';
         html += '<div class="table-container"><table>';
         html += '<thead><tr>';
         html += '<th>' + t('table.position') + '</th>';
@@ -525,14 +538,15 @@ var DashboardCharts = {
 
         var grandTotal = 0, grandReceiving = 0, grandAmount = 0;
 
-        positions.forEach(function (pos) {
-            var emps = positionMap[pos];
+        positions.forEach(function (key) {
+            var group = positionMap[key];
+            var pos = group.position;
+            var mainType = group.type;
+            var emps = group.employees;
             var total = emps.length;
             var receiving = 0;
             var amount = 0;
 
-            // Determine predominant TYPE
-            var typeCounts = {};
             emps.forEach(function (emp) {
                 var incentive = window.employeeHelpers
                     ? window.employeeHelpers.getIncentive(emp, 'current')
@@ -541,19 +555,7 @@ var DashboardCharts = {
                     receiving++;
                     amount += incentive;
                 }
-                var t = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
-                if (t.indexOf('TYPE-1') !== -1 || t === '1') t = 'TYPE-1';
-                else if (t.indexOf('TYPE-2') !== -1 || t === '2') t = 'TYPE-2';
-                else if (t.indexOf('TYPE-3') !== -1 || t === '3') t = 'TYPE-3';
-                else t = 'N/A';
-                typeCounts[t] = (typeCounts[t] || 0) + 1;
             });
-
-            var mainType = 'N/A';
-            var maxCount = 0;
-            for (var t in typeCounts) {
-                if (typeCounts[t] > maxCount) { maxCount = typeCounts[t]; mainType = t; }
-            }
 
             var rate = total > 0 ? ((receiving / total) * 100) : 0;
             var avgReceiving = receiving > 0 ? (amount / receiving) : 0;
@@ -581,7 +583,7 @@ var DashboardCharts = {
         var grandAvgReceiving = grandReceiving > 0 ? (grandAmount / grandReceiving) : 0;
 
         html += '<tr style="font-weight: 700; background: #f0f4ff;">';
-        html += '<td>' + t('typeTable.total') + ' (' + positions.length + t('position.positions') + ')</td>';
+        html += '<td>' + t('typeTable.total') + ' (' + uniquePositionCount + t('position.positions') + ')</td>';
         html += '<td></td>';
         html += '<td style="text-align:right;">' + self._formatNumber(grandTotal) + '</td>';
         html += '<td style="text-align:right;">' + self._formatNumber(grandReceiving) + '</td>';
