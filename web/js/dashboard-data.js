@@ -26,8 +26,11 @@
 var CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 var QIP_DEBUG = (typeof window !== 'undefined' && window.QIP_DEBUG) || false;
 var FIRESTORE_PROJECT_ID = 'hwk-qip-incentive-dashboard';
-var FIRESTORE_REST_BASE = 'https://firestore.googleapis.com/v1/projects/' +
-    FIRESTORE_PROJECT_ID + '/databases/(default)/documents/';
+// Use centralized FIRESTORE_REST_BASE from firebase-config.js (no trailing slash)
+// Fallback defined here in case dashboard-data.js loads without firebase-config.js
+var _REST_BASE = (typeof window !== 'undefined' && window.FIRESTORE_REST_BASE)
+    ? window.FIRESTORE_REST_BASE
+    : 'https://firestore.googleapis.com/v1/projects/' + FIRESTORE_PROJECT_ID + '/databases/(default)/documents';
 
 // ---------------------------------------------------------------------------
 // Firestore REST API helpers
@@ -66,7 +69,8 @@ function _parseFirestoreRestDoc(fields) {
  * @returns {Promise<Object|null>} Parsed document data or null
  */
 function _firestoreRestGet(path, token) {
-    return fetch(FIRESTORE_REST_BASE + path, {
+    var base = _REST_BASE || window.FIRESTORE_REST_BASE || '';
+    return fetch(base + '/' + path, {
         headers: { 'Authorization': 'Bearer ' + token }
     }).then(function (resp) {
         if (!resp.ok) {
@@ -90,7 +94,8 @@ function _firestoreRestGet(path, token) {
  * @returns {Promise<Array>} Array of { id, data } objects
  */
 function _firestoreRestList(collectionPath, token) {
-    return fetch(FIRESTORE_REST_BASE + collectionPath, {
+    var base = _REST_BASE || window.FIRESTORE_REST_BASE || '';
+    return fetch(base + '/' + collectionPath, {
         headers: { 'Authorization': 'Bearer ' + token }
     }).then(function (resp) {
         if (!resp.ok) return [];

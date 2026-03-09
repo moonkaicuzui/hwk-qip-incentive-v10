@@ -695,10 +695,10 @@
 
                     // Load summary data via REST API (avoids SDK WebChannel issues)
                     // Get token once, reuse for all month fetches
-                    var restBase = (window.FIRESTORE_REST_BASE || 'https://firestore.googleapis.com/v1/projects/hwk-qip-incentive-dashboard/databases/(default)/documents') + '/';
+                    var restBase = (window.FIRESTORE_REST_BASE || 'https://firestore.googleapis.com/v1/projects/hwk-qip-incentive-dashboard/databases/(default)/documents');
                     return firebase.auth().currentUser.getIdToken().then(function(token) {
                         function loadMonthSummary(m) {
-                            return fetch(restBase + 'dashboard_summary/' + m.month_year, {
+                            return fetch(restBase + '/dashboard_summary/' + m.month_year, {
                                 headers: { 'Authorization': 'Bearer ' + token }
                             }).then(function(resp) {
                                 if (!resp.ok) return { key: m.month_year, data: {} };
