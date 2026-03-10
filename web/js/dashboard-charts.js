@@ -2520,6 +2520,11 @@ var DashboardCharts = {
             return;
         }
 
+        // Fix double timezone suffix from Python isoformat()+Z
+        if (typeof lastUpdated === 'string' && lastUpdated.indexOf('+00:00Z') !== -1) {
+            lastUpdated = lastUpdated.replace('+00:00Z', 'Z');
+        }
+
         // Store timestamp for auto-refresh
         this._freshnessTimestamp = lastUpdated;
 

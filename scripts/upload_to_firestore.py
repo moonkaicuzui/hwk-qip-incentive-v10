@@ -373,7 +373,7 @@ def build_summary(df: pd.DataFrame, month: str, year: int, working_days: int,
         non_resigned = df["Stop working Date"].isna() | (df["Stop working Date"].astype(str).str.strip() == "")
         eligible_count = int(non_resigned.sum())
 
-    now_iso = datetime.now(timezone.utc).isoformat() + "Z"
+    now_iso = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
     summary = {
         "total_employees": total_employees,

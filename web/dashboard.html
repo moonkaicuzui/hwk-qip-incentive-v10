@@ -1448,7 +1448,13 @@
             var lastUpdatedEl = document.getElementById('last-updated');
             if (lastUpdatedEl && data.metadata && data.metadata.lastUpdated) {
                 try {
-                    lastUpdatedEl.textContent = new Date(data.metadata.lastUpdated).toLocaleString();
+                    var ts = data.metadata.lastUpdated;
+                    // Fix double timezone suffix from Python isoformat()+Z
+                    if (typeof ts === 'string' && ts.indexOf('+00:00Z') !== -1) {
+                        ts = ts.replace('+00:00Z', 'Z');
+                    }
+                    var d = new Date(ts);
+                    lastUpdatedEl.textContent = isNaN(d.getTime()) ? ts : d.toLocaleString();
                 } catch (e) {
                     lastUpdatedEl.textContent = data.metadata.lastUpdated;
                 }
