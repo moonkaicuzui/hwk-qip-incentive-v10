@@ -420,16 +420,49 @@ var AdminAllowances = {
     },
 
     // ---------------------------------------------------------------
+    // Loading UI
+    // ---------------------------------------------------------------
+
+    _setLoading: function (isLoading, message) {
+        var applyBtn = document.querySelector('[onclick="AdminAllowances.applyAllowance()"]');
+        var previewBtn = document.querySelector('[onclick="AdminAllowances.showPreview()"]');
+        var formEl = document.getElementById('allowance-form');
+
+        if (isLoading) {
+            if (applyBtn) { applyBtn.disabled = true; applyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>' + (message || 'Processing...'); }
+            if (previewBtn) previewBtn.disabled = true;
+            // Show progress bar
+            var progressHtml = '<div id="allowance-progress" class="alert alert-info mt-2">'
+                + '<i class="fa-solid fa-spinner fa-spin me-2"></i>'
+                + '<span id="allowance-progress-text">' + this._escapeHtml(message || 'Processing...') + '</span>'
+                + '</div>';
+            var existing = document.getElementById('allowance-progress');
+            if (existing) existing.remove();
+            if (formEl) formEl.insertAdjacentHTML('beforeend', progressHtml);
+        } else {
+            if (applyBtn) { applyBtn.disabled = false; applyBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i>' + this._t('admin.allowances.apply'); }
+            if (previewBtn) previewBtn.disabled = false;
+            var prog = document.getElementById('allowance-progress');
+            if (prog) prog.remove();
+        }
+    },
+
+    _updateProgress: function (message) {
+        var el = document.getElementById('allowance-progress-text');
+        if (el) el.textContent = message;
+    },
+
+    // ---------------------------------------------------------------
     // Apply Allowance
     // ---------------------------------------------------------------
 
     applyAllowance: async function () {
         var t = this._t;
         var emp = this._currentEmployee;
-        if (!emp) return;
+        if (!emp) { alert('No employee selected'); return; }
 
         var selectedConditions = this._getSelectedConditions();
-        if (selectedConditions.length === 0) return;
+        if (selectedConditions.length === 0) { alert('No conditions selected'); return; }
 
         var reasonCode = document.getElementById('allowance-reason-code').value;
         var reasonDetail = (document.getElementById('allowance-reason-detail').value || '').trim();
@@ -440,12 +473,16 @@ var AdminAllowances = {
 
         if (!confirm(t('admin.allowances.confirmApply'))) return;
 
+        this._setLoading(true, 'Allowance 적용 중...');
+
         try {
             var db = this._db();
             var user = this._currentUser();
             var monthYear = this._getMonthYear();
             var empNo = String(emp.emp_no || emp['Employee No'] || '');
             var preview = this._calculateOverride(emp, selectedConditions);
+
+            this._updateProgress('Step 1/3: Allowance 문서 생성...');
 
             // Build original values snapshot
             var originalValues = {};
@@ -491,15 +528,16 @@ var AdminAllowances = {
 
             await db.collection('allowances').doc(monthYear).collection('items').add(allowanceData);
 
-            // 2. Update employee data in Firestore
-            await this._updateEmployeeData(monthYear, empNo, selectedConditions, preview.overridden);
+            // 2. Update employee data + recalculate summary (single read)
+            this._updateProgress('Step 2/3: 직원 데이터 업데이트...');
+            await this._updateEmployeeAndSummary(monthYear, empNo, selectedConditions, preview.overridden);
 
-            // 3. Update dashboard summary
-            await this._recalculateSummary(monthYear);
+            this._updateProgress('Step 3/3: 완료 처리...');
 
             // Clear session cache for this month
             this._clearCache(monthYear);
 
+            this._setLoading(false);
             alert(t('admin.allowances.applied'));
 
             // Refresh the view
@@ -508,19 +546,20 @@ var AdminAllowances = {
 
         } catch (error) {
             console.error('[AdminAllowances] applyAllowance error:', error);
+            this._setLoading(false);
             alert('Error: ' + error.message);
         }
     },
 
     // ---------------------------------------------------------------
-    // Update Employee Data in Firestore
+    // Update Employee Data + Summary in single flow (avoid double read)
     // ---------------------------------------------------------------
 
-    _updateEmployeeData: async function (monthYear, empNo, selectedConditions, overriddenValues) {
+    _updateEmployeeAndSummary: async function (monthYear, empNo, selectedConditions, overriddenValues) {
         var db = this._db();
         var docRef = db.collection('employees').doc(monthYear).collection('all_data').doc('data');
         var doc = await docRef.get();
-        if (!doc.exists) return;
+        if (!doc.exists) throw new Error('Employee data not found for ' + monthYear);
 
         var data = doc.data();
         var employees = data.employees || [];
@@ -530,23 +569,17 @@ var AdminAllowances = {
             var e = employees[i];
             var eNo = String(e.emp_no || e['Employee No'] || '');
             if (eNo === empNo) {
-                // Override conditions
                 if (!e.conditions) e.conditions = {};
                 for (var j = 0; j < selectedConditions.length; j++) {
                     e.conditions[selectedConditions[j]] = 'YES';
                 }
                 e.conditions_passed = overriddenValues.passed;
                 e.conditions_pass_rate = overriddenValues.passRate;
-
-                // Update incentive
                 e.current_incentive = overriddenValues.incentive;
                 e.currentIncentive = overriddenValues.incentive;
                 e.hasReceivedIncentive = overriddenValues.incentive > 0;
-
-                // Mark as allowance-applied
                 e.allowance_applied = true;
                 e.allowance_conditions = selectedConditions;
-
                 updated = true;
                 break;
             }
@@ -557,43 +590,25 @@ var AdminAllowances = {
             data.meta.updated_at = new Date().toISOString();
             await docRef.set(data);
         }
-    },
 
-    // ---------------------------------------------------------------
-    // Recalculate Dashboard Summary
-    // ---------------------------------------------------------------
-
-    _recalculateSummary: async function (monthYear) {
-        var db = this._db();
-        // Reload fresh employee data
-        var empDoc = await db.collection('employees').doc(monthYear).collection('all_data').doc('data').get();
-        if (!empDoc.exists) return;
-
-        var employees = (empDoc.data().employees || []);
+        // Recalculate summary using the same employee data (no second read)
+        this._updateProgress('Step 2/3: 대시보드 요약 재계산...');
         var sumDoc = await db.collection('dashboard_summary').doc(monthYear).get();
-        if (!sumDoc.exists) return;
-
-        var summary = sumDoc.data();
-
-        // Recalculate key summary fields
-        var totalEmployees = employees.length;
-        var receivingEmployees = 0;
-        var totalIncentive = 0;
-
-        for (var i = 0; i < employees.length; i++) {
-            var inc = parseFloat(employees[i].current_incentive || employees[i].currentIncentive || 0);
-            if (inc > 0) {
-                receivingEmployees++;
-                totalIncentive += inc;
+        if (sumDoc.exists) {
+            var summary = sumDoc.data();
+            var totalEmployees = employees.length;
+            var receivingEmployees = 0;
+            var totalIncentive = 0;
+            for (var k = 0; k < employees.length; k++) {
+                var inc = parseFloat(employees[k].current_incentive || employees[k].currentIncentive || 0);
+                if (inc > 0) { receivingEmployees++; totalIncentive += inc; }
             }
+            summary.receiving_employees = receivingEmployees;
+            summary.total_incentive = totalIncentive;
+            summary.payment_rate = totalEmployees > 0 ? (receivingEmployees / totalEmployees * 100) : 0;
+            summary.data_updated_at = new Date().toISOString();
+            await db.collection('dashboard_summary').doc(monthYear).set(summary, { merge: true });
         }
-
-        summary.receiving_employees = receivingEmployees;
-        summary.total_incentive = totalIncentive;
-        summary.payment_rate = totalEmployees > 0 ? (receivingEmployees / totalEmployees * 100) : 0;
-        summary.data_updated_at = new Date().toISOString();
-
-        await db.collection('dashboard_summary').doc(monthYear).set(summary, { merge: true });
     },
 
     // ---------------------------------------------------------------
@@ -607,22 +622,27 @@ var AdminAllowances = {
 
         if (!confirm(t('admin.allowances.confirmRevoke'))) return;
 
+        this._setLoading(true, 'Allowance 철회 중...');
+
         try {
             var db = this._db();
             var user = this._currentUser();
             var monthYear = this._getMonthYear();
 
             // 1. Get the allowance record
+            this._updateProgress('Step 1/3: Allowance 문서 조회...');
             var allowanceRef = db.collection('allowances').doc(monthYear).collection('items').doc(docId);
             var allowanceDoc = await allowanceRef.get();
-            if (!allowanceDoc.exists) return;
+            if (!allowanceDoc.exists) { this._setLoading(false); return; }
 
             var allowanceData = allowanceDoc.data();
 
-            // 2. Restore original values in employee data
-            await this._restoreEmployeeData(monthYear, allowanceData);
+            // 2. Restore employee data + recalculate summary (single read)
+            this._updateProgress('Step 2/3: 직원 데이터 복원...');
+            await this._restoreEmployeeAndSummary(monthYear, allowanceData);
 
             // 3. Update allowance status
+            this._updateProgress('Step 3/3: 상태 업데이트...');
             await allowanceRef.update({
                 status: 'REVOKED',
                 revokedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -630,28 +650,26 @@ var AdminAllowances = {
                 revokeReason: revokeReason || ''
             });
 
-            // 4. Recalculate summary
-            await this._recalculateSummary(monthYear);
-
             // Clear session cache
             this._clearCache(monthYear);
 
+            this._setLoading(false);
             alert(t('admin.allowances.revoked'));
 
             // Refresh
             this.loadActiveAllowances();
-            // Clear employee info if the revoked employee was displayed
             if (this._currentEmployee) {
                 this.searchEmployee();
             }
 
         } catch (error) {
             console.error('[AdminAllowances] revokeAllowance error:', error);
+            this._setLoading(false);
             alert('Error: ' + error.message);
         }
     },
 
-    _restoreEmployeeData: async function (monthYear, allowanceData) {
+    _restoreEmployeeAndSummary: async function (monthYear, allowanceData) {
         var db = this._db();
         var docRef = db.collection('employees').doc(monthYear).collection('all_data').doc('data');
         var doc = await docRef.get();
@@ -666,24 +684,19 @@ var AdminAllowances = {
             var e = employees[i];
             var eNo = String(e.emp_no || e['Employee No'] || '');
             if (eNo === empNo) {
-                // Restore original condition values
                 if (!e.conditions) e.conditions = {};
                 var conditions = allowanceData.conditions || [];
                 for (var j = 0; j < conditions.length; j++) {
                     var cKey = conditions[j];
                     e.conditions[cKey] = original[cKey] || 'NO';
                 }
-
                 e.conditions_passed = original.conditions_passed || 0;
                 e.conditions_pass_rate = original.conditions_pass_rate || 0;
                 e.current_incentive = original.incentive_amount || 0;
                 e.currentIncentive = original.incentive_amount || 0;
                 e.hasReceivedIncentive = (original.incentive_amount || 0) > 0;
-
-                // Remove allowance markers
                 delete e.allowance_applied;
                 delete e.allowance_conditions;
-
                 break;
             }
         }
@@ -691,6 +704,25 @@ var AdminAllowances = {
         data.employees = employees;
         data.meta.updated_at = new Date().toISOString();
         await docRef.set(data);
+
+        // Recalculate summary using the same employee data
+        this._updateProgress('Step 2/3: 대시보드 요약 재계산...');
+        var sumDoc = await db.collection('dashboard_summary').doc(monthYear).get();
+        if (sumDoc.exists) {
+            var summary = sumDoc.data();
+            var totalEmployees = employees.length;
+            var receivingEmployees = 0;
+            var totalIncentive = 0;
+            for (var k = 0; k < employees.length; k++) {
+                var inc = parseFloat(employees[k].current_incentive || employees[k].currentIncentive || 0);
+                if (inc > 0) { receivingEmployees++; totalIncentive += inc; }
+            }
+            summary.receiving_employees = receivingEmployees;
+            summary.total_incentive = totalIncentive;
+            summary.payment_rate = totalEmployees > 0 ? (receivingEmployees / totalEmployees * 100) : 0;
+            summary.data_updated_at = new Date().toISOString();
+            await db.collection('dashboard_summary').doc(monthYear).set(summary, { merge: true });
+        }
     },
 
     // ---------------------------------------------------------------
