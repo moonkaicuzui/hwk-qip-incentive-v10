@@ -87,6 +87,12 @@ service cloud.firestore {
                       request.auth.token.email in ['ksmoon@hsvina.com', 'huynhnhurgqa04@hsvina.com'];
     }
 
+    // Allowances: auth read, admin write
+    match /allowances/{monthYear}/items/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
     // Default: deny all
     match /{document=**} {
       allow read, write: if false;

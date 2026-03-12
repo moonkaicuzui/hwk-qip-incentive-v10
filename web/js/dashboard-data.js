@@ -354,7 +354,9 @@ var DashboardData = {
             return r;
         });
 
-        return Promise.all([employeesPromise, summaryPromise, thresholdsPromise])
+        var allowancesPromise = self.loadAllowances(month, year);
+
+        return Promise.all([employeesPromise, summaryPromise, thresholdsPromise, allowancesPromise])
             .then(function (results) {
                 self._updateLoadingStep(3, 'done');
                 self._updateLoadingStep(4, 'active');
@@ -362,6 +364,7 @@ var DashboardData = {
                 var employees = results[0];
                 var summary = results[1];
                 var thresholds = results[2];
+                // results[3] = allowances (stored in DashboardData.allowances)
 
                 // Phase 1: Data normalization
                 if (employees && employees.length > 0) {
@@ -396,6 +399,41 @@ var DashboardData = {
                 self._showError(t('error.loadAll') || 'Failed to load dashboard data. Please refresh the page or try again later.');
                 return { employees: [], summary: {}, thresholds: window.thresholds || {} };
             });
+    },
+
+    /**
+     * Load active allowances for the given month.
+     * @param {string} month
+     * @param {number} year
+     * @returns {Promise<Array>} Array of allowance objects
+     */
+    loadAllowances: function (month, year) {
+        var self = this;
+        var key = self._cacheKey(month, year, 'allowances');
+
+        var cached = self._getCache(key);
+        if (cached) {
+            window.DashboardData.allowances = cached;
+            return Promise.resolve(cached);
+        }
+
+        var collectionPath = 'allowances/' + month + '_' + year + '/items';
+
+        return self._getToken().then(function (token) {
+            return _firestoreRestList(collectionPath, token);
+        }).then(function (docs) {
+            var allowances = docs.filter(function (d) {
+                return d.data && d.data.status === 'APPLIED';
+            }).map(function (d) {
+                return Object.assign({ _id: d.id }, d.data);
+            });
+            window.DashboardData.allowances = allowances;
+            if (allowances.length > 0) self._setCache(key, allowances);
+            return allowances;
+        }).catch(function () {
+            window.DashboardData.allowances = [];
+            return [];
+        });
     },
 
     clearCache: function () {

@@ -562,6 +562,18 @@ var DashboardModals = {
         html += '<th style="text-align: center;">' + t('modal.resultHeader') + '</th>';
         html += '</tr></thead><tbody>';
 
+        // Check for allowance on this employee
+        var allowances = (window.DashboardData && window.DashboardData.allowances) || [];
+        var empNo = String(emp.emp_no || emp['Employee No'] || '');
+        var empAllowance = null;
+        for (var ai = 0; ai < allowances.length; ai++) {
+            if (allowances[ai].employeeNo === empNo && allowances[ai].status === 'APPLIED') {
+                empAllowance = allowances[ai];
+                break;
+            }
+        }
+        var allowedConditions = empAllowance ? (empAllowance.conditions || []) : [];
+
         for (var i = 1; i <= 10; i++) {
             var result = helpers ? helpers.getCondition(emp, i) : 'N/A';
             var value = helpers ? helpers.getConditionValue(emp, i) : 0;
@@ -573,6 +585,12 @@ var DashboardModals = {
             }
 
             var badge = this._formatBadge(result, 'condition');
+
+            // Add Allowance badge if this condition was overridden
+            var isAllowedCond = allowedConditions.indexOf('c' + i) !== -1;
+            if (isAllowedCond) {
+                badge += ' <span style="display:inline-block; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; background:#fff3cd; color:#856404; border:1px solid #ffc107;">Allowance</span>';
+            }
 
             if (result !== 'N/A') {
                 totalApplicable++;

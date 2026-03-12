@@ -1169,7 +1169,9 @@
                 [monthCap + ' Incentive']: emp.current_incentive || 0,
                 'AQL Part2 Amount': emp.aql_part2_amount || 0,
                 'AQL Part3 Amount': emp.aql_part3_amount || 0,
-                'Talent Pool Bonus': emp.talent_pool_bonus || 0
+                'Talent Pool Bonus': emp.talent_pool_bonus || 0,
+                'Allowance Applied': emp.allowance_applied ? 'YES' : 'NO',
+                'Allowance Conditions': emp.allowance_conditions ? emp.allowance_conditions.join(', ') : ''
             };
         });
 

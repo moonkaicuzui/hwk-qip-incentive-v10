@@ -676,6 +676,13 @@ var AdminPage = {
                 }
             }
 
+            if (target === '#pane-allowances' && !loadedTabs['allowances']) {
+                loadedTabs['allowances'] = true;
+                if (typeof AdminAllowances !== 'undefined') {
+                    AdminAllowances.init();
+                }
+            }
+
             // Re-apply i18n after tab content is shown
             if (typeof DashboardI18n !== 'undefined') {
                 DashboardI18n.updateAllTexts();

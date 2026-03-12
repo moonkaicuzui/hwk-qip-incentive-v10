@@ -862,6 +862,11 @@
                     <i class="fa-solid fa-database"></i> <span data-i18n="admin.tabData">Data Lookup</span>
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-allowances" data-bs-toggle="tab" data-bs-target="#pane-allowances" type="button" role="tab">
+                    <i class="fa-solid fa-user-shield"></i> <span data-i18n="admin.tabAllowances">Allowances</span>
+                </button>
+            </li>
         </ul>
 
         <!-- Tab Content -->
@@ -1428,6 +1433,86 @@
         </div><!-- /.admin-grid -->
         </div><!-- /#pane-data -->
 
+        <!-- ==================== TAB 5: Allowances ==================== -->
+        <div class="tab-pane fade" id="pane-allowances" role="tabpanel">
+        <div class="admin-grid">
+
+            <!-- ===== Panel: Allowance Management ===== -->
+            <div class="panel-card" style="grid-column: 1 / -1;">
+                <div class="panel-header">
+                    <div class="panel-icon settings"><i class="fa-solid fa-user-shield"></i></div>
+                    <div class="panel-title" data-i18n="admin.allowances.title">Allowance Management (Exception Override)</div>
+                </div>
+                <div class="panel-body">
+                    <div class="info-banner" style="margin-bottom: 16px;">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span data-i18n="admin.allowances.infoGuide">Admin can override FAIL conditions with valid reasons. Original data is preserved.</span>
+                    </div>
+
+                    <!-- Month/Year Selector -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label" data-i18n="admin.month">Month</label>
+                            <select class="form-select form-control-admin" id="allowance-month">
+                                <option value="january">January</option>
+                                <option value="february" selected>February</option>
+                                <option value="march">March</option>
+                                <option value="april">April</option>
+                                <option value="may">May</option>
+                                <option value="june">June</option>
+                                <option value="july">July</option>
+                                <option value="august">August</option>
+                                <option value="september">September</option>
+                                <option value="october">October</option>
+                                <option value="november">November</option>
+                                <option value="december">December</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" data-i18n="admin.year">Year</label>
+                            <select class="form-select form-control-admin" id="allowance-year">
+                                <option value="2025">2025</option>
+                                <option value="2026" selected>2026</option>
+                                <option value="2027">2027</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Employee Search -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" data-i18n="admin.allowances.search">Search Employee (ID or Name)</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-admin" id="allowance-search" placeholder="619080083 or VÕ THỊ TÝ NỊ">
+                                <button class="btn btn-primary-admin" type="button" onclick="AdminAllowances.searchEmployee()">
+                                    <i class="fa-solid fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee Info + Condition Table (populated by JS) -->
+                    <div id="allowance-employee-info" style="display: none;"></div>
+
+                    <!-- Allowance Form (populated by JS) -->
+                    <div id="allowance-form" style="display: none;"></div>
+
+                    <!-- Preview (populated by JS) -->
+                    <div id="allowance-preview" style="display: none;"></div>
+
+                    <hr style="margin: 24px 0;">
+
+                    <!-- Active Allowances List -->
+                    <h5 style="margin-bottom: 12px;" data-i18n="admin.allowances.activeList">Active Allowances</h5>
+                    <div id="allowance-active-list">
+                        <p class="text-muted" data-i18n="admin.allowances.noActive">No active allowances for this month.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /.admin-grid -->
+        </div><!-- /#pane-allowances -->
+
         </div><!-- /.tab-content -->
     </main>
 
@@ -1469,6 +1554,7 @@
     <script src="js/dashboard-i18n.js?v=rest5"></script>
     <script src="js/admin.js?v=rest5"></script>
     <script src="js/admin-configs.js"></script>
+    <script src="js/admin-allowances.js"></script>
 
 </body>
 </html>

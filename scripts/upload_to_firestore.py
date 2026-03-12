@@ -404,6 +404,96 @@ def build_summary(df: pd.DataFrame, month: str, year: int, working_days: int,
 # Upload to Firestore
 # ---------------------------------------------------------------------------
 
+def reapply_allowances(db, month_year: str):
+    """파이프라인 재업로드 후 활성 allowances를 자동 재적용
+
+    Args:
+        db: Firestore client
+        month_year: 문서 ID (e.g. "february_2026")
+    """
+    print(f"\n🔄 Step 6.5: Allowance 재적용 확인")
+
+    try:
+        items_ref = db.collection("allowances").document(month_year).collection("items")
+        active_docs = items_ref.where("status", "==", "APPLIED").stream()
+        active_list = list(active_docs)
+
+        if not active_list:
+            print(f"   활성 allowance 없음 — 건너뜀")
+            return
+
+        print(f"   활성 allowance {len(active_list)}건 발견 — 재적용 시작")
+
+        # Load employee data
+        emp_ref = db.collection("employees").document(month_year).collection("all_data").document("data")
+        emp_doc = emp_ref.get()
+        if not emp_doc.exists:
+            print(f"   ⚠️ 직원 데이터 없음 — allowance 재적용 건너뜀")
+            return
+
+        data = emp_doc.to_dict()
+        employees = data.get("employees", [])
+        emp_map = {}
+        for i, emp in enumerate(employees):
+            emp_no = str(emp.get("emp_no", emp.get("Employee No", "")))
+            emp_map[emp_no] = i
+
+        modified = False
+        for adoc in active_list:
+            allow = adoc.to_dict()
+            emp_no = allow.get("employeeNo", "")
+            conditions = allow.get("conditions", [])
+            overridden = allow.get("overriddenValues", {})
+
+            if emp_no not in emp_map:
+                print(f"   ⚠️ {emp_no} 직원 없음 — 건너뜀")
+                continue
+
+            idx = emp_map[emp_no]
+            emp = employees[idx]
+
+            # Override conditions
+            if "conditions" not in emp:
+                emp["conditions"] = {}
+            for cond in conditions:
+                emp["conditions"][cond] = "YES"
+
+            emp["conditions_passed"] = overridden.get("conditions_passed", emp.get("conditions_passed", 0))
+            emp["conditions_pass_rate"] = overridden.get("conditions_pass_rate", emp.get("conditions_pass_rate", 0))
+            emp["current_incentive"] = overridden.get("incentive_amount", emp.get("current_incentive", 0))
+            emp["allowance_applied"] = True
+            emp["allowance_conditions"] = conditions
+
+            employees[idx] = emp
+            modified = True
+            print(f"   ✅ {emp_no} ({emp.get('full_name', '--')}) — {', '.join(c.upper() for c in conditions)} 재적용")
+
+        if modified:
+            from datetime import datetime, timezone
+            data["employees"] = employees
+            data["meta"]["updated_at"] = datetime.now(timezone.utc).isoformat() + "Z"
+            emp_ref.set(data)
+            print(f"   ✅ 직원 데이터 업데이트 완료 (allowance 재적용)")
+
+            # Recalculate summary
+            sum_ref = db.collection("dashboard_summary").document(month_year)
+            sum_doc = sum_ref.get()
+            if sum_doc.exists:
+                summary = sum_doc.to_dict()
+                total = len(employees)
+                receiving = sum(1 for e in employees if float(e.get("current_incentive", 0) or 0) > 0)
+                total_inc = sum(float(e.get("current_incentive", 0) or 0) for e in employees)
+                summary["receiving_employees"] = receiving
+                summary["total_incentive"] = total_inc
+                summary["payment_rate"] = (receiving / total * 100) if total > 0 else 0
+                summary["data_updated_at"] = datetime.now(timezone.utc).isoformat() + "Z"
+                sum_ref.set(summary, merge=True)
+                print(f"   ✅ 대시보드 요약 재계산 완료")
+
+    except Exception as e:
+        print(f"   ⚠️ Allowance 재적용 오류 (비치명적): {e}")
+
+
 def upload_employees(db, month_year: str, employees: list, dry_run: bool = False):
     """직원 데이터를 Firestore에 업로드 (단일 문서)
 
@@ -611,6 +701,10 @@ def main():
 
     upload_employees(db, month_year, employees, dry_run=dry_run)
     upload_summary(db, month_year, summary, dry_run=dry_run)
+
+    # 6.5. Re-apply active allowances if any exist
+    if not dry_run:
+        reapply_allowances(db, month_year)
 
     # 7. 최종 요약
     print("\n" + "=" * 60)
