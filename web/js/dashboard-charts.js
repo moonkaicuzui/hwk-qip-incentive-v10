@@ -594,7 +594,7 @@ var DashboardCharts = {
                 var avgReceiving = receiving > 0 ? (amount / receiving) : 0;
                 var rateColor = rate >= 80 ? self.colors.green : (rate >= 50 ? self.colors.yellow : self.colors.red);
 
-                html += '<tr style="cursor: pointer;" onclick="if(typeof DashboardModals!==\'undefined\' && DashboardModals.showPositionDetail) DashboardModals.showPositionDetail(\'' + self._escapeAttr(pos) + '\')">';
+                html += '<tr style="cursor: pointer;" onclick="if(typeof DashboardModals!==\'undefined\' && DashboardModals.showPositionDetail) DashboardModals.showPositionDetail(\'' + self._escapeAttr(pos) + '\', \'' + self._escapeAttr(tp) + '\')">';
                 html += '<td style="padding-left: 28px; color: var(--header-dark);">' + self._escapeHtml(pos) + ' <i class="fas fa-external-link-alt" style="font-size:0.7rem; opacity:0.5;"></i></td>';
                 html += '<td style="text-align:right;">' + total + '</td>';
                 html += '<td style="text-align:right;">' + receiving + '</td>';

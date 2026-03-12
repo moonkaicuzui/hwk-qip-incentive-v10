@@ -195,13 +195,19 @@ var DashboardModals = {
      *
      * @param {string} positionName - Position name to filter by
      */
-    showPositionDetail: function (positionName) {
+    showPositionDetail: function (positionName, typeName) {
         if (!positionName) return;
 
         var posUpper = positionName.toUpperCase();
+        var typeUpper = typeName ? typeName.toUpperCase() : '';
         var filtered = this.employees.filter(function (emp) {
             var p = String(emp.position || emp.Position || emp['Position Name'] || '').toUpperCase();
-            return p === posUpper;
+            if (p !== posUpper) return false;
+            if (typeUpper) {
+                var et = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
+                if (et !== typeUpper) return false;
+            }
+            return true;
         });
 
         var titleEl = document.getElementById('positionModalTitle');
@@ -209,7 +215,7 @@ var DashboardModals = {
         if (!titleEl || !bodyEl) return;
 
         var t = this._t;
-        titleEl.textContent = positionName + ' (' + filtered.length + t('common.people_count') + ')';
+        titleEl.textContent = positionName + (typeUpper ? ' - ' + typeUpper : '') + ' (' + filtered.length + t('common.people_count') + ')';
 
         // Calculate summary
         var receivingCount = 0;
