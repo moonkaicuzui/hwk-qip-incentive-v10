@@ -1,4 +1,6 @@
 {
+  "last_updated": "2025-08-29",
+  "version": "1.0",
   "description": "QIP Talent Pool 특별 인센티브 관리",
   "bonus_history": {
     "2025": {
@@ -8,57 +10,55 @@
       "7": [
         "623060116"
       ],
-      "11": [
-        "623060116"
-      ],
       "12": [
         "623060116"
       ],
-      "9": [
+      "10": [
         "623060116"
       ],
-      "10": [
+      "11": [
+        "623060116"
+      ],
+      "9": [
         "623060116"
       ]
     }
   },
   "audit_trail": [
     {
-      "amount": 150000,
-      "date": "2025-08-29",
-      "period": "2025-07 to 2025-12",
-      "employee_id": "623060116",
       "authorized_by": "System Admin",
-      "action": "created"
+      "action": "created",
+      "period": "2025-07 to 2025-12",
+      "date": "2025-08-29",
+      "amount": 150000,
+      "employee_id": "623060116"
     }
   ],
-  "last_updated": "2025-08-29",
-  "version": "1.0",
   "talent_pool": {
     "members": [
       {
-        "status": "active",
         "reason": "QIP Talent Pool Special Incentive",
-        "start_date": "2025-07-01",
-        "end_date": "2025-12-31",
-        "notes": "추가 인센티브 지급 대상자",
-        "monthly_bonus": 150000,
+        "name": "Talent Pool Member 1",
         "currency": "VND",
+        "end_date": "2025-12-31",
+        "start_date": "2025-07-01",
+        "monthly_bonus": 150000,
         "employee_id": "623060116",
-        "name": "Talent Pool Member 1"
+        "notes": "추가 인센티브 지급 대상자",
+        "status": "active"
       }
     ],
     "eligibility_rules": {
       "minimum_attendance_rate": 0,
+      "exclude_maternity_leave": false,
       "require_active_status": true,
-      "exclude_resigned": true,
-      "exclude_maternity_leave": false
+      "exclude_resigned": true
     },
     "settings": {
-      "auto_apply": true,
-      "require_conditions": false,
       "payment_timing": "with_regular_incentive",
-      "stack_with_regular": true
+      "stack_with_regular": true,
+      "auto_apply": true,
+      "require_conditions": false
     }
   }
 }
