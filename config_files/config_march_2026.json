@@ -14,7 +14,7 @@
   "thresholds_source": "firestore",
   "file_paths": {
     "5prs": "input_files/5prs data march.csv",
-    "attendance": "input_files/attendance/original/attendance data march.csv",
+    "attendance": "input_files/attendance/converted/attendance data march_converted.csv",
     "basic_manpower": "input_files/basic manpower data march.csv",
     "aql_current": "input_files/AQL history/1.HSRG AQL REPORT-MARCH.2026.csv",
     "previous_incentive": "output_files/output_QIP_incentive_february_2026_Complete_V10.0_Complete.csv"
@@ -27,7 +27,7 @@
   },
   "working_days": 9,
   "working_days_source": "attendance_data",
-  "working_days_updated_at": "2026-03-12T02:06:44.724301+00:00",
+  "working_days_updated_at": "2026-03-12T02:16:19.744219+00:00",
   "previous_months": [
     "january",
     "february"
