@@ -2328,64 +2328,94 @@ var DashboardCharts = {
         var curAvg = curCount > 0 ? curTotal / curCount : 0;
         var prevAvg = prevCount > 0 ? prevTotal / prevCount : 0;
 
-        // Destroy existing chart
-        this.destroyChart('trendChart');
+        // Destroy existing charts
+        this.destroyChart('trendChartTotal');
+        this.destroyChart('trendChartCount');
+        this.destroyChart('trendChartAvg');
 
-        var canvas = document.getElementById('trendChart');
-        if (!canvas) return;
-
-        var ctx = canvas.getContext('2d');
-        this.charts['trendChart'] = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: [t('chart.totalIncentive'), t('chart.recipientCount'), t('chart.avgIncentive')],
-                datasets: [
-                    {
-                        label: t('chart.previousMonth'),
-                        data: [prevTotal, prevCount, prevAvg],
-                        backgroundColor: 'rgba(108, 117, 125, 0.6)',
-                        borderColor: '#6c757d',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    },
-                    {
-                        label: t('chart.currentMonth'),
-                        data: [curTotal, curCount, curAvg],
-                        backgroundColor: 'rgba(26, 35, 126, 0.6)',
-                        borderColor: '#1a237e',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }
-                ]
+        var chartConfigs = [
+            {
+                id: 'trendChartTotal',
+                label: t('chart.totalIncentive'),
+                prev: prevTotal, cur: curTotal,
+                format: function (v) {
+                    if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                    if (v >= 1000) return (v / 1000).toFixed(0) + 'K';
+                    return v;
+                },
+                tooltip: function (v) { return v.toLocaleString() + ' ' + DashboardI18n.t('unit.currency'); }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                var val = context.parsed.y;
-                                if (context.dataIndex === 1) return context.dataset.label + ': ' + val + t('kpi.people');
-                                return context.dataset.label + ': ' + val.toLocaleString() + ' ' + DashboardI18n.t('unit.currency');
+            {
+                id: 'trendChartCount',
+                label: t('chart.recipientCount'),
+                prev: prevCount, cur: curCount,
+                format: function (v) { return v; },
+                tooltip: function (v) { return v + t('kpi.people'); }
+            },
+            {
+                id: 'trendChartAvg',
+                label: t('chart.avgIncentive'),
+                prev: prevAvg, cur: curAvg,
+                format: function (v) {
+                    if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+                    if (v >= 1000) return (v / 1000).toFixed(0) + 'K';
+                    return v;
+                },
+                tooltip: function (v) { return v.toLocaleString() + ' ' + DashboardI18n.t('unit.currency'); }
+            }
+        ];
+
+        var self = this;
+        chartConfigs.forEach(function (cfg) {
+            var canvas = document.getElementById(cfg.id);
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            self.charts[cfg.id] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [cfg.label],
+                    datasets: [
+                        {
+                            label: t('chart.previousMonth'),
+                            data: [cfg.prev],
+                            backgroundColor: 'rgba(108, 117, 125, 0.6)',
+                            borderColor: '#6c757d',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        },
+                        {
+                            label: t('chart.currentMonth'),
+                            data: [cfg.cur],
+                            backgroundColor: 'rgba(26, 35, 126, 0.6)',
+                            borderColor: '#1a237e',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.dataset.label + ': ' + cfg.tooltip(context.parsed.y);
+                                }
                             }
                         }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function (value) {
-                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
-                                if (value >= 1000) return (value / 1000).toFixed(0) + 'K';
-                                return value;
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) { return cfg.format(value); }
                             }
                         }
                     }
                 }
-            }
+            });
         });
     },
 

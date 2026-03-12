@@ -119,7 +119,7 @@
 
         /* ===== Trend Chart ===== */
         #trendChartSection { margin-bottom: 20px; }
-        #trendChartSection canvas { max-height: 300px; }
+        #trendChartSection canvas { max-height: 280px; }
 
         /* ===== Talent Pool ===== */
         .talent-pool-card {
@@ -552,7 +552,11 @@
     <!-- Trend Chart (Previous vs Current) -->
     <div class="section-card" id="trendChartSection" style="display:none;">
         <h3 data-i18n="chart.trendTitle">전월 대비 인센티브 분석</h3>
-        <canvas id="trendChart"></canvas>
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:220px;"><canvas id="trendChartTotal"></canvas></div>
+            <div style="flex:1; min-width:220px;"><canvas id="trendChartCount"></canvas></div>
+            <div style="flex:1; min-width:220px;"><canvas id="trendChartAvg"></canvas></div>
+        </div>
     </div>
 
     <!-- TYPE Table -->
