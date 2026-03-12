@@ -391,29 +391,58 @@ var AdminAllowances = {
                 0, 150000, 250000, 300000, 350000, 400000, 450000, 500000,
                 650000, 750000, 850000, 950000, 1000000, 1000000, 1000000, 1000000
             ];
-            // Use window.progressiveTable if available (loaded from Firestore)
             if (window.progressiveTable) table = window.progressiveTable;
-
             var idx = Math.min(Math.max(continuousMonths, 0), table.length - 1);
             return table[idx] || 0;
         }
 
-        // TYPE-2/3: Use multiplier-based calculation
-        // For preview, we use the employee's existing calculated amount if pass_rate was 100
-        // Since we can't easily recalculate TYPE-2 here (needs subordinate data),
-        // we look at the data stored by the pipeline
-        var baseAmount = parseFloat(emp.type2_calculated_amount || emp.calculated_incentive_amount || 0);
-        if (baseAmount > 0) return baseAmount;
-
-        // Fallback: Try to get from the pipeline's stored base incentive
-        var pipelineAmount = parseFloat(emp.base_incentive_amount || 0);
-        if (pipelineAmount > 0) return pipelineAmount;
-
-        // Last resort for TYPE-2: use a reasonable estimate from progressive table
+        // TYPE-2: Calculate from TYPE-1 LINE LEADER average × position multiplier
         if (empType === 'TYPE-2' || empType === '2' || empType === 'TYPE 2') {
-            // TYPE-2 typically gets multiplier × base
-            // We don't have subordinate data here, so just indicate it needs pipeline data
-            return parseFloat(emp.incentive_before_conditions || 0) || 0;
+            var position = String(emp.position || '').toUpperCase();
+            var employees = this._employeeData || [];
+
+            // Get TYPE-1 LINE LEADER receiving average
+            var llIncentives = [];
+            for (var i = 0; i < employees.length; i++) {
+                var e = employees[i];
+                if (String(e.type || '').toUpperCase() === 'TYPE-1' &&
+                    String(e.position || '').toUpperCase() === 'LINE LEADER' &&
+                    parseFloat(e.current_incentive || 0) > 0) {
+                    llIncentives.push(parseFloat(e.current_incentive));
+                }
+            }
+
+            if (llIncentives.length === 0) return 0;
+            var avg = llIncentives.reduce(function (a, b) { return a + b; }, 0) / llIncentives.length;
+
+            // Position multipliers (matching Python pipeline logic)
+            if (position.indexOf('S.MANAGER') !== -1 || position.indexOf('SENIOR MANAGER') !== -1) {
+                return Math.round(avg * 4.0);
+            } else if (position.indexOf('A.MANAGER') !== -1 || position.indexOf('ASSISTANT MANAGER') !== -1) {
+                return Math.round(avg * 3.0);
+            } else if (position.indexOf('SUPERVISOR') !== -1) {
+                return Math.round(avg * 2.5);
+            } else if (position.indexOf('LINE') !== -1 && position.indexOf('LEADER') !== -1) {
+                return Math.round(avg);
+            } else if (position.indexOf('GROUP') !== -1 && position.indexOf('LEADER') !== -1) {
+                // GROUP LEADER: TYPE-2 LINE LEADER average × 2
+                var llType2Incentives = [];
+                for (var j = 0; j < employees.length; j++) {
+                    var e2 = employees[j];
+                    if (String(e2.type || '').toUpperCase() === 'TYPE-2' &&
+                        String(e2.position || '').toUpperCase().indexOf('LINE LEADER') !== -1 &&
+                        parseFloat(e2.current_incentive || 0) > 0) {
+                        llType2Incentives.push(parseFloat(e2.current_incentive));
+                    }
+                }
+                if (llType2Incentives.length > 0) {
+                    var avgLL2 = llType2Incentives.reduce(function (a, b) { return a + b; }, 0) / llType2Incentives.length;
+                    return Math.round(avgLL2 * 2);
+                }
+                return Math.round(avg * 2);
+            }
+            // Default: use TYPE-1 LINE LEADER average
+            return Math.round(avg);
         }
 
         return 0;
