@@ -94,32 +94,37 @@ jobs:
           python scripts/enhanced_download.py || echo "⚠️ Enhanced download skipped"
           echo "✅ Config update complete"
 
-      # ========== Step 5.5: Determine Target Month ==========
-      - name: "Step 5.5: Determine target month from config files"
+      # ========== Step 5.5: Determine Target Months ==========
+      - name: "Step 5.5: Determine target months"
         id: target_month
         env:
           INPUT_MONTH: ${{ github.event.inputs.target_month || '' }}
           INPUT_YEAR: ${{ github.event.inputs.target_year || '' }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FORCE_RUN: ${{ github.event.inputs.force_run || 'false' }}
         run: |
-          echo "🎯 Determining target month..."
+          echo "🎯 Determining target months..."
 
-          # If target month/year manually specified via workflow_dispatch, use them
+          # If target month/year manually specified via workflow_dispatch, use only that
           if [ -n "$INPUT_MONTH" ] && [ -n "$INPUT_YEAR" ]; then
             MANUAL_CONFIG="config_files/config_${INPUT_MONTH}_${INPUT_YEAR}.json"
             if [ -f "$MANUAL_CONFIG" ]; then
               echo "📌 Manual target specified: $INPUT_MONTH $INPUT_YEAR"
-              echo "target_config=$MANUAL_CONFIG" >> $GITHUB_OUTPUT
-              echo "target_month=$INPUT_MONTH" >> $GITHUB_OUTPUT
-              echo "target_year=$INPUT_YEAR" >> $GITHUB_OUTPUT
-              echo "🎯 Target (manual): $INPUT_MONTH $INPUT_YEAR ($MANUAL_CONFIG)"
+              echo "target_months=${INPUT_MONTH}:${INPUT_YEAR}:${MANUAL_CONFIG}" >> $GITHUB_OUTPUT
+              echo "data_changed=true" >> $GITHUB_OUTPUT
               exit 0
             else
               echo "⚠️ Config file not found: $MANUAL_CONFIG — falling back to auto-detect"
             fi
           fi
 
-          # Auto-detect: find the latest month config that has actual data (file_paths defined)
-          LATEST_CONFIG=$(python3 -c "
+          # Auto-detect: find all months with stale data (Google Drive newer than Firestore)
+          STALE_MONTHS=$(python scripts/detect_stale_months.py 2>/dev/null)
+
+          if [ "$FORCE_RUN" = "true" ] && [ -z "$STALE_MONTHS" ]; then
+            # Force run: use latest config if no stale months detected
+            echo "🔧 Force run - finding latest config..."
+            STALE_MONTHS=$(python3 -c "
           import glob, re, json
           months = {'january':1,'february':2,'march':3,'april':4,'may':5,'june':6,
                     'july':7,'august':8,'september':9,'october':10,'november':11,'december':12}
@@ -132,151 +137,156 @@ jobs:
                   month_name, year_str = m.group(1), m.group(2)
                   month_num = months.get(month_name, 0)
                   year = int(year_str)
-                  # Only consider configs with actual downloaded data (file_paths)
                   try:
                       with open(f) as fh:
                           cfg = json.load(fh)
                       if not cfg.get('file_paths'):
-                          continue  # Skip threshold-only configs
+                          continue
                   except:
                       continue
                   if (year, month_num) > best_key:
                       best_key = (year, month_num)
-                      best = f
-          print(best or '')
+                      best = (month_name, year_str, f)
+          if best:
+              print(f'{best[0]}:{best[1]}:{best[2]}')
           ")
-          echo "Latest config: $LATEST_CONFIG"
-          if [ -n "$LATEST_CONFIG" ]; then
-            MONTH=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('month', ''))")
-            YEAR=$(python3 -c "import json; c=json.load(open('$LATEST_CONFIG')); print(c.get('year', ''))")
-            echo "target_config=$LATEST_CONFIG" >> $GITHUB_OUTPUT
-            echo "target_month=$MONTH" >> $GITHUB_OUTPUT
-            echo "target_year=$YEAR" >> $GITHUB_OUTPUT
-            echo "🎯 Target (auto): $MONTH $YEAR ($LATEST_CONFIG)"
-          else
-            echo "❌ No config file found!"
-            exit 1
           fi
 
-      # ========== Step 5.6: Change Detection ==========
-      - name: "Step 5.6: Check for data changes"
-        id: change_check
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          FORCE_RUN: ${{ github.event.inputs.force_run || 'false' }}
-        run: |
-          if [ "$FORCE_RUN" = "true" ]; then
-            echo "🔧 Force run requested - skipping change detection"
-            echo "data_changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "🔍 Checking for data changes..."
+          if [ -z "$STALE_MONTHS" ]; then
+            # Check global hash for backward compatibility
+            echo "🔍 No stale months from per-month detection, checking global hash..."
             python scripts/check_drive_changes.py check
             if [ $? -eq 0 ]; then
-              echo "🔄 Changes detected - continuing pipeline"
-              echo "data_changed=true" >> $GITHUB_OUTPUT
-            else
-              echo "✅ No changes - skipping calculation and upload"
-              echo "data_changed=false" >> $GITHUB_OUTPUT
+              # Changes detected but couldn't determine which month - use latest
+              STALE_MONTHS=$(python3 -c "
+          import glob, re, json
+          months = {'january':1,'february':2,'march':3,'april':4,'may':5,'june':6,
+                    'july':7,'august':8,'september':9,'october':10,'november':11,'december':12}
+          configs = glob.glob('config_files/config_*_*.json')
+          best = None
+          best_key = (0, 0)
+          for f in configs:
+              m = re.search(r'config_(\w+)_(\d{4})\.json', f)
+              if m:
+                  month_name, year_str = m.group(1), m.group(2)
+                  month_num = months.get(month_name, 0)
+                  year = int(year_str)
+                  try:
+                      with open(f) as fh:
+                          cfg = json.load(fh)
+                      if not cfg.get('file_paths'):
+                          continue
+                  except:
+                      continue
+                  if (year, month_num) > best_key:
+                      best_key = (year, month_num)
+                      best = (month_name, year_str, f)
+          if best:
+              print(f'{best[0]}:{best[1]}:{best[2]}')
+          ")
             fi
           fi
 
-      # ========== Step 6: Convert Attendance Data ==========
-      - name: "Step 6: Convert attendance data"
-        if: steps.change_check.outputs.data_changed == 'true'
-        env:
-          TARGET_MONTH: ${{ steps.target_month.outputs.target_month }}
-          TARGET_YEAR: ${{ steps.target_month.outputs.target_year }}
-        run: |
-          echo "📊 Converting attendance data for $TARGET_MONTH $TARGET_YEAR..."
-          python src/convert_attendance_data.py "$TARGET_MONTH" "$TARGET_YEAR"
+          if [ -n "$STALE_MONTHS" ]; then
+            echo "🔄 Months to process: $STALE_MONTHS"
+            echo "target_months=$STALE_MONTHS" >> $GITHUB_OUTPUT
+            echo "data_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ No changes detected - skipping calculation and upload"
+            echo "target_months=" >> $GITHUB_OUTPUT
+            echo "data_changed=false" >> $GITHUB_OUTPUT
+          fi
 
-          # Also convert previous month's attendance (needed for incentive calculation)
-          PREV_MONTH=$(python3 -c "
+      # ========== Steps 6-8: Process All Stale Months ==========
+      - name: "Steps 6-8: Calculate and upload for all changed months"
+        if: steps.target_month.outputs.data_changed == 'true'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TARGET_MONTHS: ${{ steps.target_month.outputs.target_months }}
+        run: |
+          mkdir -p output_files
+          PROCESSED=0
+          FAILED=0
+
+          for ENTRY in $TARGET_MONTHS; do
+            IFS=':' read -r TARGET_MONTH TARGET_YEAR TARGET_CONFIG <<< "$ENTRY"
+
+            echo ""
+            echo "============================================================"
+            echo "🎯 Processing: $TARGET_MONTH $TARGET_YEAR ($TARGET_CONFIG)"
+            echo "============================================================"
+
+            # Step 6: Convert attendance data
+            echo "📊 Converting attendance data..."
+            python src/convert_attendance_data.py "$TARGET_MONTH" "$TARGET_YEAR" || {
+              echo "❌ Attendance conversion failed for $TARGET_MONTH $TARGET_YEAR"
+              FAILED=$((FAILED + 1))
+              continue
+            }
+
+            # Also convert previous month's attendance
+            PREV_MONTH=$(python3 -c "
           months = ['january','february','march','april','may','june','july','august','september','october','november','december']
           idx = months.index('$TARGET_MONTH')
           prev_idx = (idx - 1) % 12
           print(months[prev_idx])
           ")
-          PREV_YEAR=$TARGET_YEAR
-          if [ "$PREV_MONTH" = "december" ]; then
-            PREV_YEAR=$((TARGET_YEAR - 1))
-          fi
-          echo "📊 Converting previous month attendance: $PREV_MONTH $PREV_YEAR..."
-          python src/convert_attendance_data.py "$PREV_MONTH" "$PREV_YEAR" || echo "⚠️ Previous month attendance conversion skipped (data may not exist)"
-          echo "✅ Attendance conversion complete"
+            PREV_YEAR=$TARGET_YEAR
+            if [ "$PREV_MONTH" = "december" ]; then
+              PREV_YEAR=$((TARGET_YEAR - 1))
+            fi
+            python src/convert_attendance_data.py "$PREV_MONTH" "$PREV_YEAR" 2>/dev/null || true
 
-      # ========== Step 6.5: Validate Schema ==========
-      - name: "Step 6.5: Validate attendance schema"
-        if: steps.change_check.outputs.data_changed == 'true'
-        env:
-          TARGET_MONTH: ${{ steps.target_month.outputs.target_month }}
-          TARGET_YEAR: ${{ steps.target_month.outputs.target_year }}
-        run: |
-          echo "🔍 Validating attendance schema for $TARGET_MONTH $TARGET_YEAR..."
-          if [ -f "scripts/validate_attendance_schema.py" ]; then
-            python scripts/validate_attendance_schema.py "$TARGET_MONTH" "$TARGET_YEAR" || {
-              echo "❌ Schema validation failed! Stopping pipeline."
-              exit 1
+            # Step 6.5: Validate schema
+            if [ -f "scripts/validate_attendance_schema.py" ]; then
+              python scripts/validate_attendance_schema.py "$TARGET_MONTH" "$TARGET_YEAR" || {
+                echo "❌ Schema validation failed for $TARGET_MONTH $TARGET_YEAR"
+                FAILED=$((FAILED + 1))
+                continue
+              }
+            fi
+
+            # Step 6.8: Download previous incentive
+            python scripts/download_previous_incentive.py --month "$TARGET_MONTH" --year "$TARGET_YEAR" || true
+
+            # Step 7: Calculate incentives
+            echo "🧮 Calculating incentives..."
+            python src/step1_인센티브_계산.py --config "$TARGET_CONFIG" || {
+              echo "❌ Incentive calculation failed for $TARGET_MONTH $TARGET_YEAR"
+              FAILED=$((FAILED + 1))
+              continue
             }
-          else
-            echo "⚠️ Schema validation script not found, skipping"
+
+            # Step 7.5: Update AQL config
+            if [ -f "scripts/auto_update_aql_config.py" ]; then
+              python scripts/auto_update_aql_config.py "$TARGET_MONTH" "$TARGET_YEAR" || true
+            fi
+
+            # Step 8: Upload to Firestore
+            echo "🔥 Uploading to Firestore..."
+            python scripts/upload_to_firestore.py --month "$TARGET_MONTH" --year "$TARGET_YEAR" || {
+              echo "❌ Firestore upload failed for $TARGET_MONTH $TARGET_YEAR"
+              FAILED=$((FAILED + 1))
+              continue
+            }
+
+            echo "✅ $TARGET_MONTH $TARGET_YEAR processed successfully"
+            PROCESSED=$((PROCESSED + 1))
+          done
+
+          echo ""
+          echo "============================================================"
+          echo "📊 Pipeline Summary: $PROCESSED processed, $FAILED failed"
+          echo "============================================================"
+
+          if [ $FAILED -gt 0 ] && [ $PROCESSED -eq 0 ]; then
+            echo "❌ All months failed!"
+            exit 1
           fi
-          echo "✅ Schema validation passed"
-
-      # ========== Step 6.8: Download Previous Incentive from Firestore ==========
-      - name: "Step 6.8: Download Previous Incentive from Firestore"
-        if: steps.change_check.outputs.data_changed == 'true'
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          TARGET_MONTH: ${{ steps.target_month.outputs.target_month }}
-          TARGET_YEAR: ${{ steps.target_month.outputs.target_year }}
-        run: |
-          echo "📥 Downloading previous month incentive from Firestore..."
-          mkdir -p output_files
-          python scripts/download_previous_incentive.py --month "$TARGET_MONTH" --year "$TARGET_YEAR"
-          echo "✅ Previous incentive download complete"
-
-      # ========== Step 7: Calculate Incentives ==========
-      - name: "Step 7: Calculate incentives"
-        if: steps.change_check.outputs.data_changed == 'true'
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          TARGET_CONFIG: ${{ steps.target_month.outputs.target_config }}
-        run: |
-          echo "🧮 Calculating incentives..."
-          echo "Using config: $TARGET_CONFIG"
-          mkdir -p output_files
-          python src/step1_인센티브_계산.py --config "$TARGET_CONFIG"
-          echo "✅ Incentive calculation complete"
-
-      # ========== Step 7.5: Update AQL Inspector Config ==========
-      - name: "Step 7.5: Update AQL Inspector config"
-        if: steps.change_check.outputs.data_changed == 'true'
-        env:
-          TARGET_MONTH: ${{ steps.target_month.outputs.target_month }}
-          TARGET_YEAR: ${{ steps.target_month.outputs.target_year }}
-        run: |
-          echo "🔄 Updating AQL Inspector config..."
-          if [ -f "scripts/auto_update_aql_config.py" ]; then
-            python scripts/auto_update_aql_config.py "$TARGET_MONTH" "$TARGET_YEAR" || echo "⚠️ AQL config update skipped"
-          fi
-          echo "✅ AQL config update complete"
-
-      # ========== Step 8: Upload to Firestore (CORE!) ==========
-      - name: "Step 8: Upload results to Firestore"
-        if: steps.change_check.outputs.data_changed == 'true'
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          TARGET_MONTH: ${{ steps.target_month.outputs.target_month }}
-          TARGET_YEAR: ${{ steps.target_month.outputs.target_year }}
-        run: |
-          echo "🔥 Uploading results for $TARGET_MONTH $TARGET_YEAR to Firestore..."
-          python scripts/upload_to_firestore.py --month "$TARGET_MONTH" --year "$TARGET_YEAR"
-          echo "✅ Firestore upload complete"
 
       # ========== Step 8.5: Save Input Hash ==========
       - name: "Step 8.5: Save input hash for change detection"
-        if: steps.change_check.outputs.data_changed == 'true'
+        if: steps.target_month.outputs.data_changed == 'true'
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
@@ -289,7 +299,7 @@ jobs:
         if: always()
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          DATA_CHANGED: ${{ steps.change_check.outputs.data_changed }}
+          DATA_CHANGED: ${{ steps.target_month.outputs.data_changed }}
         run: |
           echo "📊 Updating system status..."
           python3 -c "
@@ -342,7 +352,7 @@ jobs:
 
       # ========== Step 10: Generate Selector Page ==========
       - name: "Step 10: Generate selector page"
-        if: steps.change_check.outputs.data_changed == 'true'
+        if: steps.target_month.outputs.data_changed == 'true'
         run: |
           echo "📄 Generating selector page..."
           if [ -f "scripts/create_month_selector.py" ]; then
@@ -352,7 +362,7 @@ jobs:
 
       # ========== Step 11: Deploy to GitHub Pages ==========
       - name: "Step 11: Commit and deploy"
-        if: steps.change_check.outputs.data_changed == 'true'
+        if: steps.target_month.outputs.data_changed == 'true'
         run: |
           echo "🚀 Deploying to GitHub Pages..."
 
