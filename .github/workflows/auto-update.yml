@@ -13,6 +13,16 @@ on:
         options:
           - 'false'
           - 'true'
+      target_month:
+        description: 'Target month (e.g., february). Leave empty for auto-detect (latest config).'
+        required: false
+        default: ''
+        type: string
+      target_year:
+        description: 'Target year (e.g., 2026). Leave empty for auto-detect.'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: write
@@ -87,9 +97,28 @@ jobs:
       # ========== Step 5.5: Determine Target Month ==========
       - name: "Step 5.5: Determine target month from config files"
         id: target_month
+        env:
+          INPUT_MONTH: ${{ github.event.inputs.target_month || '' }}
+          INPUT_YEAR: ${{ github.event.inputs.target_year || '' }}
         run: |
           echo "🎯 Determining target month..."
-          # Find the latest month config that has actual data (file_paths defined)
+
+          # If target month/year manually specified via workflow_dispatch, use them
+          if [ -n "$INPUT_MONTH" ] && [ -n "$INPUT_YEAR" ]; then
+            MANUAL_CONFIG="config_files/config_${INPUT_MONTH}_${INPUT_YEAR}.json"
+            if [ -f "$MANUAL_CONFIG" ]; then
+              echo "📌 Manual target specified: $INPUT_MONTH $INPUT_YEAR"
+              echo "target_config=$MANUAL_CONFIG" >> $GITHUB_OUTPUT
+              echo "target_month=$INPUT_MONTH" >> $GITHUB_OUTPUT
+              echo "target_year=$INPUT_YEAR" >> $GITHUB_OUTPUT
+              echo "🎯 Target (manual): $INPUT_MONTH $INPUT_YEAR ($MANUAL_CONFIG)"
+              exit 0
+            else
+              echo "⚠️ Config file not found: $MANUAL_CONFIG — falling back to auto-detect"
+            fi
+          fi
+
+          # Auto-detect: find the latest month config that has actual data (file_paths defined)
           LATEST_CONFIG=$(python3 -c "
           import glob, re, json
           months = {'january':1,'february':2,'march':3,'april':4,'may':5,'june':6,
@@ -123,7 +152,7 @@ jobs:
             echo "target_config=$LATEST_CONFIG" >> $GITHUB_OUTPUT
             echo "target_month=$MONTH" >> $GITHUB_OUTPUT
             echo "target_year=$YEAR" >> $GITHUB_OUTPUT
-            echo "🎯 Target: $MONTH $YEAR ($LATEST_CONFIG)"
+            echo "🎯 Target (auto): $MONTH $YEAR ($LATEST_CONFIG)"
           else
             echo "❌ No config file found!"
             exit 1

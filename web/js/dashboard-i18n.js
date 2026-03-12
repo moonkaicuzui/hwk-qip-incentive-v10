@@ -893,6 +893,8 @@ const DashboardI18n = {
         'admin.lastDataUpdate': { ko: '마지막 데이터 업데이트', en: 'Last Data Update', vi: 'Cập nhật dữ liệu cuối' },
         'admin.currentMonth': { ko: '현재 월', en: 'Current Month', vi: 'Tháng hiện tại' },
         'admin.runPipeline': { ko: '파이프라인 실행', en: 'Run Pipeline Now', vi: 'Chạy Pipeline' },
+        'admin.targetMonth': { ko: '대상 월:', en: 'Target Month:', vi: 'Tháng mục tiêu:' },
+        'admin.autoDetect': { ko: '자동 감지 (최신)', en: 'Auto-detect (latest)', vi: 'Tự động (mới nhất)' },
 
         // Admin - Working Days Override
         'admin.workingDays': { ko: '근무일 수 재정의', en: 'Working Days Override', vi: 'Ghi đè ngày làm việc' },

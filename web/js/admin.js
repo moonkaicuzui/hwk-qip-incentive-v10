@@ -509,13 +509,30 @@ var AdminPage = {
                 workflow = config.github_workflow || workflow;
             }
 
+            // Get target month/year selection
+            var targetMonthEl = document.getElementById('pipeline-target-month');
+            var targetYearEl = document.getElementById('pipeline-target-year');
+            var targetMonth = targetMonthEl ? targetMonthEl.value : '';
+            var targetYear = targetYearEl ? targetYearEl.value : '';
+
+            // Include target month info in audit log
+            if (targetMonth) {
+                await db.collection('system').doc('pipeline_trigger').set({
+                    target_month: targetMonth,
+                    target_year: targetYear
+                }, { merge: true });
+            }
+
             // Open GitHub Actions page for secure manual dispatch
             var actionsUrl = 'https://github.com/' + owner + '/' + repo + '/actions/workflows/' + workflow;
             window.open(actionsUrl, '_blank');
 
+            var targetInfo = targetMonth
+                ? ' (' + targetMonth.charAt(0).toUpperCase() + targetMonth.slice(1) + ' ' + targetYear + ')'
+                : ' (Auto-detect)';
             self.showMessage(
                 'pipeline-message',
-                t('admin.msg.pipelineOpened'),
+                t('admin.msg.pipelineOpened') + targetInfo,
                 'success'
             );
 
