@@ -385,6 +385,12 @@ var AdminAllowances = {
         var empType = String(emp.type || '').toUpperCase();
         var continuousMonths = parseInt(emp.continuous_months || 0);
 
+        // When continuous_months is 0 (pipeline didn't count this month),
+        // recalculate from previous data since allowance now makes them eligible
+        if (continuousMonths <= 0) {
+            continuousMonths = this._recalcContinuousMonths(emp);
+        }
+
         // TYPE-1: Use progressive table
         if (empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1') {
             var table = (typeof PROGRESSIVE_TABLE_DEFAULT !== 'undefined') ? PROGRESSIVE_TABLE_DEFAULT : [
@@ -446,6 +452,64 @@ var AdminAllowances = {
         }
 
         return 0;
+    },
+
+    /**
+     * Recalculate continuous_months from previous month data.
+     * Used when allowance overrides make employee eligible but pipeline had set it to 0.
+     * Logic mirrors Python: previous_continuous_months + 1, or reverse-calc from previous_incentive.
+     */
+    _recalcContinuousMonths: function (emp) {
+        // Priority 1: previous_continuous_months field
+        var prevCont = parseInt(emp.previous_continuous_months || emp.Previous_Continuous_Months || 0);
+        if (prevCont > 0) {
+            return Math.min(prevCont + 1, 15);
+        }
+
+        // Priority 2: Reverse-calculate from previous_incentive
+        var prevIncentive = parseFloat(emp.previous_incentive || emp.previousIncentive || emp.Previous_Incentive || 0);
+        if (prevIncentive > 0) {
+            var prevMonths = this._reverseCalcMonthsFromIncentive(prevIncentive);
+            return Math.min(prevMonths + 1, 15);
+        }
+
+        // No previous data → first month
+        return 1;
+    },
+
+    /**
+     * Reverse-calculate continuous months from incentive amount using progressive table.
+     * Mirrors Python _reverse_calculate_months_from_incentive logic.
+     */
+    _reverseCalcMonthsFromIncentive: function (incentiveAmount) {
+        if (!incentiveAmount || incentiveAmount <= 0) return 0;
+
+        var table = (typeof PROGRESSIVE_TABLE_DEFAULT !== 'undefined') ? PROGRESSIVE_TABLE_DEFAULT : [
+            0, 150000, 250000, 300000, 350000, 400000, 450000, 500000,
+            650000, 750000, 850000, 950000, 1000000, 1000000, 1000000, 1000000
+        ];
+        if (window.progressiveTable) table = window.progressiveTable;
+
+        var amount = Math.round(incentiveAmount);
+
+        // Exact match
+        for (var i = 1; i < table.length; i++) {
+            if (amount === table[i]) return i;
+        }
+
+        // Closest match within 10% tolerance
+        var closestMonth = 1;
+        var minDiff = Infinity;
+        for (var j = 1; j < table.length; j++) {
+            var diff = Math.abs(amount - table[j]);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestMonth = j;
+            }
+        }
+        if (minDiff <= amount * 0.1) return closestMonth;
+
+        return 1;
     },
 
     // ---------------------------------------------------------------
@@ -609,6 +673,10 @@ var AdminAllowances = {
                 e.hasReceivedIncentive = overriddenValues.incentive > 0;
                 e.allowance_applied = true;
                 e.allowance_conditions = selectedConditions;
+                // Recalculate continuous_months when allowance makes them eligible
+                if (overriddenValues.incentive > 0 && parseInt(e.continuous_months || 0) <= 0) {
+                    e.continuous_months = AdminAllowances._recalcContinuousMonths(e);
+                }
                 updated = true;
                 break;
             }
@@ -847,6 +915,117 @@ var AdminAllowances = {
         amount = parseFloat(amount) || 0;
         if (amount === 0) return '<span style="color:#9e9e9e;">0 VND</span>';
         return '<span style="color:#2e7d32; font-weight:600;">' + amount.toLocaleString('vi-VN') + ' VND</span>';
+    },
+
+    // ---------------------------------------------------------------
+    // Recalculate Incentive for Allowance Employees
+    // ---------------------------------------------------------------
+
+    recalcAllowanceIncentives: async function () {
+        var btn = document.getElementById('btn-recalc-allowance');
+        var resultEl = document.getElementById('recalc-result');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> 재계산 중...'; }
+        if (resultEl) { resultEl.style.display = 'block'; resultEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> 데이터 로드 중...'; }
+
+        try {
+            var db = this._db();
+            var monthYear = this._getMonthYear();
+
+            // 1. Load employee data
+            var docRef = db.collection('employees').doc(monthYear).collection('all_data').doc('data');
+            var doc = await docRef.get();
+            if (!doc.exists) throw new Error('Employee data not found for ' + monthYear);
+
+            var data = doc.data();
+            var employees = data.employees || [];
+            this._employeeData = employees;
+
+            // 2. Find allowance employees with incentive = 0 but 100% pass rate
+            var updated = [];
+            for (var i = 0; i < employees.length; i++) {
+                var e = employees[i];
+                if (!e.allowance_applied) continue;
+
+                var passRate = parseFloat(e.conditions_pass_rate || 0);
+                var currentInc = parseFloat(e.current_incentive || e.currentIncentive || 0);
+
+                if (passRate >= 100 && currentInc <= 0) {
+                    // Recalculate continuous_months
+                    var newCont = this._recalcContinuousMonths(e);
+                    var oldCont = parseInt(e.continuous_months || 0);
+
+                    // Calculate new incentive
+                    var tempEmp = Object.assign({}, e, { continuous_months: newCont });
+                    var newIncentive = this._calculateIncentiveAmount(tempEmp);
+
+                    if (newIncentive > 0) {
+                        e.continuous_months = newCont;
+                        e.current_incentive = newIncentive;
+                        e.currentIncentive = newIncentive;
+                        e.hasReceivedIncentive = true;
+                        updated.push({
+                            empNo: String(e.emp_no || e['Employee No'] || ''),
+                            name: e.name || e.Name || '',
+                            oldMonths: oldCont,
+                            newMonths: newCont,
+                            incentive: newIncentive
+                        });
+                    }
+                }
+            }
+
+            if (updated.length === 0) {
+                resultEl.innerHTML = '<div class="alert alert-info mb-0"><i class="fa-solid fa-check-circle me-1"></i> 재계산 대상이 없습니다. 모든 Allowance 직원의 인센티브가 정상입니다.</div>';
+                return;
+            }
+
+            // 3. Save updated employee data
+            if (resultEl) resultEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Firestore 업데이트 중... (' + updated.length + '명)';
+            data.employees = employees;
+            data.meta.updated_at = new Date().toISOString();
+            await docRef.set(data);
+
+            // 4. Recalculate dashboard summary
+            var sumDoc = await db.collection('dashboard_summary').doc(monthYear).get();
+            if (sumDoc.exists) {
+                var summary = sumDoc.data();
+                var receivingEmployees = 0;
+                var totalIncentive = 0;
+                for (var k = 0; k < employees.length; k++) {
+                    var inc = parseFloat(employees[k].current_incentive || employees[k].currentIncentive || 0);
+                    if (inc > 0) { receivingEmployees++; totalIncentive += inc; }
+                }
+                summary.receiving_employees = receivingEmployees;
+                summary.total_incentive = totalIncentive;
+                summary.payment_rate = employees.length > 0 ? (receivingEmployees / employees.length * 100) : 0;
+                summary.data_updated_at = new Date().toISOString();
+                await db.collection('dashboard_summary').doc(monthYear).set(summary, { merge: true });
+            }
+
+            // 5. Clear cache
+            this._clearCache(monthYear);
+
+            // 6. Show results
+            var html = '<div class="alert alert-success mb-0">';
+            html += '<strong><i class="fa-solid fa-check-circle me-1"></i> ' + updated.length + '명 인센티브 재계산 완료</strong>';
+            html += '<table class="table table-sm table-bordered mt-2 mb-0" style="font-size: 13px;">';
+            html += '<thead><tr><th>사번</th><th>이름</th><th>연속개월</th><th>인센티브</th></tr></thead><tbody>';
+            for (var u = 0; u < updated.length; u++) {
+                var r = updated[u];
+                html += '<tr><td>' + this._escapeHtml(r.empNo) + '</td>';
+                html += '<td>' + this._escapeHtml(r.name) + '</td>';
+                html += '<td>' + r.oldMonths + ' → ' + r.newMonths + '</td>';
+                html += '<td style="color:#2e7d32; font-weight:600;">' + r.incentive.toLocaleString('vi-VN') + ' VND</td></tr>';
+            }
+            html += '</tbody></table></div>';
+            resultEl.innerHTML = html;
+
+        } catch (error) {
+            console.error('[AdminAllowances] recalcAllowanceIncentives error:', error);
+            if (resultEl) resultEl.innerHTML = '<div class="alert alert-danger mb-0">Error: ' + this._escapeHtml(error.message) + '</div>';
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-sync-alt me-1"></i> 인센티브 재계산'; }
+        }
     }
 };
 

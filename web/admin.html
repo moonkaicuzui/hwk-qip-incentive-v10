@@ -1449,6 +1449,21 @@
                         <span data-i18n="admin.allowances.infoGuide">Admin can override FAIL conditions with valid reasons. Original data is preserved.</span>
                     </div>
 
+                    <!-- Recalculate Incentive Button -->
+                    <div class="mb-3 p-3" style="background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div>
+                                <i class="fa-solid fa-calculator text-warning me-2"></i>
+                                <strong>Allowance 인센티브 재계산</strong>
+                                <span class="text-muted ms-2">— Allowance 적용 후 인센티브 금액이 0인 직원을 재계산합니다.</span>
+                            </div>
+                            <button class="btn btn-warning btn-sm" onclick="AdminAllowances.recalcAllowanceIncentives()" id="btn-recalc-allowance">
+                                <i class="fa-solid fa-sync-alt me-1"></i> 인센티브 재계산
+                            </button>
+                        </div>
+                        <div id="recalc-result" style="display: none; margin-top: 10px;"></div>
+                    </div>
+
                     <!-- Month/Year Selector -->
                     <div class="row mb-3">
                         <div class="col-md-3">
