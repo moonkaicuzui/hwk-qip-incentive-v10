@@ -99,7 +99,7 @@ def build_notification_html(title, new_status, comment, changed_by):
 </html>"""
 
 
-def send_notification(to_email, subject, html_body, smtp_user, smtp_password, attachment=None):
+def send_notification(to_email, subject, html_body, smtp_user, smtp_password, attachment=None, attachments=None):
     try:
         ctx = ssl.create_default_context()
         server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=30, context=ctx)
@@ -117,17 +117,24 @@ def send_notification(to_email, subject, html_body, smtp_user, smtp_password, at
         msg["To"] = to_email
         msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-        # Attach file from base64 data if provided
+        # Build list of attachments to process
+        att_list = []
         if attachment:
-            filename = attachment.get("filename", "attachment")
-            file_data = base64.b64decode(attachment.get("data", ""))
-            content_type = attachment.get("contentType", "application/octet-stream")
+            att_list.append(attachment)
+        if attachments and isinstance(attachments, list):
+            att_list.extend(attachments)
+
+        for att in att_list:
+            filename = att.get("filename", "attachment")
+            file_data = base64.b64decode(att.get("content", att.get("data", "")))
+            content_type = att.get("contentType", "application/octet-stream")
             maintype, subtype = content_type.split("/", 1) if "/" in content_type else ("application", "octet-stream")
             part = MIMEBase(maintype, subtype)
             part.set_payload(file_data)
             encoders.encode_base64(part)
             part.add_header("Content-Disposition", "attachment", filename=filename)
             msg.attach(part)
+            print(f"    Attached: {filename}")
 
         server.mail(FROM_EMAIL)
         server.rcpt(to_email)
@@ -201,11 +208,12 @@ def main():
             subject = f"[QIP Feedback] Your issue '{title}' has been {new_status}"
             html = build_notification_html(title, new_status, comment, changed_by)
 
-        # Check for attachment
+        # Check for attachment(s) — supports both singular and plural
         attachment = n.get("attachment", None)
+        attachments = n.get("attachments", None)
 
         print(f"\n  Sending to {to_email}...")
-        if send_notification(to_email, subject, html, smtp_user, smtp_password, attachment=attachment):
+        if send_notification(to_email, subject, html, smtp_user, smtp_password, attachment=attachment, attachments=attachments):
             db.collection("pendingNotifications").document(n["_id"]).update({
                 "sent": True, "sentAt": datetime.utcnow().isoformat() + "Z"
             })
