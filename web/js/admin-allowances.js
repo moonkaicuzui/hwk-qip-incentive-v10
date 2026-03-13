@@ -566,7 +566,7 @@ var AdminAllowances = {
 
         if (!confirm(t('admin.allowances.confirmApply'))) return;
 
-        this._setLoading(true, 'Allowance 적용 중...');
+        this._setLoading(true, this._t('admin.allowances.applying'));
 
         try {
             var db = this._db();
@@ -575,7 +575,7 @@ var AdminAllowances = {
             var empNo = String(emp.emp_no || emp['Employee No'] || '');
             var preview = this._calculateOverride(emp, selectedConditions);
 
-            this._updateProgress('Step 1/3: Allowance 문서 생성...');
+            this._updateProgress('Step 1/3: ' + this._t('admin.allowances.stepCreateDoc'));
 
             // Build original values snapshot
             var originalValues = {};
@@ -622,10 +622,10 @@ var AdminAllowances = {
             await db.collection('allowances').doc(monthYear).collection('items').add(allowanceData);
 
             // 2. Update employee data + recalculate summary (single read)
-            this._updateProgress('Step 2/3: 직원 데이터 업데이트...');
+            this._updateProgress('Step 2/3: ' + this._t('admin.allowances.stepUpdateEmployee'));
             await this._updateEmployeeAndSummary(monthYear, empNo, selectedConditions, preview.overridden);
 
-            this._updateProgress('Step 3/3: 완료 처리...');
+            this._updateProgress('Step 3/3: ' + this._t('admin.allowances.stepFinalize'));
 
             // Clear session cache for this month
             this._clearCache(monthYear);
@@ -689,7 +689,7 @@ var AdminAllowances = {
         }
 
         // Recalculate summary using the same employee data (no second read)
-        this._updateProgress('Step 2/3: 대시보드 요약 재계산...');
+        this._updateProgress('Step 2/3: ' + this._t('admin.allowances.stepRecalcSummary'));
         var sumDoc = await db.collection('dashboard_summary').doc(monthYear).get();
         if (sumDoc.exists) {
             var summary = sumDoc.data();
@@ -719,7 +719,7 @@ var AdminAllowances = {
 
         if (!confirm(t('admin.allowances.confirmRevoke'))) return;
 
-        this._setLoading(true, 'Allowance 철회 중...');
+        this._setLoading(true, this._t('admin.allowances.revoking'));
 
         try {
             var db = this._db();
@@ -727,7 +727,7 @@ var AdminAllowances = {
             var monthYear = this._getMonthYear();
 
             // 1. Get the allowance record
-            this._updateProgress('Step 1/3: Allowance 문서 조회...');
+            this._updateProgress('Step 1/3: ' + this._t('admin.allowances.stepQueryDoc'));
             var allowanceRef = db.collection('allowances').doc(monthYear).collection('items').doc(docId);
             var allowanceDoc = await allowanceRef.get();
             if (!allowanceDoc.exists) { this._setLoading(false); return; }
@@ -735,11 +735,11 @@ var AdminAllowances = {
             var allowanceData = allowanceDoc.data();
 
             // 2. Restore employee data + recalculate summary (single read)
-            this._updateProgress('Step 2/3: 직원 데이터 복원...');
+            this._updateProgress('Step 2/3: ' + this._t('admin.allowances.stepRestoreData'));
             await this._restoreEmployeeAndSummary(monthYear, allowanceData);
 
             // 3. Update allowance status
-            this._updateProgress('Step 3/3: 상태 업데이트...');
+            this._updateProgress('Step 3/3: ' + this._t('admin.allowances.stepUpdateStatus'));
             await allowanceRef.update({
                 status: 'REVOKED',
                 revokedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -803,7 +803,7 @@ var AdminAllowances = {
         await docRef.set(data);
 
         // Recalculate summary using the same employee data
-        this._updateProgress('Step 2/3: 대시보드 요약 재계산...');
+        this._updateProgress('Step 2/3: ' + this._t('admin.allowances.stepRecalcSummary'));
         var sumDoc = await db.collection('dashboard_summary').doc(monthYear).get();
         if (sumDoc.exists) {
             var summary = sumDoc.data();
@@ -924,8 +924,8 @@ var AdminAllowances = {
     recalcAllowanceIncentives: async function () {
         var btn = document.getElementById('btn-recalc-allowance');
         var resultEl = document.getElementById('recalc-result');
-        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> 재계산 중...'; }
-        if (resultEl) { resultEl.style.display = 'block'; resultEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> 데이터 로드 중...'; }
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> ' + this._t('admin.allowances.recalculating'); }
+        if (resultEl) { resultEl.style.display = 'block'; resultEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> ' + this._t('admin.allowances.loadingData'); }
 
         try {
             var db = this._db();
@@ -975,12 +975,12 @@ var AdminAllowances = {
             }
 
             if (updated.length === 0) {
-                resultEl.innerHTML = '<div class="alert alert-info mb-0"><i class="fa-solid fa-check-circle me-1"></i> 재계산 대상이 없습니다. 모든 Allowance 직원의 인센티브가 정상입니다.</div>';
+                resultEl.innerHTML = '<div class="alert alert-info mb-0"><i class="fa-solid fa-check-circle me-1"></i> ' + this._t('admin.allowances.recalcNoTarget') + '</div>';
                 return;
             }
 
             // 3. Save updated employee data
-            if (resultEl) resultEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Firestore 업데이트 중... (' + updated.length + '명)';
+            if (resultEl) resultEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> ' + this._t('admin.allowances.updatingFirestore') + ' (' + updated.length + this._t('admin.allowances.personSuffix') + ')';
             data.employees = employees;
             data.meta.updated_at = new Date().toISOString();
             await docRef.set(data);
@@ -1007,9 +1007,9 @@ var AdminAllowances = {
 
             // 6. Show results
             var html = '<div class="alert alert-success mb-0">';
-            html += '<strong><i class="fa-solid fa-check-circle me-1"></i> ' + updated.length + '명 인센티브 재계산 완료</strong>';
+            html += '<strong><i class="fa-solid fa-check-circle me-1"></i> ' + updated.length + this._t('admin.allowances.personSuffix') + ' ' + this._t('admin.allowances.recalcComplete') + '</strong>';
             html += '<table class="table table-sm table-bordered mt-2 mb-0" style="font-size: 13px;">';
-            html += '<thead><tr><th>사번</th><th>이름</th><th>연속개월</th><th>인센티브</th></tr></thead><tbody>';
+            html += '<thead><tr><th>' + this._t('admin.allowances.colEmpNo') + '</th><th>' + this._t('admin.allowances.colName') + '</th><th>' + this._t('admin.allowances.colContMonths') + '</th><th>' + this._t('admin.allowances.colIncentive') + '</th></tr></thead><tbody>';
             for (var u = 0; u < updated.length; u++) {
                 var r = updated[u];
                 html += '<tr><td>' + this._escapeHtml(r.empNo) + '</td>';
@@ -1024,7 +1024,7 @@ var AdminAllowances = {
             console.error('[AdminAllowances] recalcAllowanceIncentives error:', error);
             if (resultEl) resultEl.innerHTML = '<div class="alert alert-danger mb-0">Error: ' + this._escapeHtml(error.message) + '</div>';
         } finally {
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-sync-alt me-1"></i> 인센티브 재계산'; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-sync-alt me-1"></i> ' + this._t('admin.allowances.recalcBtn'); }
         }
     }
 };

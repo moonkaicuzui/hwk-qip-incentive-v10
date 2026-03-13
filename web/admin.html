@@ -1454,11 +1454,11 @@
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                             <div>
                                 <i class="fa-solid fa-calculator text-warning me-2"></i>
-                                <strong>Allowance 인센티브 재계산</strong>
-                                <span class="text-muted ms-2">— Allowance 적용 후 인센티브 금액이 0인 직원을 재계산합니다.</span>
+                                <strong data-i18n="admin.allowances.recalcTitle">Allowance 인센티브 재계산</strong>
+                                <span class="text-muted ms-2">— <span data-i18n="admin.allowances.recalcDesc">Allowance 적용 후 인센티브 금액이 0인 직원을 재계산합니다.</span></span>
                             </div>
                             <button class="btn btn-warning btn-sm" onclick="AdminAllowances.recalcAllowanceIncentives()" id="btn-recalc-allowance">
-                                <i class="fa-solid fa-sync-alt me-1"></i> 인센티브 재계산
+                                <i class="fa-solid fa-sync-alt me-1"></i> <span data-i18n="admin.allowances.recalcBtn">인센티브 재계산</span>
                             </button>
                         </div>
                         <div id="recalc-result" style="display: none; margin-top: 10px;"></div>
