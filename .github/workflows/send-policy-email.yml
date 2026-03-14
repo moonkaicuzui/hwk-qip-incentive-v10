@@ -1,0 +1,32 @@
+name: Send Policy V3 Email
+
+on:
+  workflow_dispatch:
+    inputs:
+      to_email:
+        description: 'Recipient email'
+        required: true
+        default: 'hwk_qa@hsvina.com'
+
+jobs:
+  send-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install python-docx firebase-admin google-auth
+
+      - name: Setup Firebase credentials
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-sa.json
+
+      - name: Generate & Send Policy Email
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
+        run: cd scripts && python send_policy_email.py --to "${{ github.event.inputs.to_email }}"

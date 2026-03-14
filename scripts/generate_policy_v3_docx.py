@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Generate QIP Incentive Policy Document Version 3
-- Follows V2 document structure/format exactly
+Generate QIP Incentive Policy Document Version 3 (English)
+- Comprehensive employee-friendly guide with detailed examples
+- Screenshots embedded from policy_screenshots/ directory
 - 100% aligned with V10 system code
 - Validity: March 2026 ~ February 2027
 """
@@ -13,6 +14,11 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn, nsdecls
 from docx.oxml import parse_xml
 import os
+
+# ── Path Configuration ──
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(SCRIPT_DIR)
+SCREENSHOT_DIR = os.path.join(PROJECT_DIR, 'policy_screenshots')
 
 
 def set_cell_shading(cell, color):
@@ -65,6 +71,45 @@ def bold_para(doc, bold_text, normal_text=""):
     if normal_text:
         p.add_run(normal_text)
     return p
+
+
+def add_screenshot(doc, filename, caption=None, width=Inches(6)):
+    """Add a screenshot image with optional caption."""
+    img_path = os.path.join(SCREENSHOT_DIR, filename)
+    if os.path.exists(img_path):
+        doc.add_picture(img_path, width=width)
+        if caption:
+            p = doc.add_paragraph()
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            run = p.add_run(caption)
+            run.italic = True
+            run.font.size = Pt(9)
+            run.font.color.rgb = RGBColor(89, 89, 89)
+    else:
+        p = doc.add_paragraph()
+        run = p.add_run(f"[Screenshot not found: {filename}]")
+        run.italic = True
+        run.font.color.rgb = RGBColor(200, 0, 0)
+
+
+def add_example_box(doc, title, lines):
+    """Add a visually distinct example block using a single-cell table with shading."""
+    tbl = doc.add_table(rows=1, cols=1)
+    tbl.style = 'Table Grid'
+    cell = tbl.rows[0].cells[0]
+    set_cell_shading(cell, "E8F0FE")
+    # Title
+    p = cell.paragraphs[0]
+    run = p.add_run(title)
+    run.bold = True
+    run.font.size = Pt(9)
+    run.font.color.rgb = RGBColor(47, 84, 150)
+    # Content lines
+    for line in lines:
+        p = cell.add_paragraph()
+        run = p.add_run(line)
+        run.font.size = Pt(9)
+    doc.add_paragraph()  # spacing
 
 
 def create_policy():
@@ -135,10 +180,12 @@ def create_policy():
         ("Section 6.", " Incentive Amount Calculation Method — Program 2"),
         ("Section 7.", " Summary of Exceptional Clauses"),
         ("Section 8.", " System Architecture & Dashboard (V10)"),
-        ("Appendix 1:", " 10 Incentive Conditions — Detailed Description"),
+        ("Section 9.", " Quick Reference & FAQ"),
+        ("Appendix 1:", " 10 Incentive Conditions — Detailed Guide with Examples"),
         ("Appendix 2:", " Position-Condition Application Matrix"),
         ("Appendix 3:", " HWK QIP Talent Pool Status"),
         ("Appendix 4:", " QIP Team R&R Map"),
+        ("Appendix 5:", " Firestore Data Collections"),
     ]
     for bold_part, normal_part in toc_items:
         p = doc.add_paragraph(style='List Number')
@@ -179,6 +226,16 @@ def create_policy():
     bullet(doc, "Strengthen collaboration and internal communication: By fostering interdepartmental collaboration and "
            "sharing of best practices, we aim to support overall organizational performance and progress toward quality targets.")
 
+    doc.add_heading("HOW TO READ THIS DOCUMENT", level=2)
+    doc.add_paragraph(
+        "If you are a new employee, we recommend reading this document in the following order:"
+    )
+    bullet(doc, "First, read Section 2 to understand the overall structure (3 types, 2 programs).")
+    bullet(doc, "Then, read Section 3 to find out which type YOU belong to (Type-1, Type-2, or Type-3).")
+    bullet(doc, "Next, read Appendix 1 carefully — it explains each of the 10 conditions in detail with real examples.")
+    bullet(doc, "Finally, read Section 5 to understand how your incentive amount is calculated.")
+    bullet(doc, "Section 8 shows you how to use the online dashboard to check your status.")
+
     doc.add_page_break()
 
     # ══════════════════════════════════════════
@@ -200,26 +257,31 @@ def create_policy():
     doc.add_paragraph(
         "For Type-1 QIP team members, performance is evaluated based on up to 10 conditions across four categories:"
     )
-    bullet(doc, "Attendance conditions (C1–C4): ", bold_prefix=None)
-    bullet(doc, "Attendance Rate, Unapproved Absence, Actual Working Days, Minimum Working Days")
-    bullet(doc, "AQL conditions (C5–C8): Personal AQL failure, personal consecutive failures, team/area consecutive failures, area reject rate")
-    bullet(doc, "5PRS conditions (C9–C10): 5PRS pass rate, 5PRS inspection quantity")
+    bullet(doc, "Attendance conditions (C1-C4): Attendance Rate, Unapproved Absence, Actual Working Days, Minimum Working Days")
+    bullet(doc, "AQL conditions (C5-C8): Personal AQL failure, personal consecutive failures, team/area consecutive failures, area reject rate")
+    bullet(doc, "5PRS conditions (C9-C10): 5PRS pass rate, 5PRS inspection quantity")
 
     doc.add_paragraph(
         "IMPORTANT: The conditions that apply differ by position within Type-1. Not all 10 conditions apply to "
         "every position. However, 100% of applicable conditions must be met for an employee to receive any incentive. "
-        "The monthly incentive amount is calculated based on each member's continuous performance months using a "
-        "progressive incentive table."
+        "Even if you fail just ONE condition, your incentive for that month is ZERO."
     )
+
+    add_example_box(doc, "Example: Why 100% Pass Rate Matters", [
+        "Nguyen is an Assembly Inspector. She passes 9 out of 10 conditions perfectly.",
+        "But she had 1 AQL failure (C5 = FAIL).",
+        "Result: Nguyen receives 0 VND incentive this month.",
+        "All 10 conditions must be PASS for her to receive any payment.",
+    ])
 
     doc.add_heading("Type-2 Evaluation (Indirect Assembly QIP)", level=2)
     doc.add_paragraph(
-        "For Type-2 QIP team members, performance is evaluated based on attendance conditions only (C1–C4):"
+        "For Type-2 QIP team members, performance is evaluated based on attendance conditions only (C1-C4):"
     )
-    bullet(doc, "Attendance Rate ≥ 88%")
-    bullet(doc, "Unapproved Absence ≤ 2 days")
+    bullet(doc, "Attendance Rate >= 88%")
+    bullet(doc, "Unapproved Absence <= 2 days")
     bullet(doc, "Actual Working Days > 0")
-    bullet(doc, "Minimum Working Days ≥ 12 days")
+    bullet(doc, "Minimum Working Days >= 12 days")
     doc.add_paragraph(
         "The monthly incentive amount is determined by the average incentive of corresponding Type-1 positions and "
         "position-based multipliers. For leadership positions (Group Leader and above), the amount is calculated as "
@@ -304,20 +366,23 @@ def create_policy():
     terms = [
         ["QIP", "Quality Improvement Program — HWK's quality-focused employee incentive system"],
         ["5Q", "Five Quality targets — HWK's strategic quality performance goals"],
-        ["AQL", "Acceptable Quality Level — international sampling inspection standard"],
-        ["5PRS", "5 Pairs Random Sampling — internal quality inspection method checking 5 random pairs"],
+        ["AQL", "Acceptable Quality Level — international sampling inspection standard. A random sample of "
+                "shoes is checked; if defects exceed a limit, the entire batch fails."],
+        ["5PRS", "5 Pairs Random Sampling — internal quality inspection method. 5 random pairs are checked "
+                 "from each production order to verify quality."],
         ["CFA", "Certified Final Auditor — adidas-approved AQL inspection certificate"],
-        ["PO", "Production Order — individual manufacturing order unit"],
-        ["C1–C10", "The 10 incentive conditions evaluated by the system"],
-        ["TYPE-1", "Direct quality workers with full condition evaluation"],
-        ["TYPE-2", "Indirect/management staff with attendance-only evaluation"],
+        ["PO", "Production Order — individual manufacturing order unit (a batch of shoes)"],
+        ["C1-C10", "The 10 incentive conditions evaluated by the system (see Appendix 1 for details)"],
+        ["TYPE-1", "Direct quality workers with full condition evaluation (up to 10 conditions)"],
+        ["TYPE-2", "Indirect/management staff with attendance-only evaluation (4 conditions)"],
         ["TYPE-3", "New employees (< 3 months) excluded from incentive"],
-        ["Progressive Table", "Incentive amount schedule increasing with consecutive qualifying months (150K–1M VND)"],
+        ["AR1", "Absence Record 1 — Unapproved/unauthorized absence (COUNTS against you)"],
+        ["AR2", "Absence Record 2 — Approved sick leave (does NOT count against you)"],
+        ["Progressive Table", "Incentive amount schedule increasing with consecutive qualifying months (150K-1M VND)"],
         ["Consecutive Months", "Number of uninterrupted months where all applicable conditions were met"],
         ["Allowance", "Exception override — manager-approved condition bypass for justified cases"],
         ["Firestore", "Google Cloud NoSQL database used for V10 data storage"],
         ["RBAC", "Role-Based Access Control — admin vs regular user permission system"],
-        ["SMTP", "Simple Mail Transfer Protocol — email delivery system (mail.hsvina.com)"],
     ]
     for t in terms:
         add_row(tbl, t)
@@ -343,16 +408,16 @@ def create_policy():
     make_header_row(tbl, ["#", "Condition", "Category", "Default Threshold", "Description"])
 
     conditions = [
-        ["C1", "Attendance Rate", "Attendance", "≥ 88%", "Attendance rate with approved-leave adjustment"],
-        ["C2", "Unapproved Absence", "Attendance", "≤ 2 days", "AR1 unapproved absence days within limit"],
+        ["C1", "Attendance Rate", "Attendance", ">= 88%", "Attendance rate after adjusting for approved leave"],
+        ["C2", "Unapproved Absence", "Attendance", "<= 2 days", "AR1 unapproved absence days only"],
         ["C3", "Actual Working Days", "Attendance", "> 0 days", "At least 1 actual working day in the month"],
-        ["C4", "Minimum Working Days", "Attendance", "≥ 12 days", "Only enforced after 20th of month (interim exempt)"],
-        ["C5", "Personal AQL Failure", "AQL", "= 0 failures", "No personal AQL failures in current month"],
-        ["C6", "Personal AQL Consecutive", "AQL", "No consecutive", "2025: 3+ months, 2026+: 2+ months consecutive"],
-        ["C7", "Team/Area AQL Consecutive", "AQL", "No consecutive", "Same year-dependent threshold as C6"],
+        ["C4", "Minimum Working Days", "Attendance", ">= 12 days", "Must work at least 12 days in the month"],
+        ["C5", "Personal AQL Failure", "AQL", "= 0 failures", "Zero personal AQL failures in current month"],
+        ["C6", "Personal AQL Consecutive", "AQL", "No consecutive", "2025: 3+ months, 2026+: 2+ months"],
+        ["C7", "Team/Area AQL Consecutive", "AQL", "No consecutive", "Same year-dependent rule as C6"],
         ["C8", "Area Reject Rate", "AQL", "< 3.0%", "Reject rate for assigned area below threshold"],
-        ["C9", "5PRS Pass Rate", "5PRS", "≥ 95%", "5PRS quality inspection pass rate"],
-        ["C10", "5PRS Inspection Qty", "5PRS", "≥ 100 pairs", "Minimum 5PRS inspection quantity"],
+        ["C9", "5PRS Pass Rate", "5PRS", ">= 95%", "5PRS quality inspection pass rate"],
+        ["C10", "5PRS Inspection Qty", "5PRS", ">= 100 pairs", "Minimum 5PRS inspection quantity"],
     ]
     for c in conditions:
         add_row(tbl, c)
@@ -380,13 +445,13 @@ def create_policy():
     make_header_row(tbl, ["Position", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10"])
 
     matrix = [
-        ["ASSEMBLY INSPECTOR", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "—", "—", "Yes", "Yes"],
-        ["RQC ASSEMBLY INSPECTOR\n(A1B, from 2026.02)", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "—", "—", "Yes", "—"],
-        ["AQL INSPECTOR", "Yes", "Yes", "Yes", "Yes", "Yes", "—", "—", "—", "—", "—"],
-        ["LINE LEADER", "Yes", "Yes", "Yes", "Yes", "—", "—", "Yes", "—", "—", "—"],
-        ["AUDITOR & TRAINER", "Yes", "Yes", "Yes", "Yes", "—", "—", "Yes", "Yes", "—", "—"],
-        ["MODEL MASTER", "Yes", "Yes", "Yes", "Yes", "—", "—", "—", "Yes", "—", "—"],
-        ["Management (Group Leader,\nSupervisor, Manager, etc.)", "Yes", "Yes", "Yes", "Yes", "—", "—", "—", "—", "—", "—"],
+        ["ASSEMBLY INSPECTOR", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "-", "-", "Yes", "Yes"],
+        ["RQC ASSEMBLY INSPECTOR\n(A1B, from 2026.02)", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "-", "-", "Yes", "-"],
+        ["AQL INSPECTOR", "Yes", "Yes", "Yes", "Yes", "Yes", "-", "-", "-", "-", "-"],
+        ["LINE LEADER", "Yes", "Yes", "Yes", "Yes", "-", "-", "Yes", "-", "-", "-"],
+        ["AUDITOR & TRAINER", "Yes", "Yes", "Yes", "Yes", "-", "-", "Yes", "Yes", "-", "-"],
+        ["MODEL MASTER", "Yes", "Yes", "Yes", "Yes", "-", "-", "-", "Yes", "-", "-"],
+        ["Management (Group Leader,\nSupervisor, Manager, etc.)", "Yes", "Yes", "Yes", "Yes", "-", "-", "-", "-", "-", "-"],
     ]
     for m in matrix:
         add_row(tbl, m)
@@ -397,20 +462,115 @@ def create_policy():
               "C7 (Team/Area AQL) and C10 (5PRS Inspection Qty) are exempted because RQC inspectors perform "
               "process checking and reports, not line inspection. Before February 2026, A1B is treated as regular Assembly Inspector.")
 
-    doc.add_page_break()
-
-    # 5.3
-    doc.add_heading("5.3 Type-1 Progressive Incentive Table", level=2)
+    # 5.3 — Calculation Examples
+    doc.add_heading("5.3 Attendance Calculation — Step-by-Step Examples", level=2)
     doc.add_paragraph(
-        "For Type-1 members who pass all applicable conditions, the incentive amount increases with continuous "
-        "months of qualifying. The progressive table applies to Assembly Inspectors, Model Masters, and Audit & Training team members:"
+        "Understanding how attendance is calculated is critical. Here is the exact formula the system uses:"
     )
 
-    # Horizontal table like V2
+    bold_para(doc, "Attendance Rate Formula:")
+    bullet(doc, "Step 1: Calculate Absence Days = Total Working Days - Actual Working Days - Approved Leave Days")
+    bullet(doc, "Step 2: Calculate Absence Rate = (Absence Days / Total Working Days) x 100")
+    bullet(doc, "Step 3: Calculate Attendance Rate = 100 - Absence Rate")
+    doc.add_paragraph(
+        "Key point: Approved leave (annual leave, maternity leave, sick leave AR2, business trip, etc.) "
+        "does NOT count as absence. Only AR1 (unauthorized absence) counts as absence."
+    )
+
+    add_example_box(doc, "Example 1: Employee PASSES Attendance (C1)", [
+        "Tran works in February 2026. The month has 27 total working days.",
+        "- She actually worked 23 days",
+        "- She took 2 days of approved annual leave (Phep nam)",
+        "",
+        "Step 1: Absence Days = 27 - 23 - 2 = 2 days",
+        "Step 2: Absence Rate = (2 / 27) x 100 = 7.4%",
+        "Step 3: Attendance Rate = 100 - 7.4 = 92.6%",
+        "",
+        "Result: 92.6% >= 88% threshold --> C1 = PASS",
+    ])
+
+    add_example_box(doc, "Example 2: Employee FAILS Attendance (C1)", [
+        "Le works in a month with 26 total working days.",
+        "- He actually worked 18 days",
+        "- He took 1 day of approved sick leave (AR2)",
+        "- He was absent 7 days (some approved, some not)",
+        "",
+        "Step 1: Absence Days = 26 - 18 - 1 = 7 days",
+        "Step 2: Absence Rate = (7 / 26) x 100 = 26.9%",
+        "Step 3: Attendance Rate = 100 - 26.9 = 73.1%",
+        "",
+        "Result: 73.1% < 88% threshold --> C1 = FAIL --> No incentive this month",
+    ])
+
+    add_example_box(doc, "Example 3: Maternity Leave Does NOT Hurt You", [
+        "Hoa takes 5 days of maternity leave (Sinh thuong 1 con) in a 27-day month.",
+        "She works the other 22 days.",
+        "",
+        "Step 1: Absence Days = 27 - 22 - 5 = 0 days",
+        "Step 2: Absence Rate = (0 / 27) x 100 = 0%",
+        "Step 3: Attendance Rate = 100 - 0 = 100%",
+        "",
+        "Result: 100% >= 88% --> C1 = PASS",
+        "Maternity leave is approved leave, so it does not count as absence.",
+    ])
+
+    doc.add_paragraph()
+
+    # Absence Classification Table
+    doc.add_heading("5.3.1 Absence Classification — What Counts and What Doesn't", level=3)
+    doc.add_paragraph(
+        "This is one of the most important things to understand. Not all types of leave are treated the same:"
+    )
+
+    tbl = doc.add_table(rows=1, cols=3)
+    tbl.style = 'Table Grid'
+    make_header_row(tbl, ["Leave Type (Vietnamese)", "English Translation", "Counts as Absence?"], bg="2F5496")
+
+    # Approved leaves (NOT counted)
+    approved_leaves = [
+        ["Sinh thuong 1 con", "Maternity Leave", "NO (Approved)"],
+        ["Phep nam", "Annual Leave", "NO (Approved)"],
+        ["Vang co phep", "Approved Absence", "NO (Approved)"],
+        ["Duong suc sinh thuong", "Postpartum Rest", "NO (Approved)"],
+        ["Kham thai binh thuong", "Prenatal Checkup", "NO (Approved)"],
+        ["Con duoi 3 tuoi bi benh", "Childcare Leave (child < 3 years)", "NO (Approved)"],
+        ["AR2 - om ngan ngay", "Short Sick Leave (AR2)", "NO (Approved)"],
+        ["Di cong tac", "Business Trip", "NO (Approved)"],
+        ["Nghia vu quan su", "Military Service", "NO (Approved)"],
+        ["Di lam khong quet the", "Card Not Swiped (worked but forgot card)", "NO (Approved)"],
+        ["Cong nhan vien moi", "New Employee Exception", "NO (Approved)"],
+        ["Nghi bu", "Compensatory Leave", "NO (Approved)"],
+    ]
+    for lv in approved_leaves:
+        add_row(tbl, lv, bg_color="E8F5E9")  # green tint
+
+    # Unapproved (COUNTED)
+    unapproved_leaves = [
+        ["AR1 - Vang khong phep", "Unauthorized Absence", "YES (Unapproved - AR1)"],
+        ["AR1 - Gui thu", "Written Notice Absence", "YES (Unapproved - AR1)"],
+    ]
+    for lv in unapproved_leaves:
+        add_row(tbl, lv, bg_color="FFEBEE")  # red tint
+
+    doc.add_paragraph()
+    bold_para(doc, "Simple rule: ",
+              "If the leave type starts with \"AR1\", it COUNTS as absence and hurts your attendance rate. "
+              "Everything else is approved leave and does NOT count against you.")
+
+    doc.add_page_break()
+
+    # 5.4 — Progressive Table
+    doc.add_heading("5.4 Type-1 Progressive Incentive Table", level=2)
+    doc.add_paragraph(
+        "For Type-1 members who pass all applicable conditions, the incentive amount increases with continuous "
+        "months of qualifying. The longer your streak of passing all conditions, the more you earn:"
+    )
+
+    # Horizontal table
     tbl = doc.add_table(rows=2, cols=14)
     tbl.style = 'Table Grid'
-    headers = ["Months", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12–15"]
-    amounts = ["VND (×1,000)", "150", "250", "300", "350", "400", "450", "500", "650", "750", "850", "950", "1,000"]
+    headers = ["Months", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12-15"]
+    amounts = ["VND (x1,000)", "150", "250", "300", "350", "400", "450", "500", "650", "750", "850", "950", "1,000"]
 
     for i, text in enumerate(headers):
         cell = tbl.rows[0].cells[i]
@@ -436,21 +596,32 @@ def create_policy():
     bullet(doc, "Carry over: Continuous months carry over from the previous month upon meeting conditions")
     bullet(doc, "Maximum tracking: 15 months (amounts remain at 1,000,000 VND from month 12 onwards)")
 
-    # 5.4
-    doc.add_heading("5.4 AQL Inspector — 3-Part Incentive Calculation", level=2)
+    add_example_box(doc, "Example: How the Progressive Table Works", [
+        "Month 1 (Jan): All conditions PASS -> Consecutive month = 1 -> 150,000 VND",
+        "Month 2 (Feb): All conditions PASS -> Consecutive month = 2 -> 250,000 VND",
+        "Month 3 (Mar): All conditions PASS -> Consecutive month = 3 -> 300,000 VND",
+        "Month 4 (Apr): C5 FAIL (AQL failure) -> Consecutive months RESET to 0 -> 0 VND",
+        "Month 5 (May): All conditions PASS -> Consecutive month = 1 (restart!) -> 150,000 VND",
+        "",
+        "As you can see, one failure resets your streak back to month 1.",
+        "This is why consistent quality performance is so important!",
+    ])
+
+    # 5.5 — AQL Inspector 3-Part
+    doc.add_heading("5.5 AQL Inspector — 3-Part Incentive Calculation", level=2)
     doc.add_paragraph(
         "AQL Inspectors receive a special 3-part incentive calculation. The final monthly amount is the sum of all three parts:"
     )
 
     bold_para(doc, "Part 1: AQL Inspection Evaluation Result")
     doc.add_paragraph(
-        "Based on the progressive table (same as Section 5.3 above). Requires rejection rate by adidas/T1QM/3rd Party "
+        "Based on the progressive table (same as Section 5.4 above). Requires rejection rate by adidas/T1QM/3rd Party "
         "inspectors < 3%."
     )
 
     bold_para(doc, "Part 2: CFA Certificate Incentive")
     doc.add_paragraph(
-        "AQL Inspectors with a valid adidas-approved AQL certificate receive a fixed monthly amount of 700,000 VND. "
+        "AQL Inspectors with a valid adidas-approved AQL certificate (CFA) receive a fixed monthly amount of 700,000 VND. "
         "This is paid every month as long as the certificate remains valid and the inspector meets all applicable conditions."
     )
 
@@ -460,11 +631,10 @@ def create_policy():
         "preventing HWK complaints is provided. This amount increases progressively starting from month 4:"
     )
 
-    # Horizontal table like V2
     tbl = doc.add_table(rows=2, cols=6)
     tbl.style = 'Table Grid'
-    headers2 = ["Months", "1–3", "4–6", "7–9", "10–12", "13–15"]
-    amounts2 = ["VND (×1,000)", "0", "300", "500", "700", "900"]
+    headers2 = ["Months", "1-3", "4-6", "7-9", "10-12", "13-15"]
+    amounts2 = ["VND (x1,000)", "0", "300", "500", "700", "900"]
     for i, text in enumerate(headers2):
         cell = tbl.rows[0].cells[i]
         p = cell.paragraphs[0]
@@ -482,34 +652,59 @@ def create_policy():
             run.bold = True
 
     doc.add_paragraph()
-    doc.add_paragraph("Example: An AQL Inspector with CFA certificate at 12 continuous months:")
-    bullet(doc, "Part 1 (Progressive): 1,000,000 VND")
-    bullet(doc, "Part 2 (CFA Certificate): 700,000 VND")
-    bullet(doc, "Part 3 (HWK Prevention): 700,000 VND")
-    bullet(doc, "Total: 2,400,000 VND")
+
+    add_example_box(doc, "Example: AQL Inspector Total Incentive at Different Stages", [
+        "--- At Month 3 (with CFA certificate): ---",
+        "  Part 1 (Progressive): 300,000 VND",
+        "  Part 2 (CFA Certificate): 700,000 VND",
+        "  Part 3 (HWK Prevention): 0 VND (months 1-3 = 0)",
+        "  Total: 1,000,000 VND",
+        "",
+        "--- At Month 7 (with CFA certificate): ---",
+        "  Part 1 (Progressive): 500,000 VND",
+        "  Part 2 (CFA Certificate): 700,000 VND",
+        "  Part 3 (HWK Prevention): 500,000 VND",
+        "  Total: 1,700,000 VND",
+        "",
+        "--- At Month 12 (with CFA certificate): ---",
+        "  Part 1 (Progressive): 1,000,000 VND",
+        "  Part 2 (CFA Certificate): 700,000 VND",
+        "  Part 3 (HWK Prevention): 700,000 VND",
+        "  Total: 2,400,000 VND",
+    ])
 
     doc.add_page_break()
 
-    # 5.5
-    doc.add_heading("5.5 Line Leader Incentive Calculation (Type-1)", level=2)
+    # 5.6
+    doc.add_heading("5.6 Line Leader Incentive Calculation (Type-1)", level=2)
     doc.add_paragraph(
         "Line Leaders in Type-1 receive incentive calculated based on their subordinate team's performance:"
     )
-    bold_para(doc, "Formula: ", "Subordinate Total Incentive × 12%")
+    bold_para(doc, "Formula: ", "Subordinate Total Incentive x 12%")
     doc.add_paragraph(
         "The system uses a subordinate mapping to identify all team members under each Line Leader. "
         "Only subordinates who received incentive (> 0 VND) are counted in the total. "
         "Line Leaders must also pass all applicable conditions (C1, C2, C3, C4, C7) to receive the incentive."
     )
-    doc.add_paragraph("Line Leader incentive exclusion cases:")
-    bullet(doc, "If any inspector in the Line Leader's team has \"at least 1 case of AQL Fail\" continuously for "
-           "more than the consecutive failure threshold without receiving quality incentive during that period, "
-           "the responsible Line Leader will not receive monthly incentive.")
 
-    # 5.6
-    doc.add_heading("5.6 Type-2 Incentive Calculation", level=2)
+    add_example_box(doc, "Example: Line Leader Incentive", [
+        "Line Leader Minh has 8 inspectors in his team.",
+        "- 6 inspectors passed all conditions and received incentive:",
+        "  300,000 + 250,000 + 400,000 + 150,000 + 500,000 + 350,000 = 1,950,000 VND total",
+        "- 2 inspectors failed and received 0 VND",
+        "",
+        "Minh's incentive = 1,950,000 x 12% = 234,000 VND",
+        "(Only if Minh himself passes C1, C2, C3, C4, and C7)",
+    ])
+
+    doc.add_paragraph("Line Leader incentive exclusion cases:")
+    bullet(doc, "If any inspector in the Line Leader's team has consecutive AQL failures exceeding the threshold "
+           "(C7), the Line Leader will not receive monthly incentive.")
+
+    # 5.7
+    doc.add_heading("5.7 Type-2 Incentive Calculation", level=2)
     doc.add_paragraph(
-        "Type-2 members must meet attendance conditions (C1–C4) at 100% pass rate. The incentive amount is "
+        "Type-2 members must meet attendance conditions (C1-C4) at 100% pass rate. The incentive amount is "
         "determined based on the average incentive of corresponding Type-1 positions."
     )
 
@@ -536,8 +731,15 @@ def create_policy():
     for m in mappings:
         add_row(tbl, m)
 
-    # 5.7
-    doc.add_heading("5.7 Type-2 Leadership Position Multipliers", level=2)
+    add_example_box(doc, "Example: Type-2 Inspector Incentive", [
+        "Loan is a Cutting Inspector (Type-2). She passes all 4 attendance conditions.",
+        "This month, the average incentive of Type-1 Assembly Inspectors who received incentive is 320,000 VND.",
+        "",
+        "Loan's incentive = 320,000 VND (same as the Assembly Inspector average)",
+    ])
+
+    # 5.8
+    doc.add_heading("5.8 Type-2 Leadership Position Multipliers", level=2)
     doc.add_paragraph(
         "For mid-to-leadership management positions in Type-2, the incentive is calculated as the TYPE-1 LINE LEADER "
         "receiving average multiplied by a position-specific multiplier:"
@@ -548,30 +750,33 @@ def create_policy():
     make_header_row(tbl, ["Position", "Multiplier", "Formula", "Description"])
 
     multipliers = [
-        ["GROUP LEADER", "2.0×", "LL Avg × 2.0", "Line Leader receiving average × 2.0"],
-        ["SUPERVISOR /\n(V) SUPERVISOR /\nA.SUPERVISOR", "2.5×", "LL Avg × 2.5", "Line Leader receiving average × 2.5"],
-        ["A.MANAGER", "3.0×", "LL Avg × 3.0", "Line Leader receiving average × 3.0"],
-        ["MANAGER", "3.5×", "LL Avg × 3.5", "Line Leader receiving average × 3.5"],
-        ["S.MANAGER", "4.0×", "LL Avg × 4.0", "Line Leader receiving average × 4.0"],
+        ["GROUP LEADER", "2.0x", "LL Avg x 2.0", "Line Leader receiving average x 2.0"],
+        ["SUPERVISOR /\n(V) SUPERVISOR /\nA.SUPERVISOR", "2.5x", "LL Avg x 2.5", "Line Leader receiving average x 2.5"],
+        ["A.MANAGER", "3.0x", "LL Avg x 3.0", "Line Leader receiving average x 3.0"],
+        ["MANAGER", "3.5x", "LL Avg x 3.5", "Line Leader receiving average x 3.5"],
+        ["S.MANAGER", "4.0x", "LL Avg x 4.0", "Line Leader receiving average x 4.0"],
     ]
     for m in multipliers:
         add_row(tbl, m)
 
     doc.add_paragraph()
-    doc.add_paragraph("Example calculation:")
-    bullet(doc, "If TYPE-1 Line Leaders receiving incentive average is 400,000 VND:")
-    bullet(doc, "Group Leader (Type-2) = 400,000 × 2.0 = 800,000 VND")
-    bullet(doc, "(V) Supervisor (Type-2) = 400,000 × 2.5 = 1,000,000 VND")
-    bullet(doc, "A.Manager (Type-2) = 400,000 × 3.0 = 1,200,000 VND")
-    bullet(doc, "Manager (Type-2) = 400,000 × 3.5 = 1,400,000 VND")
-    bullet(doc, "S.Manager (Type-2) = 400,000 × 4.0 = 1,600,000 VND")
+
+    add_example_box(doc, "Example: Leadership Multiplier Calculation", [
+        "This month, TYPE-1 Line Leaders who received incentive have an average of 400,000 VND.",
+        "",
+        "Group Leader (Type-2) = 400,000 x 2.0 = 800,000 VND",
+        "(V) Supervisor (Type-2) = 400,000 x 2.5 = 1,000,000 VND",
+        "A.Manager (Type-2) = 400,000 x 3.0 = 1,200,000 VND",
+        "Manager (Type-2) = 400,000 x 3.5 = 1,400,000 VND",
+        "S.Manager (Type-2) = 400,000 x 4.0 = 1,600,000 VND",
+    ])
 
     bold_para(doc, "Note: ",
               "\"LINE LEADER receiving average\" means the average of Type-1 Line Leader incentives for recipients only "
               "(employees with incentive > 0 VND). Employees with 0 VND are excluded from the average calculation.")
 
-    # 5.8
-    doc.add_heading("5.8 Audit & Training Team (Trainer) Incentive", level=2)
+    # 5.9
+    doc.add_heading("5.9 Audit & Training Team (Trainer) Incentive", level=2)
     doc.add_paragraph(
         "Each training staff member has their own area of responsibility for employee inspection and training."
     )
@@ -581,17 +786,17 @@ def create_policy():
     doc.add_paragraph(
         "Each Auditor/Trainer is assigned to specific building areas (A, B, C, D, or Repacking). "
         "The area mapping is maintained in the system configuration. "
-        "The progressive table (Section 5.3) applies for incentive amount calculation."
+        "The progressive table (Section 5.4) applies for incentive amount calculation."
     )
 
-    # 5.9
-    doc.add_heading("5.9 Model Master Team Incentive", level=2)
+    # 5.10
+    doc.add_heading("5.10 Model Master Team Incentive", level=2)
     doc.add_paragraph(
         "The Model Master team's incentive is based on the HWK AQL rejection percentage across all factories."
     )
     bullet(doc, "If the official HWK AQL rejection percentage across all factories (Area Reject Rate, C8) is below threshold: eligible.")
     bullet(doc, "Applicable conditions: C1, C2, C3, C4, C8 (Area Reject Rate)")
-    doc.add_paragraph("The progressive table (Section 5.3) applies for incentive amount calculation.")
+    doc.add_paragraph("The progressive table (Section 5.4) applies for incentive amount calculation.")
 
     doc.add_page_break()
 
@@ -628,7 +833,7 @@ def create_policy():
         ("Step 5: Confirmation of Talent Pool Membership", "The QIP manager requests approval from HWK HR team and HWK COO via the HS "
          "groupware system. Once approved, the updated talent pool information is integrated into the system configuration."),
         ("Step 6: Developing the HWK QIP Talent Pool", "The process is continuous with a new cycle every 6 months. "
-         "The goal is to certify at least 3–5% of total QIP team members as talented individuals over time. "
+         "The goal is to certify at least 3-5% of total QIP team members as talented individuals over time. "
          "Certification remains valid for 12 months."),
     ]
     for title, desc in steps:
@@ -664,7 +869,7 @@ def create_policy():
     bullet(doc, "For Trainers: If any inspector in the trainer's responsible building has consecutive AQL failures exceeding the threshold, the trainer will not receive monthly incentive.")
 
     bold_para(doc, "For Type-2 (Program 1):")
-    bullet(doc, "If attendance conditions (C1–C4) are not all met at 100%, monthly incentive is not provided.")
+    bullet(doc, "If attendance conditions (C1-C4) are not all met at 100%, monthly incentive is not provided.")
     bullet(doc, "If there is an adidas official claim or critical internal complaint and the responsibility belongs to the individual, monthly incentive is not provided.")
 
     bold_para(doc, "For Type-3 (Program 1):")
@@ -726,7 +931,7 @@ def create_policy():
     doc.add_page_break()
 
     # ══════════════════════════════════════════
-    # SECTION 8. SYSTEM ARCHITECTURE
+    # SECTION 8. SYSTEM ARCHITECTURE & DASHBOARD
     # ══════════════════════════════════════════
     doc.add_heading("SECTION 8. SYSTEM ARCHITECTURE & DASHBOARD (V10)", level=1)
 
@@ -735,8 +940,69 @@ def create_policy():
         "pipeline, from data collection to final payment determination. All employee data is loaded securely from "
         "Firestore after authentication, replacing the previous approach of embedding data directly in HTML files."
     )
+    doc.add_paragraph(
+        "You can access the dashboard at: https://moonkaicuzui.github.io/hwk-qip-incentive-v10/"
+    )
 
-    doc.add_heading("8.1 Data Flow & CI/CD Pipeline", level=2)
+    doc.add_heading("8.1 How to Use the Dashboard — Step by Step", level=2)
+
+    doc.add_paragraph(
+        "Here is a step-by-step guide to accessing and using the QIP Incentive Dashboard:"
+    )
+
+    bold_para(doc, "Step 1: Log In")
+    doc.add_paragraph(
+        "Open the dashboard URL in your browser. You will see a login screen. "
+        "Enter your email address and password (provided by your administrator). "
+        "Click the Login button."
+    )
+
+    bold_para(doc, "Step 2: Select Month and Year")
+    doc.add_paragraph(
+        "After logging in, you will see the Month/Year selector screen. "
+        "Choose the month and year you want to view, then click the \"Go to Dashboard\" button."
+    )
+    add_screenshot(doc, "02_selector_en.png",
+                   "Figure 1: Month/Year Selection Screen")
+
+    bold_para(doc, "Step 3: View the Dashboard Summary")
+    doc.add_paragraph(
+        "The Summary tab shows the overall KPI cards at the top: total recipients, payment rate, "
+        "total incentive amount, and trend indicators compared to the previous month. Below the KPI cards, "
+        "you can see TYPE distribution tables, condition pass/fail charts, and trend charts."
+    )
+    add_screenshot(doc, "03_dashboard_summary_en.png",
+                   "Figure 2: Dashboard Summary Tab — KPI cards and overview")
+
+    bold_para(doc, "Step 4: Check Your Individual Status")
+    doc.add_paragraph(
+        "Click on the \"Individual Detail\" tab. You can search for any employee by name or ID. "
+        "The list shows each person's condition pass/fail status and incentive amount."
+    )
+    add_screenshot(doc, "04_individual_en.png",
+                   "Figure 3: Individual Detail Tab — searchable employee list")
+
+    bold_para(doc, "Step 5: View Employee Detail Modal")
+    doc.add_paragraph(
+        "Click on any employee's row to open the detail modal. This shows ALL applicable conditions "
+        "for that employee, whether each condition passed or failed, the actual values, and the final "
+        "incentive calculation breakdown."
+    )
+    add_screenshot(doc, "05_employee_modal_en.png",
+                   "Figure 4: Employee Detail Modal — condition breakdown")
+
+    bold_para(doc, "Step 6: Review Incentive Criteria")
+    doc.add_paragraph(
+        "The \"Incentive Criteria\" tab shows the current threshold values for all 10 conditions, "
+        "along with descriptions of what each condition means. This is useful as a quick reference "
+        "to understand what targets you need to meet."
+    )
+    add_screenshot(doc, "06_criteria_en.png",
+                   "Figure 5: Incentive Criteria Tab — current thresholds and descriptions")
+
+    doc.add_page_break()
+
+    doc.add_heading("8.2 Data Flow & CI/CD Pipeline", level=2)
     doc.add_paragraph("The system follows this automated data flow (runs every 6 hours + manual trigger):")
     bullet(doc, "Google Drive: Source data files (basic manpower, attendance, AQL reports, 5PRS data) are uploaded to Google Drive.")
     bullet(doc, "GitHub Actions: Automated CI/CD pipeline downloads data from Google Drive, syncs thresholds and configs from Firestore.")
@@ -747,10 +1013,9 @@ def create_policy():
     bullet(doc, "Email Processing: Pending email notifications are sent via SMTP (mail.hsvina.com).")
     bullet(doc, "Deployment: Dashboard is deployed to GitHub Pages.")
 
-    doc.add_heading("8.2 Dashboard Features (8 Tabs)", level=2)
-    bullet(doc, "Summary Tab: ", bold_prefix=None)
-    doc.add_paragraph("   KPI cards (recipients count, payment rate, total amount with trend indicators), TYPE distribution table, "
-                      "condition pass/fail charts, trend chart, talent pool display.")
+    doc.add_heading("8.3 Dashboard Features (8 Tabs)", level=2)
+    bullet(doc, "Summary Tab: KPI cards (recipients count, payment rate, total amount with trend indicators), TYPE distribution table, "
+           "condition pass/fail charts, trend chart, talent pool display.")
     bullet(doc, "Position Detail Tab: Position-specific breakdown tables with condition status.")
     bullet(doc, "Individual Detail Tab: Per-employee searchable/filterable list with detailed condition modal (250ms debounce).")
     bullet(doc, "Incentive Criteria Tab: Current threshold reference and condition descriptions.")
@@ -759,7 +1024,7 @@ def create_policy():
     bullet(doc, "Validation Summary Tab: 12 KPI validation cards, data integrity checks, system verification.")
     bullet(doc, "Attendance Lookup Tab: Individual attendance calendar with daily status lookup.")
 
-    doc.add_heading("8.3 Admin Panel (5 Tabs)", level=2)
+    doc.add_heading("8.4 Admin Panel (5 Tabs)", level=2)
     doc.add_paragraph("The Admin Panel is accessible to administrators only (role-based access control):")
     bullet(doc, "Thresholds: Adjust 7 configurable thresholds per month with change history and audit trail.")
     bullet(doc, "Config Management: Position mapping, progressive table configuration, type classification rules.")
@@ -767,7 +1032,7 @@ def create_policy():
     bullet(doc, "Data Lookup: Direct Firestore data querying and verification.")
     bullet(doc, "Allowances: Exception override management with apply/revoke workflow and bulk recalculation.")
 
-    doc.add_heading("8.4 Threshold Management", level=2)
+    doc.add_heading("8.5 Threshold Management", level=2)
     doc.add_paragraph(
         "All threshold values are centrally managed in Firestore and can be adjusted by administrators through the Admin Dashboard. "
         "Every change creates an immutable record in the threshold_history collection including: changed fields, old values, "
@@ -790,27 +1055,27 @@ def create_policy():
     for p_row in params:
         add_row(tbl, p_row)
 
-    doc.add_heading("8.5 Feedback System", level=2)
+    doc.add_heading("8.6 Feedback System", level=2)
     doc.add_paragraph(
         "The system includes a built-in feedback/issue tracking system accessible to all authenticated users:"
     )
     bullet(doc, "Feedback Types: BUG, IMPROVEMENT, NEW_FEATURE, UI_UX, DATA, OTHER")
     bullet(doc, "Priorities: Critical, High, Medium, Low")
-    bullet(doc, "Status Flow: SUBMITTED → REVIEWING → IN_PROGRESS → COMPLETED (or REJECTED)")
+    bullet(doc, "Status Flow: SUBMITTED -> REVIEWING -> IN_PROGRESS -> COMPLETED (or REJECTED)")
     bullet(doc, "Features: Image attachments (up to 3), multiple notification recipients, admin reply with email notification")
 
-    doc.add_heading("8.6 Email Notification System", level=2)
+    doc.add_heading("8.7 Email Notification System", level=2)
     doc.add_paragraph("Three automated email notifications via Cloud Functions (Node.js 22, asia-northeast3):")
-    bullet(doc, "New feedback submitted → All administrators receive email notification (3-language: ko/en/vi)")
-    bullet(doc, "Feedback status changed → Feedback reporter receives status update notification")
-    bullet(doc, "Admin replies to feedback → Feedback reporter receives reply email")
+    bullet(doc, "New feedback submitted -> All administrators receive email notification (3-language: ko/en/vi)")
+    bullet(doc, "Feedback status changed -> Feedback reporter receives status update notification")
+    bullet(doc, "Admin replies to feedback -> Feedback reporter receives reply email")
     doc.add_paragraph("SMTP server: mail.hsvina.com:465 (SSL). All emails logged to email_logs collection for audit.")
 
-    doc.add_heading("8.7 Multi-Language Support", level=2)
+    doc.add_heading("8.8 Multi-Language Support", level=2)
     doc.add_paragraph("The entire dashboard supports three languages: Korean (ko), English (en), and Vietnamese (vi). "
                       "All UI strings, error messages, and labels are managed through the i18n system.")
 
-    doc.add_heading("8.8 Authentication & RBAC", level=2)
+    doc.add_heading("8.9 Authentication & RBAC", level=2)
     doc.add_paragraph("Firebase Email/Password authentication with Role-Based Access Control:")
     bullet(doc, "Regular users: Read-only dashboard access + feedback submission")
     bullet(doc, "Administrators: Full access including admin panel, threshold management, allowance overrides, feedback management")
@@ -819,54 +1084,403 @@ def create_policy():
     doc.add_page_break()
 
     # ══════════════════════════════════════════
-    # APPENDIX 1
+    # SECTION 9. QUICK REFERENCE & FAQ
     # ══════════════════════════════════════════
-    doc.add_heading("APPENDIX 1: 10 INCENTIVE CONDITIONS — DETAILED DESCRIPTION", level=1)
+    doc.add_heading("SECTION 9. QUICK REFERENCE & FAQ", level=1)
 
-    appendix_conditions = [
-        ("C1 — Attendance Rate",
-         "The employee's monthly attendance rate must meet the configured threshold (default ≥ 88%). "
-         "Calculated as: (Actual Working Days) / (Total Working Days − Approved Leave Days) × 100%. "
-         "Approved leave types are not counted as absences. Business trips (Di cong tac) count as actual working days."),
-        ("C2 — Unapproved Absence",
-         "The number of AR1 (unapproved) absence days must be within the configured limit (default ≤ 2 days per month). "
-         "Special exceptions may be approved by QIP manager via the Allowance system."),
-        ("C3 — Actual Working Days",
-         "The employee must have at least 1 actual working day in the month. "
-         "This excludes employees who were entirely absent or on extended leave."),
-        ("C4 — Minimum Working Days",
-         "The employee must work at least the configured minimum days (default 12) in the month to be eligible. "
-         "IMPORTANT: This condition is only enforced after the 20th of the current month. Interim reports (before 20th) "
-         "automatically exempt this condition to avoid penalizing employees mid-month."),
-        ("C5 — Personal AQL Failure",
-         "For AQL-related positions: the employee must have 0 personal AQL failure cases in the current month. "
-         "Any single AQL failure disqualifies the employee from incentive. Exception possible via Allowance system."),
-        ("C6 — Personal AQL Consecutive Failures",
-         "No consecutive month personal AQL failures. Year-dependent threshold: "
-         "2025: only 3+ months consecutive = disqualified. 2026 onwards: 2+ months consecutive = disqualified. "
-         "The system automatically applies the correct threshold based on the evaluation year."),
-        ("C7 — Team/Area AQL Consecutive Failures",
-         "No consecutive month team or area AQL failures. Same year-dependent threshold as C6. "
-         "Applies to: Line Leaders, Audit & Training Team. "
-         "RQC Assembly Inspector (A1B) is exempt from this condition from February 2026."),
-        ("C8 — Area Reject Rate",
-         "The reject rate in the employee's responsible area must be below the configured threshold (default < 3.0%). "
-         "Applies to: Model Master (all factories) and Audit & Training Team (assigned building areas). "
-         "Each Auditor/Trainer has specific building assignments maintained in the system configuration."),
-        ("C9 — 5PRS Pass Rate",
-         "The 5PRS (5 Pairs Random Sampling) pass rate must meet the configured threshold (default ≥ 95%). "
-         "Applies to: Assembly Inspector positions (including RQC Assembly Inspector A1B)."),
-        ("C10 — 5PRS Inspection Quantity",
-         "The total 5PRS inspection quantity must meet the configured minimum (default ≥ 100 pairs per month). "
-         "Applies to: Assembly Inspector positions. "
-         "RQC Assembly Inspector (A1B) is EXEMPT from this condition from February 2026, because RQC inspectors "
-         "perform process checking and reports, not line inspection."),
+    doc.add_heading("9.1 Quick Reference Card", level=2)
+
+    tbl = doc.add_table(rows=1, cols=3)
+    tbl.style = 'Table Grid'
+    make_header_row(tbl, ["Question", "Answer", "Details"])
+
+    qr_items = [
+        ["Who gets incentive?", "All QIP members except Type-3", "Type-1: up to 10 conditions\nType-2: 4 attendance conditions"],
+        ["How much can I earn?", "150,000 - 1,000,000 VND/month", "Increases with consecutive months\nAQL Inspectors: up to 2,400,000"],
+        ["What if I fail 1 condition?", "0 VND for that month", "100% pass rate required\nConsecutive months reset to 0"],
+        ["Does annual leave hurt me?", "NO", "Approved leave does NOT count as absence"],
+        ["Does sick leave (AR2) hurt?", "NO", "AR2 is approved leave"],
+        ["What hurts my attendance?", "Only AR1 (unauthorized absence)", "AR1 = Vang khong phep or Gui thu"],
+        ["What is the maximum cap?", "1,000,000 VND/month", "Reached at 12 consecutive months"],
+        ["Can exceptions be made?", "Yes — Allowance system", "Manager can override failed conditions\nwith documented justification"],
+        ["How do I check my status?", "Dashboard website", "Login -> Select month -> Individual tab"],
+        ["When is payment?", "Next payroll cycle", "After reward consideration (1st-15th)"],
+    ]
+    for item in qr_items:
+        add_row(tbl, item)
+
+    doc.add_heading("9.2 Frequently Asked Questions", level=2)
+
+    faq_items = [
+        ("Q: I took annual leave for 3 days. Will this affect my incentive?",
+         "A: No. Annual leave (Phep nam) is approved leave and does NOT count as absence. "
+         "Your attendance rate calculation will subtract these days from the absence calculation. "
+         "Example: 27 working days, worked 22 days, 3 days annual leave = Absence is 27-22-3 = 2 days, "
+         "Attendance Rate = 100 - (2/27 x 100) = 92.6% which is above the 88% threshold."),
+
+        ("Q: I was sick for 2 days and got a doctor's note (AR2). Does this hurt me?",
+         "A: No. AR2 (sick leave with documentation) is approved leave. It does not count as absence. "
+         "However, if you were absent WITHOUT a doctor's note, it would be classified as AR1 "
+         "(unauthorized absence), which DOES count against you."),
+
+        ("Q: I failed one AQL inspection this month. What happens?",
+         "A: If C5 (Personal AQL Failure) applies to your position, even 1 AQL failure means C5 = FAIL. "
+         "Since 100% pass rate is required, your incentive for this month is 0 VND, and your consecutive "
+         "months counter resets to 0. Next month, if you pass everything, you start from month 1 again (150,000 VND)."),
+
+        ("Q: I had 11 consecutive months of passing. I failed this month. What happens next month?",
+         "A: Your consecutive months reset to 0. If you pass all conditions next month, you start from "
+         "month 1 (150,000 VND). You would need to build up 12 consecutive months again to reach the "
+         "maximum of 1,000,000 VND."),
+
+        ("Q: I am a new employee. When do I start receiving incentive?",
+         "A: New employees are classified as Type-3 for approximately 3 months (until they reach 30 working days). "
+         "During Type-3, no incentive is paid. After the probation period, you are upgraded to Type-2 and will "
+         "receive attendance-based incentive."),
+
+        ("Q: My manager says my AQL failure was not my fault. Can I still get incentive?",
+         "A: Yes, possibly. Your manager can use the Allowance system to override the failed condition. "
+         "They must provide a reason code and detailed justification. The system will then recalculate "
+         "your incentive with the overridden condition marked as PASS."),
+
+        ("Q: What is the difference between Type-1 and Type-2?",
+         "A: Type-1 workers directly inspect final product quality (assembly inspectors, AQL inspectors, etc.) "
+         "and are evaluated on up to 10 conditions. Type-2 workers contribute to quality indirectly (cutting, "
+         "stitching, material inspection, etc.) and are evaluated only on 4 attendance conditions."),
+
+        ("Q: Can I receive both Program 1 and Program 2 incentive?",
+         "A: Yes! If you are selected for the Talent Pool (Program 2), you receive the Talent Pool bonus "
+         "IN ADDITION to your regular Program 1 incentive. They stack together."),
+
+        ("Q: What does 'consecutive months' mean exactly?",
+         "A: It means the number of months IN A ROW where you passed all applicable conditions and received incentive. "
+         "If you pass in January, February, and March, your consecutive months are 3. If you fail in April, "
+         "it resets to 0. If you pass again in May, it starts at 1."),
+
+        ("Q: I am an RQC Assembly Inspector (A1B). Which conditions apply to me?",
+         "A: From February 2026, RQC Assembly Inspectors have these conditions: C1 (Attendance Rate), "
+         "C2 (Unapproved Absence), C3 (Actual Working Days), C4 (Minimum Working Days), C5 (Personal AQL Failure), "
+         "C6 (Personal AQL Consecutive), and C9 (5PRS Pass Rate). You are EXEMPT from C7 and C10."),
     ]
 
-    for title, desc in appendix_conditions:
-        bold_para(doc, title)
-        doc.add_paragraph(desc)
+    for question, answer in faq_items:
+        bold_para(doc, question)
+        doc.add_paragraph(answer)
         doc.add_paragraph()
+
+    doc.add_page_break()
+
+    # ══════════════════════════════════════════
+    # APPENDIX 1 — DETAILED CONDITION GUIDE
+    # ══════════════════════════════════════════
+    doc.add_heading("APPENDIX 1: 10 INCENTIVE CONDITIONS — DETAILED GUIDE WITH EXAMPLES", level=1)
+
+    doc.add_paragraph(
+        "This appendix explains each of the 10 incentive conditions in detail. For each condition, you will find: "
+        "what it measures, why it matters, how it is calculated, which positions it applies to, and real-world examples."
+    )
+
+    # ── C1 ──
+    doc.add_heading("C1 — Attendance Rate (Default: >= 88%)", level=2)
+
+    bold_para(doc, "What it measures: ", "Your monthly attendance rate after adjusting for approved leave.")
+    bold_para(doc, "Why it matters: ", "Quality inspection requires consistent presence. Employees who are frequently absent "
+              "cannot maintain inspection quality standards.")
+    bold_para(doc, "Who it applies to: ", "ALL positions (Type-1 and Type-2). Everyone must meet this condition.")
+
+    doc.add_paragraph()
+    bold_para(doc, "How it is calculated:")
+    doc.add_paragraph(
+        "The system uses the following formula:"
+    )
+    bullet(doc, "Step 1: Absence Days = Total Working Days - Actual Working Days - Approved Leave Days")
+    bullet(doc, "Step 2: Absence Rate = (Absence Days / Total Working Days) x 100")
+    bullet(doc, "Step 3: Attendance Rate = 100 - Absence Rate")
+
+    doc.add_paragraph()
+    bold_para(doc, "Important rules:")
+    bullet(doc, "Approved leave (annual leave, maternity, sick leave AR2, business trip, etc.) does NOT count as absence")
+    bullet(doc, "Only AR1 (unauthorized/unapproved absence) counts as absence in this calculation")
+    bullet(doc, "Business trips (Di cong tac) count as actual working days")
+
+    add_example_box(doc, "C1 Example — PASS", [
+        "Employee: Pham Thi Lan",
+        "Month: February 2026 (27 total working days)",
+        "Actual working days: 23",
+        "Approved leave: 2 days annual leave (Phep nam)",
+        "",
+        "Absence Days = 27 - 23 - 2 = 2 days",
+        "Absence Rate = (2 / 27) x 100 = 7.4%",
+        "Attendance Rate = 100 - 7.4 = 92.6%",
+        "",
+        "92.6% >= 88% --> C1 = PASS",
+    ])
+
+    add_example_box(doc, "C1 Example — FAIL", [
+        "Employee: Nguyen Van Duc",
+        "Month: February 2026 (27 total working days)",
+        "Actual working days: 19",
+        "Approved leave: 1 day sick leave AR2",
+        "",
+        "Absence Days = 27 - 19 - 1 = 7 days",
+        "Absence Rate = (7 / 27) x 100 = 25.9%",
+        "Attendance Rate = 100 - 25.9 = 74.1%",
+        "",
+        "74.1% < 88% --> C1 = FAIL --> No incentive this month",
+    ])
+
+    add_example_box(doc, "C1 Example — Maternity Leave (Approved)", [
+        "Employee: Tran Thi Mai",
+        "Month: February 2026 (27 total working days)",
+        "Actual working days: 15",
+        "Approved leave: 10 days maternity leave + 2 days prenatal checkup = 12 days",
+        "",
+        "Absence Days = 27 - 15 - 12 = 0 days",
+        "Absence Rate = (0 / 27) x 100 = 0%",
+        "Attendance Rate = 100 - 0 = 100%",
+        "",
+        "100% >= 88% --> C1 = PASS",
+        "All maternity-related leave is approved and does not hurt your attendance.",
+    ])
+
+    # ── C2 ──
+    doc.add_heading("C2 — Unapproved Absence (Default: <= 2 days)", level=2)
+
+    bold_para(doc, "What it measures: ", "The number of days you were absent WITHOUT approval (AR1 category only).")
+    bold_para(doc, "Why it matters: ", "Unapproved absences disrupt team scheduling and production quality.")
+    bold_para(doc, "Who it applies to: ", "ALL positions (Type-1 and Type-2).")
+
+    doc.add_paragraph()
+    bold_para(doc, "What counts as AR1 (unapproved absence):")
+    bullet(doc, "\"Vang khong phep\" — Unauthorized absence (no notice, no approval)")
+    bullet(doc, "\"AR1 - Gui thu\" — Written notice absence (letter submitted but not approved leave)")
+
+    bold_para(doc, "What does NOT count as AR1:")
+    bullet(doc, "Annual leave, maternity leave, sick leave AR2, business trips, and all other approved leave types")
+    bullet(doc, "See the complete leave classification table in Section 5.3.1")
+
+    add_example_box(doc, "C2 Example — PASS", [
+        "Employee had 1 day of unauthorized absence (AR1) this month.",
+        "1 day <= 2 days threshold --> C2 = PASS",
+    ])
+
+    add_example_box(doc, "C2 Example — FAIL", [
+        "Employee had 3 days of unauthorized absence (AR1) this month.",
+        "3 days > 2 days threshold --> C2 = FAIL --> No incentive",
+    ])
+
+    add_example_box(doc, "C2 Example — Annual Leave Does NOT Count", [
+        "Employee took 5 days of annual leave (Phep nam) and had 0 AR1 days.",
+        "AR1 days = 0 <= 2 days threshold --> C2 = PASS",
+        "Annual leave is NOT counted as unapproved absence.",
+    ])
+
+    # ── C3 ──
+    doc.add_heading("C3 — Actual Working Days (Default: > 0)", level=2)
+
+    bold_para(doc, "What it measures: ", "Whether the employee worked at least 1 day during the month.")
+    bold_para(doc, "Why it matters: ", "Employees who were entirely absent for the whole month (e.g., full-month leave) "
+              "should not receive incentive.")
+    bold_para(doc, "Who it applies to: ", "ALL positions.")
+
+    add_example_box(doc, "C3 Example — PASS", [
+        "Employee worked 15 days this month.",
+        "15 > 0 --> C3 = PASS",
+    ])
+
+    add_example_box(doc, "C3 Example — FAIL", [
+        "Employee was on full-month maternity leave. Actual working days = 0.",
+        "0 is NOT > 0 --> C3 = FAIL",
+        "Note: Even though maternity leave is approved, if you have 0 actual working days,",
+        "you are excluded from incentive for that month. This is expected — you were not",
+        "performing inspection duties.",
+    ])
+
+    # ── C4 ──
+    doc.add_heading("C4 — Minimum Working Days (Default: >= 12 days)", level=2)
+
+    bold_para(doc, "What it measures: ", "Whether the employee worked at least 12 days during the month.")
+    bold_para(doc, "Why it matters: ", "Employees who work too few days in a month cannot be meaningfully evaluated "
+              "on quality performance.")
+    bold_para(doc, "Who it applies to: ", "ALL positions.")
+
+    doc.add_paragraph()
+    bold_para(doc, "Note: ",
+              "This condition ensures that employees with very short working periods (e.g., joined mid-month "
+              "or took extended leave) are excluded from incentive for that month.")
+
+    add_example_box(doc, "C4 Example — PASS", [
+        "Employee worked 20 days this month.",
+        "20 >= 12 --> C4 = PASS",
+    ])
+
+    add_example_box(doc, "C4 Example — FAIL", [
+        "Employee joined on the 20th of the month and only worked 8 days.",
+        "8 < 12 --> C4 = FAIL",
+        "This employee will not receive incentive for this month.",
+        "Next month, if they work 12+ days, they become eligible.",
+    ])
+
+    # ── C5 ──
+    doc.add_heading("C5 — Personal AQL Failure (Default: = 0)", level=2)
+
+    bold_para(doc, "What it measures: ", "The number of AQL (Acceptable Quality Level) inspection failures "
+              "attributed to you personally in the current month.")
+    bold_para(doc, "Why it matters: ", "AQL is the international quality standard used by adidas and other brands. "
+              "When shoes fail AQL inspection, it means the entire batch may need to be re-inspected or rejected.")
+    bold_para(doc, "Who it applies to: ", "ASSEMBLY INSPECTOR, RQC ASSEMBLY INSPECTOR, AQL INSPECTOR only.")
+
+    doc.add_paragraph()
+    bold_para(doc, "How AQL works (simplified): ",
+              "A random sample of shoes is taken from a production batch. If the defects in the sample exceed "
+              "the acceptable limit, the entire batch FAILS AQL. The inspector who checked that batch gets "
+              "an AQL failure record.")
+
+    add_example_box(doc, "C5 Example — PASS", [
+        "Inspector Hoa had 0 AQL failures this month.",
+        "0 = 0 --> C5 = PASS",
+    ])
+
+    add_example_box(doc, "C5 Example — FAIL", [
+        "Inspector Duc had 1 AQL failure this month (1 batch failed AQL).",
+        "1 != 0 --> C5 = FAIL --> No incentive this month",
+        "",
+        "Even 1 failure means FAIL. The threshold is ZERO tolerance.",
+    ])
+
+    # ── C6 ──
+    doc.add_heading("C6 — Personal AQL Consecutive Failures", level=2)
+
+    bold_para(doc, "What it measures: ", "Whether you have had AQL failures in consecutive (back-to-back) months.")
+    bold_para(doc, "Why it matters: ", "Repeated failures over multiple months indicate a persistent quality problem "
+              "that needs attention.")
+    bold_para(doc, "Who it applies to: ", "ASSEMBLY INSPECTOR, RQC ASSEMBLY INSPECTOR only.")
+
+    doc.add_paragraph()
+    bold_para(doc, "Year-dependent thresholds:")
+    bullet(doc, "For year 2025: 3 or more consecutive months of AQL failure = FAIL")
+    bullet(doc, "For year 2026 onwards: 2 or more consecutive months of AQL failure = FAIL")
+
+    doc.add_paragraph(
+        "The system looks at the past 3 months of AQL history to determine this condition."
+    )
+
+    add_example_box(doc, "C6 Example — PASS (2026 rules)", [
+        "Inspector had AQL failure in January 2026 but NOT in February 2026.",
+        "Only 1 consecutive month of failure --> C6 = PASS",
+    ])
+
+    add_example_box(doc, "C6 Example — FAIL (2026 rules)", [
+        "Inspector had AQL failure in January 2026 AND February 2026.",
+        "2 consecutive months of failure >= 2 month threshold --> C6 = FAIL",
+        "",
+        "System tags this as YES_2MONTHS_DEC_JAN or similar consecutive tag.",
+    ])
+
+    add_example_box(doc, "C6 Example — PASS (2025 rules, stricter was 3 months)", [
+        "Inspector had AQL failure in October 2025 AND November 2025 (but NOT September).",
+        "2 consecutive months of failure < 3 month threshold (2025 rules) --> C6 = PASS",
+        "Note: Under 2026 rules, this would be FAIL (threshold lowered to 2).",
+    ])
+
+    # ── C7 ──
+    doc.add_heading("C7 — Team/Area AQL Consecutive Failures", level=2)
+
+    bold_para(doc, "What it measures: ", "Whether employees under your responsibility have had consecutive AQL failures.")
+    bold_para(doc, "Why it matters: ", "Line Leaders and Trainers are responsible for their team's quality. "
+              "If their team members have persistent quality problems, the leader is also held accountable.")
+    bold_para(doc, "Who it applies to: ", "LINE LEADER and AUDITOR & TRAINER only.")
+    bold_para(doc, "Exempt: ", "RQC Assembly Inspector (A1B) is exempt from C7 from February 2026.")
+
+    doc.add_paragraph()
+    bold_para(doc, "How it works:")
+    bullet(doc, "For LINE LEADER: The system checks if any subordinate inspector has consecutive AQL failures")
+    bullet(doc, "For AUDITOR & TRAINER: The system checks if any employee in their assigned building area has consecutive AQL failures")
+    bullet(doc, "Same year-dependent threshold as C6 (2025: 3+ months, 2026+: 2+ months)")
+
+    add_example_box(doc, "C7 Example — FAIL for Line Leader", [
+        "Line Leader Minh's team member, Inspector Hoa, failed AQL in both January and February 2026.",
+        "Hoa has 2 consecutive months of failure (2026 threshold: 2 months)",
+        "Therefore Minh's C7 = FAIL --> Minh does not receive incentive this month.",
+        "",
+        "Even though Minh himself did nothing wrong, he is responsible for his team.",
+    ])
+
+    # ── C8 ──
+    doc.add_heading("C8 — Area Reject Rate (Default: < 3.0%)", level=2)
+
+    bold_para(doc, "What it measures: ", "The AQL reject rate for your assigned area or building.")
+    bold_para(doc, "Why it matters: ", "Trainers and Model Masters are responsible for overall area quality, "
+              "not just individual inspections.")
+    bold_para(doc, "Who it applies to: ", "AUDITOR & TRAINER and MODEL MASTER only.")
+
+    doc.add_paragraph()
+    bold_para(doc, "How it works:")
+    bullet(doc, "For AUDITOR & TRAINER: The reject rate is calculated for their assigned building area (A, B, C, D, or Repacking)")
+    bullet(doc, "For MODEL MASTER: The reject rate is calculated across ALL factories (all-factory reject rate)")
+    bullet(doc, "If the reject rate is >= 3.0% (default threshold), C8 = FAIL")
+
+    add_example_box(doc, "C8 Example — PASS", [
+        "Trainer Linh is responsible for Building A.",
+        "Building A's AQL reject rate this month: 1.8%",
+        "1.8% < 3.0% --> C8 = PASS",
+    ])
+
+    add_example_box(doc, "C8 Example — FAIL", [
+        "Model Master Hoa's all-factory reject rate: 3.5%",
+        "3.5% >= 3.0% --> C8 = FAIL --> No incentive for Hoa this month",
+    ])
+
+    # ── C9 ──
+    doc.add_heading("C9 — 5PRS Pass Rate (Default: >= 95%)", level=2)
+
+    bold_para(doc, "What it measures: ", "Your 5PRS (5 Pairs Random Sampling) inspection pass rate.")
+    bold_para(doc, "Why it matters: ", "5PRS is an internal quality check where 5 random pairs of shoes are "
+              "inspected from each production order. A high pass rate means you are consistently catching defects.")
+    bold_para(doc, "Who it applies to: ", "ASSEMBLY INSPECTOR and RQC ASSEMBLY INSPECTOR only.")
+
+    doc.add_paragraph()
+    bold_para(doc, "Formula: ", "5PRS Pass Rate = (Pass Quantity / Total Validation Quantity) x 100")
+
+    add_example_box(doc, "C9 Example — PASS", [
+        "Inspector checked 120 pairs total in 5PRS inspections this month.",
+        "116 pairs passed, 4 pairs failed.",
+        "Pass Rate = (116 / 120) x 100 = 96.7%",
+        "96.7% >= 95% --> C9 = PASS",
+    ])
+
+    add_example_box(doc, "C9 Example — FAIL", [
+        "Inspector checked 100 pairs total in 5PRS inspections this month.",
+        "93 pairs passed, 7 pairs failed.",
+        "Pass Rate = (93 / 100) x 100 = 93.0%",
+        "93.0% < 95% --> C9 = FAIL --> No incentive this month",
+    ])
+
+    # ── C10 ──
+    doc.add_heading("C10 — 5PRS Inspection Quantity (Default: >= 100 pairs)", level=2)
+
+    bold_para(doc, "What it measures: ", "The total number of pairs you inspected through 5PRS during the month.")
+    bold_para(doc, "Why it matters: ", "This ensures inspectors are performing a meaningful volume of inspections, "
+              "not just a few token checks.")
+    bold_para(doc, "Who it applies to: ", "ASSEMBLY INSPECTOR only. RQC Assembly Inspector (A1B) is EXEMPT from February 2026.")
+
+    add_example_box(doc, "C10 Example — PASS", [
+        "Inspector checked 135 pairs this month through 5PRS.",
+        "135 >= 100 --> C10 = PASS",
+    ])
+
+    add_example_box(doc, "C10 Example — FAIL", [
+        "Inspector checked only 72 pairs this month (was on leave for part of the month).",
+        "72 < 100 --> C10 = FAIL --> No incentive this month",
+        "",
+        "Note: If the low quantity was due to area rotation or R&R update,",
+        "the manager may use the Allowance system to override this condition.",
+    ])
+
+    bold_para(doc, "Why RQC Assembly Inspector (A1B) is exempt: ",
+              "RQC inspectors perform process checking and reporting, not line-based inspection. "
+              "They do not perform the same volume of 5PRS inspections as regular assembly inspectors, "
+              "so the minimum quantity requirement does not apply to them.")
 
     doc.add_page_break()
 
@@ -882,28 +1496,28 @@ def create_policy():
     )
 
     doc.add_heading("Type-1 Positions", level=2)
-    doc.add_paragraph('Each Type-1 position has a specific set of applicable conditions. "Yes" means the condition must be passed; "—" means not applicable.')
+    doc.add_paragraph('Each Type-1 position has a specific set of applicable conditions. "Yes" means the condition must be passed; "-" means not applicable.')
 
     tbl = doc.add_table(rows=1, cols=11)
     tbl.style = 'Table Grid'
     make_header_row(tbl, ["Position", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10"])
 
     full_matrix = [
-        ["ASSEMBLY INSPECTOR", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "—", "—", "Yes", "Yes"],
-        ["RQC ASSEMBLY INSPECTOR\n(A1B, from 2026.02)", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "—", "—", "Yes", "—"],
-        ["AQL INSPECTOR", "Yes", "Yes", "Yes", "Yes", "Yes", "—", "—", "—", "—", "—"],
-        ["LINE LEADER", "Yes", "Yes", "Yes", "Yes", "—", "—", "Yes", "—", "—", "—"],
-        ["AUDITOR & TRAINER", "Yes", "Yes", "Yes", "Yes", "—", "—", "Yes", "Yes", "—", "—"],
-        ["MODEL MASTER", "Yes", "Yes", "Yes", "Yes", "—", "—", "—", "Yes", "—", "—"],
-        ["Management\n(GL, Supervisor, Manager)", "Yes", "Yes", "Yes", "Yes", "—", "—", "—", "—", "—", "—"],
+        ["ASSEMBLY INSPECTOR", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "-", "-", "Yes", "Yes"],
+        ["RQC ASSEMBLY INSPECTOR\n(A1B, from 2026.02)", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "-", "-", "Yes", "-"],
+        ["AQL INSPECTOR", "Yes", "Yes", "Yes", "Yes", "Yes", "-", "-", "-", "-", "-"],
+        ["LINE LEADER", "Yes", "Yes", "Yes", "Yes", "-", "-", "Yes", "-", "-", "-"],
+        ["AUDITOR & TRAINER", "Yes", "Yes", "Yes", "Yes", "-", "-", "Yes", "Yes", "-", "-"],
+        ["MODEL MASTER", "Yes", "Yes", "Yes", "Yes", "-", "-", "-", "Yes", "-", "-"],
+        ["Management\n(GL, Supervisor, Manager)", "Yes", "Yes", "Yes", "Yes", "-", "-", "-", "-", "-", "-"],
     ]
     for m in full_matrix:
         add_row(tbl, m)
 
     doc.add_heading("Type-2 Positions", level=2)
     doc.add_paragraph(
-        "All Type-2 positions apply only attendance conditions (C1–C4). The incentive amount is calculated based on "
-        "the average of their corresponding Type-1 position reference, as described in Section 5.6 and 5.7."
+        "All Type-2 positions apply only attendance conditions (C1-C4). The incentive amount is calculated based on "
+        "the average of their corresponding Type-1 position reference, as described in Section 5.7 and 5.8."
     )
     doc.add_paragraph(
         "Type-2 positions include: Line Leader, Assembly Inspector, AQL Inspector, Stitching Inspector, "
@@ -953,7 +1567,7 @@ def create_policy():
     )
 
     # ══════════════════════════════════════════
-    # APPENDIX 5 (NEW)
+    # APPENDIX 5
     # ══════════════════════════════════════════
     doc.add_heading("APPENDIX 5: FIRESTORE DATA COLLECTIONS", level=1)
     doc.add_paragraph("The V10 system uses the following Firestore collections:")
@@ -983,7 +1597,7 @@ def create_policy():
     doc.add_paragraph()
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p.add_run("— The End —")
+    run = p.add_run("--- The End ---")
     run.font.size = Pt(11)
     run.font.color.rgb = RGBColor(128, 128, 128)
     run.italic = True
