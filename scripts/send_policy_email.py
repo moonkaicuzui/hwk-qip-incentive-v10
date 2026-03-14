@@ -97,8 +97,8 @@ def main():
 
     # Generate policy documents
     print("Generating English policy document...")
-    from generate_policy_v3_docx import create_policy_en
-    en_doc = create_policy_en()
+    from generate_policy_v3_docx import create_policy
+    en_doc = create_policy()
     en_path = "/tmp/QIP_INCENTIVE_POLICY_V3_En.docx"
     en_doc.save(en_path)
     print(f"  Saved: {en_path} ({os.path.getsize(en_path):,} bytes)")
