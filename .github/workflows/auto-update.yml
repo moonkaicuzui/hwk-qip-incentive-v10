@@ -284,6 +284,49 @@ jobs:
             exit 1
           fi
 
+      # ========== Step 8.1: Upload to HR Dashboard ==========
+      - name: "Step 8.1: Upload to HR Dashboard Firestore"
+        if: steps.target_month.outputs.data_changed == 'true'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.HR_DASHBOARD_FIREBASE_SA }}
+          TARGET_MONTHS: ${{ steps.target_month.outputs.target_months }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "⚠️ HR_DASHBOARD_FIREBASE_SA not set, skipping HR Dashboard upload"
+            exit 0
+          fi
+
+          echo "📊 Uploading to HR Dashboard (hr-dashboard-7521b)..."
+          git clone --depth 1 https://github.com/moonkaicuzui/HR-Dashboard-V2.git /tmp/hr-v2
+
+          HR_FAILED=0
+          for ENTRY in $TARGET_MONTHS; do
+            IFS=':' read -r M Y C <<< "$ENTRY"
+            echo "  → HR Dashboard: $M $Y"
+
+            PREV_M=$(python3 -c "
+          months=['january','february','march','april','may','june','july','august','september','october','november','december']
+          idx=months.index('$M'); print(months[(idx-1)%12])
+          ")
+            PREV_Y=$Y
+            if [ "$PREV_M" = "december" ]; then PREV_Y=$((Y-1)); fi
+
+            python /tmp/hr-v2/scripts/upload_to_firestore.py \
+              --month "$M" --year "$Y" \
+              --prev-month "$PREV_M" --prev-year "$PREV_Y" \
+              --data-path "$PWD/input_files" || {
+              echo "⚠️ HR Dashboard upload failed for $M $Y"
+              HR_FAILED=$((HR_FAILED+1))
+            }
+          done
+
+          rm -rf /tmp/hr-v2
+          if [ $HR_FAILED -eq 0 ]; then
+            echo "✅ HR Dashboard upload complete"
+          else
+            echo "⚠️ HR Dashboard: $HR_FAILED month(s) failed"
+          fi
+
       # ========== Step 8.5: Save Input Hash ==========
       - name: "Step 8.5: Save input hash for change detection"
         if: steps.target_month.outputs.data_changed == 'true'
