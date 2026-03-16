@@ -25,13 +25,26 @@ Usage:
 
 STYLES = {
     "body": "margin:0;padding:0;background-color:#f4f6f9;font-family:'Segoe UI',Arial,sans-serif;",
-    "container": "max-width:700px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);",
+    "container": "max-width:1050px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);",
     "header": "background:linear-gradient(135deg,#1e3a5f,#2d5a87);color:#ffffff;padding:24px 32px;",
     "header_title": "font-size:20px;font-weight:700;margin:0 0 4px 0;",
     "header_sub": "font-size:13px;color:#a8c8e8;margin:0;",
     "section_title": "font-size:16px;font-weight:700;color:#1e3a5f;margin:0 0 12px 0;padding:16px 32px 0 32px;",
     "section_body": "padding:0 32px 16px 32px;",
     "divider": "border:none;border-top:2px solid #e8edf2;margin:8px 32px;",
+    # Progress banner
+    "progress_banner": "background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:12px 16px;margin:16px 32px;font-size:13px;color:#1e40af;",
+    "progress_bar_bg": "background:#e5e7eb;border-radius:4px;height:8px;width:100%;overflow:hidden;",
+    "progress_bar_fill": "background:linear-gradient(90deg,#3b82f6,#60a5fa);height:8px;border-radius:4px;",
+    # Condition bars
+    "cond_bar_bg": "background:#e5e7eb;border-radius:3px;height:16px;width:100%;position:relative;overflow:hidden;",
+    "cond_bar_green": "background:#22c55e;height:16px;border-radius:3px;",
+    "cond_bar_yellow": "background:#f59e0b;height:16px;border-radius:3px;",
+    "cond_bar_red": "background:#ef4444;height:16px;border-radius:3px;",
+    # Comparison delta
+    "delta_up": "color:#22c55e;font-size:11px;font-weight:600;",
+    "delta_down": "color:#ef4444;font-size:11px;font-weight:600;",
+    "delta_neutral": "color:#6b7280;font-size:11px;font-weight:600;",
     # KPI cards
     "kpi_table": "width:100%;border-collapse:collapse;",
     "kpi_cell": "text-align:center;padding:12px 8px;width:25%;",
@@ -147,37 +160,429 @@ def _boss_chain_html(boss_name, boss_boss_name, boss_boss_position):
 
 
 # ---------------------------------------------------------------------------
+# i18n - Multi-language support (ko/vi)
+# ---------------------------------------------------------------------------
+
+I18N = {
+    "ko": {
+        # Condition names
+        "c1": "출근율", "c2": "AQL 합격률", "c3": "5PRS 통과율", "c4": "연속 불합격",
+        "c5": "근속 기간", "c6": "징계 이력", "c7": "무단 결근", "c8": "지각 횟수",
+        "c9": "조기 퇴근", "c10": "특별 감점",
+        # Month names
+        "m1": "1월", "m2": "2월", "m3": "3월", "m4": "4월", "m5": "5월", "m6": "6월",
+        "m7": "7월", "m8": "8월", "m9": "9월", "m10": "10월", "m11": "11월", "m12": "12월",
+        # Section titles
+        "kpi_title": "핵심 KPI",
+        "condition_title": "10개 조건별 통과율",
+        "building_title": "Building별 품질 현황",
+        "aql_fail_title": "AQL 실패자 상세 (즉시 액션 필요)",
+        "aql_none": "이번 달 AQL 실패자 없음",
+        "consecutive_title": "연속 AQL 실패 경고 (위험 관리)",
+        "prs_title": "5PRS 미달자 상세 (품질 검사 관리)",
+        "attendance_title": "출근 미달자 상세 (근태 관리)",
+        "type_title": "TYPE별 인센티브 현황",
+        "link_title": "액션 링크",
+        # KPI labels
+        "total_emp": "총 직원", "eligible_emp": "적격 직원",
+        "cond_rate": "조건 통과율", "cond_fail": "조건 미달 건",
+        # Table headers
+        "condition": "조건", "desc": "설명", "pass_rate_h": "통과율",
+        "pass_applied": "통과/적용", "vs_prev": "전월비",
+        "building": "Building", "emp_count": "직원수", "aql": "AQL",
+        "fail": "실패", "reject_rate": "리젝율", "grade": "등급",
+        "prev_recv": "전월 수령", "emp_no": "사번", "name": "이름",
+        "boss_chain": "담당자 → 상사", "att_rate": "출근율",
+        "unapp_abs": "무단결근", "insp_qty": "검사량",
+        "type": "TYPE", "receivers": "수령자", "pay_rate": "지급률",
+        "total_vnd": "총 지급액 (VND)",
+        # Progress banner
+        "mid_status": "중간 현황", "days_elapsed": "경과",
+        "pre_final": "월말 확정 전 데이터입니다. 인센티브 금액은 월말 계산 시 반영됩니다.",
+        "prev_result": "실적 (확정)", "of_total": "명 중", "received": "명 수령",
+        # Action recommendations
+        "bottleneck": "병목 조건 (인센티브 수령 차단 원인):",
+        "ppl_below": "명 미달",
+        "action_rec": "권고 액션:",
+        "aql_retrain": "AQL 재교육. 보고:",
+        "subordinate": "부하",
+        "consec_3m": "3개월 연속 실패 (인센티브 차단):",
+        "consec_2m": "2개월 연속 실패 (경고):",
+        "consec_3m_action": "인사 조치 검토 필요. 3개월 연속 실패 시 인센티브 영구 차단.",
+        "consec_2m_action": "다음 달 실패 시 3개월 연속 → 각 담당자에게 집중 관리 요청.",
+        "prs_rate_below": "5PRS 통과율 미달",
+        "prs_qty_below": "5PRS 검사량 미달",
+        "prs_action": "각 담당자에게 5PRS 검사 품질 개선 지도 요청.",
+        "prs_qty_action": "검사 기회 부족 여부 확인 → 검사 배정 조정 요청.",
+        "att_below": "출근율 미달",
+        "abs_over": "무단결근 초과",
+        "att_action": "무단결근 초과자는 즉시 담당자에게 사유 확인 요청.",
+        "abs_action": "각 담당자에게 무단결근 사유 확인 및 재발 방지 지도 요청.",
+        "other_bldgs": "기타",
+        "bldg_unit": "개 건물",
+        "no_aql": "AQL 검사 없음",
+        # Links
+        "dashboard": "대시보드:",
+        "detail_lookup": "상세 직원 조회:",
+        "detail_how": "대시보드 → 직원 이름 클릭",
+        "aql_analysis": "AQL 분석:",
+        "aql_how": "대시보드 → 요약 탭 → AQL 검증 섹션",
+        # Footer
+        "data_as_of": "데이터 기준:",
+        "auto_gen": "(자동 생성)",
+        "auto_sent": "이 이메일은 QIP Incentive Dashboard 시스템에서 자동 발송되었습니다.",
+        "prev_month": "전월",
+        "ppl": "명",
+        "days": "일",
+    },
+    "vi": {
+        # Condition names
+        "c1": "Tỷ lệ đi làm", "c2": "Tỷ lệ đạt AQL", "c3": "Tỷ lệ đạt 5PRS",
+        "c4": "Lỗi liên tiếp", "c5": "Thâm niên", "c6": "Kỷ luật",
+        "c7": "Vắng không phép", "c8": "Số lần đi trễ", "c9": "Về sớm",
+        "c10": "Trừ điểm đặc biệt",
+        # Month names
+        "m1": "Tháng 1", "m2": "Tháng 2", "m3": "Tháng 3", "m4": "Tháng 4",
+        "m5": "Tháng 5", "m6": "Tháng 6", "m7": "Tháng 7", "m8": "Tháng 8",
+        "m9": "Tháng 9", "m10": "Tháng 10", "m11": "Tháng 11", "m12": "Tháng 12",
+        # Section titles
+        "kpi_title": "KPI ch\u00ednh",
+        "condition_title": "T\u1ef7 l\u1ec7 \u0111\u1ea1t 10 \u0111i\u1ec1u ki\u1ec7n",
+        "building_title": "Ch\u1ea5t l\u01b0\u1ee3ng theo Building",
+        "aql_fail_title": "Chi ti\u1ebft l\u1ed7i AQL (C\u1ea7n x\u1eed l\u00fd ngay)",
+        "aql_none": "Kh\u00f4ng c\u00f3 l\u1ed7i AQL trong th\u00e1ng n\u00e0y",
+        "consecutive_title": "C\u1ea3nh b\u00e1o l\u1ed7i AQL li\u00ean ti\u1ebfp (Qu\u1ea3n l\u00fd r\u1ee7i ro)",
+        "prs_title": "Chi ti\u1ebft ch\u01b0a \u0111\u1ea1t 5PRS (Qu\u1ea3n l\u00fd ki\u1ec3m tra ch\u1ea5t l\u01b0\u1ee3ng)",
+        "attendance_title": "Chi ti\u1ebft ch\u01b0a \u0111\u1ea1t chuy\u00ean c\u1ea7n (Qu\u1ea3n l\u00fd \u0111i l\u00e0m)",
+        "type_title": "Th\u01b0\u1edfng theo TYPE",
+        "link_title": "Li\u00ean k\u1ebft h\u00e0nh \u0111\u1ed9ng",
+        # KPI labels
+        "total_emp": "T\u1ed5ng NV", "eligible_emp": "NV \u0111\u1ee7 \u0111i\u1ec1u ki\u1ec7n",
+        "cond_rate": "T\u1ef7 l\u1ec7 \u0111\u1ea1t \u0110K", "cond_fail": "S\u1ed1 \u0110K ch\u01b0a \u0111\u1ea1t",
+        # Table headers
+        "condition": "\u0110K", "desc": "M\u00f4 t\u1ea3", "pass_rate_h": "T\u1ef7 l\u1ec7 \u0111\u1ea1t",
+        "pass_applied": "\u0110\u1ea1t/\u00c1p d\u1ee5ng", "vs_prev": "So th\u00e1ng tr\u01b0\u1edbc",
+        "building": "Building", "emp_count": "S\u1ed1 NV", "aql": "AQL",
+        "fail": "L\u1ed7i", "reject_rate": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i", "grade": "X\u1ebfp h\u1ea1ng",
+        "prev_recv": "Nh\u1eadn th\u00e1ng tr\u01b0\u1edbc", "emp_no": "M\u00e3 NV", "name": "H\u1ecd t\u00ean",
+        "boss_chain": "Ph\u1ee5 tr\u00e1ch \u2192 Qu\u1ea3n l\u00fd", "att_rate": "T\u1ef7 l\u1ec7 \u0111i l\u00e0m",
+        "unapp_abs": "V\u1eafng KP", "insp_qty": "S\u1ed1 l\u01b0\u1ee3ng KT",
+        "type": "TYPE", "receivers": "Ng\u01b0\u1eddi nh\u1eadn", "pay_rate": "T\u1ef7 l\u1ec7 chi tr\u1ea3",
+        "total_vnd": "T\u1ed5ng (VND)",
+        # Progress banner
+        "mid_status": "T\u00ecnh h\u00ecnh gi\u1eefa th\u00e1ng", "days_elapsed": "\u0111\u00e3 qua",
+        "pre_final": "D\u1eef li\u1ec7u ch\u01b0a ch\u1ed1t. S\u1ed1 ti\u1ec1n th\u01b0\u1edfng s\u1ebd \u0111\u01b0\u1ee3c t\u00ednh cu\u1ed1i th\u00e1ng.",
+        "prev_result": "K\u1ebft qu\u1ea3 (ch\u1ed1t)", "of_total": "trong", "received": "nh\u1eadn th\u01b0\u1edfng",
+        # Action recommendations
+        "bottleneck": "\u0110i\u1ec1u ki\u1ec7n t\u1eafc ngh\u1ebd (nguy\u00ean nh\u00e2n kh\u00f4ng nh\u1eadn th\u01b0\u1edfng):",
+        "ppl_below": "ch\u01b0a \u0111\u1ea1t",
+        "action_rec": "H\u00e0nh \u0111\u1ed9ng khuy\u1ebfn ngh\u1ecb:",
+        "aql_retrain": "\u0111\u00e0o t\u1ea1o l\u1ea1i AQL. B\u00e1o c\u00e1o:",
+        "subordinate": "nh\u00e2n vi\u00ean",
+        "consec_3m": "L\u1ed7i li\u00ean ti\u1ebfp 3 th\u00e1ng (ch\u1eb7n th\u01b0\u1edfng):",
+        "consec_2m": "L\u1ed7i li\u00ean ti\u1ebfp 2 th\u00e1ng (c\u1ea3nh b\u00e1o):",
+        "consec_3m_action": "C\u1ea7n xem x\u00e9t bi\u1ec7n ph\u00e1p nh\u00e2n s\u1ef1. L\u1ed7i 3 th\u00e1ng li\u00ean ti\u1ebfp s\u1ebd b\u1ecb ch\u1eb7n th\u01b0\u1edfng v\u0129nh vi\u1ec5n.",
+        "consec_2m_action": "N\u1ebfu l\u1ed7i th\u00e1ng sau s\u1ebd \u0111\u1ee7 3 th\u00e1ng \u2192 Y\u00eau c\u1ea7u qu\u1ea3n l\u00fd t\u1eadp trung h\u01b0\u1edbng d\u1eabn.",
+        "prs_rate_below": "T\u1ef7 l\u1ec7 \u0111\u1ea1t 5PRS ch\u01b0a \u0111\u1ea1t",
+        "prs_qty_below": "S\u1ed1 l\u01b0\u1ee3ng KT 5PRS ch\u01b0a \u0111\u1ea1t",
+        "prs_action": "Y\u00eau c\u1ea7u ph\u1ee5 tr\u00e1ch h\u01b0\u1edbng d\u1eabn c\u1ea3i thi\u1ec7n ch\u1ea5t l\u01b0\u1ee3ng ki\u1ec3m tra 5PRS.",
+        "prs_qty_action": "Ki\u1ec3m tra xem c\u00f3 thi\u1ebfu c\u01a1 h\u1ed9i ki\u1ec3m tra kh\u00f4ng \u2192 \u0110i\u1ec1u ch\u1ec9nh ph\u00e2n c\u00f4ng.",
+        "att_below": "Ch\u01b0a \u0111\u1ea1t t\u1ef7 l\u1ec7 \u0111i l\u00e0m",
+        "abs_over": "V\u01b0\u1ee3t qu\u00e1 v\u1eafng kh\u00f4ng ph\u00e9p",
+        "att_action": "Y\u00eau c\u1ea7u ph\u1ee5 tr\u00e1ch x\u00e1c nh\u1eadn l\u00fd do v\u1eafng kh\u00f4ng ph\u00e9p ngay.",
+        "abs_action": "Y\u00eau c\u1ea7u ph\u1ee5 tr\u00e1ch x\u00e1c nh\u1eadn l\u00fd do v\u00e0 h\u01b0\u1edbng d\u1eabn ph\u00f2ng ng\u1eeba t\u00e1i ph\u1ea1m.",
+        "other_bldgs": "Kh\u00e1c",
+        "bldg_unit": "building",
+        "no_aql": "Kh\u00f4ng c\u00f3 ki\u1ec3m tra AQL",
+        # Links
+        "dashboard": "Dashboard:",
+        "detail_lookup": "Tra c\u1ee9u nh\u00e2n vi\u00ean:",
+        "detail_how": "Dashboard \u2192 Nh\u1ea5p t\u00ean nh\u00e2n vi\u00ean",
+        "aql_analysis": "Ph\u00e2n t\u00edch AQL:",
+        "aql_how": "Dashboard \u2192 Tab T\u1ed5ng h\u1ee3p \u2192 Ph\u1ea7n AQL",
+        # Footer
+        "data_as_of": "D\u1eef li\u1ec7u t\u00ednh \u0111\u1ebfn:",
+        "auto_gen": "(t\u1ef1 \u0111\u1ed9ng t\u1ea1o)",
+        "auto_sent": "Email n\u00e0y \u0111\u01b0\u1ee3c g\u1eedi t\u1ef1 \u0111\u1ed9ng t\u1eeb h\u1ec7 th\u1ed1ng QIP Incentive Dashboard.",
+        "prev_month": "th\u00e1ng tr\u01b0\u1edbc",
+        "ppl": "ng\u01b0\u1eddi",
+        "days": "ng\u00e0y",
+    },
+}
+
+
+def _t(data, key, default=""):
+    """Translation helper - get localized string from data's i18n dict"""
+    t = data.get("_t", I18N["ko"])
+    return t.get(key, default or key)
+
+
+def _cond_name(data, key):
+    """Get condition name in current language"""
+    t = data.get("_t", I18N["ko"])
+    return t.get(key, key.upper())
+
+
+CONDITION_NAMES = I18N["ko"]  # backward compat
+
+
+# ---------------------------------------------------------------------------
 # Section renderers
 # ---------------------------------------------------------------------------
 
+def _delta_html(current, previous, suffix="%", higher_is_better=True):
+    """전월 대비 변화량 HTML"""
+    if previous is None or previous == 0:
+        return ""
+    diff = current - previous
+    if abs(diff) < 0.1:
+        return f'<span style="{STYLES["delta_neutral"]}">-</span>'
+    sign = "+" if diff > 0 else ""
+    is_good = (diff > 0) == higher_is_better
+    style = STYLES["delta_up"] if is_good else STYLES["delta_down"]
+    arrow = "&#9650;" if diff > 0 else "&#9660;"
+    return f'<span style="{style}">{arrow} {sign}{diff:.1f}{suffix}</span>'
+
+
+def _section_0_progress(data, month_ko, year):
+    """Section 0: 진행 중 월 배너"""
+    summary = data.get("summary", {})
+    working_days = summary.get("working_days", 0)
+    calendar = summary.get("calendar_data", {})
+    days_in_month = calendar.get("days_in_month", 30)
+
+    # Count total working days from weekday_indices (Mon-Sat = 0-5, Sun = 6)
+    weekday_indices = calendar.get("weekday_indices", [])
+    if weekday_indices:
+        total_wd = sum(1 for w in weekday_indices if w < 6)  # Mon-Sat
+    else:
+        total_wd = int(days_in_month * 26 / 31)  # rough estimate
+
+    if total_wd == 0:
+        return ""
+
+    # Calculate progress
+    progress_pct = min(100, int((working_days / max(total_wd, 1)) * 100))
+
+    # If month is complete (progress >= 95%), don't show banner
+    if progress_pct >= 95:
+        return ""
+
+    prev = data.get("previous_summary", {})
+    prev_total = prev.get("total_employees", 0)
+    prev_receiving = prev.get("receiving_employees", 0)
+    prev_rate = (prev_receiving / prev_total * 100) if prev_total > 0 else 0
+    prev_incentive = prev.get("total_incentive", 0)
+
+    prev_month = data.get("previous_month_ko", _t(data, 'prev_month'))
+    prev_section = ""
+    if prev_total > 0:
+        prev_section = f'''
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #bfdbfe;">
+          <strong>{prev_month} {_t(data, 'prev_result')}</strong>: {prev_total}{_t(data, 'of_total')} {prev_receiving}{_t(data, 'received')} ({prev_rate:.1f}%) | {_fmt_vnd(prev_incentive)} VND
+        </div>'''
+
+    return f'''
+    <div style="{STYLES['progress_banner']}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <strong>&#x1F4C5; {year} {month_ko} {_t(data, 'mid_status')}</strong>
+        <span>{working_days}{_t(data, 'days')} / ~{total_wd}{_t(data, 'days')} {_t(data, 'days_elapsed')} ({progress_pct}%)</span>
+      </div>
+      <div style="{STYLES['progress_bar_bg']}">
+        <div style="{STYLES['progress_bar_fill']}width:{progress_pct}%;"></div>
+      </div>
+      <div style="margin-top:6px;font-size:12px;color:#3b82f6;">
+        &#x26A0; {_t(data, 'pre_final')}
+      </div>
+      {prev_section}
+    </div>
+    '''
+
+
+def _section_1b_condition_rates(data):
+    """Section 1b: 10개 조건별 통과율 (핵심 병목 분석)"""
+    condition_stats = data.get("condition_stats", {})
+    if not condition_stats:
+        return ""
+
+    prev_stats = data.get("previous_condition_stats", {})
+
+    rows = ""
+    blocking_conditions = []
+
+    for i in range(1, 11):
+        key = f"c{i}"
+        pass_count = condition_stats.get(f"{key}_pass", 0)
+        fail_count = condition_stats.get(f"{key}_fail", 0)
+        na_count = condition_stats.get(f"{key}_na", 0)
+        applicable = pass_count + fail_count
+        total = pass_count + fail_count + na_count
+
+        if applicable == 0:
+            rate = 100.0
+            bar_width = 100
+        else:
+            rate = (pass_count / applicable * 100)
+            bar_width = max(1, int(rate))
+
+        # Previous month comparison
+        prev_rate = None
+        if prev_stats:
+            prev_pass = prev_stats.get(f"{key}_pass", 0)
+            prev_fail = prev_stats.get(f"{key}_fail", 0)
+            prev_app = prev_pass + prev_fail
+            if prev_app > 0:
+                prev_rate = prev_pass / prev_app * 100
+
+        delta = _delta_html(rate, prev_rate) if prev_rate is not None else ""
+
+        # Color based on rate
+        if rate >= 95:
+            bar_style = STYLES["cond_bar_green"]
+        elif rate >= 80:
+            bar_style = STYLES["cond_bar_yellow"]
+        else:
+            bar_style = STYLES["cond_bar_red"]
+
+        # Track blocking conditions
+        if fail_count > 0 and rate < 95:
+            blocking_conditions.append((_cond_name(data, key), fail_count, rate))
+
+        name = _cond_name(data, key)
+        rows += f'''
+        <tr>
+          <td style="{STYLES['td']};font-weight:600;white-space:nowrap;">{key.upper()}</td>
+          <td style="{STYLES['td']}">{name}</td>
+          <td style="{STYLES['td']};min-width:120px;">
+            <div style="{STYLES['cond_bar_bg']}">
+              <div style="{bar_style}width:{bar_width}%;"></div>
+            </div>
+          </td>
+          <td style="{STYLES['td_center']};font-weight:600;">{rate:.1f}%</td>
+          <td style="{STYLES['td_center']}">{pass_count}/{applicable}</td>
+          <td style="{STYLES['td_center']}">{delta}</td>
+        </tr>'''
+
+    # Blocking summary
+    blocking_html = ""
+    if blocking_conditions:
+        blocking_conditions.sort(key=lambda x: x[2])  # worst first
+        items = ""
+        for name, fail_cnt, rate in blocking_conditions[:5]:
+            severity = "&#x1F534;" if rate < 50 else "&#x1F7E0;" if rate < 80 else "&#x1F7E1;"
+            items += f"<br/>{severity} <strong>{name}</strong>: {fail_cnt}{_t(data, 'ppl_below')} ({rate:.1f}%)"
+        blocking_html = f'''
+        <div style="{STYLES['action_box_red']}">
+          &#x26A0; <strong>{_t(data, 'bottleneck')}</strong>
+          {items}
+        </div>'''
+
+    return f'''
+    <hr style="{STYLES['divider']}"/>
+    <h2 style="{STYLES['section_title']}">&#x1F3AF; {_t(data, 'condition_title')}</h2>
+    <div style="{STYLES['section_body']}">
+      <table style="{STYLES['table']}">
+        <tr>
+          <th style="{STYLES['th']}">{_t(data, 'condition')}</th>
+          <th style="{STYLES['th']}">{_t(data, 'desc')}</th>
+          <th style="{STYLES['th']}">{_t(data, 'pass_rate_h')}</th>
+          <th style="{STYLES['th_center']}">%</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'pass_applied')}</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'vs_prev')}</th>
+        </tr>
+        {rows}
+      </table>
+      {blocking_html}
+    </div>
+    '''
+
+
 def _section_1_kpi(data):
-    """Section 1: 핵심 KPI 요약"""
+    """Section 1: 핵심 KPI 요약 (전월 비교 포함)"""
     summary = data.get("summary", {})
     total = summary.get("total_employees", 0)
     receiving = summary.get("receiving_employees", 0)
     pct = (receiving / total * 100) if total > 0 else 0
     total_incentive = summary.get("total_incentive", 0)
+    eligible = summary.get("eligible_employees", total)
 
-    return f'''
-    <h2 style="{STYLES['section_title']}">&#x1F4CA; &#xFE0F; &#xA0;&#xA0;&#xD540;&#xD575; KPI &#xC694;&#xC57D;</h2>
+    # Condition-based metrics
+    condition_stats = data.get("condition_stats", {})
+    all_pass_count = 0
+    total_fail_conditions = 0
+    if condition_stats:
+        # Count employees passing ALL applicable conditions
+        # (Use the summary receiving count, or calculate from condition stats)
+        for i in range(1, 11):
+            total_fail_conditions += condition_stats.get(f"c{i}_fail", 0)
+
+    # Average condition pass rate
+    total_applicable = 0
+    total_passed = 0
+    for i in range(1, 11):
+        p = condition_stats.get(f"c{i}_pass", 0)
+        f = condition_stats.get(f"c{i}_fail", 0)
+        total_applicable += (p + f)
+        total_passed += p
+    avg_cond_rate = (total_passed / total_applicable * 100) if total_applicable > 0 else 0
+
+    # Previous month
+    prev = data.get("previous_summary", {})
+    prev_total = prev.get("total_employees", 0)
+    prev_receiving = prev.get("receiving_employees", 0)
+    prev_rate = (prev_receiving / prev_total * 100) if prev_total > 0 else 0
+
+    # KPI cards: show condition-focused metrics for in-progress months
+    if receiving == 0 and total > 0:
+        # In-progress month: show condition analysis instead of zeros
+        return f'''
+    <h2 style="{STYLES['section_title']}">&#x1F4CA; {_t(data, 'kpi_title')}</h2>
     <div style="{STYLES['section_body']}">
       <table style="{STYLES['kpi_table']}">
         <tr>
           <td style="{STYLES['kpi_cell']}">
             <p style="{STYLES['kpi_value']}">{total}</p>
-            <p style="{STYLES['kpi_label']}">Total</p>
+            <p style="{STYLES['kpi_label']}">{_t(data, 'total_emp')}</p>
+          </td>
+          <td style="{STYLES['kpi_cell']}">
+            <p style="{STYLES['kpi_value']};color:#3b82f6;">{eligible}</p>
+            <p style="{STYLES['kpi_label']}">{_t(data, 'eligible_emp')}</p>
+          </td>
+          <td style="{STYLES['kpi_cell']}">
+            <p style="{STYLES['kpi_value']};color:{'#22c55e' if avg_cond_rate >= 90 else '#f59e0b' if avg_cond_rate >= 70 else '#ef4444'};">{avg_cond_rate:.1f}%</p>
+            <p style="{STYLES['kpi_label']}">{_t(data, 'cond_rate')}</p>
+          </td>
+          <td style="{STYLES['kpi_cell']}">
+            <p style="{STYLES['kpi_value']};color:#ef4444;">{total_fail_conditions}</p>
+            <p style="{STYLES['kpi_label']}">{_t(data, 'cond_fail')}</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+    '''
+    else:
+        # Completed month: show incentive-focused metrics
+        receiving_delta = _delta_html(pct, prev_rate) if prev_rate else ""
+        return f'''
+    <h2 style="{STYLES['section_title']}">&#x1F4CA; {_t(data, 'kpi_title')}</h2>
+    <div style="{STYLES['section_body']}">
+      <table style="{STYLES['kpi_table']}">
+        <tr>
+          <td style="{STYLES['kpi_cell']}">
+            <p style="{STYLES['kpi_value']}">{total}</p>
+            <p style="{STYLES['kpi_label']}">{_t(data, 'total_emp')}</p>
           </td>
           <td style="{STYLES['kpi_cell']}">
             <p style="{STYLES['kpi_value']};color:#22c55e;">{receiving}</p>
-            <p style="{STYLES['kpi_label']}">Receiving</p>
+            <p style="{STYLES['kpi_label']}">{_t(data, 'receivers')} {receiving_delta}</p>
           </td>
           <td style="{STYLES['kpi_cell']}">
             <p style="{STYLES['kpi_value']};color:#3b82f6;">{_fmt_pct(pct)}</p>
-            <p style="{STYLES['kpi_label']}">Pay Rate</p>
+            <p style="{STYLES['kpi_label']}">{_t(data, 'pay_rate')}</p>
           </td>
           <td style="{STYLES['kpi_cell']}">
             <p style="{STYLES['kpi_value']};color:#f59e0b;">{_fmt_vnd(total_incentive)}</p>
-            <p style="{STYLES['kpi_label']}">Total (VND)</p>
+            <p style="{STYLES['kpi_label']}">{_t(data, 'total_vnd')}</p>
           </td>
         </tr>
       </table>
@@ -186,10 +591,25 @@ def _section_1_kpi(data):
 
 
 def _section_2_building(data):
-    """Section 2: Building별 품질 현황"""
+    """Section 2: Building별 품질 현황 (전월 비교, 주요 건물만)"""
     buildings = data.get("building_quality", {})
     if not buildings:
         return ""
+
+    prev_bldg = data.get("previous_building", {})
+
+    # Separate into active (has AQL tests or >5 employees) and others
+    active_bldgs = {}
+    other_count = 0
+    other_emp = 0
+    for bldg, info in buildings.items():
+        tests = info.get("tests", 0)
+        count = info.get("count", 0)
+        if tests > 0 or count >= 10:
+            active_bldgs[bldg] = info
+        else:
+            other_count += 1
+            other_emp += count
 
     rows = ""
     total_count = 0
@@ -199,9 +619,8 @@ def _section_2_building(data):
     total_emp = 0
 
     # Sort by reject rate (worst first for action priority)
-    sorted_bldgs = sorted(buildings.items(),
-                          key=lambda x: x[1].get("reject_rate", 0),
-                          reverse=True)
+    sorted_bldgs = sorted(active_bldgs.items(),
+                          key=lambda x: (-x[1].get("reject_rate", 0), -x[1].get("count", 0)))
 
     for bldg, info in sorted_bldgs:
         count = info.get("count", 0)
@@ -217,6 +636,15 @@ def _section_2_building(data):
         total_receiving += receiving
         total_emp += count
 
+        # Previous month comparison for this building
+        prev_info = prev_bldg.get(bldg, {})
+        prev_recv = prev_info.get("receiving", 0)
+        prev_cnt = prev_info.get("count", 0)
+        prev_pay = (prev_recv / prev_cnt * 100) if prev_cnt > 0 else 0
+        prev_col = ""
+        if prev_cnt > 0:
+            prev_col = f'{prev_recv}/{prev_cnt} ({prev_pay:.0f}%)'
+
         rows += f'''
         <tr>
           <td style="{STYLES['td']}">{_grade_emoji(reject_rate)} {_bldg_badge(bldg)}</td>
@@ -224,13 +652,21 @@ def _section_2_building(data):
           <td style="{STYLES['td_center']}">{tests}</td>
           <td style="{STYLES['td_center']}">{fails}</td>
           <td style="{STYLES['td_center']}">{_fmt_pct(reject_rate)}</td>
-          <td style="{STYLES['td_center']}">{_fmt_pct(pay_rate)}</td>
           <td style="{STYLES['td_center']}">{_grade_badge(reject_rate)}</td>
+          <td style="{STYLES['td_center']};font-size:11px;color:#6b7280;">{prev_col}</td>
+        </tr>'''
+
+    # Other buildings row (collapsed)
+    if other_count > 0:
+        total_emp += other_emp
+        rows += f'''
+        <tr style="background:#fafbfc;">
+          <td style="{STYLES['td']};color:#9ca3af;font-style:italic;" colspan="2">{_t(data, 'other_bldgs')} {other_count}{_t(data, 'bldg_unit')} ({other_emp}{_t(data, 'ppl')})</td>
+          <td style="{STYLES['td_center']};color:#9ca3af;" colspan="5">{_t(data, 'no_aql')}</td>
         </tr>'''
 
     # Total row
     total_reject = (total_fails / total_tests * 100) if total_tests > 0 else 0
-    total_pay_rate = (total_receiving / total_emp * 100) if total_emp > 0 else 0
     rows += f'''
     <tr style="{STYLES['tr_total']}">
       <td style="{STYLES['td']}">Total</td>
@@ -238,23 +674,23 @@ def _section_2_building(data):
       <td style="{STYLES['td_center']}">{total_tests}</td>
       <td style="{STYLES['td_center']}">{total_fails}</td>
       <td style="{STYLES['td_center']}">{_fmt_pct(total_reject)}</td>
-      <td style="{STYLES['td_center']}">{_fmt_pct(total_pay_rate)}</td>
+      <td style="{STYLES['td_center']}"></td>
       <td style="{STYLES['td_center']}"></td>
     </tr>'''
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F3ED; Building&#xBCC4; &#xD488;&#xC9C8; &#xD604;&#xD669;</h2>
+    <h2 style="{STYLES['section_title']}">&#x1F3ED; {_t(data, 'building_title')}</h2>
     <div style="{STYLES['section_body']}">
       <table style="{STYLES['table']}">
         <tr>
-          <th style="{STYLES['th']}">Building</th>
-          <th style="{STYLES['th_center']}">&#xC9C1;&#xC6D0;&#xC218;</th>
-          <th style="{STYLES['th_center']}">AQL &#xAC80;&#xC0AC;</th>
-          <th style="{STYLES['th_center']}">AQL &#xC2E4;&#xD328;</th>
-          <th style="{STYLES['th_center']}">&#xB9AC;&#xC81D;&#xC728;</th>
-          <th style="{STYLES['th_center']}">&#xC9C0;&#xAE09;&#xB960;</th>
-          <th style="{STYLES['th_center']}">&#xB4F1;&#xAE09;</th>
+          <th style="{STYLES['th']}">{_t(data, 'building')}</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'emp_count')}</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'aql')}</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'fail')}</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'reject_rate')}</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'grade')}</th>
+          <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'prev_recv')}</th>
         </tr>
         {rows}
       </table>
@@ -310,36 +746,36 @@ def _section_3_aql_failures(data):
                 elif "MANAGER" in p:
                     pos_short = "MG"
             suffix = f" ({pos_short})" if pos_short else ""
-            action_lines += f"{i}. {boss_name} (LL) &#8594; &#xBD80;&#xD558; {len(emps)}&#xBA85; AQL &#xC7AC;&#xAD50;&#xC721;. &#xBCF4;&#xACE0;: {boss_boss}{suffix}<br/>"
+            action_lines += f"{i}. {boss_name} (LL) &#8594; {_t(data, 'subordinate')} {len(emps)}{_t(data, 'ppl')} {_t(data, 'aql_retrain')} {boss_boss}{suffix}<br/>"
 
         html += f'''
-        <p style="{STYLES['subtitle']}">{_bldg_badge(bldg)} AQL &#xC2E4;&#xD328; {len(fail_employees)}&#xBA85;</p>
+        <p style="{STYLES['subtitle']}">{_bldg_badge(bldg)} AQL {_t(data, 'fail')} {len(fail_employees)}{_t(data, 'ppl')}</p>
         <table style="{STYLES['table']}">
           <tr>
-            <th style="{STYLES['th']}">&#xC0AC;&#xBC88;</th>
-            <th style="{STYLES['th']}">&#xC774;&#xB984;</th>
-            <th style="{STYLES['th_center']}">&#xC2E4;&#xD328;</th>
-            <th style="{STYLES['th']}">&#xB2F4;&#xB2F9;&#xC790; &#x2192; &#xC0C1;&#xC0AC;</th>
+            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'fail')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
           </tr>
           {rows}
         </table>
         <div style="{STYLES['action_box']}">
-          &#x1F4CB; <strong>&#xAD8C;&#xACE0; &#xC561;&#xC158;:</strong><br/>{action_lines}
+          &#x1F4CB; <strong>{_t(data, 'action_rec')}</strong><br/>{action_lines}
         </div>
         '''
 
     if not has_failures:
         return f'''
         <hr style="{STYLES['divider']}"/>
-        <h2 style="{STYLES['section_title']}">&#x1F6A8; AQL &#xC2E4;&#xD328;&#xC790; &#xC0C1;&#xC138;</h2>
+        <h2 style="{STYLES['section_title']}">&#x1F6A8; {_t(data, 'aql_fail_title')}</h2>
         <div style="{STYLES['section_body']}">
-          <p style="color:#22c55e;font-weight:600;">&#x2705; &#xC774;&#xBC88; &#xB2EC; AQL &#xC2E4;&#xD328;&#xC790; &#xC5C6;&#xC74C;</p>
+          <p style="color:#22c55e;font-weight:600;">&#x2705; {_t(data, 'aql_none')}</p>
         </div>
         '''
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F6A8; AQL &#xC2E4;&#xD328;&#xC790; &#xC0C1;&#xC138; (&#xC989;&#xC2DC; &#xC561;&#xC158; &#xD544;&#xC694;)</h2>
+    <h2 style="{STYLES['section_title']}">&#x1F6A8; {_t(data, 'aql_fail_title')}</h2>
     <div style="{STYLES['section_body']}">
       {html}
     </div>
@@ -372,18 +808,18 @@ def _section_4_consecutive_aql(data):
             </tr>'''
 
         html += f'''
-        <p style="{STYLES['subtitle']}">&#x1F534; 3&#xAC1C;&#xC6D4; &#xC5F0;&#xC18D; &#xC2E4;&#xD328; (&#xC778;&#xC13C;&#xD2F0;&#xBE0C; &#xCC28;&#xB2E8;): {len(continuous_3m)}&#xBA85;</p>
+        <p style="{STYLES['subtitle']}">&#x1F534; {_t(data, 'consec_3m')} {len(continuous_3m)}{_t(data, 'ppl')}</p>
         <table style="{STYLES['table']}">
           <tr>
-            <th style="{STYLES['th']}">&#xC0AC;&#xBC88;</th>
-            <th style="{STYLES['th']}">&#xC774;&#xB984;</th>
-            <th style="{STYLES['th_center']}">Building</th>
-            <th style="{STYLES['th']}">&#xB2F4;&#xB2F9;&#xC790; &#x2192; &#xC0C1;&#xC0AC;</th>
+            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'building')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
           </tr>
           {rows}
         </table>
         <div style="{STYLES['action_box_red']}">
-          &#x1F4CB; <strong>&#xC778;&#xC0AC; &#xC870;&#xCE58; &#xAC80;&#xD1A0; &#xD544;&#xC694;.</strong> 3&#xAC1C;&#xC6D4; &#xC5F0;&#xC18D; &#xC2E4;&#xD328; &#xC2DC; &#xC778;&#xC13C;&#xD2F0;&#xBE0C; &#xC601;&#xAD6C; &#xCC28;&#xB2E8;.
+          &#x1F4CB; {_t(data, 'consec_3m_action')}
         </div>
         '''
 
@@ -403,24 +839,24 @@ def _section_4_consecutive_aql(data):
             </tr>'''
 
         html += f'''
-        <p style="{STYLES['subtitle']}">&#x1F7E1; 2&#xAC1C;&#xC6D4; &#xC5F0;&#xC18D; &#xC2E4;&#xD328; (&#xACBD;&#xACE0;): {len(continuous_2m)}&#xBA85;</p>
+        <p style="{STYLES['subtitle']}">&#x1F7E1; {_t(data, 'consec_2m')} {len(continuous_2m)}{_t(data, 'ppl')}</p>
         <table style="{STYLES['table']}">
           <tr>
-            <th style="{STYLES['th']}">&#xC0AC;&#xBC88;</th>
-            <th style="{STYLES['th']}">&#xC774;&#xB984;</th>
-            <th style="{STYLES['th_center']}">Building</th>
-            <th style="{STYLES['th']}">&#xB2F4;&#xB2F9;&#xC790; &#x2192; &#xC0C1;&#xC0AC;</th>
+            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'building')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
           </tr>
           {rows}
         </table>
         <div style="{STYLES['action_box_yellow']}">
-          &#x1F4CB; &#xB2E4;&#xC74C; &#xB2EC; &#xC2E4;&#xD328; &#xC2DC; 3&#xAC1C;&#xC6D4; &#xC5F0;&#xC18D; &#x2192; &#xAC01; &#xB2F4;&#xB2F9;&#xC790;&#xC5D0;&#xAC8C; &#xC9D1;&#xC911; &#xAD00;&#xB9AC; &#xC694;&#xCCAD;.
+          &#x1F4CB; {_t(data, 'consec_2m_action')}
         </div>
         '''
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x26A0;&#xFE0F; &#xC5F0;&#xC18D; AQL &#xC2E4;&#xD328; &#xACBD;&#xACE0; (&#xC704;&#xD5D8; &#xAD00;&#xB9AC;)</h2>
+    <h2 style="{STYLES['section_title']}">&#x26A0;&#xFE0F; {_t(data, 'consecutive_title')}</h2>
     <div style="{STYLES['section_body']}">
       {html}
     </div>
@@ -457,19 +893,19 @@ def _section_5_5prs(data):
             </tr>'''
 
         html += f'''
-        <p style="{STYLES['subtitle']}">&#x1F7E0; 5PRS &#xD1B5;&#xACFC;&#xC728; &#xBBF8;&#xB2EC; (&lt;{rate_th}%): {len(low_rate)}&#xBA85;</p>
+        <p style="{STYLES['subtitle']}">&#x1F7E0; {_t(data, 'prs_rate_below')} (&lt;{rate_th}%): {len(low_rate)}{_t(data, 'ppl')}</p>
         <table style="{STYLES['table']}">
           <tr>
-            <th style="{STYLES['th']}">&#xC0AC;&#xBC88;</th>
-            <th style="{STYLES['th']}">&#xC774;&#xB984;</th>
-            <th style="{STYLES['th_center']}">&#xD1B5;&#xACFC;&#xC728;</th>
-            <th style="{STYLES['th_center']}">&#xAC80;&#xC0AC;&#xB7C9;</th>
-            <th style="{STYLES['th']}">&#xB2F4;&#xB2F9;&#xC790; &#x2192; &#xC0C1;&#xC0AC;</th>
+            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'pass_rate_h')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'insp_qty')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
           </tr>
           {rows}
         </table>
         <div style="{STYLES['action_box']}">
-          &#x1F4CB; &#xAC01; &#xB2F4;&#xB2F9;&#xC790;&#xC5D0;&#xAC8C; 5PRS &#xAC80;&#xC0AC; &#xD488;&#xC9C8; &#xAC1C;&#xC120; &#xC9C0;&#xB3C4; &#xC694;&#xCCAD;.
+          &#x1F4CB; {_t(data, 'prs_action')}
         </div>
         '''
 
@@ -490,25 +926,25 @@ def _section_5_5prs(data):
             </tr>'''
 
         html += f'''
-        <p style="{STYLES['subtitle']}">&#x1F7E0; 5PRS &#xAC80;&#xC0AC;&#xB7C9; &#xBBF8;&#xB2EC; (&lt;{qty_th}&#xC871;): {len(low_qty)}&#xBA85;</p>
+        <p style="{STYLES['subtitle']}">&#x1F7E0; {_t(data, 'prs_qty_below')} (&lt;{qty_th}): {len(low_qty)}{_t(data, 'ppl')}</p>
         <table style="{STYLES['table']}">
           <tr>
-            <th style="{STYLES['th']}">&#xC0AC;&#xBC88;</th>
-            <th style="{STYLES['th']}">&#xC774;&#xB984;</th>
-            <th style="{STYLES['th_center']}">&#xD1B5;&#xACFC;&#xC728;</th>
-            <th style="{STYLES['th_center']}">&#xAC80;&#xC0AC;&#xB7C9;</th>
-            <th style="{STYLES['th']}">&#xB2F4;&#xB2F9;&#xC790; &#x2192; &#xC0C1;&#xC0AC;</th>
+            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'pass_rate_h')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'insp_qty')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
           </tr>
           {rows}
         </table>
         <div style="{STYLES['action_box']}">
-          &#x1F4CB; &#xAC80;&#xC0AC; &#xAE30;&#xD68C; &#xBD80;&#xC871; &#xC5EC;&#xBD80; &#xD655;&#xC778; &#x2192; &#xAC80;&#xC0AC; &#xBC30;&#xC815; &#xC870;&#xC815; &#xC694;&#xCCAD;.
+          &#x1F4CB; {_t(data, 'prs_qty_action')}
         </div>
         '''
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F50D; 5PRS &#xBBF8;&#xB2EC;&#xC790; &#xC0C1;&#xC138; (&#xD488;&#xC9C8; &#xAC80;&#xC0AC; &#xAD00;&#xB9AC;)</h2>
+    <h2 style="{STYLES['section_title']}">&#x1F50D; {_t(data, 'prs_title')}</h2>
     <div style="{STYLES['section_body']}">
       {html}
     </div>
@@ -545,19 +981,19 @@ def _section_6_attendance(data):
             </tr>'''
 
         html += f'''
-        <p style="{STYLES['subtitle']}">&#x1F534; &#xCD9C;&#xADFC;&#xC728; &#xBBF8;&#xB2EC; (&lt;{rate_th}%): {len(low_attendance)}&#xBA85;</p>
+        <p style="{STYLES['subtitle']}">&#x1F534; {_t(data, 'att_below')} (&lt;{rate_th}%): {len(low_attendance)}{_t(data, 'ppl')}</p>
         <table style="{STYLES['table']}">
           <tr>
-            <th style="{STYLES['th']}">&#xC0AC;&#xBC88;</th>
-            <th style="{STYLES['th']}">&#xC774;&#xB984;</th>
-            <th style="{STYLES['th_center']}">&#xCD9C;&#xADFC;&#xC728;</th>
-            <th style="{STYLES['th_center']}">&#xBB34;&#xB2E8;&#xACB0;&#xADFC;</th>
-            <th style="{STYLES['th']}">&#xB2F4;&#xB2F9;&#xC790; &#x2192; &#xC0C1;&#xC0AC;</th>
+            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'att_rate')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'unapp_abs')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
           </tr>
           {rows}
         </table>
         <div style="{STYLES['action_box_red']}">
-          &#x1F4CB; &#xBB34;&#xB2E8;&#xACB0;&#xADFC; &#xCD08;&#xACFC;&#xC790;&#xB294; &#xC989;&#xC2DC; &#xB2F4;&#xB2F9;&#xC790;&#xC5D0;&#xAC8C; &#xC0AC;&#xC720; &#xD655;&#xC778; &#xC694;&#xCCAD;.
+          &#x1F4CB; {_t(data, 'att_action')}
         </div>
         '''
 
@@ -578,25 +1014,25 @@ def _section_6_attendance(data):
             </tr>'''
 
         html += f'''
-        <p style="{STYLES['subtitle']}">&#x1F7E1; &#xBB34;&#xB2E8;&#xACB0;&#xADFC; &#xCD08;&#xACFC; (&gt;{absence_th}&#xC77C;): {len(high_absence)}&#xBA85;</p>
+        <p style="{STYLES['subtitle']}">&#x1F7E1; {_t(data, 'abs_over')} (&gt;{absence_th}{_t(data, 'days')}): {len(high_absence)}{_t(data, 'ppl')}</p>
         <table style="{STYLES['table']}">
           <tr>
-            <th style="{STYLES['th']}">&#xC0AC;&#xBC88;</th>
-            <th style="{STYLES['th']}">&#xC774;&#xB984;</th>
-            <th style="{STYLES['th_center']}">&#xCD9C;&#xADFC;&#xC728;</th>
-            <th style="{STYLES['th_center']}">&#xBB34;&#xB2E8;&#xACB0;&#xADFC;</th>
-            <th style="{STYLES['th']}">&#xB2F4;&#xB2F9;&#xC790; &#x2192; &#xC0C1;&#xC0AC;</th>
+            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'att_rate')}</th>
+            <th style="{STYLES['th_center']}">{_t(data, 'unapp_abs')}</th>
+            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
           </tr>
           {rows}
         </table>
         <div style="{STYLES['action_box_yellow']}">
-          &#x1F4CB; &#xAC01; &#xB2F4;&#xB2F9;&#xC790;&#xC5D0;&#xAC8C; &#xBB34;&#xB2E8;&#xACB0;&#xADFC; &#xC0AC;&#xC720; &#xD655;&#xC778; &#xBC0F; &#xC7AC;&#xBC1C; &#xBC29;&#xC9C0; &#xC9C0;&#xB3C4; &#xC694;&#xCCAD;.
+          &#x1F4CB; {_t(data, 'abs_action')}
         </div>
         '''
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F4C5; &#xCD9C;&#xADFC; &#xBBF8;&#xB2EC;&#xC790; &#xC0C1;&#xC138; (&#xADFC;&#xD0DC; &#xAD00;&#xB9AC;)</h2>
+    <h2 style="{STYLES['section_title']}">&#x1F4C5; {_t(data, 'attendance_title')}</h2>
     <div style="{STYLES['section_body']}">
       {html}
     </div>
@@ -629,15 +1065,15 @@ def _section_7_type_breakdown(data):
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F4CA; TYPE&#xBCC4; &#xC778;&#xC13C;&#xD2F0;&#xBE0C; &#xD604;&#xD669;</h2>
+    <h2 style="{STYLES['section_title']}">&#x1F4CA; {_t(data, 'type_title')}</h2>
     <div style="{STYLES['section_body']}">
       <table style="{STYLES['table']}">
         <tr>
-          <th style="{STYLES['th']}">TYPE</th>
-          <th style="{STYLES['th_center']}">&#xC9C1;&#xC6D0;&#xC218;</th>
-          <th style="{STYLES['th_center']}">&#xC218;&#xB839;&#xC790;</th>
-          <th style="{STYLES['th_center']}">&#xC9C0;&#xAE09;&#xB960;</th>
-          <th style="{STYLES['th_center']}">&#xCD1D; &#xC9C0;&#xAE09;&#xC561; (VND)</th>
+          <th style="{STYLES['th']}">{_t(data, 'type')}</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'emp_count')}</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'receivers')}</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'pay_rate')}</th>
+          <th style="{STYLES['th_center']}">{_t(data, 'total_vnd')}</th>
         </tr>
         {rows}
       </table>
@@ -651,17 +1087,17 @@ def _section_8_links(data, dashboard_url=None):
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F517; &#xC561;&#xC158; &#xB9C1;&#xD06C;</h2>
+    <h2 style="{STYLES['section_title']}">&#x1F517; {_t(data, 'link_title')}</h2>
     <div style="{STYLES['section_body']}">
       <table style="width:100%;border-collapse:collapse;">
         <tr>
-          <td style="padding:6px 0;font-size:13px;">&#x2022; <strong>&#xB300;&#xC2DC;&#xBCF4;&#xB4DC;:</strong> <a href="{url}" style="color:#3b82f6;">{url}</a></td>
+          <td style="padding:6px 0;font-size:13px;">&#x2022; <strong>{_t(data, 'dashboard')}</strong> <a href="{url}" style="color:#3b82f6;">{url}</a></td>
         </tr>
         <tr>
-          <td style="padding:6px 0;font-size:13px;">&#x2022; <strong>&#xC0C1;&#xC138; &#xC9C1;&#xC6D0; &#xC870;&#xD68C;:</strong> &#xB300;&#xC2DC;&#xBCF4;&#xB4DC; &#x2192; &#xC9C1;&#xC6D0; &#xC774;&#xB984; &#xD074;&#xB9AD;</td>
+          <td style="padding:6px 0;font-size:13px;">&#x2022; <strong>{_t(data, 'detail_lookup')}</strong> {_t(data, 'detail_how')}</td>
         </tr>
         <tr>
-          <td style="padding:6px 0;font-size:13px;">&#x2022; <strong>AQL &#xBD84;&#xC11D;:</strong> &#xB300;&#xC2DC;&#xBCF4;&#xB4DC; &#x2192; &#xC694;&#xC57D; &#xD0ED; &#x2192; AQL &#xAC80;&#xC99D; &#xC139;&#xC158;</td>
+          <td style="padding:6px 0;font-size:13px;">&#x2022; <strong>{_t(data, 'aql_analysis')}</strong> {_t(data, 'aql_how')}</td>
         </tr>
       </table>
     </div>
@@ -679,7 +1115,7 @@ MONTH_KO = {
 }
 
 
-def generate_email_html(action_data, month="february", year=2026, dashboard_url=None, generated_at=None):
+def generate_email_html(action_data, month="february", year=2026, dashboard_url=None, generated_at=None, lang="ko"):
     """전체 이메일 HTML 생성
 
     Args:
@@ -688,17 +1124,28 @@ def generate_email_html(action_data, month="february", year=2026, dashboard_url=
         year: 연도
         dashboard_url: 대시보드 URL (optional)
         generated_at: 생성 시각 문자열 (optional)
+        lang: 언어 코드 ("ko" or "vi")
 
     Returns:
         str: 완전한 HTML 이메일 문자열
     """
-    month_ko = MONTH_KO.get(month, month)
+    # Inject translation dict into action_data for section functions
+    t = I18N.get(lang, I18N["ko"])
+    action_data["_t"] = t
+
+    # Get month name in target language
+    month_idx = ["january","february","march","april","may","june",
+                 "july","august","september","october","november","december"].index(month) + 1
+    month_local = t.get(f"m{month_idx}", month)
+    month_ko = MONTH_KO.get(month, month)  # keep for backward compat
     if generated_at is None:
         from datetime import datetime, timezone
         generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
 
     # Render all sections
+    s0 = _section_0_progress(action_data, month_local, year)
     s1 = _section_1_kpi(action_data)
+    s1b = _section_1b_condition_rates(action_data)
     s2 = _section_2_building(action_data)
     s3 = _section_3_aql_failures(action_data)
     s4 = _section_4_consecutive_aql(action_data)
@@ -707,23 +1154,26 @@ def generate_email_html(action_data, month="february", year=2026, dashboard_url=
     s7 = _section_7_type_breakdown(action_data)
     s8 = _section_8_links(action_data, dashboard_url)
 
+    html_lang = "vi" if lang == "vi" else "ko"
     html = f'''<!DOCTYPE html>
-<html lang="ko">
+<html lang="{html_lang}">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QIP Incentive Report - {year}&#xB144; {month_ko}</title>
+  <title>QIP Incentive Report - {year} {month_local}</title>
 </head>
 <body style="{STYLES['body']}">
   <div style="{STYLES['container']}">
 
     <!-- Header -->
     <div style="{STYLES['header']}">
-      <h1 style="{STYLES['header_title']}">&#x1F4CA; QIP &#xC778;&#xC13C;&#xD2F0;&#xBE0C; &#xC561;&#xC158; &#xB9AC;&#xD3EC;&#xD2B8; - {year}&#xB144; {month_ko}</h1>
+      <h1 style="{STYLES['header_title']}">QIP - {year} {month_local}</h1>
       <p style="{STYLES['header_sub']}">HWK QIP Incentive Dashboard V10</p>
     </div>
 
+    {s0}
     {s1}
+    {s1b}
     {s2}
     {s3}
     {s4}
@@ -734,12 +1184,14 @@ def generate_email_html(action_data, month="february", year=2026, dashboard_url=
 
     <!-- Footer -->
     <div style="{STYLES['footer']}">
-      &#x1F4C5; &#xB370;&#xC774;&#xD130; &#xAE30;&#xC900;: {generated_at} (&#xC790;&#xB3D9; &#xC0DD;&#xC131;)<br/>
-      &#xC774; &#xC774;&#xBA54;&#xC77C;&#xC740; QIP Incentive Dashboard &#xC2DC;&#xC2A4;&#xD15C;&#xC5D0;&#xC11C; &#xC790;&#xB3D9; &#xBC1C;&#xC1A1;&#xB418;&#xC5C8;&#xC2B5;&#xB2C8;&#xB2E4;.
+      &#x1F4C5; {_t(action_data, 'data_as_of')} {generated_at} {_t(action_data, 'auto_gen')}<br/>
+      {_t(action_data, 'auto_sent')}
     </div>
 
   </div>
 </body>
 </html>'''
 
+    # Clean up injected translation
+    action_data.pop("_t", None)
     return html

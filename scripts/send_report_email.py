@@ -111,6 +111,52 @@ def load_firestore_data(db, month, year):
 # Action report builder (핵심 비즈니스 로직)
 # ---------------------------------------------------------------------------
 
+PREV_MONTH_MAP = {
+    "january": "december", "february": "january", "march": "february",
+    "april": "march", "may": "april", "june": "may",
+    "july": "june", "august": "july", "september": "august",
+    "october": "september", "november": "october", "december": "november",
+}
+
+MONTH_KO = {
+    "january": "1월", "february": "2월", "march": "3월", "april": "4월",
+    "may": "5월", "june": "6월", "july": "7월", "august": "8월",
+    "september": "9월", "october": "10월", "november": "11월", "december": "12월"
+}
+
+
+def load_previous_month(db, month, year):
+    """전월 데이터 로드 (비교용)
+
+    Returns:
+        dict: {summary, condition_stats, building_breakdown} or empty dict
+    """
+    prev_month = PREV_MONTH_MAP.get(month, "")
+    prev_year = year - 1 if month == "january" else year
+    if not prev_month:
+        return {}
+
+    month_year = f"{prev_month}_{prev_year}"
+    print(f"  전월 데이터 로드: {month_year}")
+
+    summary_ref = db.collection("dashboard_summary").document(month_year)
+    summary_doc = summary_ref.get()
+    if not summary_doc.exists:
+        print(f"    전월 dashboard_summary 없음")
+        return {}
+
+    summary = summary_doc.to_dict()
+    print(f"    전월: {summary.get('total_employees', 0)}명, "
+          f"{summary.get('receiving_employees', 0)}명 수령")
+
+    return {
+        "summary": summary,
+        "condition_stats": summary.get("condition_stats", {}),
+        "building_breakdown": summary.get("building_breakdown", {}),
+        "month_ko": MONTH_KO.get(prev_month, prev_month),
+    }
+
+
 def build_action_report(firestore_data):
     """Firestore 데이터에서 액션 리포트 데이터 구조 생성
 
@@ -249,6 +295,16 @@ def build_action_report(firestore_data):
         if unapp_abs > absence_th:
             high_absence.append(emp_info)
 
+    # --- Condition stats from summary ---
+    condition_stats = summary.get("condition_stats", {})
+
+    # --- Previous month data ---
+    prev_data = firestore_data.get("previous", {})
+    prev_summary = prev_data.get("summary", {}) if prev_data else {}
+    prev_condition_stats = prev_data.get("condition_stats", {}) if prev_data else {}
+    prev_building = prev_data.get("building_breakdown", {}) if prev_data else {}
+    prev_month_ko = prev_data.get("month_ko", "") if prev_data else ""
+
     return {
         "summary": summary,
         "building_quality": building_quality,
@@ -264,6 +320,12 @@ def build_action_report(firestore_data):
             "5prs_pass_rate": prs_rate_th,
             "5prs_min_qty": prs_qty_th,
         },
+        # New: condition and comparison data
+        "condition_stats": condition_stats,
+        "previous_summary": prev_summary,
+        "previous_condition_stats": prev_condition_stats,
+        "previous_building": prev_building,
+        "previous_month_ko": prev_month_ko,
     }
 
 
@@ -490,6 +552,8 @@ def main():
                         help="중복 체크 무시하고 강제 발송")
     parser.add_argument("--output", type=str, default=None,
                         help="Dry-run 시 HTML 저장 경로")
+    parser.add_argument("--lang", type=str, default=None,
+                        help="언어 코드 (ko, vi). 미지정 시 수신자별 lang 필드 사용")
     args = parser.parse_args()
 
     month = args.month.lower().strip()
@@ -525,6 +589,11 @@ def main():
     print("\n[Step 3] Firestore 데이터 로드")
     firestore_data = load_firestore_data(db, month, year)
 
+    # Step 3.5: 전월 데이터 로드 (비교용)
+    print("\n[Step 3.5] 전월 데이터 로드")
+    prev_data = load_previous_month(db, month, year)
+    firestore_data["previous"] = prev_data
+
     # Step 4: 액션 리포트 데이터 빌드
     print("\n[Step 4] 액션 리포트 데이터 생성")
     action_data = build_action_report(firestore_data)
@@ -541,18 +610,21 @@ def main():
     print(f"    출근율 미달: {len(action_data['low_attendance'])}명")
     print(f"    무단결근 초과: {len(action_data['high_absence'])}명")
 
-    # Step 5: HTML 생성
+    # Step 5: HTML 생성 (언어별)
     print("\n[Step 5] HTML 이메일 생성")
+    report_lang = args.lang or "ko"
     html = generate_email_html(
         action_data,
         month=month,
         year=year,
+        lang=report_lang,
     )
-    print(f"    HTML 크기: {len(html):,} bytes")
+    print(f"    HTML 크기: {len(html):,} bytes (lang={report_lang})")
 
     # Step 6: Dry-run → HTML 저장
     if args.dry_run:
-        output_path = args.output or f"output_files/email_report_{month_year}.html"
+        lang_suffix = f"_{report_lang}" if report_lang != "ko" else ""
+        output_path = args.output or f"output_files/email_report_{month_year}{lang_suffix}.html"
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(html)
@@ -576,38 +648,76 @@ def main():
     print(f"    SMTP: {smtp_settings['host']}:{smtp_settings['port']}")
     print(f"    From: {smtp_settings['from_name']} <{smtp_settings['from_email']}>")
 
-    # Step 8: 수신자 결정
+    # Step 8: 수신자 결정 + 언어별 그룹화
     print("\n[Step 7] 수신자 결정")
     if args.test_email:
-        recipients = [args.test_email]
-        print(f"    테스트 발송: {args.test_email}")
+        # 테스트 모드: 지정된 언어로 한 명에게만 발송
+        lang_groups = {report_lang: [args.test_email]}
+        print(f"    테스트 발송: {args.test_email} (lang={report_lang})")
     else:
         recipients = config.get("email_recipients", [])
         if not recipients:
-            # Fallback to admin_emails
             recipients = config.get("admin_emails", [])
-        print(f"    수신자: {len(recipients)}명")
+
+        # 언어별 그룹화
+        lang_groups = {}
         for r in recipients:
             if isinstance(r, dict):
-                print(f"      - {r.get('name', '-')} <{r.get('email', '-')}>")
+                rlang = r.get("lang", "vi")
+                email = r.get("email", "")
+                rname = r.get("name", "-")
+                if email:
+                    lang_groups.setdefault(rlang, []).append(email)
+                    print(f"      - {rname} <{email}> (lang={rlang})")
             else:
-                print(f"      - {r}")
+                lang_groups.setdefault("vi", []).append(str(r))
+                print(f"      - {r} (lang=vi)")
 
-    if not recipients:
+        # --lang 플래그 지정 시 모든 수신자에게 해당 언어로 발송
+        if args.lang:
+            all_emails = [e for group in lang_groups.values() for e in group]
+            lang_groups = {args.lang: all_emails}
+
+        print(f"    수신자: {sum(len(v) for v in lang_groups.values())}명 ({len(lang_groups)}개 언어)")
+
+    if not lang_groups:
         print("  수신자 없음 — 발송 중단")
         return
 
-    # Step 9: 이메일 발송
-    month_ko = {"january": "1월", "february": "2월", "march": "3월", "april": "4월",
-                "may": "5월", "june": "6월", "july": "7월", "august": "8월",
-                "september": "9월", "october": "10월", "november": "11월", "december": "12월"}
-    subject = f"[QIP] {year}년 {month_ko.get(month, month)} 인센티브 액션 리포트"
+    # Step 9: 언어별 이메일 발송
+    total_result = {"sent": 0, "failed": 0, "errors": []}
 
-    print(f"\n[Step 8] 이메일 발송")
-    print(f"    제목: {subject}")
-    result = send_email(recipients, html, subject, smtp_settings)
+    for send_lang, send_recipients in lang_groups.items():
+        # 언어별 HTML 생성
+        import copy
+        lang_data = copy.deepcopy(action_data)
+        lang_html = generate_email_html(
+            lang_data,
+            month=month,
+            year=year,
+            lang=send_lang,
+        )
+
+        # 언어별 제목
+        if send_lang == "vi":
+            month_idx = ["january","february","march","april","may","june",
+                         "july","august","september","october","november","december"].index(month) + 1
+            subject = f"[QIP] B\u00e1o c\u00e1o Th\u01b0\u1edfng Th\u00e1ng {month_idx}/{year}"
+        else:
+            month_ko_map = {"january": "1월", "february": "2월", "march": "3월", "april": "4월",
+                        "may": "5월", "june": "6월", "july": "7월", "august": "8월",
+                        "september": "9월", "october": "10월", "november": "11월", "december": "12월"}
+            subject = f"[QIP] {year}년 {month_ko_map.get(month, month)} 인센티브 액션 리포트"
+
+        print(f"\n[Step 8] 이메일 발송 (lang={send_lang}, {len(send_recipients)}명)")
+        print(f"    제목: {subject}")
+        result = send_email(send_recipients, lang_html, subject, smtp_settings)
+        total_result["sent"] += result["sent"]
+        total_result["failed"] += result["failed"]
+        total_result["errors"].extend(result["errors"])
 
     # Step 10: 결과 로깅
+    result = total_result
     print(f"\n[Step 9] 결과")
     print(f"    발송: {result['sent']}건")
     print(f"    실패: {result['failed']}건")

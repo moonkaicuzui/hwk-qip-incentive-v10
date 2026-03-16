@@ -757,6 +757,23 @@ var AdminPage = {
                     '<p class="text-muted text-center py-3">' +
                     '<i class="fa-regular fa-envelope me-1"></i> ' + t('admin.noRecipients') + '</p>';
             }
+
+            // Load schedule info
+            if (doc.exists && doc.data().report_schedule) {
+                var schedule = doc.data().report_schedule;
+                var descEl = document.getElementById('schedule-desc');
+                var langsEl = document.getElementById('schedule-langs');
+                if (descEl) {
+                    var statusIcon = schedule.enabled ? '🟢' : '🔴';
+                    descEl.textContent = statusIcon + ' ' + (schedule.description || 'Not configured');
+                }
+                if (langsEl) {
+                    var langs = (schedule.languages || []).map(function(l) {
+                        return l === 'ko' ? '한국어 (ko)' : l === 'vi' ? 'Tiếng Việt (vi)' : l;
+                    }).join(', ');
+                    langsEl.textContent = langs || '-';
+                }
+            }
         } catch (error) {
             console.error('[Admin] Failed to load email settings:', error);
             container.innerHTML =

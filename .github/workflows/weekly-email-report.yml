@@ -2,7 +2,7 @@ name: Weekly Email Report
 
 on:
   schedule:
-    - cron: '0 2 * * 1'  # Every Monday 09:00 Vietnam (UTC+7 = UTC 02:00)
+    - cron: '0 22 * * 0'  # Every Monday 05:00 Vietnam (UTC+7 = UTC 22:00 Sunday)
   workflow_dispatch:  # Manual trigger
 
 permissions:
@@ -11,7 +11,7 @@ permissions:
 jobs:
   send-report:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: "Step 1: Checkout repository"
@@ -41,14 +41,15 @@ jobs:
           echo "year=$YEAR" >> $GITHUB_OUTPUT
           echo "📅 Report period: $MONTH $YEAR"
 
-      - name: "Step 4: Send weekly email report"
+      - name: "Step 4: Send weekly email report (multi-language)"
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         run: |
-          echo "📧 Sending weekly email report..."
+          echo "📧 Sending weekly email report (recipients grouped by language)..."
           python scripts/send_report_email.py \
             --month "${{ steps.period.outputs.month }}" \
-            --year "${{ steps.period.outputs.year }}"
+            --year "${{ steps.period.outputs.year }}" \
+            --force
           echo "✅ Email report complete"
