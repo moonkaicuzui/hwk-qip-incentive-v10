@@ -1,62 +1,62 @@
 {
-  "description": "QIP Talent Pool 특별 인센티브 관리",
-  "version": "1.0",
+  "last_updated": "2025-08-29",
   "talent_pool": {
+    "eligibility_rules": {
+      "exclude_maternity_leave": false,
+      "minimum_attendance_rate": 0,
+      "exclude_resigned": true,
+      "require_active_status": true
+    },
     "settings": {
-      "auto_apply": true,
       "require_conditions": false,
-      "payment_timing": "with_regular_incentive",
-      "stack_with_regular": true
+      "auto_apply": true,
+      "stack_with_regular": true,
+      "payment_timing": "with_regular_incentive"
     },
     "members": [
       {
+        "monthly_bonus": 150000,
+        "end_date": "2025-12-31",
         "employee_id": "623060116",
+        "status": "active",
+        "currency": "VND",
+        "reason": "QIP Talent Pool Special Incentive",
         "name": "Talent Pool Member 1",
         "start_date": "2025-07-01",
-        "end_date": "2025-12-31",
-        "notes": "추가 인센티브 지급 대상자",
-        "currency": "VND",
-        "status": "active",
-        "monthly_bonus": 150000,
-        "reason": "QIP Talent Pool Special Incentive"
+        "notes": "추가 인센티브 지급 대상자"
       }
-    ],
-    "eligibility_rules": {
-      "minimum_attendance_rate": 0,
-      "require_active_status": true,
-      "exclude_maternity_leave": false,
-      "exclude_resigned": true
-    }
+    ]
   },
   "audit_trail": [
     {
+      "amount": 150000,
       "period": "2025-07 to 2025-12",
-      "employee_id": "623060116",
       "date": "2025-08-29",
       "action": "created",
-      "amount": 150000,
+      "employee_id": "623060116",
       "authorized_by": "System Admin"
     }
   ],
-  "last_updated": "2025-08-29",
+  "version": "1.0",
+  "description": "QIP Talent Pool 특별 인센티브 관리",
   "bonus_history": {
     "2025": {
       "9": [
         "623060116"
       ],
-      "11": [
+      "10": [
         "623060116"
       ],
       "8": [
+        "623060116"
+      ],
+      "11": [
         "623060116"
       ],
       "7": [
         "623060116"
       ],
       "12": [
-        "623060116"
-      ],
-      "10": [
         "623060116"
       ]
     }
