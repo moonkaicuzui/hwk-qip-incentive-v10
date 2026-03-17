@@ -1,22 +1,42 @@
 {
-  "last_updated": "2025-08-29",
   "description": "QIP Talent Pool 특별 인센티브 관리",
-  "audit_trail": [
-    {
-      "period": "2025-07 to 2025-12",
-      "authorized_by": "System Admin",
-      "date": "2025-08-29",
-      "employee_id": "623060116",
-      "action": "created",
-      "amount": 150000
+  "last_updated": "2025-08-29",
+  "talent_pool": {
+    "eligibility_rules": {
+      "minimum_attendance_rate": 0,
+      "require_active_status": true,
+      "exclude_resigned": true,
+      "exclude_maternity_leave": false
+    },
+    "members": [
+      {
+        "end_date": "2025-12-31",
+        "monthly_bonus": 150000,
+        "employee_id": "623060116",
+        "start_date": "2025-07-01",
+        "notes": "추가 인센티브 지급 대상자",
+        "status": "active",
+        "name": "Talent Pool Member 1",
+        "reason": "QIP Talent Pool Special Incentive",
+        "currency": "VND"
+      }
+    ],
+    "settings": {
+      "auto_apply": true,
+      "stack_with_regular": true,
+      "payment_timing": "with_regular_incentive",
+      "require_conditions": false
     }
-  ],
+  },
   "bonus_history": {
     "2025": {
+      "8": [
+        "623060116"
+      ],
       "10": [
         "623060116"
       ],
-      "8": [
+      "11": [
         "623060116"
       ],
       "9": [
@@ -27,38 +47,18 @@
       ],
       "12": [
         "623060116"
-      ],
-      "11": [
-        "623060116"
       ]
     }
   },
   "version": "1.0",
-  "talent_pool": {
-    "members": [
-      {
-        "notes": "추가 인센티브 지급 대상자",
-        "employee_id": "623060116",
-        "status": "active",
-        "end_date": "2025-12-31",
-        "currency": "VND",
-        "reason": "QIP Talent Pool Special Incentive",
-        "name": "Talent Pool Member 1",
-        "start_date": "2025-07-01",
-        "monthly_bonus": 150000
-      }
-    ],
-    "eligibility_rules": {
-      "minimum_attendance_rate": 0,
-      "require_active_status": true,
-      "exclude_resigned": true,
-      "exclude_maternity_leave": false
-    },
-    "settings": {
-      "stack_with_regular": true,
-      "auto_apply": true,
-      "payment_timing": "with_regular_incentive",
-      "require_conditions": false
+  "audit_trail": [
+    {
+      "period": "2025-07 to 2025-12",
+      "action": "created",
+      "employee_id": "623060116",
+      "amount": 150000,
+      "authorized_by": "System Admin",
+      "date": "2025-08-29"
     }
-  }
+  ]
 }
