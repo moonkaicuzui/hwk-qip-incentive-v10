@@ -1,5 +1,34 @@
 # CLAUDE.md — HWK QIP INCENTIVE SYSTEM Version 10
 
+## QOS 생태계 행동 규칙 (절대 원칙)
+
+이 프로젝트는 **HWK Quality OS 생태계** (12개 프로젝트)의 일부입니다.
+모든 작업은 QOS 중앙 허브와의 연동을 고려해야 합니다.
+
+### 크로스 프로젝트 확인 의무
+아래 주제를 분석·수정할 때는 **반드시 QOS 중앙 허브를 먼저 확인**합니다:
+
+| 주제 | QOS 확인 대상 | 경로 |
+|------|-------------|------|
+| 이메일 설정 | QOS EmailManagement + settingsSync | `/Users/ksmoon/Coding/quality-os/` |
+| 불량 표준 | QOS defectStandards (362개) | QOS Firestore |
+| SMTP 설정 | QOS config/smtp_settings | QOS가 push — 읽기 전용 |
+| 공급업체 | QOS config/suppliers | QOS가 push — 읽기 전용 |
+| 공장/라인 | QOS config/factory_lines | QOS가 push — 읽기 전용 |
+| 시스템 이슈 | QOS feedbackCollector | 컬렉션명 변경 금지 |
+
+### 에이전트 팀 프로토콜
+- **보스**: 사용자 (최종 의사결정자)
+- **팀장**: 경서 (@agent-orchestrator) — "경서야"로 호출 시 활성화
+- **이 프로젝트 Liaison**: @agent-liaison-support
+- **QOS 팀 정의**: `/Users/ksmoon/Coding/quality-os/AGENTS.md`
+- 크로스 프로젝트 영향이 있는 변경 시 → QOS CLAUDE.md의 연동 아키텍처 참조
+
+### 3-Point Sync (변경 후 필수)
+프로젝트 변경 완료 시 → 이 CLAUDE.md 갱신 → QOS AGENTS.md 갱신 → QOS CLAUDE.md 갱신
+
+---
+
 ## 프로젝트 개요
 
 **HWK QIP Incentive Dashboard V10** — Firestore 기반 인센티브 관리 대시보드.
@@ -323,3 +352,20 @@ Node.js 18+, nodemailer>=6.9.16, dotenv>=16.4.7
 ```
 Node.js 22, firebase-admin>=13.0.0, firebase-functions>=6.3.0, nodemailer>=6.9.16
 ```
+
+---
+
+## Quality OS 연동 규칙 (필수)
+
+(상세 규칙은 상단 'QOS 생태계 행동 규칙' 참조)
+
+이 프로젝트는 HWK Quality OS (hwk-quality-os)와 연동됩니다.
+**모든 코드 변경 전에 반드시 `QOS_CHECKLIST.md`를 확인하세요.**
+
+### 절대 규칙
+1. 시스템 이슈 컬렉션명을 변경하지 마세요 — QOS feedbackCollector가 수집합니다
+2. 이슈 상태값은 open/in_progress/resolved/closed만 사용하세요
+3. config/smtp_settings, config/suppliers, config/factory_lines는 읽기 전용입니다 (QOS가 push)
+4. _syncOrigin, _syncTimestamp 메타데이터 필드를 삭제하지 마세요
+5. 변경 전 `QOS_CONTRACT.json`의 계약 내용을 확인하세요
+
