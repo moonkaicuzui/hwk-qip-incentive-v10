@@ -6,15 +6,17 @@
     "basic_manpower": "input_files/basic manpower data january.csv",
     "attendance": "input_files/attendance/original/attendance data january.csv",
     "5prs": "input_files/5prs data january.csv",
+    "aql_current": "input_files/AQL history/1.HSRG AQL REPORT-JANUARY.2026.csv",
     "previous_incentive": "output_files/output_QIP_incentive_december_2025_Complete_V10.0_Complete.csv"
   },
   "files_modified_times": {
     "basic_manpower": "2026-02-03T00:41:47.000Z",
     "attendance": "2026-02-02T07:35:37.000Z",
-    "5prs": "2026-01-31T11:17:27.000Z"
+    "5prs": "2026-01-31T11:17:27.000Z",
+    "aql_current": "2026-02-03T02:58:59.000Z"
   },
   "working_days_source": "attendance_data",
-  "working_days_updated_at": "2026-03-26T17:00:12.829720+00:00",
+  "working_days_updated_at": "2026-03-26T18:00:16.831725+00:00",
   "thresholds": {
     "attendance_rate": 88,
     "unapproved_absence": 2,
@@ -30,5 +32,5 @@
   "output_prefix": "output_QIP_incentive_january_2026",
   "data_source": "google_drive",
   "created_at": "2026-01-12T03:24:43.520770",
-  "last_updated": "2026-02-03T00:41:47.000Z"
+  "last_updated": "2026-02-03T02:58:59.000Z"
 }
