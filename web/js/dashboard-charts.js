@@ -783,6 +783,13 @@ var DashboardCharts = {
         html += '</ul>';
         html += '</div>';
 
+        // Mid-month resignation attendance note
+        html += '<div style="background: #fff3cd; border: 1px solid #ff9800; border-radius: 6px; padding: 12px; margin-top: 12px;">';
+        html += '<strong style="color:#e65100;">' + t('attendance.resignationTitle') + '</strong>';
+        html += '<p style="margin: 6px 0 4px 0; font-size:0.85rem; line-height:1.6;">' + t('attendance.resignationDesc') + '</p>';
+        html += '<p style="margin: 0; font-size:0.82rem; color:#795548; font-style:italic;">' + t('attendance.resignationExample') + '</p>';
+        html += '</div>';
+
         html += '</div>'; // condition criteria box
         html += '</div>'; // section-card
 
@@ -2631,5 +2638,113 @@ var DashboardCharts = {
         // Auto-refresh every 60 seconds
         if (this._freshnessInterval) clearInterval(this._freshnessInterval);
         this._freshnessInterval = setInterval(refresh, 60000);
+
+        // Click to show data source details popup
+        var dataSources = data && data.metadata && data.metadata.dataSources;
+        if (dataSources) {
+            badge.style.cursor = 'pointer';
+            badge.onclick = function (e) {
+                e.stopPropagation();
+                DashboardCharts._showDataSourcesPopup(dataSources);
+            };
+        }
+    },
+
+    /**
+     * Show data sources popup with file update dates and date ranges.
+     * @param {Object} dataSources - data_sources from dashboard_summary
+     */
+    _showDataSourcesPopup: function (dataSources) {
+        // Remove existing popup
+        var existing = document.getElementById('dataSourcesPopup');
+        if (existing) { existing.remove(); return; }
+
+        var t = DashboardI18n.t.bind(DashboardI18n);
+        var noData = t('dataSources.noData') || '-';
+
+        var sourceKeys = [
+            { key: 'basic_manpower', label: t('dataSources.basicManpower') },
+            { key: 'attendance', label: t('dataSources.attendance') },
+            { key: '5prs', label: t('dataSources.5prs') },
+            { key: 'aql_current', label: t('dataSources.aql') }
+        ];
+
+        var rows = '';
+        sourceKeys.forEach(function (s) {
+            var info = dataSources[s.key] || {};
+            var updated = info.file_updated || '';
+            var updatedDisplay = noData;
+            if (updated) {
+                try {
+                    var d = new Date(updated);
+                    var now = new Date();
+                    var diffH = Math.floor((now - d) / 3600000);
+                    if (diffH < 24) {
+                        updatedDisplay = diffH + 'h ago';
+                    } else {
+                        var diffD = Math.floor(diffH / 24);
+                        updatedDisplay = diffD + 'd ago';
+                    }
+                    updatedDisplay += ' <span style="opacity:0.7;font-size:0.72rem;">(' + d.toLocaleDateString() + ')</span>';
+                } catch (e) { updatedDisplay = updated; }
+            }
+
+            var rangeMin = info.date_range_min || '';
+            var rangeMax = info.date_range_max || '';
+            var rangeDisplay = noData;
+            if (rangeMin && rangeMax) {
+                var fmtDate = function(ds) {
+                    try {
+                        var p = new Date(ds);
+                        var mon = p.toLocaleString('en', {month:'short'}).toUpperCase();
+                        return mon + ' ' + String(p.getDate()).padStart(2, '0');
+                    } catch(e) { return ds; }
+                };
+                rangeDisplay = '<strong>' + fmtDate(rangeMin) + ' ~ ' + fmtDate(rangeMax) + '</strong>';
+            }
+
+            rows += '<tr>'
+                + '<td style="padding:6px 10px; font-weight:600; white-space:nowrap;">' + s.label + '</td>'
+                + '<td style="padding:6px 10px; text-align:center;">' + updatedDisplay + '</td>'
+                + '<td style="padding:6px 10px; text-align:center;">' + rangeDisplay + '</td>'
+                + '</tr>';
+        });
+
+        // Working days info
+        var configInfo = dataSources._config || {};
+        var wdInfo = '';
+        if (configInfo.working_days) {
+            wdInfo = '<div style="text-align:center; margin-top:8px; font-size:0.8rem; color:#555;">'
+                + t('dataSources.workingDays') + ': <strong>' + configInfo.working_days + '</strong>'
+                + '</div>';
+        }
+
+        var popup = document.createElement('div');
+        popup.id = 'dataSourcesPopup';
+        popup.style.cssText = 'position:fixed; top:60px; right:20px; z-index:10000; background:#fff; border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.25); padding:16px; min-width:420px; max-width:95vw; font-size:0.85rem; color:#333;';
+        popup.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">'
+            + '<strong style="font-size:0.95rem;">' + t('dataSources.title') + '</strong>'
+            + '<button onclick="document.getElementById(\'dataSourcesPopup\').remove()" style="border:none; background:none; font-size:1.2rem; cursor:pointer; color:#999;">✕</button>'
+            + '</div>'
+            + '<table style="width:100%; border-collapse:collapse; font-size:0.82rem;">'
+            + '<thead><tr style="background:#f0f0f0; font-size:0.75rem; text-transform:uppercase; color:#666;">'
+            + '<th style="padding:6px 10px; text-align:left;">' + t('dataSources.source') + '</th>'
+            + '<th style="padding:6px 10px; text-align:center;">' + t('dataSources.lastUpdated') + '</th>'
+            + '<th style="padding:6px 10px; text-align:center;">' + t('dataSources.dateRange') + '</th>'
+            + '</tr></thead><tbody>' + rows + '</tbody></table>'
+            + wdInfo;
+
+        document.body.appendChild(popup);
+
+        // Close on outside click
+        setTimeout(function () {
+            document.addEventListener('click', function closePopup(e) {
+                var el = document.getElementById('dataSourcesPopup');
+                if (el && !el.contains(e.target)) {
+                    el.remove();
+                    document.removeEventListener('click', closePopup);
+                }
+            });
+        }, 100);
     }
 };

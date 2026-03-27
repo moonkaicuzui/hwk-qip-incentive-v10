@@ -389,7 +389,10 @@ var DashboardData = {
                     employees: employees,
                     summary: summary,
                     thresholds: thresholds,
-                    metadata: { lastUpdated: summary.data_updated_at || summary.calculated_at || null }
+                    metadata: {
+                        lastUpdated: summary.data_updated_at || summary.calculated_at || null,
+                        dataSources: summary.data_sources || null
+                    }
                 };
             })
             .catch(function (error) {

@@ -125,19 +125,21 @@ def aggregate_attendance(df: pd.DataFrame, total_working_days: int = None) -> pd
     return result_df
 
 
-def update_config_after_conversion(month: str, year: int, actual_working_days: int, converted_file_path: str) -> bool:
+def update_config_after_conversion(month: str, year: int, actual_working_days: int, converted_file_path: str, date_range: dict = None) -> bool:
     """
     Update config file after attendance conversion (SSOT principle)
 
     Updates:
     1. working_days: actual working days from attendance data
     2. file_paths.attendance: points to converted file (not original)
+    3. data_date_ranges.attendance: date range of attendance data
 
     Args:
         month: Month name (e.g., 'january')
         year: Year (e.g., 2026)
         actual_working_days: Actual working days calculated from attendance data
         converted_file_path: Path to the converted attendance file
+        date_range: Optional dict with 'min' and 'max' date strings
 
     Returns:
         bool: True if updated, False if no change needed
@@ -172,6 +174,14 @@ def update_config_after_conversion(month: str, year: int, actual_working_days: i
             config['file_paths']['attendance'] = rel_path
             print(f"  🔄 [SSOT] Config attendance 경로 갱신: {Path(old_path).name} → {Path(rel_path).name}")
             changed = True
+
+    # 3. data_date_ranges 저장
+    if date_range:
+        if 'data_date_ranges' not in config:
+            config['data_date_ranges'] = {}
+        config['data_date_ranges']['attendance'] = date_range
+        print(f"  🔄 [SSOT] Config attendance date range: {date_range.get('min', '?')} ~ {date_range.get('max', '?')}")
+        changed = True
 
     if changed:
         with open(config_file, 'w', encoding='utf-8') as f:
@@ -218,6 +228,20 @@ def convert_attendance(month: str, year: int = 2025) -> bool:
         actual_working_days = df_preview['Work Date'].nunique()
         print(f"  📅 [SSOT] 원본 데이터 실제 근무일: {actual_working_days}일")
 
+        # 출결 데이터 날짜 범위 추출
+        att_date_range = None
+        if 'Work Date' in df_preview.columns:
+            try:
+                work_dates = pd.to_datetime(df_preview['Work Date'], errors='coerce').dropna()
+                if not work_dates.empty:
+                    att_date_range = {
+                        'min': work_dates.min().strftime('%Y-%m-%d'),
+                        'max': work_dates.max().strftime('%Y-%m-%d'),
+                    }
+                    print(f"  📅 [SSOT] 출결 데이터 범위: {att_date_range['min']} ~ {att_date_range['max']}")
+            except Exception:
+                pass
+
         # ============================================================
         # [SSOT] Step 2: Config 파일 자동 동기화
         # ============================================================
@@ -247,7 +271,7 @@ def convert_attendance(month: str, year: int = 2025) -> bool:
                         if existing_total_days == actual_working_days:
                             print(f"  ✅ [SSOT] 모든 데이터 동기화됨: {actual_working_days}일")
                             # Config이 converted 경로를 가리키는지 확인
-                            update_config_after_conversion(month, year, actual_working_days, str(converted_file))
+                            update_config_after_conversion(month, year, actual_working_days, str(converted_file), date_range=att_date_range)
                             return True
                         else:
                             print(f"  🔄 [SSOT] Converted 파일 불일치: {existing_total_days} → {actual_working_days}")
@@ -265,7 +289,7 @@ def convert_attendance(month: str, year: int = 2025) -> bool:
         if 'ACTUAL WORK DAY' in df.columns:
             print(f"  ℹ️ File already in aggregated format")
             df.to_csv(converted_file, index=False, encoding='utf-8-sig')
-            update_config_after_conversion(month, year, actual_working_days, str(converted_file))
+            update_config_after_conversion(month, year, actual_working_days, str(converted_file), date_range=att_date_range)
             return True
 
         # Aggregate the data
@@ -280,7 +304,7 @@ def convert_attendance(month: str, year: int = 2025) -> bool:
         print(f"  ✅ Saved: {converted_file.name}")
 
         # [SSOT] Config 갱신: working_days + file_paths.attendance → converted 경로
-        update_config_after_conversion(month, year, actual_working_days, str(converted_file))
+        update_config_after_conversion(month, year, actual_working_days, str(converted_file), date_range=att_date_range)
 
         # Print summary
         print(f"\n  📈 Summary:")

@@ -3187,14 +3187,19 @@ class CompleteQIPCalculator:
         print(f"✅ Area Reject Rate calculation completed: {area_reject_count}명 3% 상")
 
     def _recalculate_absence_rate_for_resigned(self):
-        """퇴사자 위한 absence rate 재calculation"""
-        
+        """퇴사자 위한 absence rate 재calculation
+
+        당월 퇴사자의 총근무일을 퇴사일까지로 조정하고, 출근율/결근율을 재계산.
+        퇴사 후 미출근일이 결근으로 처리되는 버그 수정 (2026-03-27).
+        """
+
         if 'Stop working Date' not in self.month_data.columns:
             return
-        
+
         calc_month_start = pd.Timestamp(self.config.year, self.config.month.number, 1)
         calc_month_end = pd.Timestamp(self.config.year, self.config.month.number + 1, 1) - pd.Timedelta(days=1) if self.config.month.number < 12 else pd.Timestamp(self.config.year, 12, 31)
-        
+
+        recalc_count = 0
         for idx, row in self.month_data.iterrows():
             stop_date_str = row.get('Stop working Date')
             if pd.notna(stop_date_str) and stop_date_str != '':
@@ -3204,39 +3209,54 @@ class CompleteQIPCalculator:
                         stop_date = pd.to_datetime(stop_date_str, format='%Y.%m.%d', errors='coerce')
                     else:
                         stop_date = pd.to_datetime(stop_date_str, errors='coerce')
-                    
+
                     if pd.notna(stop_date):
-                        # 해당 month in progress 퇴사자인 경우
+                        # 해당 month 당월 퇴사자인 경우
                         if calc_month_start <= stop_date <= calc_month_end:
-                            # 근무 능 days calculation (주말 exclude)
+                            # 퇴사일까지 근무 가능 일수 (주말 제외)
                             working_days_possible = 0
                             current_date = calc_month_start
                             while current_date <= stop_date:
-                                if current_date.weekday() < 5:  # month-금 (0-4)
+                                if current_date.weekday() < 5:  # 월-금 (0-4)
                                     working_days_possible += 1
                                 current_date += pd.Timedelta(days=1)
-                            
-                            actual_days = row.get('Actual Working Days', 0)
 
-                            # Total Working Daysonly updated
-                            # Absence Rate (raw)and conditionare add_condition_evaluation_to_excelfrom
-                            # 승인휴 반영하여 통 days되게 calculationdone
+                            actual_days = float(row.get('Actual Working Days', 0))
+                            approved_leave = float(row.get('Approved Leave Days', 0))
+
+                            # Total Working Days를 퇴사일까지로 조정
                             self.month_data.loc[idx, 'Total Working Days'] = working_days_possible
 
-                            # 레거시 컬럼 삭제:                             # minimum 근무 days conditiononly 체크 (Absence Rate 나in progressto calculation)
-                            # 레거시 컬럼 삭제: self.month_data.loc[idx, 'attendancy condition 4 - minimum working days'] = 'yes' if actual_days < 12 else 'no'
+                            # 출근율/결근율 재계산 (승인휴가 반영)
+                            if working_days_possible > 0:
+                                absence_days = working_days_possible - actual_days - approved_leave
+                                absence_days = max(0, absence_days)
+                                absence_rate = (absence_days / working_days_possible) * 100
+                                attendance_rate = min(100, max(0, 100 - absence_rate))
+                            else:
+                                absence_rate = 0
+                                attendance_rate = 0
 
-                            print(f"  → 퇴사자 {row.get('Employee No', '')}: {stop_date.strftime('%Y-%m-%d')} 퇴사, 근무능 days {working_days_possible} days (Absence Rate 승인휴 반영하여 나in progressto calculation)")
-                        
-                        # calculation month previous 퇴사자
+                            self.month_data.loc[idx, '결근율_Absence_Rate_Percent'] = round(absence_rate, 2)
+                            if '출근율_Attendance_Rate_Percent' in self.month_data.columns:
+                                self.month_data.loc[idx, '출근율_Attendance_Rate_Percent'] = round(attendance_rate, 2)
+
+                            recalc_count += 1
+                            print(f"  → 당월퇴사자 {row.get('Employee No', '')}: {stop_date.strftime('%Y-%m-%d')} 퇴사, 근무가능일 {working_days_possible}일, 출근율 {attendance_rate:.1f}% (조정 전 분모: 전체→{working_days_possible})")
+
+                        # 전월 이전 퇴사자
                         elif stop_date < calc_month_start:
                             self.month_data.loc[idx, 'Actual Working Days'] = 0
-                            # 레거시 컬럼 삭제:                             self.month_data.loc[idx, 'Total Working Days'] = 0
-                            # 레거시 컬럼 삭제:                             self.month_data.loc[idx, 'attendancy condition 1 - acctual working days is zero'] = 'yes'
-                            # 레거시 컬럼 삭제: self.month_data.loc[idx, 'attendancy condition 4 - minimum working days'] = 'yes'
-                            
+                            self.month_data.loc[idx, 'Total Working Days'] = 0
+                            self.month_data.loc[idx, '결근율_Absence_Rate_Percent'] = 100.0
+                            if '출근율_Attendance_Rate_Percent' in self.month_data.columns:
+                                self.month_data.loc[idx, '출근율_Attendance_Rate_Percent'] = 0.0
+
                 except (ValueError, TypeError) as e:
-                    print(f"  ⚠️ 퇴사자 absence rate 재calculation 오류 (employee {row.get('Employee No', '')}): {e}")
+                    print(f"  ⚠️ 퇴사자 absence rate 재계산 오류 (employee {row.get('Employee No', '')}): {e}")
+
+        if recalc_count > 0:
+            print(f"  ✅ 당월 퇴사자 {recalc_count}명 출근율 재계산 완료 (퇴사일까지 총근무일 기준)")
     
     def _set_improved_default_values(self):
         """improved defaultvalue configuration"""

@@ -713,6 +713,23 @@ const DashboardI18n = {
             vi: 'Tỷ lệ đi làm = 100 - Tỷ lệ vắng (Nghỉ phép được tính là đi làm)'
         },
 
+        // Mid-month resignation attendance note
+        'attendance.resignationTitle': {
+            ko: '⚠️ 당월 퇴사자 출근율 계산',
+            en: '⚠️ Mid-Month Resignation Attendance',
+            vi: '⚠️ Tính tỷ lệ đi làm cho NV nghỉ việc giữa tháng'
+        },
+        'attendance.resignationDesc': {
+            ko: '당월 중 퇴사한 직원의 출근율은 <strong>퇴사일까지의 근무 가능일</strong>을 총 근무일로 사용합니다. 퇴사 후 미출근일은 결근으로 처리하지 않습니다.',
+            en: 'For employees who resign mid-month, the attendance rate uses <strong>working days up to their resignation date</strong> as total working days. Days after resignation are not counted as absences.',
+            vi: 'Đối với nhân viên nghỉ việc giữa tháng, tỷ lệ đi làm tính <strong>số ngày làm đến ngày nghỉ việc</strong> làm tổng ngày làm. Những ngày sau khi nghỉ việc không tính là vắng mặt.'
+        },
+        'attendance.resignationExample': {
+            ko: '예: 3월 20일 퇴사 → 총 근무일 = 1일~20일 중 평일 수 (주말 제외)',
+            en: 'Example: Resigned Mar 20 → Total working days = weekdays from 1st to 20th (excl. weekends)',
+            vi: 'VD: Nghỉ việc ngày 20/3 → Tổng ngày làm = các ngày trong tuần từ 1~20 (trừ cuối tuần)'
+        },
+
         // All-Zero Explanation Banner
         'banner.allZero': {
             ko: '이번 달은 인센티브 수령자가 0명입니다. "인센티브 기준" 탭에서 조건별 충족 현황을 확인하세요.',
@@ -746,6 +763,18 @@ const DashboardI18n = {
         'freshness.hoursAgo': { ko: '시간 전', en: 'hr ago', vi: 'giờ trước' },
         'freshness.nextSync': { ko: '다음 자동 동기화', en: 'Next Auto Sync', vi: 'Tự động đồng bộ' },
         'freshness.minutes': { ko: '분 후', en: 'min', vi: 'phút' },
+
+        // Data Sources Popup
+        'dataSources.title': { ko: '📋 데이터 소스 현황', en: '📋 Data Source Status', vi: '📋 Trạng thái nguồn dữ liệu' },
+        'dataSources.source': { ko: '데이터 소스', en: 'Data Source', vi: 'Nguồn dữ liệu' },
+        'dataSources.lastUpdated': { ko: '파일 업데이트', en: 'File Updated', vi: 'Cập nhật file' },
+        'dataSources.dateRange': { ko: '데이터 범위', en: 'Data Range', vi: 'Phạm vi dữ liệu' },
+        'dataSources.noData': { ko: '정보 없음', en: 'No info', vi: 'Không có thông tin' },
+        'dataSources.basicManpower': { ko: '인사 기본정보', en: 'Basic Manpower', vi: 'Nhân sự cơ bản' },
+        'dataSources.attendance': { ko: '출결 데이터', en: 'Attendance', vi: 'Dữ liệu chấm công' },
+        'dataSources.5prs': { ko: '5PRS 검사', en: '5PRS Inspection', vi: 'Kiểm tra 5PRS' },
+        'dataSources.aql': { ko: 'AQL 보고서', en: 'AQL Report', vi: 'Báo cáo AQL' },
+        'dataSources.workingDays': { ko: '총 근무일', en: 'Working Days', vi: 'Tổng ngày làm' },
 
         // Team tab
         'team.building': { ko: 'Building', en: 'Building', vi: 'Xưởng' },

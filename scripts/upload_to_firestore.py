@@ -691,9 +691,71 @@ def main():
     print(f"\n📅 Step 4.5: 캘린더 데이터 생성")
     calendar_data = build_calendar_data(month, year)
 
+    # 4.7. 데이터 소스 메타데이터 수집
+    print(f"\n📋 Step 4.7: 데이터 소스 메타데이터 수집")
+    data_sources = {}
+    if os.path.exists(config_path):
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+            files_modified = config.get("files_modified_times", {})
+            file_paths = config.get("file_paths", {})
+
+            # 소스별 메타데이터 매핑
+            source_labels = {
+                "basic_manpower": "Basic Manpower",
+                "attendance": "Attendance",
+                "5prs": "5PRS",
+                "aql_current": "AQL Report",
+            }
+            for key, label in source_labels.items():
+                entry = {"label": label}
+                if key in files_modified:
+                    entry["file_updated"] = files_modified[key]
+                if key in file_paths:
+                    entry["file_path"] = os.path.basename(file_paths[key])
+                data_sources[key] = entry
+
+            # 출결 데이터 날짜 범위 추출
+            att_path = file_paths.get("attendance", "")
+            if att_path and os.path.exists(att_path):
+                try:
+                    att_df = pd.read_csv(att_path)
+                    if "TOTAL WORK DAY" in att_df.columns:
+                        data_sources["attendance"]["working_days"] = int(att_df["TOTAL WORK DAY"].iloc[0]) if len(att_df) > 0 else 0
+                except Exception:
+                    pass
+
+            # 데이터 날짜 범위 추가
+            date_ranges = config.get("data_date_ranges", {})
+            for key, dr in date_ranges.items():
+                if key in data_sources:
+                    data_sources[key]["date_range_min"] = dr.get("min", "")
+                    data_sources[key]["date_range_max"] = dr.get("max", "")
+
+            # config의 working_days_updated_at 추가
+            if config.get("working_days_updated_at"):
+                data_sources["_config"] = {
+                    "working_days": config.get("working_days", 0),
+                    "working_days_updated_at": config.get("working_days_updated_at"),
+                }
+
+            print(f"   ✅ {len(data_sources)}개 데이터 소스 메타데이터 수집 완료")
+            for key, info in data_sources.items():
+                if key.startswith("_"):
+                    continue
+                updated = info.get("file_updated", "N/A")
+                print(f"     {info.get('label', key)}: {updated}")
+        except Exception as e:
+            print(f"   ⚠️ 메타데이터 수집 오류: {e}")
+
     # 5. 요약 데이터 생성
     print(f"\n📊 Step 5: 대시보드 요약 생성")
     summary = build_summary(df, month, year, working_days, calendar_data=calendar_data)
+
+    # 데이터 소스 메타데이터를 summary에 추가
+    if data_sources:
+        summary["data_sources"] = data_sources
 
     # 6. Firestore 업로드
     print(f"\n☁️  Step 5: Firestore 업로드")
