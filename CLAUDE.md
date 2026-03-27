@@ -1,5 +1,23 @@
 # CLAUDE.md — HWK QIP INCENTIVE SYSTEM Version 10
 
+## 대화 시작 시 필수: 로컬/원격 동기화 확인 (절대 원칙)
+
+이 프로젝트는 **GitHub Actions 파이프라인이 매시간 코드를 갱신하고 commit/push**합니다.
+로컬 repo는 항상 원격보다 뒤처져 있을 수 있으므로, **대화 시작 시 반드시 아래를 실행**합니다:
+
+```bash
+git fetch origin && git diff HEAD origin/main --stat
+```
+
+- 차이가 있으면 사용자에게 알리고 동기화 수행: `git stash && git pull --rebase origin main && git stash pop`
+- **로컬 파일만 읽고 "값이 이상하다", "업데이트가 안 된다"고 결론 내리지 말 것**
+- 특히 `config_files/`는 파이프라인이 매 실행마다 갱신하므로, 로컬 값 ≠ 프로덕션 값
+- 원격 값 확인이 필요하면: `git show origin/main:파일경로`
+
+> **배경**: 2026-03-27 config_march의 working_days가 로컬(13)과 원격(22)이 달라서 잘못된 분석을 한 사례 발생
+
+---
+
 ## QOS 생태계 행동 규칙 (절대 원칙)
 
 이 프로젝트는 **HWK Quality OS 생태계** (12개 프로젝트)의 일부입니다.
