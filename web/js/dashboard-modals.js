@@ -518,7 +518,17 @@ var DashboardModals = {
         html += this._renderInfoItem(t('validation.totalWorkingDays'), totalDays + t('common.days'));
         html += this._renderInfoItem(t('condition.2'), unapproved + t('common.days'));
         html += this._renderInfoItem(t('modal.approvedLeave'), approvedLeave + t('common.days'));
-        html += '</div></div>';
+        html += '</div>';
+
+        // 출근율 계산식 표시
+        var absenceDays = Math.max(0, totalDays - actualDays - approvedLeave);
+        html += '<div style="background:#f0f4ff; border:1px solid #c5cae9; border-radius:6px; padding:10px 14px; margin-top:10px; font-size:0.82rem; color:#333; line-height:1.7;">';
+        html += '<strong>' + t('modal.attendanceFormula') + '</strong><br>';
+        html += t('modal.formulaAbsence') + ': ' + totalDays + ' - ' + actualDays + ' - ' + approvedLeave + ' = <strong>' + absenceDays + t('common.days') + '</strong><br>';
+        html += t('modal.formulaRate') + ': 100 - (' + absenceDays + '/' + totalDays + ' × 100) = <strong>' + this._formatPercent(rate) + '%</strong>';
+        html += '</div>';
+
+        html += '</div>';
 
         return html;
     },
