@@ -3191,6 +3191,10 @@ class CompleteQIPCalculator:
 
         당월 퇴사자의 총근무일을 퇴사일까지로 조정하고, 출근율/결근율을 재계산.
         퇴사 후 미출근일이 결근으로 처리되는 버그 수정 (2026-03-27).
+
+        총근무일 산출 방식: 출결 데이터의 실제 근무일(Work Date) 중 퇴사일 이전 날짜 수.
+        토요 근무 등 공장 실제 스케줄을 반영하기 위해 weekday 계산이 아닌
+        출결 데이터의 unique dates를 사용.
         """
 
         if 'Stop working Date' not in self.month_data.columns:
@@ -3198,6 +3202,24 @@ class CompleteQIPCalculator:
 
         calc_month_start = pd.Timestamp(self.config.year, self.config.month.number, 1)
         calc_month_end = pd.Timestamp(self.config.year, self.config.month.number + 1, 1) - pd.Timedelta(days=1) if self.config.month.number < 12 else pd.Timestamp(self.config.year, 12, 31)
+
+        # 출결 데이터에서 실제 근무일(unique Work Dates) 추출
+        all_work_dates = set()
+        attendance_key = f"{self.config.month.full_name}_attendance"
+        if attendance_key in self.raw_data:
+            att_df = self.raw_data[attendance_key]
+            for date_col in ['Work Date', 'WorkDate', 'Date']:
+                if date_col in att_df.columns:
+                    parsed = pd.to_datetime(att_df[date_col], errors='coerce').dropna()
+                    all_work_dates = set(parsed.dt.normalize().unique())
+                    break
+
+        if not all_work_dates:
+            # fallback: config.working_days를 비례 배분
+            print("  ⚠️ 출결 데이터에서 Work Date를 찾을 수 없어 config.working_days 비례 배분 사용")
+
+        total_work_dates_count = len(all_work_dates) if all_work_dates else self.config.working_days
+        print(f"  📅 출결 데이터 실제 근무일: {total_work_dates_count}일 (토요 근무 포함)")
 
         recalc_count = 0
         for idx, row in self.month_data.iterrows():
@@ -3213,13 +3235,15 @@ class CompleteQIPCalculator:
                     if pd.notna(stop_date):
                         # 해당 month 당월 퇴사자인 경우
                         if calc_month_start <= stop_date <= calc_month_end:
-                            # 퇴사일까지 근무 가능 일수 (주말 제외)
-                            working_days_possible = 0
-                            current_date = calc_month_start
-                            while current_date <= stop_date:
-                                if current_date.weekday() < 5:  # 월-금 (0-4)
-                                    working_days_possible += 1
-                                current_date += pd.Timedelta(days=1)
+                            # 퇴사일까지 근무 가능 일수: 출결 데이터의 실제 근무일 중 퇴사일 이전
+                            if all_work_dates:
+                                stop_ts = pd.Timestamp(stop_date).normalize()
+                                working_days_possible = sum(1 for d in all_work_dates if d <= stop_ts)
+                            else:
+                                # fallback: config.working_days를 날짜 비율로 추정
+                                days_in_month = (calc_month_end - calc_month_start).days + 1
+                                days_until_stop = (stop_date - calc_month_start).days + 1
+                                working_days_possible = round(self.config.working_days * days_until_stop / days_in_month)
 
                             actual_days = float(row.get('Actual Working Days', 0))
                             approved_leave = float(row.get('Approved Leave Days', 0))
@@ -3242,7 +3266,7 @@ class CompleteQIPCalculator:
                                 self.month_data.loc[idx, '출근율_Attendance_Rate_Percent'] = round(attendance_rate, 2)
 
                             recalc_count += 1
-                            print(f"  → 당월퇴사자 {row.get('Employee No', '')}: {stop_date.strftime('%Y-%m-%d')} 퇴사, 근무가능일 {working_days_possible}일, 출근율 {attendance_rate:.1f}% (조정 전 분모: 전체→{working_days_possible})")
+                            print(f"  → 당월퇴사자 {row.get('Employee No', '')}: {stop_date.strftime('%Y-%m-%d')} 퇴사, 근무가능일 {working_days_possible}일(토요포함), 실근무 {actual_days:.0f}일, 승인휴가 {approved_leave:.0f}일, 출근율 {attendance_rate:.1f}%")
 
                         # 전월 이전 퇴사자
                         elif stop_date < calc_month_start:
@@ -3256,7 +3280,7 @@ class CompleteQIPCalculator:
                     print(f"  ⚠️ 퇴사자 absence rate 재계산 오류 (employee {row.get('Employee No', '')}): {e}")
 
         if recalc_count > 0:
-            print(f"  ✅ 당월 퇴사자 {recalc_count}명 출근율 재계산 완료 (퇴사일까지 총근무일 기준)")
+            print(f"  ✅ 당월 퇴사자 {recalc_count}명 출근율 재계산 완료 (출결데이터 실제근무일 기준, 토요근무 포함)")
     
     def _set_improved_default_values(self):
         """improved defaultvalue configuration"""
