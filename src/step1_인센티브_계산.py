@@ -3204,19 +3204,36 @@ class CompleteQIPCalculator:
         calc_month_end = pd.Timestamp(self.config.year, self.config.month.number + 1, 1) - pd.Timedelta(days=1) if self.config.month.number < 12 else pd.Timestamp(self.config.year, 12, 31)
 
         # 출결 데이터에서 실제 근무일(unique Work Dates) 추출
+        # converted 파일에는 Work Date가 없으므로 원본 파일을 직접 읽음
         all_work_dates = set()
-        attendance_key = f"{self.config.month.full_name}_attendance"
-        if attendance_key in self.raw_data:
-            att_df = self.raw_data[attendance_key]
-            for date_col in ['Work Date', 'WorkDate', 'Date']:
-                if date_col in att_df.columns:
-                    parsed = pd.to_datetime(att_df[date_col], errors='coerce').dropna()
-                    all_work_dates = set(parsed.dt.normalize().unique())
-                    break
+        original_att_path = None
+        try:
+            from pathlib import Path
+            base_dir = Path(__file__).parent.parent
+            original_att_path = base_dir / f"input_files/attendance/original/attendance data {self.config.month.full_name}.csv"
+            if original_att_path.exists():
+                orig_df = pd.read_csv(original_att_path, encoding='utf-8-sig')
+                for date_col in ['Work Date', 'WorkDate', 'Date']:
+                    if date_col in orig_df.columns:
+                        parsed = pd.to_datetime(orig_df[date_col], errors='coerce').dropna()
+                        all_work_dates = set(parsed.dt.normalize().unique())
+                        break
+        except Exception as e:
+            print(f"  ⚠️ 원본 출결 파일 읽기 실패: {e}")
+
+        # fallback: converted/raw_data에서 시도
+        if not all_work_dates:
+            attendance_key = f"{self.config.month.full_name}_attendance"
+            if attendance_key in self.raw_data:
+                att_df = self.raw_data[attendance_key]
+                for date_col in ['Work Date', 'WorkDate', 'Date']:
+                    if date_col in att_df.columns:
+                        parsed = pd.to_datetime(att_df[date_col], errors='coerce').dropna()
+                        all_work_dates = set(parsed.dt.normalize().unique())
+                        break
 
         if not all_work_dates:
-            # fallback: config.working_days를 비례 배분
-            print("  ⚠️ 출결 데이터에서 Work Date를 찾을 수 없어 config.working_days 비례 배분 사용")
+            print(f"  ⚠️ 출결 데이터에서 Work Date를 찾을 수 없어 config.working_days 비례 배분 사용 (원본: {original_att_path})")
 
         total_work_dates_count = len(all_work_dates) if all_work_dates else self.config.working_days
         print(f"  📅 출결 데이터 실제 근무일: {total_work_dates_count}일 (토요 근무 포함)")
