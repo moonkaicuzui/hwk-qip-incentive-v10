@@ -720,14 +720,14 @@ const DashboardI18n = {
             vi: '⚠️ Tính tỷ lệ đi làm cho NV nghỉ việc giữa tháng'
         },
         'attendance.resignationDesc': {
-            ko: '당월 중 퇴사한 직원의 출근율은 <strong>출결 데이터의 실제 근무일 중 퇴사일까지의 일수</strong>를 총 근무일로 사용합니다 (토요 근무 포함). 퇴사 후 미출근일은 결근으로 처리하지 않습니다.',
-            en: 'For employees who resign mid-month, the attendance rate uses <strong>actual working days from attendance data up to the resignation date</strong> as total working days (including Saturday work). Days after resignation are not counted as absences.',
-            vi: 'Đối với nhân viên nghỉ việc giữa tháng, tỷ lệ đi làm tính <strong>số ngày làm thực tế từ dữ liệu chấm công đến ngày nghỉ việc</strong> làm tổng ngày làm (bao gồm ngày thứ Bảy). Những ngày sau khi nghỉ việc không tính là vắng mặt.'
+            ko: '당월 중 퇴사한 직원의 출근율은 <strong>출결 데이터의 실제 근무일 중 퇴사일까지의 일수</strong>를 총 근무일로 사용합니다. 퇴사 후 미출근일은 결근으로 처리하지 않습니다.',
+            en: 'For employees who resign mid-month, the attendance rate uses <strong>actual working days from attendance data up to the resignation date</strong> as total working days. Days after resignation are not counted as absences.',
+            vi: 'Đối với nhân viên nghỉ việc giữa tháng, tỷ lệ đi làm tính <strong>số ngày làm thực tế từ dữ liệu chấm công đến ngày nghỉ việc</strong> làm tổng ngày làm. Những ngày sau khi nghỉ việc không tính là vắng mặt.'
         },
         'attendance.resignationExample': {
-            ko: '예: 3월 총 근무일 22일 (토요 3일 포함), 3/20 퇴사 → 퇴사일까지 근무가능일 = 17일 (토요 2일 포함)',
-            en: 'Example: March has 22 working days (incl. 3 Saturdays), resigned Mar 20 → Working days until resignation = 17 (incl. 2 Saturdays)',
-            vi: 'VD: Tháng 3 có 22 ngày làm (gồm 3 thứ Bảy), nghỉ việc ngày 20/3 → Ngày làm đến khi nghỉ = 17 (gồm 2 thứ Bảy)'
+            ko: '예: 3월 총 근무일 22일, 3/20 퇴사 → 퇴사일 포함 근무가능일 = 17일, 퇴사 후 5일은 결근 미처리',
+            en: 'Example: March has 22 working days, resigned Mar 20 → Working days including resignation date = 17, 5 days after are not counted',
+            vi: 'VD: Tháng 3 có 22 ngày làm, nghỉ việc ngày 20/3 → Ngày làm bao gồm ngày nghỉ việc = 17, 5 ngày sau không tính'
         },
 
         // All-Zero Explanation Banner
