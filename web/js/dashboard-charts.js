@@ -124,7 +124,7 @@ var DashboardCharts = {
 
         employees.forEach(function (emp) {
             var amount = window.employeeHelpers
-                ? window.employeeHelpers.getIncentive(emp, 'current')
+                ? window.employeeHelpers.getDisplayIncentive(emp, 'current')
                 : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
             if (amount > 0) {
                 receivingCount++;
@@ -253,7 +253,7 @@ var DashboardCharts = {
 
             emps.forEach(function (emp) {
                 var incentive = window.employeeHelpers
-                    ? window.employeeHelpers.getIncentive(emp, 'current')
+                    ? window.employeeHelpers.getDisplayIncentive(emp, 'current')
                     : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
                 if (incentive > 0) {
                     receiving++;
@@ -554,7 +554,7 @@ var DashboardCharts = {
                 var emps = positionMap[key].employees;
                 emps.forEach(function (emp) {
                     var incentive = window.employeeHelpers
-                        ? window.employeeHelpers.getIncentive(emp, 'current')
+                        ? window.employeeHelpers.getDisplayIncentive(emp, 'current')
                         : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
                     subTotal++;
                     if (incentive > 0) { subReceiving++; subAmount += incentive; }
@@ -585,7 +585,7 @@ var DashboardCharts = {
 
                 emps.forEach(function (emp) {
                     var incentive = window.employeeHelpers
-                        ? window.employeeHelpers.getIncentive(emp, 'current')
+                        ? window.employeeHelpers.getDisplayIncentive(emp, 'current')
                         : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
                     if (incentive > 0) { receiving++; amount += incentive; }
                 });
@@ -871,7 +871,7 @@ var DashboardCharts = {
             var position = String(emp.position || emp.POSITION || emp['Position'] || '').toUpperCase().trim();
             var incentive = 0;
             if (window.employeeHelpers) {
-                incentive = window.employeeHelpers.getIncentive(emp, 'current');
+                incentive = window.employeeHelpers.getDisplayIncentive(emp, 'current');
             } else {
                 incentive = parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0;
             }
@@ -1098,7 +1098,7 @@ var DashboardCharts = {
                 var amount = 0;
                 emps.forEach(function (emp) {
                     var incentive = window.employeeHelpers
-                        ? window.employeeHelpers.getIncentive(emp, 'current')
+                        ? window.employeeHelpers.getDisplayIncentive(emp, 'current')
                         : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
                     if (incentive > 0) { receiving++; amount += incentive; }
                 });
@@ -1143,7 +1143,7 @@ var DashboardCharts = {
 
                 emps.forEach(function (emp) {
                     var incentive = window.employeeHelpers
-                        ? window.employeeHelpers.getIncentive(emp, 'current')
+                        ? window.employeeHelpers.getDisplayIncentive(emp, 'current')
                         : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
                     if (incentive > 0) { receiving++; amount += incentive; }
                     var t = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
@@ -2301,7 +2301,7 @@ var DashboardCharts = {
 
         employees.forEach(function (emp) {
             var curAmt = window.employeeHelpers
-                ? window.employeeHelpers.getIncentive(emp, 'current')
+                ? window.employeeHelpers.getDisplayIncentive(emp, 'current')
                 : (emp.currentIncentive || 0);
             var prevAmt = window.employeeHelpers
                 ? window.employeeHelpers.getIncentive(emp, 'previous')
@@ -2507,7 +2507,7 @@ var DashboardCharts = {
             var name = emp.full_name || emp.name || emp.Name || emp['Employee Name'] || '--';
             var months = parseInt(emp.Continuous_Months || emp.continuous_months || 0, 10);
             var incentive = window.employeeHelpers
-                ? window.employeeHelpers.getIncentive(emp, 'current')
+                ? window.employeeHelpers.getDisplayIncentive(emp, 'current')
                 : (emp.currentIncentive || 0);
 
             html += '<div class="talent-member" style="display: flex; justify-content: space-between; width: 100%;">';

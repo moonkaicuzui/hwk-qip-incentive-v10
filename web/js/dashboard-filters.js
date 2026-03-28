@@ -282,15 +282,15 @@ var DashboardFilters = {
         var incFilter = incEl ? incEl.value : '';
         if (incFilter === 'received') {
             data = data.filter(function (emp) {
-                if (window.employeeHelpers && window.employeeHelpers.hasReceivedIncentive) {
-                    return window.employeeHelpers.hasReceivedIncentive(emp);
+                if (window.employeeHelpers && window.employeeHelpers.hasDisplayIncentive) {
+                    return window.employeeHelpers.hasDisplayIncentive(emp);
                 }
                 return (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0) > 0;
             });
         } else if (incFilter === 'not-received') {
             data = data.filter(function (emp) {
-                if (window.employeeHelpers && window.employeeHelpers.hasReceivedIncentive) {
-                    return !window.employeeHelpers.hasReceivedIncentive(emp);
+                if (window.employeeHelpers && window.employeeHelpers.hasDisplayIncentive) {
+                    return !window.employeeHelpers.hasDisplayIncentive(emp);
                 }
                 return (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0) <= 0;
             });
@@ -382,9 +382,9 @@ var DashboardFilters = {
                 ) || 0;
 
             case 'incentive':
-                // Issue #37: Use employeeHelpers
-                if (window.employeeHelpers && window.employeeHelpers.getIncentive) {
-                    return window.employeeHelpers.getIncentive(emp, 'current');
+                // Issue #37: Use employeeHelpers (display version for UI)
+                if (window.employeeHelpers && window.employeeHelpers.getDisplayIncentive) {
+                    return window.employeeHelpers.getDisplayIncentive(emp, 'current');
                 }
                 return parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0;
 
@@ -527,8 +527,8 @@ var DashboardFilters = {
             // --- Incentive Amount ---
             // Issue #37: Use employeeHelpers for incentive access
             var incentiveAmount = 0;
-            if (window.employeeHelpers && window.employeeHelpers.getIncentive) {
-                incentiveAmount = window.employeeHelpers.getIncentive(emp, 'current');
+            if (window.employeeHelpers && window.employeeHelpers.getDisplayIncentive) {
+                incentiveAmount = window.employeeHelpers.getDisplayIncentive(emp, 'current');
             } else {
                 incentiveAmount = parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0;
             }

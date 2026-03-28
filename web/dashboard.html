@@ -656,6 +656,20 @@
         </div>
     </div>
 
+    <!-- Resigned Employee Incentive Handling Notice -->
+    <div class="section-card" style="border-left: 4px solid #ff9800;">
+        <h3 data-i18n="criteria.resignation.title">⚠️ 퇴사자 인센티브 처리 안내</h3>
+        <div style="font-size: 0.9rem; line-height: 1.7; color: #424242;">
+            <ol style="padding-left: 20px; margin: 0;">
+                <li style="margin-bottom: 6px;" data-i18n="criteria.resignation.point1">당월 중 퇴사한 직원의 인센티브는 퇴사일 기준으로 조건을 평가합니다.</li>
+                <li style="margin-bottom: 6px;" data-i18n="criteria.resignation.point2">퇴사일에 인센티브 조건을 충족한 경우, 해당 인센티브 금액은 퇴사 처리 시 총무팀에 별도 지급 통보됩니다.</li>
+                <li style="margin-bottom: 6px;" data-i18n="criteria.resignation.point3">월말 최종 대시보드 및 엑셀 다운로드에서는 퇴사자의 인센티브 금액이 0으로 표시됩니다. 이는 월말 일괄 정산 시 이중지급을 방지하기 위한 조치입니다.</li>
+                <li style="margin-bottom: 6px;" data-i18n="criteria.resignation.point4">퇴사자의 원래 산출 인센티브 금액은 개인별 상세 모달에서 확인할 수 있습니다.</li>
+                <li data-i18n="criteria.resignation.point5">적용 시점: 해당 월이 종료된 후 (예: 3월 데이터를 4월 이후에 조회 시 적용). 해당 월 내 조회 시에는 원래 금액이 표시됩니다.</li>
+            </ol>
+        </div>
+    </div>
+
     <!-- FAQ -->
     <div class="section-card">
         <h3 data-i18n="criteria.faqTitle">자주 묻는 질문 (FAQ)</h3>
@@ -1166,7 +1180,7 @@
                 'Continuous Months': emp.continuous_months || 0,
                 'Previous Continuous Months': emp.previous_continuous_months || 0,
                 'Previous Incentive': emp.previous_incentive || 0,
-                [monthCap + ' Incentive']: emp.current_incentive || 0,
+                [monthCap + ' Incentive']: (window.employeeHelpers && window.employeeHelpers.getDisplayIncentive) ? window.employeeHelpers.getDisplayIncentive(emp, 'current') : (emp.current_incentive || 0),
                 'AQL Part2 Amount': emp.aql_part2_amount || 0,
                 'AQL Part3 Amount': emp.aql_part3_amount || 0,
                 'Talent Pool Bonus': emp.talent_pool_bonus || 0,
@@ -1247,7 +1261,7 @@
             var typeStats = { 'TYPE-1': { count: 0, recv: 0 }, 'TYPE-2': { count: 0, recv: 0 }, 'TYPE-3': { count: 0, recv: 0 } };
 
             employees.forEach(function(emp) {
-                var amt = window.employeeHelpers ? window.employeeHelpers.getIncentive(emp, 'current') : (emp.currentIncentive || 0);
+                var amt = window.employeeHelpers ? window.employeeHelpers.getDisplayIncentive(emp, 'current') : (emp.currentIncentive || 0);
                 var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || 'TYPE-3').toUpperCase();
                 if (!empType.startsWith('TYPE')) empType = 'TYPE-' + empType;
                 if (!typeStats[empType]) empType = 'TYPE-3';

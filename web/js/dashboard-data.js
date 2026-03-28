@@ -490,6 +490,71 @@ var DashboardData = {
 };
 
 // ---------------------------------------------------------------------------
+// Resigned Employee Display Logic
+// ---------------------------------------------------------------------------
+
+var _MONTH_NUM = {
+    january: 0, february: 1, march: 2, april: 3,
+    may: 4, june: 5, july: 6, august: 7,
+    september: 8, october: 9, november: 10, december: 11
+};
+
+/**
+ * Check if the viewed month has already ended (current date > last day of viewed month).
+ * @returns {boolean}
+ */
+function _isViewedMonthPassed() {
+    var month = (window._dashboardMonth || '').toLowerCase();
+    var year = parseInt(window._dashboardYear, 10);
+    var monthIdx = _MONTH_NUM[month];
+    if (monthIdx === undefined || isNaN(year)) return false;
+    var monthEnd = new Date(year, monthIdx + 1, 0, 23, 59, 59);
+    return new Date() > monthEnd;
+}
+
+/**
+ * Parse a stop_working_date string into a Date object.
+ * Supports YYYY.MM.DD, YYYY-MM-DD, and standard Date-parseable strings.
+ * @param {string} dateStr
+ * @returns {Date|null}
+ */
+function _parseStopDate(dateStr) {
+    if (!dateStr) return null;
+    var s = String(dateStr).trim();
+    if (!s) return null;
+    var d;
+    if (s.indexOf('.') !== -1) {
+        var parts = s.split('.');
+        if (parts.length === 3) {
+            d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        }
+    }
+    if (!d || isNaN(d.getTime())) {
+        d = new Date(s);
+    }
+    return (d && !isNaN(d.getTime())) ? d : null;
+}
+
+/**
+ * Check if an employee resigned in or before the viewed month.
+ * @param {Object} emp
+ * @returns {boolean}
+ */
+function _isResignedInOrBeforeMonth(emp) {
+    var stop = emp.stop_working_date || emp['Stop working Date'] || '';
+    var resignDate = _parseStopDate(stop);
+    if (!resignDate) return false;
+
+    var month = (window._dashboardMonth || '').toLowerCase();
+    var year = parseInt(window._dashboardYear, 10);
+    var monthIdx = _MONTH_NUM[month];
+    if (monthIdx === undefined || isNaN(year)) return false;
+
+    var monthEnd = new Date(year, monthIdx + 1, 0, 23, 59, 59);
+    return resignDate <= monthEnd;
+}
+
+// ---------------------------------------------------------------------------
 // Employee Helpers (V9 compatibility)
 // ---------------------------------------------------------------------------
 
@@ -501,9 +566,46 @@ function _setupEmployeeHelpers() {
             if (type === 'previous') return parseFloat(emp.previousIncentive || emp.previous_incentive || 0) || 0;
             return 0;
         },
+        /**
+         * Get incentive amount adjusted for resigned employee display.
+         * Returns 0 for resigned employees when the viewed month has ended.
+         * Use getIncentive() for raw/original values (e.g., in modals).
+         */
+        getDisplayIncentive: function (emp, type) {
+            if (!emp) return 0;
+            var raw = window.employeeHelpers.getIncentive(emp, type);
+            if (type === 'current' && _isViewedMonthPassed() && _isResignedInOrBeforeMonth(emp)) {
+                return 0;
+            }
+            return raw;
+        },
         hasReceivedIncentive: function (emp) {
             if (!emp) return false;
             return (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0) > 0;
+        },
+        /**
+         * Check if employee should receive incentive in display context.
+         * Resigned employees show 0 after month ends.
+         */
+        hasDisplayIncentive: function (emp) {
+            if (!emp) return false;
+            return window.employeeHelpers.getDisplayIncentive(emp, 'current') > 0;
+        },
+        /**
+         * Check if this employee is resigned and their incentive is zeroed out for display.
+         * Used to show resignation banner in modals.
+         */
+        isResignedWithZeroDisplay: function (emp) {
+            if (!emp) return false;
+            return _isViewedMonthPassed() && _isResignedInOrBeforeMonth(emp) &&
+                   window.employeeHelpers.getIncentive(emp, 'current') > 0;
+        },
+        /**
+         * Get the employee's stop_working_date as a formatted string.
+         */
+        getStopWorkingDate: function (emp) {
+            if (!emp) return '';
+            return String(emp.stop_working_date || emp['Stop working Date'] || '').trim();
         },
         getCondition: function (emp, condNum) {
             if (!emp) return 'N/A';

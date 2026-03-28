@@ -730,6 +730,64 @@ const DashboardI18n = {
             vi: 'VD: Tháng 3 có 22 ngày làm, nghỉ việc ngày 20/3 → Ngày làm bao gồm ngày nghỉ việc = 17, 5 ngày sau không tính'
         },
 
+        // Resigned employee incentive zero-out display
+        'resignation.zeroed.title': {
+            ko: '⚠️ 퇴사자 인센티브 안내',
+            en: '⚠️ Resigned Employee Incentive Notice',
+            vi: '⚠️ Thông báo khuyến khích NV đã nghỉ việc'
+        },
+        'resignation.zeroed.desc': {
+            ko: '이 직원은 {date} 퇴사자입니다. 퇴사일 기준 인센티브 조건을 충족하여 총무팀에 별도 지급 통보되었습니다. 월말 최종 대시보드 및 엑셀 파일에서는 이중지급 방지를 위해 0으로 표기됩니다.',
+            en: 'This employee resigned on {date}. Incentive conditions were met as of the resignation date, and the amount was separately notified to admin for payment. The final monthly dashboard and Excel show 0 to prevent double payment.',
+            vi: 'Nhân viên này đã nghỉ việc vào ngày {date}. Điều kiện khuyến khích đã đáp ứng tính đến ngày nghỉ việc, số tiền đã được thông báo riêng cho bộ phận tổng vụ. Bảng điều khiển cuối tháng và file Excel hiển thị 0 để tránh trả trùng.'
+        },
+        'resignation.zeroed.originalAmount': {
+            ko: '원래 산출 인센티브',
+            en: 'Original Calculated Incentive',
+            vi: 'Khuyến khích tính toán ban đầu'
+        },
+        'resignation.zeroed.displayAmount': {
+            ko: '대시보드 표시 금액',
+            en: 'Dashboard Display Amount',
+            vi: 'Số tiền hiển thị trên bảng'
+        },
+        'resignation.zeroed.building': {
+            ko: '근무 건물',
+            en: 'Work Building',
+            vi: 'Tòa nhà làm việc'
+        },
+        // Criteria tab - resigned employee handling notice
+        'criteria.resignation.title': {
+            ko: '⚠️ 퇴사자 인센티브 처리 안내',
+            en: '⚠️ Resigned Employee Incentive Handling',
+            vi: '⚠️ Xử lý khuyến khích NV đã nghỉ việc'
+        },
+        'criteria.resignation.point1': {
+            ko: '당월 중 퇴사한 직원의 인센티브는 퇴사일 기준으로 조건을 평가합니다.',
+            en: 'For employees who resign mid-month, incentive conditions are evaluated as of the resignation date.',
+            vi: 'Đối với nhân viên nghỉ việc giữa tháng, điều kiện khuyến khích được đánh giá tính đến ngày nghỉ việc.'
+        },
+        'criteria.resignation.point2': {
+            ko: '퇴사일에 인센티브 조건을 충족한 경우, 해당 인센티브 금액은 퇴사 처리 시 총무팀에 별도 지급 통보됩니다.',
+            en: 'If conditions are met at the time of resignation, the incentive amount is separately notified to admin for payment during resignation processing.',
+            vi: 'Nếu đáp ứng điều kiện tại thời điểm nghỉ việc, số tiền khuyến khích sẽ được thông báo riêng cho bộ phận tổng vụ trong quá trình xử lý nghỉ việc.'
+        },
+        'criteria.resignation.point3': {
+            ko: '월말 최종 대시보드 및 엑셀 다운로드에서는 퇴사자의 인센티브 금액이 0으로 표시됩니다. 이는 월말 일괄 정산 시 이중지급을 방지하기 위한 조치입니다.',
+            en: 'In the final monthly dashboard and Excel download, resigned employees\' incentive amounts display as 0. This prevents double payment during end-of-month batch processing.',
+            vi: 'Trong bảng điều khiển cuối tháng và file Excel, số tiền khuyến khích của NV đã nghỉ việc hiển thị là 0 để tránh trả trùng khi quyết toán cuối tháng.'
+        },
+        'criteria.resignation.point4': {
+            ko: '퇴사자의 원래 산출 인센티브 금액은 개인별 상세 모달에서 확인할 수 있습니다.',
+            en: 'The original calculated incentive for resigned employees can be viewed in the individual detail modal.',
+            vi: 'Số tiền khuyến khích ban đầu của NV đã nghỉ việc có thể xem trong cửa sổ chi tiết cá nhân.'
+        },
+        'criteria.resignation.point5': {
+            ko: '적용 시점: 해당 월이 종료된 후 (예: 3월 데이터를 4월 이후에 조회 시 적용). 해당 월 내 조회 시에는 원래 금액이 표시됩니다.',
+            en: 'Effective timing: After the month ends (e.g., applied when viewing March data from April onwards). Original amounts are shown when viewed within the same month.',
+            vi: 'Thời điểm áp dụng: Sau khi tháng kết thúc (VD: áp dụng khi xem dữ liệu tháng 3 từ tháng 4). Số tiền ban đầu được hiển thị khi xem trong cùng tháng.'
+        },
+
         // All-Zero Explanation Banner
         'banner.allZero': {
             ko: '이번 달은 인센티브 수령자가 0명입니다. "인센티브 기준" 탭에서 조건별 충족 현황을 확인하세요.',

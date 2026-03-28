@@ -681,14 +681,46 @@ var DashboardModals = {
      */
     _renderIncentiveInfo: function (emp) {
         var t = this._t;
-        var currentIncentive = this._getIncentive(emp, 'current');
+        var originalIncentive = this._getIncentive(emp, 'current');
         var previousIncentive = this._getIncentive(emp, 'previous');
         var continuousMonths = parseInt(emp.continuous_months || emp.Continuous_Months || 0, 10) || 0;
         var empType = String(emp.type || emp.TYPE || emp['ROLE TYPE STD'] || '').toUpperCase();
         var isType1 = empType === 'TYPE-1' || empType === '1' || empType === 'TYPE 1';
 
+        // Check if this is a resigned employee whose incentive is zeroed for display
+        var isResignedZeroed = window.employeeHelpers && window.employeeHelpers.isResignedWithZeroDisplay
+            ? window.employeeHelpers.isResignedWithZeroDisplay(emp) : false;
+        var currentIncentive = isResignedZeroed ? 0 : originalIncentive;
+
         var html = '<div class="section-card" style="margin-bottom: 16px;">';
         html += '<h3 style="font-size: 1rem; margin: 0 0 12px;">' + t('modal.incentiveInfo') + '</h3>';
+
+        // Resigned employee banner: show original amount and explanation
+        if (isResignedZeroed) {
+            var stopDate = (window.employeeHelpers && window.employeeHelpers.getStopWorkingDate)
+                ? window.employeeHelpers.getStopWorkingDate(emp) : '';
+            var building = emp.building || emp.BUILDING || emp['Building'] || '';
+            var descText = t('resignation.zeroed.desc').replace('{date}', stopDate);
+
+            html += '<div style="background: linear-gradient(135deg, #fff3e0, #ffe0b2); border: 2px solid #ff9800; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;">';
+            html += '<div style="font-weight: 700; color: #e65100; font-size: 0.95rem; margin-bottom: 8px;">' + t('resignation.zeroed.title') + '</div>';
+            html += '<div style="color: #4e342e; font-size: 0.85rem; line-height: 1.5; margin-bottom: 10px;">' + descText + '</div>';
+            html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">';
+            html += '<div style="background: rgba(255,255,255,0.7); border-radius: 6px; padding: 8px 10px; text-align: center;">';
+            html += '<div style="font-size: 0.75rem; color: #795548;">' + t('resignation.zeroed.originalAmount') + '</div>';
+            html += '<div style="font-size: 1.1rem; font-weight: 700; color: #2e7d32;">' + this._formatVND(originalIncentive) + ' ' + t('unit.currency') + '</div>';
+            html += '</div>';
+            html += '<div style="background: rgba(255,255,255,0.7); border-radius: 6px; padding: 8px 10px; text-align: center;">';
+            html += '<div style="font-size: 0.75rem; color: #795548;">' + t('resignation.zeroed.displayAmount') + '</div>';
+            html += '<div style="font-size: 1.1rem; font-weight: 700; color: #c62828;">0 ' + t('unit.currency') + '</div>';
+            html += '</div>';
+            html += '</div>';
+            if (building) {
+                html += '<div style="margin-top: 6px; font-size: 0.8rem; color: #6d4c41;">' + t('resignation.zeroed.building') + ': <strong>' + building + '</strong></div>';
+            }
+            html += '</div>';
+        }
+
         html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">';
         html += this._renderInfoItem(
             t('modal.currentIncentive'),
@@ -697,9 +729,9 @@ var DashboardModals = {
         );
         // V9: Talent Pool 보너스 분리 표시
         var isTalentPool = String(emp.talent_pool_member || emp.Talent_Pool_Member || '') === 'Y';
-        if (isTalentPool && currentIncentive > 0) {
+        if (isTalentPool && originalIncentive > 0 && !isResignedZeroed) {
             var talentBonus = parseInt(emp.talent_pool_bonus || emp.Talent_Pool_Bonus || 0, 10);
-            var baseIncentive = currentIncentive - talentBonus;
+            var baseIncentive = originalIncentive - talentBonus;
             html += '<div style="background: linear-gradient(135deg, #FFD700, #FFA500); padding: 8px 12px; border-radius: 8px; margin-top: 8px; grid-column: 1 / -1;">';
             html += '<small style="color: white; font-weight: bold;">';
             html += '🌟 Talent Pool ' + t('talentPool.bonusIncluded') + '<br>';
