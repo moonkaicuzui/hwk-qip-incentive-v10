@@ -1,45 +1,20 @@
 {
   "audit_trail": [
     {
-      "authorized_by": "System Admin",
+      "amount": 150000,
       "date": "2025-08-29",
       "employee_id": "623060116",
-      "amount": 150000,
       "period": "2025-07 to 2025-12",
-      "action": "created"
+      "action": "created",
+      "authorized_by": "System Admin"
     }
   ],
-  "last_updated": "2025-08-29",
-  "talent_pool": {
-    "members": [
-      {
-        "notes": "추가 인센티브 지급 대상자",
-        "reason": "QIP Talent Pool Special Incentive",
-        "end_date": "2025-12-31",
-        "monthly_bonus": 150000,
-        "employee_id": "623060116",
-        "status": "active",
-        "currency": "VND",
-        "start_date": "2025-07-01",
-        "name": "Talent Pool Member 1"
-      }
-    ],
-    "settings": {
-      "require_conditions": false,
-      "payment_timing": "with_regular_incentive",
-      "stack_with_regular": true,
-      "auto_apply": true
-    },
-    "eligibility_rules": {
-      "minimum_attendance_rate": 0,
-      "exclude_maternity_leave": false,
-      "require_active_status": true,
-      "exclude_resigned": true
-    }
-  },
   "bonus_history": {
     "2025": {
-      "9": [
+      "8": [
+        "623060116"
+      ],
+      "7": [
         "623060116"
       ],
       "11": [
@@ -48,10 +23,7 @@
       "10": [
         "623060116"
       ],
-      "7": [
-        "623060116"
-      ],
-      "8": [
+      "9": [
         "623060116"
       ],
       "12": [
@@ -60,5 +32,33 @@
     }
   },
   "version": "1.0",
+  "talent_pool": {
+    "eligibility_rules": {
+      "require_active_status": true,
+      "minimum_attendance_rate": 0,
+      "exclude_resigned": true,
+      "exclude_maternity_leave": false
+    },
+    "settings": {
+      "payment_timing": "with_regular_incentive",
+      "auto_apply": true,
+      "stack_with_regular": true,
+      "require_conditions": false
+    },
+    "members": [
+      {
+        "employee_id": "623060116",
+        "name": "Talent Pool Member 1",
+        "monthly_bonus": 150000,
+        "reason": "QIP Talent Pool Special Incentive",
+        "end_date": "2025-12-31",
+        "currency": "VND",
+        "status": "active",
+        "start_date": "2025-07-01",
+        "notes": "추가 인센티브 지급 대상자"
+      }
+    ]
+  },
+  "last_updated": "2025-08-29",
   "description": "QIP Talent Pool 특별 인센티브 관리"
 }
