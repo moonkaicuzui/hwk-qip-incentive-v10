@@ -867,6 +867,11 @@
                     <i class="fa-solid fa-user-shield"></i> <span data-i18n="admin.tabAllowances">Allowances</span>
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-email" data-bs-toggle="tab" data-bs-target="#pane-email" type="button" role="tab">
+                    <i class="fa-solid fa-envelope"></i> <span data-i18n="admin.tabEmail">Email Settings</span>
+                </button>
+            </li>
         </ul>
 
         <!-- Tab Content -->
@@ -1540,6 +1545,80 @@
         </div><!-- /.admin-grid -->
         </div><!-- /#pane-allowances -->
 
+        <!-- ==================== TAB 6: Email Settings (Enhanced) ==================== -->
+        <div class="tab-pane fade" id="pane-email" role="tabpanel">
+        <div class="admin-grid" style="grid-template-columns: 1fr;">
+
+            <!-- Info Banner -->
+            <div class="info-banner" style="grid-column: 1 / -1;">
+                <i class="fa-solid fa-circle-info"></i>
+                <span data-i18n="admin.emailEnhancedInfo">Manage multiple email notification types with separate TO/CC recipients and per-type enable/disable toggles. Settings are stored in Firestore <code>config/emailSettings</code>.</span>
+            </div>
+
+            <!-- Add New Email Type -->
+            <div class="panel-card" style="grid-column: 1 / -1;">
+                <div class="panel-header">
+                    <div class="panel-icon email"><i class="fa-solid fa-plus-circle"></i></div>
+                    <div class="panel-title" data-i18n="admin.emailAddType">Add New Email Type</div>
+                </div>
+                <div class="panel-body">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-2">
+                            <label class="form-label-sm">Type ID</label>
+                            <input type="text" class="form-control form-control-admin" id="new-etype-id" placeholder="e.g. daily_alert">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label-sm" data-i18n="admin.emailTypeLabel">Label</label>
+                            <input type="text" class="form-control form-control-admin" id="new-etype-label" placeholder="Daily Alert / 일일 알림">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label-sm" data-i18n="admin.emailTypeDesc">Description</label>
+                            <input type="text" class="form-control form-control-admin" id="new-etype-desc" placeholder="Optional description">
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary-admin w-100" onclick="AdminEmail.addEmailType()">
+                                <i class="fa-solid fa-plus me-1"></i> <span data-i18n="admin.emailAddTypeBtn">Add Type</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="message-area" id="email-type-add-msg"></div>
+                </div>
+            </div>
+
+            <!-- Email Types Accordion Container -->
+            <div class="panel-card" style="grid-column: 1 / -1;">
+                <div class="panel-header">
+                    <div class="panel-icon email"><i class="fa-solid fa-envelopes-bulk"></i></div>
+                    <div class="panel-title" data-i18n="admin.emailTypes">Email Types & Recipients</div>
+                </div>
+                <div class="panel-body" id="email-types-container">
+                    <p class="text-muted text-center py-3">
+                        <i class="fa-solid fa-spinner fa-spin me-1"></i> <span data-i18n="loading">Loading...</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Migration Info (from legacy) -->
+            <div class="panel-card" style="grid-column: 1 / -1;">
+                <div class="panel-header">
+                    <div class="panel-icon history"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+                    <div class="panel-title">Legacy Migration / 레거시 마이그레이션</div>
+                </div>
+                <div class="panel-body">
+                    <p class="text-muted small mb-2">
+                        The old email recipients from the System tab (<code>system/config.email_recipients</code>) still work.
+                        Use the button below to copy them into the new enhanced settings.
+                    </p>
+                    <button class="btn btn-outline-admin" onclick="AdminEmail.migrateLegacy()">
+                        <i class="fa-solid fa-file-import me-1"></i> Import Legacy Recipients
+                    </button>
+                    <div class="message-area" id="email-migrate-msg"></div>
+                </div>
+            </div>
+
+        </div><!-- /.admin-grid -->
+        </div><!-- /#pane-email -->
+
         </div><!-- /.tab-content -->
     </main>
 
@@ -1582,6 +1661,7 @@
     <script src="js/admin.js?v=rest6"></script>
     <script src="js/admin-configs.js"></script>
     <script src="js/admin-allowances.js"></script>
+    <script src="js/admin-email.js"></script>
 
 </body>
 </html>

@@ -1,4 +1,8 @@
 {
+  "hosting": {
+    "public": "web",
+    "ignore": ["firebase.json", ".firebaserc", "*.md", "*.py", "*.pyc", "__pycache__"]
+  },
   "firestore": {
     "rules": "firestore.rules"
   },

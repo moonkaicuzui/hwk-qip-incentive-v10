@@ -683,6 +683,13 @@ var AdminPage = {
                 }
             }
 
+            if (target === '#pane-email' && !loadedTabs['email']) {
+                loadedTabs['email'] = true;
+                if (typeof AdminEmail !== 'undefined') {
+                    AdminEmail.init();
+                }
+            }
+
             // Re-apply i18n after tab content is shown
             if (typeof DashboardI18n !== 'undefined') {
                 DashboardI18n.updateAllTexts();

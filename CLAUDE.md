@@ -373,6 +373,24 @@ Node.js 22, firebase-admin>=13.0.0, firebase-functions>=6.3.0, nodemailer>=6.9.1
 
 ---
 
+## 이슈 개선 노하우 참조 (QOS Know-How)
+
+| 항목 | 값 |
+|------|-----|
+| **프로젝트 타입** | TYPE-MANAGEMENT |
+| **노하우 경로** | `/Users/ksmoon/Coding/quality-os/knowhow/incentive/` |
+| **필수 골든 룰** | DATA, LOGIC, CONFIG, INTEG |
+| **담당 Liaison** | @agent-liaison-support |
+
+### 에이전트 작업 전 필수 프로토콜
+
+1. `knowhow/GOLDEN_RULES.md` 읽기 → 해당 카테고리 체크리스트 확인
+2. `knowhow/incentive/` 디렉토리 읽기 → 프로젝트별 노하우 확인
+3. `knowhow/INDEX.md` → TYPE-MANAGEMENT의 "공통 주의점" 확인
+4. 이슈 해결 완료 시 → 4-Point Sync 실행 (노하우 작성 → GOLDEN_RULES → INDEX → CLAUDE.md)
+
+---
+
 ## Quality OS 연동 규칙 (필수)
 
 (상세 규칙은 상단 'QOS 생태계 행동 규칙' 참조)
