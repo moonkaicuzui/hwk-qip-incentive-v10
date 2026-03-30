@@ -349,7 +349,9 @@ def main():
         print(f"    [{issue['severity']}] {issue['title']} — {len(issue['employees'])} employee(s)")
 
     html = build_alert_html(issues, month, year)
-    subject = f"[QIP Action Required] Data Verification — {month.capitalize()} {year}"
+    from datetime import date
+    today = date.today().strftime("%B %d %Y")
+    subject = f"[QA Review Required] QIP Incentive Data Verification — {today}"
 
     if args.dry_run:
         os.makedirs("output_files", exist_ok=True)
