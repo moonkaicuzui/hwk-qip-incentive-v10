@@ -68,6 +68,16 @@ jobs:
 
           echo "✅ All reports queued in pendingNotifications"
 
+      - name: "Step 4.5: Data verification — queue alert if issues found"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "🔍 Running data verification..."
+          python scripts/verify_data_issues.py \
+            --month "${{ steps.period.outputs.month }}" \
+            --year "${{ steps.period.outputs.year }}"
+          echo "✅ Data verification complete"
+
       - name: "Step 5: Process pending notifications (send via SMTP)"
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
