@@ -41,15 +41,39 @@ jobs:
           echo "year=$YEAR" >> $GITHUB_OUTPUT
           echo "📅 Report period: $MONTH $YEAR"
 
-      - name: "Step 4: Send weekly email report (multi-language)"
+      - name: "Step 4: Generate and queue reports (3 languages)"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          MONTH="${{ steps.period.outputs.month }}"
+          YEAR="${{ steps.period.outputs.year }}"
+
+          echo "📧 Queueing Korean report → ksmoon@hsvina.com"
+          python scripts/generate_weekly_report.py \
+            --month "$MONTH" --year "$YEAR" \
+            --to "ksmoon@hsvina.com" \
+            --lang ko
+
+          echo "📧 Queueing English report → hwk_qa, bichlyrg, ksmoon"
+          python scripts/generate_weekly_report.py \
+            --month "$MONTH" --year "$YEAR" \
+            --to "hwk_qa@hsvina.com,bichlyrg@hsvina.com,ksmoon@hsvina.com" \
+            --lang en
+
+          echo "📧 Queueing Vietnamese report → hwk_qc, bichlyrg"
+          python scripts/generate_weekly_report.py \
+            --month "$MONTH" --year "$YEAR" \
+            --to "hwk_qc@hsvina.com,bichlyrg@hsvina.com" \
+            --lang vi
+
+          echo "✅ All reports queued in pendingNotifications"
+
+      - name: "Step 5: Process pending notifications (send via SMTP)"
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
         run: |
-          echo "📧 Sending weekly email report (recipients grouped by language)..."
-          python scripts/send_report_email.py \
-            --month "${{ steps.period.outputs.month }}" \
-            --year "${{ steps.period.outputs.year }}" \
-            --force
-          echo "✅ Email report complete"
+          echo "📧 Sending queued notifications..."
+          python scripts/process_notifications.py
+          echo "✅ Weekly email report complete"

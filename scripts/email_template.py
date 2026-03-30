@@ -25,13 +25,14 @@ Usage:
 
 STYLES = {
     "body": "margin:0;padding:0;background-color:#f4f6f9;font-family:'Segoe UI',Arial,sans-serif;",
-    "container": "max-width:1050px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);",
+    "container": "max-width:2100px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);",
     "header": "background:linear-gradient(135deg,#1e3a5f,#2d5a87);color:#ffffff;padding:24px 32px;",
     "header_title": "font-size:20px;font-weight:700;margin:0 0 4px 0;",
     "header_sub": "font-size:13px;color:#a8c8e8;margin:0;",
-    "section_title": "font-size:16px;font-weight:700;color:#1e3a5f;margin:0 0 12px 0;padding:16px 32px 0 32px;",
-    "section_body": "padding:0 32px 16px 32px;",
-    "divider": "border:none;border-top:2px solid #e8edf2;margin:8px 32px;",
+    "section_title": "font-size:16px;font-weight:700;color:#1e3a5f;margin:0 0 12px 0;padding:16px 24px 0 24px;",
+    "section_body": "padding:0 24px 20px 24px;",
+    "section_card": "background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;margin:12px 20px;padding:0;box-shadow:0 1px 4px rgba(0,0,0,0.06);overflow:hidden;",
+    "divider": "border:none;margin:0;",
     # Progress banner
     "progress_banner": "background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:12px 16px;margin:16px 32px;font-size:13px;color:#1e40af;",
     "progress_bar_bg": "background:#e5e7eb;border-radius:4px;height:8px;width:100%;overflow:hidden;",
@@ -165,10 +166,10 @@ def _boss_chain_html(boss_name, boss_boss_name, boss_boss_position):
 
 I18N = {
     "ko": {
-        # Condition names
-        "c1": "출근율", "c2": "AQL 합격률", "c3": "5PRS 통과율", "c4": "연속 불합격",
-        "c5": "근속 기간", "c6": "징계 이력", "c7": "무단 결근", "c8": "지각 횟수",
-        "c9": "조기 퇴근", "c10": "특별 감점",
+        # Condition names (matches cond_1~10 in step1 calculation engine)
+        "c1": "출근율", "c2": "무단결근", "c3": "실근무일", "c4": "최소근무일",
+        "c5": "AQL 개인실패", "c6": "AQL 연속실패", "c7": "AQL 팀/구역",
+        "c8": "구역 리젝율", "c9": "5PRS 통과율", "c10": "5PRS 검사량",
         # Month names
         "m1": "1월", "m2": "2월", "m3": "3월", "m4": "4월", "m5": "5월", "m6": "6월",
         "m7": "7월", "m8": "8월", "m9": "9월", "m10": "10월", "m11": "11월", "m12": "12월",
@@ -235,12 +236,85 @@ I18N = {
         "ppl": "명",
         "days": "일",
     },
+    "en": {
+        # Condition names (matches cond_1~10 in step1 calculation engine)
+        "c1": "Attendance Rate", "c2": "Unapproved Absence", "c3": "Actual Working Days",
+        "c4": "Min Working Days", "c5": "AQL Personal Fail", "c6": "AQL Consecutive",
+        "c7": "AQL Team/Area", "c8": "Area Reject Rate", "c9": "5PRS Pass Rate",
+        "c10": "5PRS Inspection Qty",
+        # Month names
+        "m1": "January", "m2": "February", "m3": "March", "m4": "April",
+        "m5": "May", "m6": "June", "m7": "July", "m8": "August",
+        "m9": "September", "m10": "October", "m11": "November", "m12": "December",
+        # Section titles
+        "kpi_title": "Key KPI",
+        "condition_title": "10 Condition Pass Rates",
+        "building_title": "Building Quality Status",
+        "aql_fail_title": "AQL Failure Details (Action Required)",
+        "aql_none": "No AQL failures this month",
+        "consecutive_title": "Consecutive AQL Failure Warning (Risk Management)",
+        "prs_title": "5PRS Underperformers (Quality Inspection)",
+        "attendance_title": "Attendance Underperformers (Attendance Management)",
+        "type_title": "Incentive Status by TYPE",
+        "link_title": "Action Links",
+        # KPI labels
+        "total_emp": "Total Employees", "eligible_emp": "Eligible Employees",
+        "cond_rate": "Condition Pass Rate", "cond_fail": "Condition Failures",
+        # Table headers
+        "condition": "Cond.", "desc": "Description", "pass_rate_h": "Pass Rate",
+        "pass_applied": "Pass/Applied", "vs_prev": "vs Prev",
+        "building": "Building", "emp_count": "Employees", "aql": "AQL",
+        "fail": "Fail", "reject_rate": "Reject Rate", "grade": "Grade",
+        "prev_recv": "Prev Month", "emp_no": "Emp No", "name": "Name",
+        "boss_chain": "Supervisor \u2192 Manager", "att_rate": "Attendance Rate",
+        "unapp_abs": "Unapp. Absence", "insp_qty": "Insp. Qty",
+        "type": "TYPE", "receivers": "Recipients", "pay_rate": "Pay Rate",
+        "total_vnd": "Total (VND)",
+        # Progress banner
+        "mid_status": "Mid-Month Status", "days_elapsed": "elapsed",
+        "pre_final": "Data is not finalized. Incentive amounts will be calculated at month-end.",
+        "prev_result": "Result (Confirmed)", "of_total": " of ", "received": " received",
+        # Action recommendations
+        "bottleneck": "Bottleneck conditions (blocking incentive):",
+        "ppl_below": " below threshold",
+        "action_rec": "Recommended Action:",
+        "aql_retrain": "AQL retraining. Report to:",
+        "subordinate": " subordinates",
+        "consec_3m": "3-month consecutive failure (incentive blocked):",
+        "consec_2m": "2-month consecutive failure (warning):",
+        "consec_3m_action": "HR action review required. 3 consecutive months = permanent incentive block.",
+        "consec_2m_action": "If failed next month = 3 months consecutive. Request focused management from supervisors.",
+        "prs_rate_below": "5PRS pass rate below threshold",
+        "prs_qty_below": "5PRS inspection quantity below threshold",
+        "prs_action": "Request supervisors to guide 5PRS inspection quality improvement.",
+        "prs_qty_action": "Check for insufficient inspection opportunities. Adjust inspection assignments.",
+        "att_below": "Attendance rate below threshold",
+        "abs_over": "Unapproved absence exceeded",
+        "att_action": "Immediately request supervisors to confirm reason for unapproved absence.",
+        "abs_action": "Request supervisors to confirm absence reasons and prevent recurrence.",
+        "other_bldgs": "Others",
+        "bldg_unit": "buildings",
+        "no_aql": "No AQL inspection",
+        # Links
+        "dashboard": "Dashboard:",
+        "detail_lookup": "Employee Lookup:",
+        "detail_how": "Dashboard \u2192 Click employee name",
+        "aql_analysis": "AQL Analysis:",
+        "aql_how": "Dashboard \u2192 Summary tab \u2192 AQL section",
+        # Footer
+        "data_as_of": "Data as of:",
+        "auto_gen": "(auto-generated)",
+        "auto_sent": "This email was sent automatically from the QIP Incentive Dashboard system.",
+        "prev_month": "prev month",
+        "ppl": "",
+        "days": "days",
+    },
     "vi": {
-        # Condition names
-        "c1": "Tỷ lệ đi làm", "c2": "Tỷ lệ đạt AQL", "c3": "Tỷ lệ đạt 5PRS",
-        "c4": "Lỗi liên tiếp", "c5": "Thâm niên", "c6": "Kỷ luật",
-        "c7": "Vắng không phép", "c8": "Số lần đi trễ", "c9": "Về sớm",
-        "c10": "Trừ điểm đặc biệt",
+        # Condition names (matches cond_1~10 in step1 calculation engine)
+        "c1": "Tỷ lệ đi làm", "c2": "Vắng không phép", "c3": "Ngày làm thực tế",
+        "c4": "Ngày tối thiểu", "c5": "AQL cá nhân", "c6": "AQL liên tiếp",
+        "c7": "AQL nhóm/khu vực", "c8": "Tỷ lệ từ chối", "c9": "Tỷ lệ đạt 5PRS",
+        "c10": "Số lượng KT 5PRS",
         # Month names
         "m1": "Tháng 1", "m2": "Tháng 2", "m3": "Tháng 3", "m4": "Tháng 4",
         "m5": "Tháng 5", "m6": "Tháng 6", "m7": "Tháng 7", "m8": "Tháng 8",
@@ -374,7 +448,12 @@ def _section_0_progress(data, month_ko, year):
     prev_rate = (prev_receiving / prev_total * 100) if prev_total > 0 else 0
     prev_incentive = prev.get("total_incentive", 0)
 
-    prev_month = data.get("previous_month_ko", _t(data, 'prev_month'))
+    # Use language-aware previous month name
+    prev_month_idx = data.get("previous_month_idx")
+    if prev_month_idx:
+        prev_month = _t(data, f"m{prev_month_idx}")
+    else:
+        prev_month = data.get("previous_month_ko", _t(data, 'prev_month'))
     prev_section = ""
     if prev_total > 0:
         prev_section = f'''
@@ -590,110 +669,284 @@ def _section_1_kpi(data):
     '''
 
 
+def _cond_pass_badge(passed, total):
+    """Condition pass rate → colored badge HTML"""
+    if total == 0:
+        return '<span style="color:#9ca3af;">-</span>'
+    rate = passed / total * 100
+    if rate >= 95:
+        color = "#166534"
+        bg = "#dcfce7"
+    elif rate >= 80:
+        color = "#854d0e"
+        bg = "#fef9c3"
+    else:
+        color = "#991b1b"
+        bg = "#fecaca"
+    return f'<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:{bg};color:{color};">{passed}/{total} ({rate:.0f}%)</span>'
+
+
 def _section_2_building(data):
-    """Section 2: Building별 품질 현황 (전월 비교, 주요 건물만)"""
+    """Section 2: Building별 품질 현황 (TYPE별 그룹 → TYPE별 다른 칼럼)"""
+    bq_by_type = data.get("building_quality_by_type", {})
     buildings = data.get("building_quality", {})
-    if not buildings:
+
+    if not buildings and not bq_by_type:
         return ""
 
     prev_bldg = data.get("previous_building", {})
 
-    # Separate into active (has AQL tests or >5 employees) and others
-    active_bldgs = {}
-    other_count = 0
-    other_emp = 0
-    for bldg, info in buildings.items():
-        tests = info.get("tests", 0)
-        count = info.get("count", 0)
-        if tests > 0 or count >= 10:
-            active_bldgs[bldg] = info
-        else:
-            other_count += 1
-            other_emp += count
+    if not bq_by_type and buildings:
+        bq_by_type = {"ALL": buildings}
 
-    rows = ""
-    total_count = 0
-    total_tests = 0
-    total_fails = 0
-    total_receiving = 0
-    total_emp = 0
+    # Condition short names for TYPE-2/3 table headers
+    cond_headers = {
+        "c1": (_t(data, "c1"), _t(data, "att_rate")),
+        "c2": (_t(data, "c2"), _t(data, "unapp_abs")),
+        "c3": ("C3", _t(data, "c3") if len(_t(data, "c3")) < 15 else "C3"),
+        "c4": ("C4", _t(data, "c4") if len(_t(data, "c4")) < 15 else "C4"),
+    }
 
-    # Sort by reject rate (worst first for action priority)
-    sorted_bldgs = sorted(active_bldgs.items(),
-                          key=lambda x: (-x[1].get("reject_rate", 0), -x[1].get("count", 0)))
-
-    for bldg, info in sorted_bldgs:
-        count = info.get("count", 0)
-        tests = info.get("tests", 0)
-        fails = info.get("fail_count", 0)
-        reject_rate = info.get("reject_rate", 0)
-        receiving = info.get("receiving", 0)
-        pay_rate = (receiving / count * 100) if count > 0 else 0
-
-        total_count += count
-        total_tests += tests
-        total_fails += fails
-        total_receiving += receiving
-        total_emp += count
-
-        # Previous month comparison for this building
-        prev_info = prev_bldg.get(bldg, {})
+    def _prev_col(bldg, prev_bldg_data):
+        prev_info = prev_bldg_data.get(bldg, {})
         prev_recv = prev_info.get("receiving", 0)
         prev_cnt = prev_info.get("count", 0)
-        prev_pay = (prev_recv / prev_cnt * 100) if prev_cnt > 0 else 0
-        prev_col = ""
         if prev_cnt > 0:
-            prev_col = f'{prev_recv}/{prev_cnt} ({prev_pay:.0f}%)'
+            prev_pay = prev_recv / prev_cnt * 100
+            return f'{prev_recv}/{prev_cnt} ({prev_pay:.0f}%)'
+        return ""
 
-        rows += f'''
-        <tr>
-          <td style="{STYLES['td']}">{_grade_emoji(reject_rate)} {_bldg_badge(bldg)}</td>
-          <td style="{STYLES['td_center']}">{count}</td>
-          <td style="{STYLES['td_center']}">{tests}</td>
-          <td style="{STYLES['td_center']}">{fails}</td>
-          <td style="{STYLES['td_center']}">{_fmt_pct(reject_rate)}</td>
-          <td style="{STYLES['td_center']}">{_grade_badge(reject_rate)}</td>
-          <td style="{STYLES['td_center']};font-size:11px;color:#6b7280;">{prev_col}</td>
-        </tr>'''
+    def _build_type1_rows(bldg_dict):
+        """TYPE-1: AQL/5PRS columns"""
+        rows = ""
+        t_emp = 0
+        t_tests = 0
+        t_fails = 0
+        active = {}
+        other_count = 0
+        other_emp = 0
 
-    # Other buildings row (collapsed)
-    if other_count > 0:
-        total_emp += other_emp
-        rows += f'''
-        <tr style="background:#fafbfc;">
-          <td style="{STYLES['td']};color:#9ca3af;font-style:italic;" colspan="2">{_t(data, 'other_bldgs')} {other_count}{_t(data, 'bldg_unit')} ({other_emp}{_t(data, 'ppl')})</td>
-          <td style="{STYLES['td_center']};color:#9ca3af;" colspan="5">{_t(data, 'no_aql')}</td>
-        </tr>'''
+        for bldg, info in bldg_dict.items():
+            if info.get("tests", 0) > 0 or info.get("count", 0) >= 10:
+                active[bldg] = info
+            else:
+                other_count += 1
+                other_emp += info.get("count", 0)
 
-    # Total row
-    total_reject = (total_fails / total_tests * 100) if total_tests > 0 else 0
-    rows += f'''
-    <tr style="{STYLES['tr_total']}">
-      <td style="{STYLES['td']}">Total</td>
-      <td style="{STYLES['td_center']}">{total_emp}</td>
-      <td style="{STYLES['td_center']}">{total_tests}</td>
-      <td style="{STYLES['td_center']}">{total_fails}</td>
-      <td style="{STYLES['td_center']}">{_fmt_pct(total_reject)}</td>
-      <td style="{STYLES['td_center']}"></td>
-      <td style="{STYLES['td_center']}"></td>
-    </tr>'''
+        for bldg, info in sorted(active.items(), key=lambda x: (-x[1].get("reject_rate", 0), -x[1].get("count", 0))):
+            count = info.get("count", 0)
+            tests = info.get("tests", 0)
+            fails = info.get("fail_count", 0)
+            rr = info.get("reject_rate", 0)
+            t_emp += count
+            t_tests += tests
+            t_fails += fails
+            pc = _prev_col(bldg, prev_bldg)
+            rows += f'''
+            <tr>
+              <td style="{STYLES['td']}">{_grade_emoji(rr)} {_bldg_badge(bldg)}</td>
+              <td style="{STYLES['td_center']}">{count}</td>
+              <td style="{STYLES['td_center']}">{tests}</td>
+              <td style="{STYLES['td_center']}">{fails}</td>
+              <td style="{STYLES['td_center']}">{_fmt_pct(rr)}</td>
+              <td style="{STYLES['td_center']}">{_grade_badge(rr)}</td>
+              <td style="{STYLES['td_center']};font-size:11px;color:#6b7280;">{pc}</td>
+            </tr>'''
+
+        if other_count > 0:
+            t_emp += other_emp
+            rows += f'''
+            <tr style="background:#fafbfc;">
+              <td style="{STYLES['td']};color:#9ca3af;font-style:italic;" colspan="2">{_t(data, 'other_bldgs')} {other_count}{_t(data, 'bldg_unit')} ({other_emp}{_t(data, 'ppl')})</td>
+              <td style="{STYLES['td_center']};color:#9ca3af;" colspan="5">{_t(data, 'no_aql')}</td>
+            </tr>'''
+        return rows, t_emp, t_tests, t_fails
+
+    def _build_type2_rows(bldg_dict):
+        """TYPE-2/3: Condition pass columns (c1-c4) + AQL error check"""
+        rows = ""
+        t_emp = 0
+        aql_errors = []
+
+        sorted_bldgs = sorted(bldg_dict.items(), key=lambda x: -x[1].get("count", 0))
+        for bldg, info in sorted_bldgs:
+            count = info.get("count", 0)
+            recv = info.get("receiving", 0)
+            recv_rate = (recv / count * 100) if count > 0 else 0
+            t_emp += count
+
+            # AQL error check for TYPE-2
+            aql_tests = info.get("tests", 0)
+            if aql_tests > 0:
+                aql_errors.append({"building": bldg, "tests": aql_tests, "fails": info.get("fail_count", 0)})
+
+            # Condition columns
+            c1p = info.get("c1_pass", 0)
+            c1f = info.get("c1_fail", 0)
+            c2p = info.get("c2_pass", 0)
+            c2f = info.get("c2_fail", 0)
+            c3p = info.get("c3_pass", 0)
+            c3f = info.get("c3_fail", 0)
+            c4p = info.get("c4_pass", 0)
+            c4f = info.get("c4_fail", 0)
+
+            recv_color = "#166534" if recv_rate >= 85 else "#854d0e" if recv_rate >= 70 else "#991b1b"
+            pc = _prev_col(bldg, prev_bldg)
+
+            rows += f'''
+            <tr>
+              <td style="{STYLES['td']}">{_bldg_badge(bldg)}</td>
+              <td style="{STYLES['td_center']}">{count}</td>
+              <td style="{STYLES['td_center']}">{_cond_pass_badge(c1p, c1p+c1f)}</td>
+              <td style="{STYLES['td_center']}">{_cond_pass_badge(c2p, c2p+c2f)}</td>
+              <td style="{STYLES['td_center']}">{_cond_pass_badge(c3p, c3p+c3f)}</td>
+              <td style="{STYLES['td_center']}">{_cond_pass_badge(c4p, c4p+c4f)}</td>
+              <td style="{STYLES['td_center']};font-weight:700;color:{recv_color};">{_fmt_pct(recv_rate)}</td>
+              <td style="{STYLES['td_center']};font-size:11px;color:#6b7280;">{pc}</td>
+            </tr>'''
+
+        return rows, t_emp, aql_errors
+
+    # ---- Build complete section ----
+    html_parts = []
+    grand_emp = 0
+    grand_tests = 0
+    grand_fails = 0
+
+    type_order = ["TYPE-1", "TYPE-2", "TYPE-3"]
+    for t in bq_by_type:
+        if t not in type_order and t != "ALL":
+            type_order.append(t)
+    if list(bq_by_type.keys()) == ["ALL"]:
+        type_order = ["ALL"]
+
+    for type_key in type_order:
+        type_bldgs = bq_by_type.get(type_key, {})
+        if not type_bldgs:
+            continue
+
+        type_emp = sum(b.get("count", 0) for b in type_bldgs.values())
+        type_recv = sum(b.get("receiving", 0) for b in type_bldgs.values())
+        type_rate = (type_recv / type_emp * 100) if type_emp > 0 else 0
+
+        is_type1 = type_key in ("TYPE-1", "ALL")
+        is_type2or3 = type_key in ("TYPE-2", "TYPE-3")
+
+        # TYPE header
+        type_color = "#1e40af" if type_key == "TYPE-1" else "#7c3aed" if type_key == "TYPE-2" else "#059669"
+        if type_key != "ALL":
+            recv_style = f'color:{type_color}'
+            if type_key == "TYPE-3" and type_rate == 0:
+                recv_style = "color:#dc2626;font-style:italic"
+
+        if is_type1:
+            # TYPE-1: AQL table
+            if type_key != "ALL":
+                colspan_left = 5
+                colspan_right = 2
+            else:
+                colspan_left = 5
+                colspan_right = 2
+
+            type_header = ""
+            if type_key != "ALL":
+                type_header = f'''
+                <tr style="background:linear-gradient(90deg,#f0f4f8,#ffffff);">
+                  <td style="padding:10px;font-weight:700;font-size:14px;color:{type_color};border-bottom:2px solid {type_color};" colspan="{colspan_left}">
+                    {type_key} ({type_emp}{_t(data, 'ppl')})
+                  </td>
+                  <td style="padding:10px;font-weight:700;font-size:13px;{recv_style};text-align:center;border-bottom:2px solid {type_color};" colspan="{colspan_right}">
+                    {type_recv}/{type_emp} ({type_rate:.0f}%)
+                  </td>
+                </tr>'''
+
+            rows, t_emp, t_tests, t_fails = _build_type1_rows(type_bldgs)
+            grand_emp += t_emp
+            grand_tests += t_tests
+            grand_fails += t_fails
+
+            table_html = f'''
+            <table style="{STYLES['table']}">
+              <tr>
+                <th style="{STYLES['th']}">{_t(data, 'building')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'emp_count')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'aql')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'fail')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'reject_rate')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'grade')}</th>
+                <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'prev_recv')}</th>
+              </tr>
+              {type_header}
+              {rows}
+            </table>'''
+            html_parts.append(table_html)
+
+        elif is_type2or3:
+            # TYPE-2/3: Condition pass columns
+            rows, t_emp, aql_errors = _build_type2_rows(type_bldgs)
+            grand_emp += t_emp
+
+            # AQL ERROR WARNING for TYPE-2
+            aql_warning = ""
+            if aql_errors:
+                err_details = ", ".join(f"{e['building']}: {e['tests']} tests / {e['fails']} fails" for e in aql_errors)
+                aql_warning = f'''
+                <div style="background:#fef2f2;border:2px solid #dc2626;border-radius:8px;padding:14px 18px;margin:8px 0 12px 0;">
+                  <div style="color:#dc2626;font-weight:800;font-size:14px;">&#x1F6A8; AQL DATA ERROR — {type_key}</div>
+                  <div style="color:#991b1b;font-weight:700;font-size:13px;margin-top:4px;">
+                    {type_key} should NOT have AQL inspection data. Found: {err_details}
+                  </div>
+                  <div style="color:#7f1d1d;font-size:12px;margin-top:4px;">
+                    Check data source. {type_key} employees are exempt from AQL inspection.
+                  </div>
+                </div>'''
+
+            table_html = f'''
+            {aql_warning}
+            <table style="{STYLES['table']}">
+              <tr>
+                <th style="{STYLES['th']}">{_t(data, 'building')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'emp_count')}</th>
+                <th style="{STYLES['th_center']};font-size:11px;">C1 {_t(data, 'att_rate')}</th>
+                <th style="{STYLES['th_center']};font-size:11px;">C2 {_t(data, 'unapp_abs')}</th>
+                <th style="{STYLES['th_center']};font-size:11px;">C3 {_t(data, 'c3')}</th>
+                <th style="{STYLES['th_center']};font-size:11px;">C4 {_t(data, 'c4')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'pay_rate')}</th>
+                <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'prev_recv')}</th>
+              </tr>
+              <tr style="background:linear-gradient(90deg,#f0f4f8,#ffffff);">
+                <td style="padding:10px;font-weight:700;font-size:14px;color:{type_color};border-bottom:2px solid {type_color};" colspan="6">
+                  {type_key} ({type_emp}{_t(data, 'ppl')})
+                </td>
+                <td style="padding:10px;font-weight:700;font-size:13px;{recv_style};text-align:center;border-bottom:2px solid {type_color};" colspan="2">
+                  {type_recv}/{type_emp} ({type_rate:.0f}%)
+                </td>
+              </tr>
+              {rows}
+            </table>'''
+            html_parts.append(table_html)
+
+    # Grand total
+    grand_reject = (grand_fails / grand_tests * 100) if grand_tests > 0 else 0
+    total_recv = sum(b.get("receiving", 0) for b in buildings.values())
+    total_html = f'''
+    <table style="{STYLES['table']};margin-top:8px;">
+      <tr style="{STYLES['tr_total']}">
+        <td style="{STYLES['td']}">Total</td>
+        <td style="{STYLES['td_center']}">{grand_emp}</td>
+        <td style="{STYLES['td_center']}">{grand_tests} AQL</td>
+        <td style="{STYLES['td_center']}">{grand_fails} {_t(data, 'fail')}</td>
+        <td style="{STYLES['td_center']}">{_fmt_pct(grand_reject)}</td>
+        <td style="{STYLES['td_center']};font-weight:700;">{total_recv}/{grand_emp} ({(total_recv/grand_emp*100) if grand_emp else 0:.0f}%)</td>
+      </tr>
+    </table>'''
 
     return f'''
     <hr style="{STYLES['divider']}"/>
     <h2 style="{STYLES['section_title']}">&#x1F3ED; {_t(data, 'building_title')}</h2>
     <div style="{STYLES['section_body']}">
-      <table style="{STYLES['table']}">
-        <tr>
-          <th style="{STYLES['th']}">{_t(data, 'building')}</th>
-          <th style="{STYLES['th_center']}">{_t(data, 'emp_count')}</th>
-          <th style="{STYLES['th_center']}">{_t(data, 'aql')}</th>
-          <th style="{STYLES['th_center']}">{_t(data, 'fail')}</th>
-          <th style="{STYLES['th_center']}">{_t(data, 'reject_rate')}</th>
-          <th style="{STYLES['th_center']}">{_t(data, 'grade')}</th>
-          <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'prev_recv')}</th>
-        </tr>
-        {rows}
-      </table>
+      {''.join(html_parts)}
+      {total_html}
     </div>
     '''
 
@@ -863,8 +1116,17 @@ def _section_4_consecutive_aql(data):
     '''
 
 
+def _grouped_by_building(emp_list):
+    """Group employee list by building."""
+    groups = {}
+    for emp in emp_list:
+        bldg = emp.get("building", "Unknown") or "Unknown"
+        groups.setdefault(bldg, []).append(emp)
+    return groups
+
+
 def _section_5_5prs(data):
-    """Section 5: 5PRS 미달자 상세"""
+    """Section 5: 5PRS 미달자 상세 (Building별 그룹)"""
     low_rate = data.get("low_prs_rate", [])
     low_qty = data.get("low_prs_qty", [])
 
@@ -876,71 +1138,81 @@ def _section_5_5prs(data):
     rate_th = thresholds.get("5prs_pass_rate", 95)
     qty_th = thresholds.get("5prs_min_qty", 100)
 
-    # Low pass rate
+    # Low pass rate — grouped by building
     if low_rate:
-        rows = ""
-        for emp in low_rate:
-            chain = _boss_chain_html(
-                emp.get("boss_name"), emp.get("boss_boss_name"), emp.get("boss_boss_position")
-            )
-            rows += f'''
-            <tr>
-              <td style="{STYLES['td']}">{emp.get('emp_no', '')}</td>
-              <td style="{STYLES['td']}">{emp.get('name', '')}</td>
-              <td style="{STYLES['td_center']}">{_fmt_pct(emp.get('pass_rate', 0))}</td>
-              <td style="{STYLES['td_center']}">{int(emp.get('inspection_qty', 0))}</td>
-              <td style="{STYLES['td']};font-size:12px;">{chain}</td>
-            </tr>'''
+        rate_html = ""
+        for bldg, emps in sorted(_grouped_by_building(low_rate).items()):
+            rows = ""
+            for emp in emps:
+                chain = _boss_chain_html(
+                    emp.get("boss_name"), emp.get("boss_boss_name"), emp.get("boss_boss_position")
+                )
+                rows += f'''
+                <tr>
+                  <td style="{STYLES['td']}">{emp.get('emp_no', '')}</td>
+                  <td style="{STYLES['td']}">{emp.get('name', '')}</td>
+                  <td style="{STYLES['td_center']}">{_fmt_pct(emp.get('pass_rate', 0))}</td>
+                  <td style="{STYLES['td_center']}">{int(emp.get('inspection_qty', 0))}</td>
+                  <td style="{STYLES['td']};font-size:12px;">{chain}</td>
+                </tr>'''
+
+            rate_html += f'''
+            <p style="{STYLES['subtitle']}">{_bldg_badge(bldg)} {_t(data, 'prs_rate_below')} {len(emps)}{_t(data, 'ppl')}</p>
+            <table style="{STYLES['table']}">
+              <tr>
+                <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+                <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'pass_rate_h')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'insp_qty')}</th>
+                <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
+              </tr>
+              {rows}
+            </table>'''
 
         html += f'''
-        <p style="{STYLES['subtitle']}">&#x1F7E0; {_t(data, 'prs_rate_below')} (&lt;{rate_th}%): {len(low_rate)}{_t(data, 'ppl')}</p>
-        <table style="{STYLES['table']}">
-          <tr>
-            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
-            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
-            <th style="{STYLES['th_center']}">{_t(data, 'pass_rate_h')}</th>
-            <th style="{STYLES['th_center']}">{_t(data, 'insp_qty')}</th>
-            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
-          </tr>
-          {rows}
-        </table>
+        <p style="font-size:15px;font-weight:700;color:#c2410c;margin:0 0 10px 0;">&#x1F7E0; {_t(data, 'prs_rate_below')} (&lt;{rate_th}%): {len(low_rate)}{_t(data, 'ppl')}</p>
+        {rate_html}
         <div style="{STYLES['action_box']}">
           &#x1F4CB; {_t(data, 'prs_action')}
-        </div>
-        '''
+        </div>'''
 
-    # Low inspection quantity
+    # Low inspection quantity — grouped by building
     if low_qty:
-        rows = ""
-        for emp in low_qty:
-            chain = _boss_chain_html(
-                emp.get("boss_name"), emp.get("boss_boss_name"), emp.get("boss_boss_position")
-            )
-            rows += f'''
-            <tr>
-              <td style="{STYLES['td']}">{emp.get('emp_no', '')}</td>
-              <td style="{STYLES['td']}">{emp.get('name', '')}</td>
-              <td style="{STYLES['td_center']}">{_fmt_pct(emp.get('pass_rate', 0))}</td>
-              <td style="{STYLES['td_center']}">{int(emp.get('inspection_qty', 0))}</td>
-              <td style="{STYLES['td']};font-size:12px;">{chain}</td>
-            </tr>'''
+        qty_html = ""
+        for bldg, emps in sorted(_grouped_by_building(low_qty).items()):
+            rows = ""
+            for emp in emps:
+                chain = _boss_chain_html(
+                    emp.get("boss_name"), emp.get("boss_boss_name"), emp.get("boss_boss_position")
+                )
+                rows += f'''
+                <tr>
+                  <td style="{STYLES['td']}">{emp.get('emp_no', '')}</td>
+                  <td style="{STYLES['td']}">{emp.get('name', '')}</td>
+                  <td style="{STYLES['td_center']}">{_fmt_pct(emp.get('pass_rate', 0))}</td>
+                  <td style="{STYLES['td_center']}">{int(emp.get('inspection_qty', 0))}</td>
+                  <td style="{STYLES['td']};font-size:12px;">{chain}</td>
+                </tr>'''
+
+            qty_html += f'''
+            <p style="{STYLES['subtitle']}">{_bldg_badge(bldg)} {_t(data, 'prs_qty_below')} {len(emps)}{_t(data, 'ppl')}</p>
+            <table style="{STYLES['table']}">
+              <tr>
+                <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+                <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'pass_rate_h')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'insp_qty')}</th>
+                <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
+              </tr>
+              {rows}
+            </table>'''
 
         html += f'''
-        <p style="{STYLES['subtitle']}">&#x1F7E0; {_t(data, 'prs_qty_below')} (&lt;{qty_th}): {len(low_qty)}{_t(data, 'ppl')}</p>
-        <table style="{STYLES['table']}">
-          <tr>
-            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
-            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
-            <th style="{STYLES['th_center']}">{_t(data, 'pass_rate_h')}</th>
-            <th style="{STYLES['th_center']}">{_t(data, 'insp_qty')}</th>
-            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
-          </tr>
-          {rows}
-        </table>
+        <p style="font-size:15px;font-weight:700;color:#c2410c;margin:16px 0 10px 0;">&#x1F7E0; {_t(data, 'prs_qty_below')} (&lt;{qty_th}): {len(low_qty)}{_t(data, 'ppl')}</p>
+        {qty_html}
         <div style="{STYLES['action_box']}">
           &#x1F4CB; {_t(data, 'prs_qty_action')}
-        </div>
-        '''
+        </div>'''
 
     return f'''
     <hr style="{STYLES['divider']}"/>
@@ -951,84 +1223,139 @@ def _section_5_5prs(data):
     '''
 
 
+def _emp_status_badge(emp, lang="ko"):
+    """Employee status badge (resigned / maternity leave)."""
+    status = emp.get("emp_status", "")
+    stop = emp.get("stop_working_date", "")
+    if status == "resigned":
+        labels = {"ko": "퇴사", "en": "Resigned", "vi": "Nghỉ việc"}
+        label = labels.get(lang, "Resigned")
+        return f' <span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;background:#fecaca;color:#991b1b;">{label} {stop}</span>'
+    elif status == "maternity_leave":
+        labels = {"ko": "출산휴가", "en": "Maternity", "vi": "Thai sản"}
+        label = labels.get(lang, "Maternity")
+        return f' <span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;background:#e0e7ff;color:#3730a3;">{label}</span>'
+    return ""
+
+
+def _att_grouped_by_type_building(emp_list):
+    """Group employees by TYPE → Building."""
+    groups = {}
+    for emp in emp_list:
+        emp_type = emp.get("type", "Unknown") or "Unknown"
+        bldg = emp.get("building", "Unknown") or "Unknown"
+        groups.setdefault(emp_type, {}).setdefault(bldg, []).append(emp)
+    return groups
+
+
+def _render_att_table(data, emp_list, lang="ko"):
+    """Render attendance table grouped by TYPE → Building with status badges."""
+    grouped = _att_grouped_by_type_building(emp_list)
+    html = ""
+
+    type_order = ["TYPE-1", "TYPE-2", "TYPE-3"]
+    for t in grouped:
+        if t not in type_order:
+            type_order.append(t)
+
+    for emp_type in type_order:
+        bldg_groups = grouped.get(emp_type, {})
+        if not bldg_groups:
+            continue
+
+        type_total = sum(len(emps) for emps in bldg_groups.values())
+        type_color = "#1e40af" if emp_type == "TYPE-1" else "#7c3aed" if emp_type == "TYPE-2" else "#059669"
+
+        # TYPE-3 label override
+        type_label = emp_type
+        if emp_type == "TYPE-3":
+            type3_labels = {"ko": "TYPE-3 — 정식 근무지 미배정 신입공", "en": "TYPE-3 — New hires, unassigned workstation", "vi": "TYPE-3 — Nhân viên mới, chưa phân công"}
+            type_label = type3_labels.get(lang, type3_labels["en"])
+
+        # Open TYPE inner card
+        html += f'''
+        <div style="margin:12px 0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#fafbfd;">
+          <div style="padding:10px 16px;background:linear-gradient(90deg,{type_color}10,{type_color}05);border-bottom:2px solid {type_color};">
+            <span style="font-weight:700;font-size:14px;color:{type_color};">{type_label}</span>
+            <span style="font-size:12px;color:#64748b;margin-left:8px;">{type_total}{_t(data, 'ppl')}</span>
+          </div>
+          <div style="padding:8px 16px 16px 16px;">'''
+
+        for bldg in sorted(bldg_groups.keys()):
+            emps = bldg_groups[bldg]
+            rows = ""
+            for emp in emps:
+                chain = _boss_chain_html(
+                    emp.get("boss_name"), emp.get("boss_boss_name"), emp.get("boss_boss_position")
+                )
+                status_badge = _emp_status_badge(emp, lang)
+                rows += f'''
+                <tr>
+                  <td style="{STYLES['td']}">{emp.get('emp_no', '')}</td>
+                  <td style="{STYLES['td']}">{emp.get('name', '')}{status_badge}</td>
+                  <td style="{STYLES['td_center']}">{_fmt_pct(emp.get('attendance_rate', 0))}</td>
+                  <td style="{STYLES['td_center']}">{emp.get('unapproved_absence', 0)}</td>
+                  <td style="{STYLES['td']};font-size:12px;">{chain}</td>
+                </tr>'''
+
+            # Hide building badge for TYPE-3 (unassigned new hires)
+            bldg_label = f"{_bldg_badge(bldg)} " if emp_type != "TYPE-3" else ""
+
+            html += f'''
+            <p style="{STYLES['subtitle']}">{bldg_label}{len(emps)}{_t(data, 'ppl')}</p>
+            <table style="{STYLES['table']}">
+              <tr>
+                <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+                <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'att_rate')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'unapp_abs')}</th>
+                <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
+              </tr>
+              {rows}
+            </table>'''
+
+        # Close TYPE inner card
+        html += '''
+          </div>
+        </div>'''
+
+    return html
+
+
 def _section_6_attendance(data):
-    """Section 6: 출근 미달자 상세"""
+    """Section 6: 출근 미달자 상세 (TYPE별 → Building별 그룹 + 퇴사/휴가 표시)"""
     low_attendance = data.get("low_attendance", [])
     high_absence = data.get("high_absence", [])
 
     if not low_attendance and not high_absence:
         return ""
 
+    # Detect language from _t
+    t = data.get("_t", I18N["ko"])
+    lang = "en" if t.get("kpi_title") == "Key KPI" else "vi" if t.get("kpi_title") == "KPI chính" else "ko"
+
     html = ""
     thresholds = data.get("thresholds", {})
     rate_th = thresholds.get("attendance_rate", 88)
     absence_th = thresholds.get("unapproved_absence", 2)
 
-    # Low attendance rate
+    # Low attendance rate — grouped by TYPE → Building
     if low_attendance:
-        rows = ""
-        for emp in low_attendance:
-            chain = _boss_chain_html(
-                emp.get("boss_name"), emp.get("boss_boss_name"), emp.get("boss_boss_position")
-            )
-            rows += f'''
-            <tr>
-              <td style="{STYLES['td']}">{emp.get('emp_no', '')}</td>
-              <td style="{STYLES['td']}">{emp.get('name', '')}</td>
-              <td style="{STYLES['td_center']}">{_fmt_pct(emp.get('attendance_rate', 0))}</td>
-              <td style="{STYLES['td_center']}">{emp.get('unapproved_absence', 0)}</td>
-              <td style="{STYLES['td']};font-size:12px;">{chain}</td>
-            </tr>'''
-
         html += f'''
-        <p style="{STYLES['subtitle']}">&#x1F534; {_t(data, 'att_below')} (&lt;{rate_th}%): {len(low_attendance)}{_t(data, 'ppl')}</p>
-        <table style="{STYLES['table']}">
-          <tr>
-            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
-            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
-            <th style="{STYLES['th_center']}">{_t(data, 'att_rate')}</th>
-            <th style="{STYLES['th_center']}">{_t(data, 'unapp_abs')}</th>
-            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
-          </tr>
-          {rows}
-        </table>
+        <p style="font-size:15px;font-weight:700;color:#dc2626;margin:0 0 6px 0;">&#x1F534; {_t(data, 'att_below')} (&lt;{rate_th}%): {len(low_attendance)}{_t(data, 'ppl')}</p>
+        {_render_att_table(data, low_attendance, lang)}
         <div style="{STYLES['action_box_red']}">
           &#x1F4CB; {_t(data, 'att_action')}
-        </div>
-        '''
+        </div>'''
 
-    # High unapproved absence
+    # High unapproved absence — grouped by TYPE → Building
     if high_absence:
-        rows = ""
-        for emp in high_absence:
-            chain = _boss_chain_html(
-                emp.get("boss_name"), emp.get("boss_boss_name"), emp.get("boss_boss_position")
-            )
-            rows += f'''
-            <tr>
-              <td style="{STYLES['td']}">{emp.get('emp_no', '')}</td>
-              <td style="{STYLES['td']}">{emp.get('name', '')}</td>
-              <td style="{STYLES['td_center']}">{_fmt_pct(emp.get('attendance_rate', 0))}</td>
-              <td style="{STYLES['td_center']}">{emp.get('unapproved_absence', 0)}</td>
-              <td style="{STYLES['td']};font-size:12px;">{chain}</td>
-            </tr>'''
-
         html += f'''
-        <p style="{STYLES['subtitle']}">&#x1F7E1; {_t(data, 'abs_over')} (&gt;{absence_th}{_t(data, 'days')}): {len(high_absence)}{_t(data, 'ppl')}</p>
-        <table style="{STYLES['table']}">
-          <tr>
-            <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
-            <th style="{STYLES['th']}">{_t(data, 'name')}</th>
-            <th style="{STYLES['th_center']}">{_t(data, 'att_rate')}</th>
-            <th style="{STYLES['th_center']}">{_t(data, 'unapp_abs')}</th>
-            <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
-          </tr>
-          {rows}
-        </table>
+        <p style="font-size:15px;font-weight:700;color:#854d0e;margin:16px 0 6px 0;">&#x1F7E1; {_t(data, 'abs_over')} (&gt;{absence_th}{_t(data, 'days')}): {len(high_absence)}{_t(data, 'ppl')}</p>
+        {_render_att_table(data, high_absence, lang)}
         <div style="{STYLES['action_box_yellow']}">
           &#x1F4CB; {_t(data, 'abs_action')}
-        </div>
-        '''
+        </div>'''
 
     return f'''
     <hr style="{STYLES['divider']}"/>
@@ -1108,6 +1435,60 @@ def _section_8_links(data, dashboard_url=None):
 # Main template generator
 # ---------------------------------------------------------------------------
 
+def _header_data_period(config, lang="ko"):
+    """Header sub-section: data source period info."""
+    if not config:
+        return ""
+
+    date_ranges = config.get("data_date_ranges", {})
+    att_range = date_ranges.get("attendance", {})
+    files_times = config.get("files_modified_times", {})
+    working_days = config.get("working_days", "")
+    last_updated = config.get("last_updated", "")
+
+    if not att_range and not files_times:
+        return ""
+
+    data_start = att_range.get("min", "")
+    data_end = att_range.get("max", "")
+
+    # Source file dates
+    src_parts = []
+    name_map = {"attendance": "Attendance", "5prs": "5PRS", "basic_manpower": "Manpower", "aql_current": "AQL"}
+    for src_name, src_time in files_times.items():
+        label = name_map.get(src_name, src_name)
+        src_parts.append(f"{label}: {src_time[:10]}")
+
+    # Labels by language
+    if lang == "ko":
+        period_label = "데이터 반영 기간"
+        source_label = "소스 파일 날짜"
+        wd_label = "근무일"
+        updated_label = "최종 갱신"
+    elif lang == "vi":
+        period_label = "Kỳ dữ liệu"
+        source_label = "Ngày tệp nguồn"
+        wd_label = "ngày làm việc"
+        updated_label = "Cập nhật cuối"
+    else:
+        period_label = "Data Period"
+        source_label = "Source Files"
+        wd_label = "working days"
+        updated_label = "Last Updated"
+
+    period_text = f"{data_start} — {data_end}" if data_start and data_end else ""
+    wd_text = f" ({working_days} {wd_label})" if working_days else ""
+    src_text = " | ".join(src_parts)
+    upd_text = last_updated[:19].replace("T", " ") if last_updated else ""
+
+    return f'''
+      <div style="margin-top:10px;background:rgba(255,255,255,0.12);border-radius:6px;padding:10px 14px;font-size:12px;color:#c8ddf0;">
+        <div><strong>{period_label}:</strong> {period_text}{wd_text}</div>
+        <div style="margin-top:3px;"><strong>{source_label}:</strong> {src_text}</div>
+        <div style="margin-top:3px;"><strong>{updated_label}:</strong> {upd_text}</div>
+      </div>'''
+
+
 MONTH_KO = {
     "january": "1월", "february": "2월", "march": "3월", "april": "4월",
     "may": "5월", "june": "6월", "july": "7월", "august": "8월",
@@ -1115,7 +1496,7 @@ MONTH_KO = {
 }
 
 
-def generate_email_html(action_data, month="february", year=2026, dashboard_url=None, generated_at=None, lang="ko"):
+def generate_email_html(action_data, month="february", year=2026, dashboard_url=None, generated_at=None, lang="ko", config=None):
     """전체 이메일 HTML 생성
 
     Args:
@@ -1124,7 +1505,8 @@ def generate_email_html(action_data, month="february", year=2026, dashboard_url=
         year: 연도
         dashboard_url: 대시보드 URL (optional)
         generated_at: 생성 시각 문자열 (optional)
-        lang: 언어 코드 ("ko" or "vi")
+        lang: 언어 코드 ("ko", "en", or "vi")
+        config: monthly config dict (for data period info, optional)
 
     Returns:
         str: 완전한 HTML 이메일 문자열
@@ -1154,7 +1536,14 @@ def generate_email_html(action_data, month="february", year=2026, dashboard_url=
     s7 = _section_7_type_breakdown(action_data)
     s8 = _section_8_links(action_data, dashboard_url)
 
-    html_lang = "vi" if lang == "vi" else "ko"
+    # Wrap each section in a card
+    card = STYLES["section_card"]
+    def _card(content):
+        if not content or not content.strip():
+            return ""
+        return f'<div style="{card}">{content}</div>'
+
+    html_lang = "vi" if lang == "vi" else "en" if lang == "en" else "ko"
     html = f'''<!DOCTYPE html>
 <html lang="{html_lang}">
 <head>
@@ -1169,18 +1558,18 @@ def generate_email_html(action_data, month="february", year=2026, dashboard_url=
     <div style="{STYLES['header']}">
       <h1 style="{STYLES['header_title']}">QIP - {year} {month_local}</h1>
       <p style="{STYLES['header_sub']}">HWK QIP Incentive Dashboard V10</p>
+      {_header_data_period(config, lang)}
     </div>
 
     {s0}
-    {s1}
-    {s1b}
-    {s2}
-    {s3}
-    {s4}
-    {s5}
-    {s6}
-    {s7}
-    {s8}
+    {_card(s1 + s1b)}
+    {_card(s2)}
+    {_card(s3)}
+    {_card(s4)}
+    {_card(s5)}
+    {_card(s6)}
+    {_card(s7)}
+    {_card(s8)}
 
     <!-- Footer -->
     <div style="{STYLES['footer']}">

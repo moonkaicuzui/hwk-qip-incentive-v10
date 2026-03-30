@@ -149,11 +149,16 @@ def load_previous_month(db, month, year):
     print(f"    전월: {summary.get('total_employees', 0)}명, "
           f"{summary.get('receiving_employees', 0)}명 수령")
 
+    months = ["january","february","march","april","may","june",
+              "july","august","september","october","november","december"]
+    prev_month_idx = months.index(prev_month) + 1 if prev_month in months else None
+
     return {
         "summary": summary,
         "condition_stats": summary.get("condition_stats", {}),
         "building_breakdown": summary.get("building_breakdown", {}),
         "month_ko": MONTH_KO.get(prev_month, prev_month),
+        "month_idx": prev_month_idx,
     }
 
 
@@ -185,44 +190,68 @@ def build_action_report(firestore_data):
     prs_rate_th = float(thresholds.get("5prs_pass_rate", 95))
     prs_qty_th = float(thresholds.get("5prs_min_qty", 100))
 
-    # --- Building별 품질 집계 ---
+    # --- Building별 품질 집계 (TYPE별 그룹 포함) ---
     building_quality = {}
+    building_quality_by_type = {}  # TYPE → Building → stats
     for emp in employees:
         bldg = str(emp.get("building", "")).strip()
         if not bldg:
             bldg = "Unknown"
+        emp_type = str(emp.get("type", "")).strip() or "Unknown"
 
+        # Flat building_quality (backward compat)
         if bldg not in building_quality:
             building_quality[bldg] = {
-                "count": 0,
-                "tests": 0,
-                "fail_count": 0,
-                "reject_rate": 0,
-                "receiving": 0,
-                "fail_employees": [],
+                "count": 0, "tests": 0, "fail_count": 0,
+                "reject_rate": 0, "receiving": 0, "fail_employees": [],
+            }
+
+        # TYPE-grouped building_quality
+        if emp_type not in building_quality_by_type:
+            building_quality_by_type[emp_type] = {}
+        if bldg not in building_quality_by_type[emp_type]:
+            building_quality_by_type[emp_type][bldg] = {
+                "count": 0, "tests": 0, "fail_count": 0,
+                "reject_rate": 0, "receiving": 0, "fail_employees": [],
             }
 
         bq = building_quality[bldg]
+        bq_typed = building_quality_by_type[emp_type][bldg]
+
         bq["count"] += 1
+        bq_typed["count"] += 1
 
         # AQL data
         aql = emp.get("aql", {})
         tests = int(aql.get("total_tests", 0) or 0)
         failures = int(aql.get("failures", 0) or 0)
         bq["tests"] += tests
+        bq_typed["tests"] += tests
 
         if emp.get("current_incentive", 0) > 0:
             bq["receiving"] += 1
+            bq_typed["receiving"] += 1
+
+        # Condition pass/fail per building (for TYPE-2/3 columns)
+        conditions = emp.get("conditions", {})
+        for ci in range(1, 11):
+            ck = f"c{ci}"
+            cv = conditions.get(ck, "N/A")
+            if cv == "YES":
+                bq_typed[f"{ck}_pass"] = bq_typed.get(f"{ck}_pass", 0) + 1
+            elif cv == "NO":
+                bq_typed[f"{ck}_fail"] = bq_typed.get(f"{ck}_fail", 0) + 1
 
         if failures > 0:
             bq["fail_count"] += failures
+            bq_typed["fail_count"] += failures
             # Build boss chain for this failing employee
             boss_id = str(emp.get("boss_id", "")).strip()
             boss = emp_map.get(boss_id, {})
             boss_boss_id = str(boss.get("boss_id", "")).strip()
             boss_boss = emp_map.get(boss_boss_id, {})
 
-            bq["fail_employees"].append({
+            fail_entry = {
                 "emp_no": emp.get("emp_no", ""),
                 "name": emp.get("full_name", ""),
                 "fail_count": failures,
@@ -231,14 +260,22 @@ def build_action_report(firestore_data):
                 "boss_id": boss_id,
                 "boss_boss_name": boss_boss.get("full_name", "-"),
                 "boss_boss_position": boss_boss.get("position", ""),
-            })
+            }
+            bq["fail_employees"].append(fail_entry)
+            bq_typed["fail_employees"].append(fail_entry)
 
-    # Calculate reject rate per building
+    # Calculate reject rate per building (flat and typed)
     for bldg, bq in building_quality.items():
         if bq["tests"] > 0:
             bq["reject_rate"] = (bq["fail_count"] / bq["tests"]) * 100
         else:
             bq["reject_rate"] = 0
+    for emp_type in building_quality_by_type:
+        for bldg, bq in building_quality_by_type[emp_type].items():
+            if bq["tests"] > 0:
+                bq["reject_rate"] = (bq["fail_count"] / bq["tests"]) * 100
+            else:
+                bq["reject_rate"] = 0
 
     # --- 연속 AQL 실패자 (Issue #48: startswith('YES') 사용) ---
     continuous_3m = []
@@ -308,6 +345,7 @@ def build_action_report(firestore_data):
     return {
         "summary": summary,
         "building_quality": building_quality,
+        "building_quality_by_type": building_quality_by_type,
         "continuous_3m": continuous_3m,
         "continuous_2m": continuous_2m,
         "low_prs_rate": low_prs_rate,
@@ -326,6 +364,7 @@ def build_action_report(firestore_data):
         "previous_condition_stats": prev_condition_stats,
         "previous_building": prev_building,
         "previous_month_ko": prev_month_ko,
+        "previous_month_idx": prev_data.get("month_idx") if prev_data else None,
     }
 
 
@@ -335,6 +374,19 @@ def _build_emp_chain(emp, emp_map):
     boss = emp_map.get(boss_id, {})
     boss_boss_id = str(boss.get("boss_id", "")).strip()
     boss_boss = emp_map.get(boss_boss_id, {})
+
+    # Determine status: resigned / maternity leave / active
+    stop_date = emp.get("stop_working_date", "")
+    att = emp.get("attendance", {})
+    approved_leave = float(att.get("approved_leave", 0) or 0)
+    actual_days = float(att.get("actual_days", 0) or 0)
+    unapp_abs = float(att.get("unapproved_absence", 0) or 0)
+
+    emp_status = ""
+    if stop_date:
+        emp_status = "resigned"
+    elif approved_leave >= 5 and actual_days < 5 and unapp_abs == 0:
+        emp_status = "maternity_leave"
 
     return {
         "emp_no": emp.get("emp_no", ""),
@@ -346,6 +398,8 @@ def _build_emp_chain(emp, emp_map):
         "boss_id": boss_id,
         "boss_boss_name": boss_boss.get("full_name", "-"),
         "boss_boss_position": boss_boss.get("position", ""),
+        "emp_status": emp_status,
+        "stop_working_date": stop_date,
     }
 
 
@@ -610,6 +664,15 @@ def main():
     print(f"    출근율 미달: {len(action_data['low_attendance'])}명")
     print(f"    무단결근 초과: {len(action_data['high_absence'])}명")
 
+    # Step 4.9: Config 로드 (데이터 기간 정보)
+    monthly_config = None
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                               "config_files", f"config_{month}_{year}.json")
+    if os.path.exists(config_path):
+        import json as _json
+        with open(config_path, "r", encoding="utf-8") as f:
+            monthly_config = _json.load(f)
+
     # Step 5: HTML 생성 (언어별)
     print("\n[Step 5] HTML 이메일 생성")
     report_lang = args.lang or "ko"
@@ -618,6 +681,7 @@ def main():
         month=month,
         year=year,
         lang=report_lang,
+        config=monthly_config,
     )
     print(f"    HTML 크기: {len(html):,} bytes (lang={report_lang})")
 
@@ -696,6 +760,7 @@ def main():
             month=month,
             year=year,
             lang=send_lang,
+            config=monthly_config,
         )
 
         # 언어별 제목
@@ -703,6 +768,8 @@ def main():
             month_idx = ["january","february","march","april","may","june",
                          "july","august","september","october","november","december"].index(month) + 1
             subject = f"[QIP] B\u00e1o c\u00e1o Th\u01b0\u1edfng Th\u00e1ng {month_idx}/{year}"
+        elif send_lang == "en":
+            subject = f"[QIP] {month.capitalize()} {year} Incentive Action Report"
         else:
             month_ko_map = {"january": "1월", "february": "2월", "march": "3월", "april": "4월",
                         "may": "5월", "june": "6월", "july": "7월", "august": "8월",
