@@ -48,7 +48,7 @@
         .tab-content.active { display:block; }
 
         /* Stats */
-        .stats-row { display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; margin-bottom:1.5rem; }
+        .stats-row { display:grid; grid-template-columns:repeat(6,1fr); gap:1rem; margin-bottom:1.5rem; }
         .stat-card { background:#fff; border-radius:12px; padding:1rem 1.25rem; box-shadow:var(--card-shadow); text-align:center; }
         .stat-value { font-size:1.75rem; font-weight:700; color:var(--primary-dark); }
         .stat-label { font-size:0.75rem; color:#64748b; margin-top:0.25rem; }
@@ -174,6 +174,7 @@
             <div class="stat-card"><div class="stat-value" id="statReviewing" style="color:#2563eb">0</div><div class="stat-label">Reviewing</div></div>
             <div class="stat-card"><div class="stat-value" id="statInProgress" style="color:#4338ca">0</div><div class="stat-label">In Progress</div></div>
             <div class="stat-card"><div class="stat-value" id="statCompleted" style="color:#059669">0</div><div class="stat-label">Completed</div></div>
+            <div class="stat-card"><div class="stat-value" id="statRejected" style="color:#dc2626">0</div><div class="stat-label">Rejected</div></div>
         </div>
 
         <!-- Tabs -->
@@ -481,19 +482,21 @@
     }
 
     function updateStats() {
-        var submitted = 0, reviewing = 0, inProgress = 0, completed = 0;
+        var submitted = 0, reviewing = 0, inProgress = 0, completed = 0, rejected = 0;
         allFeedbacks.forEach(function(f) {
             var s = normalizeStatus(f.status);
             if (s === 'SUBMITTED') submitted++;
             else if (s === 'REVIEWING') reviewing++;
             else if (s === 'IN_PROGRESS') inProgress++;
             else if (s === 'COMPLETED') completed++;
+            else if (s === 'REJECTED') rejected++;
         });
         document.getElementById('statTotal').textContent = allFeedbacks.length;
         document.getElementById('statSubmitted').textContent = submitted;
         document.getElementById('statReviewing').textContent = reviewing;
         document.getElementById('statInProgress').textContent = inProgress;
         document.getElementById('statCompleted').textContent = completed;
+        document.getElementById('statRejected').textContent = rejected;
     }
 
     // ============ Render ============
@@ -816,14 +819,7 @@
             updateData.inProgressBy = { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || currentUser.email };
         }
         db.collection(COLLECTION).doc(id).update(updateData).then(function() {
-            // Queue notification on status change
-            var f = allFeedbacks.find(function(item) { return item.id === id; });
-            if (f) {
-                var emails = (f.notificationEmails && f.notificationEmails.length > 0) ? f.notificationEmails : (f.reporterEmail ? [f.reporterEmail] : []);
-                emails.forEach(function(email) {
-                    queueNotification(id, f.title, email, newStatus, '');
-                });
-            }
+            // Cloud Function (onFeedbackStatusUpdated) handles reporter notification automatically
             bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
         });
     }
@@ -838,14 +834,7 @@
             completedBy: { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || currentUser.email },
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(function() {
-            // Queue email notification to all recipients
-            var f = allFeedbacks.find(function(item) { return item.id === id; });
-            if (f) {
-                var emails = (f.notificationEmails && f.notificationEmails.length > 0) ? f.notificationEmails : (f.reporterEmail ? [f.reporterEmail] : []);
-                emails.forEach(function(email) {
-                    queueNotification(id, f.title, email, 'COMPLETED', comment);
-                });
-            }
+            // Cloud Function (onFeedbackStatusUpdated) handles reporter notification automatically
             bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
         });
     }
@@ -865,13 +854,7 @@
                 comment: reason
             })
         }).then(function() {
-            var f = allFeedbacks.find(function(item) { return item.id === id; });
-            if (f) {
-                var emails = (f.notificationEmails && f.notificationEmails.length > 0) ? f.notificationEmails : (f.reporterEmail ? [f.reporterEmail] : []);
-                emails.forEach(function(email) {
-                    queueNotification(id, f.title, email, 'REJECTED', reason);
-                });
-            }
+            // Cloud Function (onFeedbackStatusUpdated) handles reporter notification automatically
             bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
         });
     }
@@ -962,7 +945,7 @@
 
     function escapeHtml(str) {
         if (!str) return '';
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
     function logout() {

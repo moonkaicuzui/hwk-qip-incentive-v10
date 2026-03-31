@@ -162,9 +162,19 @@ exports.onFeedbackStatusUpdated = onDocumentUpdated(
     // 상태가 변경된 경우에만 처리
     if (before.status === after.status) return;
 
-    var reporterEmail = after.reporterEmail || after.createdBy?.email;
-    if (!reporterEmail || !isValidEmail(reporterEmail)) {
-      logger.warn("피드백 작성자 이메일 없음:", { docId: docId });
+    // 수신자 목록: notificationEmails > reporterEmail > createdBy.email
+    var recipients = [];
+    if (after.notificationEmails && Array.isArray(after.notificationEmails) && after.notificationEmails.length > 0) {
+      recipients = after.notificationEmails.filter(isValidEmail);
+    } else {
+      var reporterEmail = after.reporterEmail || after.createdBy?.email;
+      if (reporterEmail && isValidEmail(reporterEmail)) {
+        recipients = [reporterEmail];
+      }
+    }
+
+    if (recipients.length === 0) {
+      logger.warn("피드백 알림 수신자 없음:", { docId: docId });
       return;
     }
 
@@ -172,35 +182,39 @@ exports.onFeedbackStatusUpdated = onDocumentUpdated(
       docId: docId,
       from: before.status,
       to: after.status,
+      recipients: recipients,
     });
 
     try {
       var smtp = await getSmtpConfig();
       var html = buildStatusChangeEmail(after, after.status);
 
-      var result = await sendEmail(smtp.smtpUser, smtp.smtpPassword, {
-        to: reporterEmail,
-        subject:
-          "[QIP Incentive] 피드백 상태 변경: " +
-          (after.title || "제목 없음"),
-        html: html,
-      });
+      for (var recipient of recipients) {
+        var result = await sendEmail(smtp.smtpUser, smtp.smtpPassword, {
+          to: recipient,
+          subject:
+            "[QIP Incentive] 피드백 상태 변경: " +
+            (after.title || "제목 없음"),
+          html: html,
+        });
 
-      logger.info("상태 변경 알림 전송 성공:", {
-        docId: docId,
-        messageId: result.messageId,
-      });
+        logger.info("상태 변경 알림 전송 성공:", {
+          docId: docId,
+          to: recipient,
+          messageId: result.messageId,
+        });
 
-      await db.collection("email_logs").add({
-        type: "feedback_status_change",
-        feedbackId: docId,
-        to: reporterEmail,
-        oldStatus: before.status,
-        newStatus: after.status,
-        messageId: result.messageId,
-        sentAt: new Date().toISOString(),
-        status: "sent",
-      });
+        await db.collection("email_logs").add({
+          type: "feedback_status_change",
+          feedbackId: docId,
+          to: recipient,
+          oldStatus: before.status,
+          newStatus: after.status,
+          messageId: result.messageId,
+          sentAt: new Date().toISOString(),
+          status: "sent",
+        });
+      }
     } catch (err) {
       logger.error("상태 변경 알림 전송 실패:", {
         docId: docId,

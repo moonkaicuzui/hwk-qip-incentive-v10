@@ -2642,9 +2642,11 @@ class CompleteQIPCalculator:
         """
         [Issue #50] 연도별 연속 실패 판정 기준 적용
 
-        정책 (position_condition_matrix.json 참조):
+        정책:
         - 2025년까지: 3개월 연속 실패만 인센티브 제외 (YES_3MONTHS)
-        - 2026년 이후: 2개월 이상 연속 실패 시 인센티브 제외 (startswith('YES'))
+        - 2026년 이후: config.thresholds.consecutive_aql_months 임계값 참조
+          - 임계값 3 → YES_3MONTHS만 FAIL
+          - 임계값 2 → YES_2MONTHS_* 및 YES_3MONTHS 모두 FAIL
 
         Args:
             continuous_fail_value: Continuous_FAIL 컬럼 값 (예: 'YES_3MONTHS', 'YES_2MONTHS_NOV_DEC', 'NO')
@@ -2663,8 +2665,17 @@ class CompleteQIPCalculator:
             # 2025년까지: 3개월 연속 실패만 제외 (YES_3MONTHS)
             return value == 'YES_3MONTHS'
         else:
-            # 2026년 이후: 2개월 이상 연속 실패 제외 (startswith YES)
-            return value.startswith('YES')
+            # 2026년 이후: config 임계값 참조 (기본값 3)
+            threshold = 3
+            if self.config.thresholds and isinstance(self.config.thresholds, dict):
+                threshold = self.config.thresholds.get('consecutive_aql_months', 3)
+
+            if threshold >= 3:
+                # 3개월 이상 연속 실패만 제외
+                return value == 'YES_3MONTHS'
+            else:
+                # 2개월 이상 연속 실패 시 제외
+                return value.startswith('YES')
 
     def load_july_incentive_data(self):
         """July incentive data withload (August calculation 시 특별 processing)"""
