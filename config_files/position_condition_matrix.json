@@ -2,12 +2,10 @@
   "description": "Position-based condition application matrix for QIP incentive calculation",
   "version": "1.1.0",
   "last_updated": "2026-01-20",
-
   "consecutive_failure_policy": {
     "_description": "Issue #50: 월별 AQL 연속 실패 판정 기준 (조건 6&7 적용)",
     "_issue": "Dec 2025에서 2개월 연속 실패(Nov-Dec)가 3개월 연속 실패로 잘못 처리됨",
     "_solution": "연도별로 다른 기준 적용 - 2025년까지는 3개월만, 2026년부터는 2개월 이상",
-
     "threshold_by_year": {
       "2025": {
         "min_consecutive_months": 3,
@@ -22,47 +20,38 @@
         "description_en": "2026+: 2+ month consecutive failures exclude incentive"
       }
     },
-    "affected_conditions": [6, 7],
+    "affected_conditions": [
+      6,
+      7
+    ],
     "implementation_note": "계산 엔진에서 config.year 기반으로 판정 로직 분기"
   },
-
   "incentive_progression": {
     "TYPE_1_PROGRESSIVE": {
-      "description": "Progressive incentive for ASSEMBLY INSPECTOR, MODEL MASTER, AUDITOR & TRAINER",
-      "applies_to": [
-        "ASSEMBLY_INSPECTOR",
-        "MODEL_MASTER",
-        "AUDITOR_TRAINER"
-      ],
       "progression_table": {
-        "0": 0,
-        "1": 150000,
-        "2": 250000,
-        "3": 300000,
-        "4": 350000,
-        "5": 400000,
-        "6": 450000,
-        "7": 500000,
-        "8": 650000,
-        "9": 750000,
-        "10": 850000,
-        "11": 950000,
         "12": 1000000,
-        "13": 1000000,
         "14": 1000000,
-        "15": 1000000
-      },
-      "max_months": 12,
-      "reset_on_fail": true,
-      "carry_over_next_month": true
+        "15": 100000,
+        "4": 350000,
+        "11": 950000,
+        "9": 750000,
+        "6": 450000,
+        "2": 250000,
+        "0": 0,
+        "13": 1000000,
+        "5": 400000,
+        "8": 650000,
+        "1": 150000,
+        "3": 300000,
+        "10": 850000,
+        "7": 500000
+      }
     }
   },
-
   "type_2_multipliers": {
     "_description": "Single Source of Truth for TYPE-2 incentive multipliers (Issue #40, 2026-01-05)",
     "_usage": "All 3 systems (Python engine, Dashboard, Validation.js) MUST read from this section",
     "_prevention": "Eliminates 96% recurrence risk from hardcoded values in multiple files",
-
     "LINE_LEADER": {
       "multiplier": 0.12,
       "base": "subordinate_total",
@@ -81,7 +70,12 @@
       "multiplier": 2.5,
       "base": "line_leader_average",
       "formula": "TYPE-1 LINE LEADER 평균 × 2.5",
-      "patterns": ["SUPERVISOR", "(V) SUPERVISOR", "V.SUPERVISOR", "V SUPERVISOR"],
+      "patterns": [
+        "SUPERVISOR",
+        "(V) SUPERVISOR",
+        "V.SUPERVISOR",
+        "V SUPERVISOR"
+      ],
       "description_ko": "TYPE-1 LINE LEADER 평균의 2.5배",
       "description_en": "2.5x TYPE-1 LINE LEADER average"
     },
@@ -89,7 +83,11 @@
       "multiplier": 2.5,
       "base": "line_leader_average",
       "formula": "TYPE-1 LINE LEADER 평균 × 2.5",
-      "patterns": ["A.SUPERVISOR", "A. SUPERVISOR", "ASSISTANT SUPERVISOR"],
+      "patterns": [
+        "A.SUPERVISOR",
+        "A. SUPERVISOR",
+        "ASSISTANT SUPERVISOR"
+      ],
       "description_ko": "TYPE-1 LINE LEADER 평균의 2.5배 (SUPERVISOR와 동일)",
       "description_en": "2.5x TYPE-1 LINE LEADER average (same as SUPERVISOR)"
     },
@@ -97,7 +95,11 @@
       "multiplier": 3.0,
       "base": "line_leader_average",
       "formula": "TYPE-1 LINE LEADER 평균 × 3.0",
-      "patterns": ["A.MANAGER", "A. MANAGER", "ASSISTANT MANAGER"],
+      "patterns": [
+        "A.MANAGER",
+        "A. MANAGER",
+        "ASSISTANT MANAGER"
+      ],
       "description_ko": "TYPE-1 LINE LEADER 평균의 3배",
       "description_en": "3x TYPE-1 LINE LEADER average"
     },
@@ -105,8 +107,15 @@
       "multiplier": 3.5,
       "base": "line_leader_average",
       "formula": "TYPE-1 LINE LEADER 평균 × 3.5",
-      "patterns": ["MANAGER"],
-      "excludes": ["A.MANAGER", "S.MANAGER", "ASSISTANT", "SENIOR"],
+      "patterns": [
+        "MANAGER"
+      ],
+      "excludes": [
+        "A.MANAGER",
+        "S.MANAGER",
+        "ASSISTANT",
+        "SENIOR"
+      ],
       "description_ko": "TYPE-1 LINE LEADER 평균의 3.5배",
       "description_en": "3.5x TYPE-1 LINE LEADER average"
     },
@@ -114,12 +123,15 @@
       "multiplier": 4.0,
       "base": "line_leader_average",
       "formula": "TYPE-1 LINE LEADER 평균 × 4.0",
-      "patterns": ["S.MANAGER", "S. MANAGER", "SENIOR MANAGER"],
+      "patterns": [
+        "S.MANAGER",
+        "S. MANAGER",
+        "SENIOR MANAGER"
+      ],
       "description_ko": "TYPE-1 LINE LEADER 평균의 4배",
       "description_en": "4x TYPE-1 LINE LEADER average"
     }
   },
-
   "conditions": {
     "1": {
       "id": "attendance_rate",
@@ -182,209 +194,589 @@
       "description": "5PRS 검사량 100족 이상"
     }
   },
-
   "position_matrix": {
     "TYPE-1": {
       "default": {
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "TYPE-1 기본 설정 (출근 조건만 적용)"
       },
-
       "MANAGER": {
-        "patterns": ["MANAGER"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "MANAGER"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "관리자 - 출근 조건만 적용"
       },
-
       "A_MANAGER": {
-        "patterns": ["A.MANAGER", "A. MANAGER", "ASSISTANT MANAGER"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "A.MANAGER",
+          "A. MANAGER",
+          "ASSISTANT MANAGER"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "부관리자 - 출근 조건만 적용"
       },
-
       "V_SUPERVISOR": {
-        "patterns": ["(V) SUPERVISOR", "V.SUPERVISOR", "V SUPERVISOR"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "(V) SUPERVISOR",
+          "V.SUPERVISOR",
+          "V SUPERVISOR"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "감독관 - 출근 조건만 적용"
       },
-
       "GROUP_LEADER": {
-        "patterns": ["GROUP LEADER"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "GROUP LEADER"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "그룹 리더 - 출근 조건만 적용"
       },
-
       "LINE_LEADER": {
-        "patterns": ["LINE LEADER"],
-        "applicable_conditions": [1, 2, 3, 4, 7],
-        "excluded_conditions": [5, 6, 8, 9, 10],
+        "patterns": [
+          "LINE LEADER"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4,
+          7
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          8,
+          9,
+          10
+        ],
         "description": "라인 리더 - 출근 + 팀/구역 AQL 조건"
       },
-
       "AQL_INSPECTOR": {
-        "patterns": ["AQL INSPECTOR", "AQL", "CFA CERTIFIED"],
-        "applicable_conditions": [1, 2, 3, 4, 5],
-        "excluded_conditions": [6, 7, 8, 9, 10],
+        "patterns": [
+          "AQL INSPECTOR",
+          "AQL",
+          "CFA CERTIFIED"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "excluded_conditions": [
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "special_calculation": "aql_inspector_incentive",
         "description": "AQL 검사관 - 출근 + 당월 AQL 조건"
       },
-
       "RQC_ASSEMBLY_INSPECTOR": {
-        "patterns": ["ASSEMBLY INSPECTOR"],
-        "position_codes": ["A1B"],
-        "applicable_conditions": [1, 2, 3, 4, 5, 6, 9],
-        "excluded_conditions": [7, 8, 10],
+        "patterns": [
+          "ASSEMBLY INSPECTOR"
+        ],
+        "position_codes": [
+          "A1B"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          9
+        ],
+        "excluded_conditions": [
+          7,
+          8,
+          10
+        ],
         "description": "RQC 조립 검사관 - 출근 + 개인 AQL + 5PRS통과율 (검사량 C10 면제)",
         "exemption_reason": "RQC inspectors perform process checking and reports, not line inspection"
       },
-
       "ASSEMBLY_INSPECTOR": {
-        "patterns": ["ASSEMBLY INSPECTOR"],
-        "applicable_conditions": [1, 2, 3, 4, 5, 6, 9, 10],
-        "excluded_conditions": [7, 8],
+        "patterns": [
+          "ASSEMBLY INSPECTOR"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          9,
+          10
+        ],
+        "excluded_conditions": [
+          7,
+          8
+        ],
         "description": "조립 검사관 - 출근 + 개인 AQL + 5PRS"
       },
-
       "AUDIT_TRAINING": {
-        "patterns": ["AUDIT & TRAINING TEAM", "AUDIT & TRAINING", "AUDITOR", "TRAINER"],
-        "applicable_conditions": [1, 2, 3, 4, 7, 8],
-        "excluded_conditions": [5, 6, 9, 10],
+        "patterns": [
+          "AUDIT & TRAINING TEAM",
+          "AUDIT & TRAINING",
+          "AUDITOR",
+          "TRAINER"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4,
+          7,
+          8
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          9,
+          10
+        ],
         "description": "감사 및 교육팀 - 출근 + 팀/구역 AQL + 담당구역 reject"
       },
-
       "MODEL_MASTER": {
-        "patterns": ["MODEL MASTER", "SAMPLE"],
-        "applicable_conditions": [1, 2, 3, 4, 8],
-        "excluded_conditions": [5, 6, 7, 9, 10],
+        "patterns": [
+          "MODEL MASTER",
+          "SAMPLE"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4,
+          8
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          9,
+          10
+        ],
         "description": "모델 마스터 - 출근 + 담당구역 reject 조건"
       }
     },
-
     "TYPE-2": {
       "default": {
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "TYPE-2 기본 설정 - 출근 조건만"
       },
-
       "V_SUPERVISOR_T2": {
-        "patterns": ["(V) SUPERVISOR", "V.SUPERVISOR", "V SUPERVISOR"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "(V) SUPERVISOR",
+          "V.SUPERVISOR",
+          "V SUPERVISOR"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "TYPE-2 감독관 - 출근 조건만"
       },
-
       "A_MANAGER_T2": {
-        "patterns": ["A.MANAGER", "A. MANAGER", "ASSISTANT MANAGER"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "A.MANAGER",
+          "A. MANAGER",
+          "ASSISTANT MANAGER"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "TYPE-2 부관리자 - 출근 조건만"
       },
-
       "GROUP_LEADER_T2": {
-        "patterns": ["GROUP LEADER"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "GROUP LEADER"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "TYPE-2 그룹 리더 - 출근 조건만"
       },
-
       "LINE_LEADER_T2": {
-        "patterns": ["LINE LEADER"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "LINE LEADER"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "TYPE-2 라인 리더 - 출근 조건만"
       },
-
       "AQL_INSPECTOR_T2": {
-        "patterns": ["AQL INSPECTOR", "AQL"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "AQL INSPECTOR",
+          "AQL"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "TYPE-2 AQL 검사관 - 출근 조건만"
       },
-
       "ASSEMBLY_INSPECTOR_T2": {
-        "patterns": ["ASSEMBLY INSPECTOR"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "ASSEMBLY INSPECTOR"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "TYPE-2 조립 검사관 - 출근 조건만"
       },
-
       "STITCHING_INSPECTOR_T2": {
-        "patterns": ["STITCHING INSPECTOR"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "STITCHING INSPECTOR"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "TYPE-2 재봉 검사관 - 출근 조건만"
       },
-
       "BOTTOM_INSPECTOR": {
-        "patterns": ["BOTTOM INSPECTOR", "BOTTOM INSPECTION"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "BOTTOM INSPECTOR",
+          "BOTTOM INSPECTION"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "바닥 검사관 - 출근 조건만"
       },
-
       "CUTTING_INSPECTOR": {
-        "patterns": ["CUTTING INSPECTOR"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "CUTTING INSPECTOR"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "재단 검사관 - 출근 조건만"
       },
-
       "MTL_INSPECTOR": {
-        "patterns": ["MTL INSPECTOR", "MATERIAL INSPECTOR"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "MTL INSPECTOR",
+          "MATERIAL INSPECTOR"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "자재 검사관 - 출근 조건만"
       },
-
       "OCPT_STAFF": {
-        "patterns": ["OCPT STFF", "OCPT STAFF"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "OCPT STFF",
+          "OCPT STAFF"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "OCPT 직원 - 출근 조건만"
       },
-
       "OSC_INSPECTOR": {
-        "patterns": ["OSC INSPECTOR"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "OSC INSPECTOR"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "OSC 검사관 - 출근 조건만"
       },
-
       "QA_TEAM": {
-        "patterns": ["QA TEAM", "QUALITY ASSURANCE"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "QA TEAM",
+          "QUALITY ASSURANCE"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "QA 팀 - 출근 조건만"
       },
-
       "RQC": {
-        "patterns": ["RQC", "RANDOM QUALITY CHECK"],
-        "applicable_conditions": [1, 2, 3, 4],
-        "excluded_conditions": [5, 6, 7, 8, 9, 10],
+        "patterns": [
+          "RQC",
+          "RANDOM QUALITY CHECK"
+        ],
+        "applicable_conditions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "excluded_conditions": [
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "RQC - 출근 조건만"
       }
     },
-
     "TYPE-3": {
       "default": {
         "applicable_conditions": [],
-        "excluded_conditions": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "excluded_conditions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "TYPE-3 신입직원 - 정책상 인센티브 제외",
         "eligible_for_incentive": false,
         "policy_status": "EXCLUDED",
         "policy_reason": "신입직원 3개월 정책 제외"
       },
-
       "NEW_QIP_MEMBER": {
-        "patterns": ["NEW QIP MEMBER", "NEW MEMBER", "신입"],
+        "patterns": [
+          "NEW QIP MEMBER",
+          "NEW MEMBER",
+          "신입"
+        ],
         "applicable_conditions": [],
-        "excluded_conditions": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "excluded_conditions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
         "description": "신입 QIP 멤버 - 인센티브 제외 (3개월)",
         "eligible_for_incentive": false,
         "future_eligibility": {
@@ -395,7 +787,6 @@
       }
     }
   },
-
   "incentive_rules": {
     "TYPE-1": {
       "base_incentive": {
@@ -424,7 +815,6 @@
         }
       }
     },
-
     "TYPE-2": {
       "base_incentive": {
         "conditions_met": true,
@@ -434,7 +824,6 @@
         }
       }
     },
-
     "TYPE-3": {
       "base_incentive": {
         "conditions_met": true,
@@ -447,7 +836,6 @@
       }
     }
   },
-
   "condition_display": {
     "icons": {
       "passed": "✓",
@@ -482,7 +870,6 @@
       }
     }
   },
-
   "validation_rules": {
     "attendance": {
       "attendance_rate_threshold": 0.88,
@@ -512,7 +899,6 @@
       }
     }
   },
-
   "notes": {
     "usage": "This matrix defines which conditions apply to each position type and role",
     "maintenance": "Update this file when adding new positions or changing condition rules",
