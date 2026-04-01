@@ -1,0 +1,15 @@
+{
+  "year": 2026,
+  "month": "april",
+  "thresholds": {
+    "attendance_rate": 88,
+    "unapproved_absence": 2,
+    "minimum_working_days": 12,
+    "area_reject_rate": 3.0,
+    "5prs_pass_rate": 95,
+    "5prs_min_qty": 100,
+    "consecutive_aql_months": 3
+  },
+  "thresholds_synced_at": "2026-04-01T01:13:01.528780+00:00Z",
+  "thresholds_source": "firestore"
+}
