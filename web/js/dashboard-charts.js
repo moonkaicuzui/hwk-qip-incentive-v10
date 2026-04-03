@@ -832,67 +832,72 @@ var DashboardCharts = {
         html += '<p style="color: #e65100; font-size: 0.82rem; margin-top: 8px; font-weight: 500;">' + t('criteria.type1RqcNote') + '</p>';
         html += '</div>';
 
-        // --- Section: Resigned Employee Incentive Freeze ---
-        var frozenEmps = employees.filter(function (e) { return e.incentive_frozen === true; });
-        var frozenWithAmount = frozenEmps.filter(function (e) { return (parseFloat(e.frozen_amount) || 0) > 0; });
-
-        html += '<div class="section-card" style="margin-top: 24px;">';
-        html += '<h4 style="color: var(--header-dark); margin-bottom: 12px;">' + t('criteria.frozen.title') + '</h4>';
-        html += '<div style="background: #e3f2fd; border-radius: 8px; padding: 14px; margin-bottom: 12px;">';
-        html += '<p style="margin: 0 0 8px; font-size: 0.88rem; line-height: 1.6;">' + t('criteria.frozen.desc1') + '</p>';
-        html += '<p style="margin: 0 0 8px; font-size: 0.88rem; line-height: 1.6;">' + t('criteria.frozen.desc2') + '</p>';
-        html += '<p style="margin: 0; font-size: 0.88rem; line-height: 1.6;">' + t('criteria.frozen.desc3') + '</p>';
-        html += '</div>';
-
-        // Frozen statistics
-        html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px;">';
-        html += '<div style="background: #f5f5f5; border-radius: 8px; padding: 12px; text-align: center;">';
-        html += '<div style="font-size: 1.5rem; font-weight: 700; color: #1565c0;">' + frozenEmps.length + '</div>';
-        html += '<div style="font-size: 0.78rem; color: #757575;">' + t('criteria.frozen.totalFrozen') + '</div></div>';
-        html += '<div style="background: #f5f5f5; border-radius: 8px; padding: 12px; text-align: center;">';
-        html += '<div style="font-size: 1.5rem; font-weight: 700; color: #2e7d32;">' + frozenWithAmount.length + '</div>';
-        html += '<div style="font-size: 0.78rem; color: #757575;">' + t('criteria.frozen.withIncentive') + '</div></div>';
-        html += '<div style="background: #f5f5f5; border-radius: 8px; padding: 12px; text-align: center;">';
-        html += '<div style="font-size: 1.5rem; font-weight: 700; color: #c62828;">' + (frozenEmps.length - frozenWithAmount.length) + '</div>';
-        html += '<div style="font-size: 0.78rem; color: #757575;">' + t('criteria.frozen.withoutIncentive') + '</div></div>';
-        html += '</div>';
-
-        // Frozen employees with incentive > 0 table
-        if (frozenWithAmount.length > 0) {
-            html += '<table style="width: 100%; font-size: 0.85rem;">';
-            html += '<thead><tr style="background: #1565c0; color: #fff;">';
-            html += '<th style="padding: 6px 10px;">' + t('table.empNo') + '</th>';
-            html += '<th style="padding: 6px 10px;">' + t('table.name') + '</th>';
-            html += '<th style="padding: 6px 10px;">Building</th>';
-            html += '<th style="padding: 6px 10px;">' + t('frozen.confirmedAmount') + '</th>';
-            html += '<th style="padding: 6px 10px;">' + t('frozen.frozenDate') + '</th>';
-            html += '</tr></thead><tbody>';
-            frozenWithAmount.forEach(function (e) {
-                html += '<tr>';
-                html += '<td style="padding: 6px 10px;">' + (e.emp_no || '') + '</td>';
-                html += '<td style="padding: 6px 10px;">' + (e.full_name || '') + '</td>';
-                html += '<td style="padding: 6px 10px;">' + (e.building || '') + '</td>';
-                html += '<td style="padding: 6px 10px; font-weight: 700; color: #1565c0;">' + self._formatNumber(e.frozen_amount || 0) + ' VND</td>';
-                html += '<td style="padding: 6px 10px;">' + (e.frozen_date || '') + '</td>';
-                html += '</tr>';
-            });
-            html += '</tbody></table>';
-        }
-        html += '</div>';
-
-        // --- Section: Resignation Attendance Handling ---
-        html += '<div class="section-card" style="margin-top: 24px;">';
-        html += '<h4 style="color: var(--header-dark); margin-bottom: 12px;">' + t('criteria.resignation.title') + '</h4>';
-        html += '<ul style="padding-left: 20px; line-height: 1.8; font-size: 0.88rem; color: #424242;">';
-        html += '<li>' + t('criteria.resignation.point1') + '</li>';
-        html += '<li>' + t('criteria.resignation.point2') + '</li>';
-        html += '<li>' + t('criteria.resignation.point3') + '</li>';
-        html += '<li>' + t('criteria.resignation.point4') + '</li>';
-        html += '<li>' + t('criteria.resignation.point5') + '</li>';
-        html += '</ul>';
-        html += '</div>';
-
         container.innerHTML = html;
+
+        // --- Render Frozen Section in separate container ---
+        var frozenContainer = document.getElementById('frozenIncentiveSection');
+        if (frozenContainer) {
+            var frozenEmps = employees.filter(function (e) { return e.incentive_frozen === true; });
+            var frozenWithAmount = frozenEmps.filter(function (e) { return (parseFloat(e.frozen_amount) || 0) > 0; });
+
+            var fhtml = '<div class="section-card" style="border-left: 4px solid #1565c0;">';
+            fhtml += '<h3 style="color: var(--header-dark); margin-bottom: 12px;">' + t('criteria.frozen.title') + '</h3>';
+            fhtml += '<div style="background: #e3f2fd; border-radius: 8px; padding: 14px; margin-bottom: 12px;">';
+            fhtml += '<p style="margin: 0 0 8px; font-size: 0.88rem; line-height: 1.6;">' + t('criteria.frozen.desc1') + '</p>';
+            fhtml += '<p style="margin: 0 0 8px; font-size: 0.88rem; line-height: 1.6;">' + t('criteria.frozen.desc2') + '</p>';
+            fhtml += '<p style="margin: 0; font-size: 0.88rem; line-height: 1.6;">' + t('criteria.frozen.desc3') + '</p>';
+            fhtml += '</div>';
+
+            fhtml += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px;">';
+            fhtml += '<div style="background: #f5f5f5; border-radius: 8px; padding: 12px; text-align: center;">';
+            fhtml += '<div style="font-size: 1.5rem; font-weight: 700; color: #1565c0;">' + frozenEmps.length + '</div>';
+            fhtml += '<div style="font-size: 0.78rem; color: #757575;">' + t('criteria.frozen.totalFrozen') + '</div></div>';
+            fhtml += '<div style="background: #f5f5f5; border-radius: 8px; padding: 12px; text-align: center;">';
+            fhtml += '<div style="font-size: 1.5rem; font-weight: 700; color: #2e7d32;">' + frozenWithAmount.length + '</div>';
+            fhtml += '<div style="font-size: 0.78rem; color: #757575;">' + t('criteria.frozen.withIncentive') + '</div></div>';
+            fhtml += '<div style="background: #f5f5f5; border-radius: 8px; padding: 12px; text-align: center;">';
+            fhtml += '<div style="font-size: 1.5rem; font-weight: 700; color: #c62828;">' + (frozenEmps.length - frozenWithAmount.length) + '</div>';
+            fhtml += '<div style="font-size: 0.78rem; color: #757575;">' + t('criteria.frozen.withoutIncentive') + '</div></div>';
+            fhtml += '</div>';
+
+            if (frozenWithAmount.length > 0) {
+                fhtml += '<div class="table-container"><table style="width: 100%; font-size: 0.85rem;">';
+                fhtml += '<thead><tr style="background: #1565c0; color: #fff;">';
+                fhtml += '<th style="padding: 6px 10px;">' + t('table.empNo') + '</th>';
+                fhtml += '<th style="padding: 6px 10px;">' + t('table.name') + '</th>';
+                fhtml += '<th style="padding: 6px 10px;">Building</th>';
+                fhtml += '<th style="padding: 6px 10px;">' + t('frozen.confirmedAmount') + '</th>';
+                fhtml += '<th style="padding: 6px 10px;">' + t('frozen.frozenDate') + '</th>';
+                fhtml += '</tr></thead><tbody>';
+                frozenWithAmount.forEach(function (e) {
+                    fhtml += '<tr>';
+                    fhtml += '<td style="padding: 6px 10px;">' + (e.emp_no || '') + '</td>';
+                    fhtml += '<td style="padding: 6px 10px;">' + (e.full_name || '') + '</td>';
+                    fhtml += '<td style="padding: 6px 10px;">' + (e.building || '') + '</td>';
+                    fhtml += '<td style="padding: 6px 10px; font-weight: 700; color: #1565c0;">' + self._formatNumber(e.frozen_amount || 0) + ' VND</td>';
+                    fhtml += '<td style="padding: 6px 10px;">' + (e.frozen_date || '') + '</td>';
+                    fhtml += '</tr>';
+                });
+                fhtml += '</tbody></table></div>';
+            }
+            fhtml += '</div>';
+            frozenContainer.innerHTML = fhtml;
+        }
+
+        // --- Render Resignation Notice in separate container ---
+        var resignContainer = document.getElementById('resignationNoticeSection');
+        if (resignContainer) {
+            var rhtml = '<div class="section-card" style="border-left: 4px solid #ff9800;">';
+            rhtml += '<h3 style="color: var(--header-dark); margin-bottom: 12px;">' + t('criteria.resignation.title') + '</h3>';
+            rhtml += '<ol style="padding-left: 20px; line-height: 1.8; font-size: 0.88rem; color: #424242;">';
+            rhtml += '<li style="margin-bottom: 6px;">' + t('criteria.resignation.point1') + '</li>';
+            rhtml += '<li style="margin-bottom: 6px;">' + t('criteria.resignation.point2') + '</li>';
+            rhtml += '<li style="margin-bottom: 6px;">' + t('criteria.resignation.point3') + '</li>';
+            rhtml += '<li style="margin-bottom: 6px;">' + t('criteria.resignation.point4') + '</li>';
+            rhtml += '<li>' + t('criteria.resignation.point5') + '</li>';
+            rhtml += '</ol></div>';
+            resignContainer.innerHTML = rhtml;
+        }
 
 
         // --- TYPE-2 Calculation Methods (#typeCalculationMethods) ---
