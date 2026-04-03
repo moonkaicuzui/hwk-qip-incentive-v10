@@ -757,6 +757,43 @@ const DashboardI18n = {
             vi: '🔒 Đã xác nhận'
         },
 
+        // Criteria tab - Frozen section
+        'criteria.frozen.title': {
+            ko: '🔒 퇴사자 인센티브 자동 확정 (Freeze)',
+            en: '🔒 Resigned Employee Incentive Auto-Freeze',
+            vi: '🔒 Tự động xác nhận khuyến khích NV nghỉ việc'
+        },
+        'criteria.frozen.desc1': {
+            ko: '당월 중 퇴사한 직원의 인센티브 금액은 퇴사일 기준으로 자동 확정(Freeze)됩니다.',
+            en: 'Incentive amounts for employees who resign mid-month are automatically frozen as of the resignation date.',
+            vi: 'Số tiền khuyến khích của NV nghỉ việc giữa tháng được tự động xác nhận tính đến ngày nghỉ việc.'
+        },
+        'criteria.frozen.desc2': {
+            ko: '확정된 금액은 이후 파이프라인 재실행에도 변동되지 않으며, 대시보드와 모달에서 항상 동일한 금액으로 표시됩니다.',
+            en: 'Frozen amounts will not change on subsequent pipeline runs and are always displayed consistently in the dashboard and modals.',
+            vi: 'Số tiền đã xác nhận sẽ không thay đổi khi chạy pipeline sau này và luôn hiển thị nhất quán trên bảng điều khiển.'
+        },
+        'criteria.frozen.desc3': {
+            ko: '인센티브 조건을 충족하지 못한 퇴사자는 0 VND으로 확정됩니다.',
+            en: 'Resigned employees who did not meet incentive conditions are frozen at 0 VND.',
+            vi: 'NV nghỉ việc không đáp ứng điều kiện khuyến khích được xác nhận là 0 VND.'
+        },
+        'criteria.frozen.totalFrozen': {
+            ko: '당월 퇴사자 (Frozen)',
+            en: 'Monthly Resignations (Frozen)',
+            vi: 'NV nghỉ việc tháng này (Frozen)'
+        },
+        'criteria.frozen.withIncentive': {
+            ko: '인센티브 수령 퇴사자',
+            en: 'With Incentive',
+            vi: 'Có khuyến khích'
+        },
+        'criteria.frozen.withoutIncentive': {
+            ko: '미수령 퇴사자',
+            en: 'Without Incentive',
+            vi: 'Không có khuyến khích'
+        },
+
         // Resigned employee incentive zero-out display
         'resignation.zeroed.title': {
             ko: '⚠️ 퇴사자 인센티브 안내',
@@ -800,19 +837,19 @@ const DashboardI18n = {
             vi: 'Nếu đáp ứng điều kiện tại thời điểm nghỉ việc, số tiền khuyến khích sẽ được thông báo riêng cho bộ phận tổng vụ trong quá trình xử lý nghỉ việc.'
         },
         'criteria.resignation.point3': {
-            ko: '월말 최종 대시보드 및 엑셀 다운로드에서는 퇴사자의 인센티브 금액이 0으로 표시됩니다. 이는 월말 일괄 정산 시 이중지급을 방지하기 위한 조치입니다.',
-            en: 'In the final monthly dashboard and Excel download, resigned employees\' incentive amounts display as 0. This prevents double payment during end-of-month batch processing.',
-            vi: 'Trong bảng điều khiển cuối tháng và file Excel, số tiền khuyến khích của NV đã nghỉ việc hiển thị là 0 để tránh trả trùng khi quyết toán cuối tháng.'
+            ko: '퇴사자의 인센티브 금액은 퇴사일 기준으로 자동 확정(Freeze)되며, 이후 파이프라인 재실행에도 변동되지 않습니다.',
+            en: 'Resigned employees\' incentive amounts are automatically frozen as of the resignation date and will not change on subsequent pipeline runs.',
+            vi: 'Số tiền khuyến khích của NV đã nghỉ việc được tự động xác nhận tính đến ngày nghỉ việc và sẽ không thay đổi khi chạy pipeline sau này.'
         },
         'criteria.resignation.point4': {
-            ko: '퇴사자의 원래 산출 인센티브 금액은 개인별 상세 모달에서 확인할 수 있습니다.',
-            en: 'The original calculated incentive for resigned employees can be viewed in the individual detail modal.',
-            vi: 'Số tiền khuyến khích ban đầu của NV đã nghỉ việc có thể xem trong cửa sổ chi tiết cá nhân.'
+            ko: '퇴사자의 확정된 인센티브 금액은 개인별 상세 모달에서 🔒 배지와 함께 확인할 수 있습니다.',
+            en: 'The confirmed incentive for resigned employees can be viewed with a 🔒 badge in the individual detail modal.',
+            vi: 'Số tiền khuyến khích đã xác nhận của NV đã nghỉ việc có thể xem với biểu tượng 🔒 trong cửa sổ chi tiết cá nhân.'
         },
         'criteria.resignation.point5': {
-            ko: '적용 시점: 해당 월이 종료된 후 (예: 3월 데이터를 4월 이후에 조회 시 적용). 해당 월 내 조회 시에는 원래 금액이 표시됩니다.',
-            en: 'Effective timing: After the month ends (e.g., applied when viewing March data from April onwards). Original amounts are shown when viewed within the same month.',
-            vi: 'Thời điểm áp dụng: Sau khi tháng kết thúc (VD: áp dụng khi xem dữ liệu tháng 3 từ tháng 4). Số tiền ban đầu được hiển thị khi xem trong cùng tháng.'
+            ko: '확정된 금액은 대시보드, 모달, 엑셀 다운로드에서 항상 동일한 금액으로 표시됩니다.',
+            en: 'Frozen amounts are always displayed consistently across the dashboard, modals, and Excel downloads.',
+            vi: 'Số tiền đã xác nhận luôn hiển thị nhất quán trên bảng điều khiển, cửa sổ chi tiết và file Excel.'
         },
 
         // All-Zero Explanation Banner
