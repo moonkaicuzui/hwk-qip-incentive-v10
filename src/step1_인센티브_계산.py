@@ -4896,20 +4896,33 @@ class CompleteQIPCalculator:
                     incentive = int(avg_incentive * 2)
                     print(f"    → Head/Group Leader {row.get('Full Name', 'Unknown')} ({head_id}): Line Leader 평균 {avg_incentive:,.0f} × 2 = {incentive:,} VND")
                 else:
-                    # Fallback: TYPE-1 LINE LEADER 수령자만 평균 (0 제외) - 2025-12-04 수정
-                    all_line_leaders = self.month_data[
+                    # Fallback: 같은 direct boss 밑의 TYPE-1 LINE LEADER 수령자만 평균 (0 제외)
+                    # 2026-04-03 수정: direct boss 기반 필터 (이슈 mEMbY8fozpSPJRPZRwsi)
+                    head_boss_name = str(row.get('direct boss name', '')).strip()
+                    ll_base_filter = (
                         (self.month_data['ROLE TYPE STD'] == 'TYPE-1') &
                         (self.month_data['QIP POSITION 1ST  NAME'] == 'LINE LEADER')
-                    ]
-                    receiving_line_leaders = all_line_leaders[all_line_leaders[incentive_col] > 0]
+                    )
+                    if head_boss_name:
+                        # 같은 direct boss를 가진 Line Leader들만 필터
+                        same_boss_ll = self.month_data[
+                            ll_base_filter &
+                            (self.month_data['direct boss name'].astype(str).str.strip() == head_boss_name)
+                        ]
+                        receiving_line_leaders = same_boss_ll[same_boss_ll[incentive_col] > 0]
+                        fallback_label = f"direct boss '{head_boss_name}'"
+                    else:
+                        all_line_leaders = self.month_data[ll_base_filter]
+                        receiving_line_leaders = all_line_leaders[all_line_leaders[incentive_col] > 0]
+                        fallback_label = "전체"
 
                     if len(receiving_line_leaders) > 0:
                         avg_incentive = int(receiving_line_leaders[incentive_col].mean())
                         incentive = int(avg_incentive * 2)
-                        print(f"    → Head/Group Leader {row.get('Full Name', 'Unknown')} ({head_id}): LINE LEADER 수령자 평균 {avg_incentive:,.0f} × 2 = {incentive:,} VND (Fallback)")
+                        print(f"    → Head/Group Leader {row.get('Full Name', 'Unknown')} ({head_id}): {fallback_label} LINE LEADER 수령자 평균 {avg_incentive:,.0f} × 2 = {incentive:,} VND (Fallback)")
                     else:
                         incentive = 0
-                        print(f"    → Head/Group Leader {row.get('Full Name', 'Unknown')} ({head_id}): LINE LEADER 수령자 없음 → 0 VND")
+                        print(f"    → Head/Group Leader {row.get('Full Name', 'Unknown')} ({head_id}): {fallback_label} LINE LEADER 수령자 없음 → 0 VND")
             
             self.month_data.loc[idx, incentive_col] = incentive
         
@@ -5000,20 +5013,32 @@ class CompleteQIPCalculator:
                             incentive = int(avg_incentive * multiplier)
                             print(f"      → {config['name']} {row.get('Full Name', 'Unknown')} ({manager_id}): Line Leader 평균 {avg_incentive:,.0f} × {multiplier} = {incentive:,} VND")
                         else:
-                            # Fallback: TYPE-1 LINE LEADER 수령자만 평균 (0 제외) - 2025-12-04 수정
-                            all_line_leaders = self.month_data[
+                            # Fallback: 같은 direct boss 밑의 TYPE-1 LINE LEADER 수령자만 평균 (0 제외)
+                            # 2026-04-03 수정: direct boss 기반 필터
+                            mgr_boss_name = str(row.get('direct boss name', '')).strip()
+                            ll_filter = (
                                 (self.month_data['ROLE TYPE STD'] == 'TYPE-1') &
                                 (self.month_data['QIP POSITION 1ST  NAME'] == 'LINE LEADER')
-                            ]
-                            receiving_line_leaders = all_line_leaders[all_line_leaders[incentive_col] > 0]
+                            )
+                            if mgr_boss_name:
+                                same_boss_ll = self.month_data[
+                                    ll_filter &
+                                    (self.month_data['direct boss name'].astype(str).str.strip() == mgr_boss_name)
+                                ]
+                                receiving_line_leaders = same_boss_ll[same_boss_ll[incentive_col] > 0]
+                                fb_label = f"direct boss '{mgr_boss_name}'"
+                            else:
+                                all_line_leaders = self.month_data[ll_filter]
+                                receiving_line_leaders = all_line_leaders[all_line_leaders[incentive_col] > 0]
+                                fb_label = "전체"
 
                             if len(receiving_line_leaders) > 0:
                                 avg_incentive = int(receiving_line_leaders[incentive_col].mean())
                                 incentive = int(avg_incentive * multiplier)
-                                print(f"      → {config['name']} {row.get('Full Name', 'Unknown')} ({manager_id}): LINE LEADER 수령자 평균 {avg_incentive:,.0f} × {multiplier} = {incentive:,} VND")
+                                print(f"      → {config['name']} {row.get('Full Name', 'Unknown')} ({manager_id}): {fb_label} LINE LEADER 수령자 평균 {avg_incentive:,.0f} × {multiplier} = {incentive:,} VND")
                             else:
                                 incentive = 0
-                                print(f"      → {config['name']} {row.get('Full Name', 'Unknown')} ({manager_id}): LINE LEADER 수령자 없음 → 0 VND")
+                                print(f"      → {config['name']} {row.get('Full Name', 'Unknown')} ({manager_id}): {fb_label} LINE LEADER 수령자 없음 → 0 VND")
                     else:
                         # existing with직 (고정 amount etc.)
                         min_amt = incentive_config.get('min', 0)
@@ -5035,23 +5060,35 @@ class CompleteQIPCalculator:
                                 incentive = int(avg_incentive * config['multiplier'])
                                 print(f"      → {config['name']} {row.get('Full Name', 'Unknown')} ({manager_id}): Line Leader 평균 based (fallback) → {incentive:,} VND")
                             else:
-                                # Fallback: TYPE-1 LINE LEADER 수령자만 평균 (0 제외) - 2025-12-04 수정
-                                all_line_leaders = self.month_data[
+                                # Fallback: 같은 direct boss 밑의 TYPE-1 LINE LEADER 수령자만 평균 (0 제외)
+                                # 2026-04-03 수정: direct boss 기반 필터
+                                mgr_boss2 = str(row.get('direct boss name', '')).strip()
+                                ll_filter2 = (
                                     (self.month_data['ROLE TYPE STD'] == 'TYPE-1') &
                                     (self.month_data['QIP POSITION 1ST  NAME'] == 'LINE LEADER')
-                                ]
-                                receiving_line_leaders = all_line_leaders[all_line_leaders[incentive_col] > 0]
+                                )
+                                if mgr_boss2:
+                                    same_boss_ll2 = self.month_data[
+                                        ll_filter2 &
+                                        (self.month_data['direct boss name'].astype(str).str.strip() == mgr_boss2)
+                                    ]
+                                    receiving_line_leaders = same_boss_ll2[same_boss_ll2[incentive_col] > 0]
+                                    fb_label2 = f"direct boss '{mgr_boss2}'"
+                                else:
+                                    all_line_leaders = self.month_data[ll_filter2]
+                                    receiving_line_leaders = all_line_leaders[all_line_leaders[incentive_col] > 0]
+                                    fb_label2 = "전체"
 
                                 if len(receiving_line_leaders) > 0:
                                     avg_incentive = int(receiving_line_leaders[incentive_col].mean())
                                     incentive = int(avg_incentive * config['multiplier'])
-                                    print(f"      → {config['name']} {row.get('Full Name', 'Unknown')} ({manager_id}): LINE LEADER 수령자 평균 {avg_incentive:,.0f} × {config['multiplier']} = {incentive:,} VND")
+                                    print(f"      → {config['name']} {row.get('Full Name', 'Unknown')} ({manager_id}): {fb_label2} LINE LEADER 수령자 평균 {avg_incentive:,.0f} × {config['multiplier']} = {incentive:,} VND")
                                 else:
                                     if min_amt > 0:
                                         incentive = min_amt
                                     else:
                                         incentive = 0
-                                        print(f"      → {config['name']} {row.get('Full Name', 'Unknown')} ({manager_id}): LINE LEADER 수령자 없음 → 0 VND")
+                                        print(f"      → {config['name']} {row.get('Full Name', 'Unknown')} ({manager_id}): {fb_label2} LINE LEADER 수령자 없음 → 0 VND")
 
                 self.month_data.loc[idx, incentive_col] = incentive
         
