@@ -568,11 +568,15 @@ function _setupEmployeeHelpers() {
         },
         /**
          * Get incentive amount adjusted for resigned employee display.
-         * Returns 0 for resigned employees when the viewed month has ended.
-         * Use getIncentive() for raw/original values (e.g., in modals).
+         * Frozen employees always show frozen_amount.
+         * Non-frozen resigned employees show 0 after month ends.
          */
         getDisplayIncentive: function (emp, type) {
             if (!emp) return 0;
+            // Frozen: always return frozen amount regardless of month
+            if (type === 'current' && emp.incentive_frozen === true) {
+                return parseFloat(emp.frozen_amount || 0) || 0;
+            }
             var raw = window.employeeHelpers.getIncentive(emp, type);
             if (type === 'current' && _isViewedMonthPassed() && _isResignedInOrBeforeMonth(emp)) {
                 return 0;
@@ -593,12 +597,20 @@ function _setupEmployeeHelpers() {
         },
         /**
          * Check if this employee is resigned and their incentive is zeroed out for display.
-         * Used to show resignation banner in modals.
+         * Frozen employees are NOT zeroed — they show their frozen amount.
          */
         isResignedWithZeroDisplay: function (emp) {
             if (!emp) return false;
+            if (emp.incentive_frozen === true) return false;
             return _isViewedMonthPassed() && _isResignedInOrBeforeMonth(emp) &&
                    window.employeeHelpers.getIncentive(emp, 'current') > 0;
+        },
+        /**
+         * Check if employee has a frozen (confirmed) incentive amount.
+         */
+        isFrozenIncentive: function (emp) {
+            if (!emp) return false;
+            return emp.incentive_frozen === true;
         },
         /**
          * Get the employee's stop_working_date as a formatted string.

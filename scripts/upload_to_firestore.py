@@ -206,6 +206,11 @@ def row_to_employee(row: pd.Series, month_capitalized: str) -> dict:
         "aql_part3_amount": safe_float(row.get("AQL_Part3_Amount")),
         "aql_part3_months": safe_int(row.get("AQL_Part3_Months")),
         "cfa_certified": safe_str(row.get("CFA_Certified", ""), "N"),
+
+        # Resigned employee freeze (2026-04-03)
+        "incentive_frozen": safe_str(row.get("Incentive_Frozen", ""), "NO").upper() == "YES",
+        "frozen_amount": safe_float(row.get("Frozen_Amount")),
+        "frozen_date": safe_str(row.get("Frozen_Date", "")),
     }
 
     return employee
@@ -494,6 +499,54 @@ def reapply_allowances(db, month_year: str):
         print(f"   ⚠️ Allowance 재적용 오류 (비치명적): {e}")
 
 
+def _preserve_frozen_incentives(db, month_year: str, employees: list) -> int:
+    """기존 Firestore의 frozen 인센티브를 새 데이터에 보존
+
+    이미 frozen된 직원의 인센티브를 파이프라인 재계산값 대신 frozen 값으로 유지.
+
+    Returns:
+        int: 보존된 frozen 직원 수
+    """
+    if not db:
+        return 0
+
+    try:
+        doc_ref = db.collection("employees").document(month_year).collection("all_data").document("data")
+        doc = doc_ref.get()
+        if not doc.exists:
+            return 0
+
+        existing = doc.to_dict().get("employees", [])
+        # emp_no → frozen 데이터 매핑
+        frozen_map = {}
+        for emp in existing:
+            if emp.get("incentive_frozen") is True:
+                frozen_map[str(emp.get("emp_no", ""))] = {
+                    "frozen_amount": emp.get("frozen_amount", 0),
+                    "frozen_date": emp.get("frozen_date", ""),
+                }
+
+        if not frozen_map:
+            return 0
+
+        preserved = 0
+        for emp in employees:
+            emp_no = str(emp.get("emp_no", ""))
+            if emp_no in frozen_map:
+                frozen = frozen_map[emp_no]
+                emp["incentive_frozen"] = True
+                emp["frozen_amount"] = frozen["frozen_amount"]
+                emp["frozen_date"] = frozen["frozen_date"]
+                emp["current_incentive"] = frozen["frozen_amount"]
+                preserved += 1
+                print(f"   🔒 Frozen 보존: {emp_no} {emp.get('full_name', '')} → {frozen['frozen_amount']:,.0f} VND")
+
+        return preserved
+    except Exception as e:
+        print(f"   ⚠️ Frozen 보존 체크 오류 (비치명적): {e}")
+        return 0
+
+
 def upload_employees(db, month_year: str, employees: list, dry_run: bool = False):
     """직원 데이터를 Firestore에 업로드 (단일 문서)
 
@@ -505,6 +558,12 @@ def upload_employees(db, month_year: str, employees: list, dry_run: bool = False
         employees: employee dict 리스트
         dry_run: True이면 업로드하지 않음
     """
+    # Frozen 인센티브 보존: 기존 Firestore에 frozen된 직원의 금액 유지
+    if not dry_run:
+        preserved = _preserve_frozen_incentives(db, month_year, employees)
+        if preserved > 0:
+            print(f"   🔒 {preserved}명의 frozen 인센티브 보존 완료")
+
     doc_data = {
         "employees": employees,
         "meta": {

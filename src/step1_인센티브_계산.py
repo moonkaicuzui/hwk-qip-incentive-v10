@@ -3310,6 +3310,60 @@ class CompleteQIPCalculator:
         if recalc_count > 0:
             print(f"  ✅ 당월 퇴사자 {recalc_count}명 출근율 재계산 완료 (출결데이터 실제근무일 기준, 토요근무 포함)")
     
+    def _freeze_resigned_employee_incentives(self):
+        """당월 퇴사자 인센티브 자동 확정(freeze)
+
+        퇴사일이 계산 월 내인 직원에 대해 frozen 필드를 설정.
+        이후 파이프라인 재실행 시 Firestore의 frozen 값이 보존됨.
+        """
+        if 'Stop working Date' not in self.month_data.columns:
+            return
+
+        calc_month_start = pd.Timestamp(self.config.year, self.config.month.number, 1)
+        if self.config.month.number < 12:
+            calc_month_end = pd.Timestamp(self.config.year, self.config.month.number + 1, 1) - pd.Timedelta(days=1)
+        else:
+            calc_month_end = pd.Timestamp(self.config.year, 12, 31)
+
+        incentive_col = 'Final Incentive amount'
+        if incentive_col not in self.month_data.columns:
+            incentive_col = f"{self.config.get_month_str('capital')}_Incentive"
+
+        # frozen 컬럼 초기화
+        if 'Incentive_Frozen' not in self.month_data.columns:
+            self.month_data['Incentive_Frozen'] = 'NO'
+        if 'Frozen_Amount' not in self.month_data.columns:
+            self.month_data['Frozen_Amount'] = 0
+        if 'Frozen_Date' not in self.month_data.columns:
+            self.month_data['Frozen_Date'] = ''
+
+        frozen_count = 0
+        for idx, row in self.month_data.iterrows():
+            stop_date_str = row.get('Stop working Date')
+            if pd.notna(stop_date_str) and str(stop_date_str).strip():
+                try:
+                    if '.' in str(stop_date_str):
+                        stop_date = pd.to_datetime(stop_date_str, format='%Y.%m.%d', errors='coerce')
+                    else:
+                        stop_date = pd.to_datetime(stop_date_str, errors='coerce')
+
+                    if pd.notna(stop_date) and calc_month_start <= stop_date <= calc_month_end:
+                        amount = float(row.get(incentive_col, 0) or 0)
+                        self.month_data.loc[idx, 'Incentive_Frozen'] = 'YES'
+                        self.month_data.loc[idx, 'Frozen_Amount'] = amount
+                        self.month_data.loc[idx, 'Frozen_Date'] = stop_date.strftime('%Y-%m-%d')
+                        frozen_count += 1
+                        print(f"  🔒 Frozen: {row.get('Employee No', '')} {row.get('Full Name', '')} "
+                              f"| 퇴사일: {stop_date.strftime('%Y-%m-%d')} "
+                              f"| 확정금액: {amount:,.0f} VND")
+                except (ValueError, TypeError):
+                    pass
+
+        if frozen_count > 0:
+            print(f"  ✅ 당월 퇴사자 {frozen_count}명 인센티브 자동 확정 완료")
+        else:
+            print(f"  ℹ️ 당월 퇴사자 없음 — freeze 대상 없음")
+
     def _set_improved_default_values(self):
         """improved defaultvalue configuration"""
         # AQL failure defaultvalue - 미 병합done data casesload리지 않음
@@ -6626,6 +6680,9 @@ class CompleteQIPCalculator:
             print(f"📊 [DEBUG Issue #42] Before add_aql_statistics_to_excel: {len(self.month_data.columns)} columns")
             self.add_aql_statistics_to_excel()
             print(f"📊 [DEBUG Issue #42] After add_aql_statistics_to_excel: {len(self.month_data.columns)} columns")
+
+            # 퇴직자 인센티브 자동 확정 (freeze) — 2026-04-03
+            self._freeze_resigned_employee_incentives()
 
             # Issue #42 디버깅: 컬럼 수 확인
             if len(self.month_data.columns) > 100:

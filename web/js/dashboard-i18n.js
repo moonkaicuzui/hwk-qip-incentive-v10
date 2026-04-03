@@ -730,6 +730,33 @@ const DashboardI18n = {
             vi: 'VD: Tháng 3 có 22 ngày làm, nghỉ việc ngày 20/3 → Ngày làm bao gồm ngày nghỉ việc = 17, 5 ngày sau không tính'
         },
 
+        // Frozen (confirmed) incentive for resigned employees
+        'frozen.title': {
+            ko: '퇴사자 확정 인센티브',
+            en: 'Confirmed Incentive (Resigned)',
+            vi: 'Khuyến khích đã xác nhận (NV nghỉ việc)'
+        },
+        'frozen.desc': {
+            ko: '이 직원은 {date}에 퇴사하여, 퇴사일 기준으로 인센티브 금액이 확정되었습니다. 이후 파이프라인 재실행에도 이 금액은 변동되지 않습니다.',
+            en: 'This employee resigned on {date}. The incentive amount was confirmed as of the resignation date and will not change on subsequent pipeline runs.',
+            vi: 'Nhân viên này đã nghỉ việc ngày {date}. Số tiền khuyến khích đã được xác nhận tính đến ngày nghỉ việc và sẽ không thay đổi khi chạy pipeline sau này.'
+        },
+        'frozen.confirmedAmount': {
+            ko: '확정 금액',
+            en: 'Confirmed Amount',
+            vi: 'Số tiền xác nhận'
+        },
+        'frozen.frozenDate': {
+            ko: '확정일 (퇴사일)',
+            en: 'Confirmation Date (Resignation)',
+            vi: 'Ngày xác nhận (Ngày nghỉ việc)'
+        },
+        'frozen.badge': {
+            ko: '🔒 확정',
+            en: '🔒 Confirmed',
+            vi: '🔒 Đã xác nhận'
+        },
+
         // Resigned employee incentive zero-out display
         'resignation.zeroed.title': {
             ko: '⚠️ 퇴사자 인센티브 안내',

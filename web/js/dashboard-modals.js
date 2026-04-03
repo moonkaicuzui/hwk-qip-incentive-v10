@@ -690,12 +690,35 @@ var DashboardModals = {
         // Check if this is a resigned employee whose incentive is zeroed for display
         var isResignedZeroed = window.employeeHelpers && window.employeeHelpers.isResignedWithZeroDisplay
             ? window.employeeHelpers.isResignedWithZeroDisplay(emp) : false;
-        var currentIncentive = isResignedZeroed ? 0 : originalIncentive;
+        var isFrozen = window.employeeHelpers && window.employeeHelpers.isFrozenIncentive
+            ? window.employeeHelpers.isFrozenIncentive(emp) : false;
+        var currentIncentive = isFrozen ? (parseFloat(emp.frozen_amount || 0) || 0)
+            : (isResignedZeroed ? 0 : originalIncentive);
 
         var html = '<div class="section-card" style="margin-bottom: 16px;">';
         html += '<h3 style="font-size: 1rem; margin: 0 0 12px;">' + t('modal.incentiveInfo') + '</h3>';
 
-        // Resigned employee banner: show original amount and explanation
+        // Frozen employee banner: show confirmed amount and date
+        if (isFrozen) {
+            var frozenDate = emp.frozen_date || '';
+            var frozenAmount = parseFloat(emp.frozen_amount || 0) || 0;
+            html += '<div style="background: linear-gradient(135deg, #e3f2fd, #bbdefb); border: 2px solid #1976d2; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;">';
+            html += '<div style="font-weight: 700; color: #0d47a1; font-size: 0.95rem; margin-bottom: 8px;">🔒 ' + t('frozen.title') + '</div>';
+            html += '<div style="color: #1a237e; font-size: 0.85rem; line-height: 1.5; margin-bottom: 10px;">' + t('frozen.desc').replace('{date}', frozenDate) + '</div>';
+            html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">';
+            html += '<div style="background: rgba(255,255,255,0.7); border-radius: 6px; padding: 8px 10px; text-align: center;">';
+            html += '<div style="font-size: 0.75rem; color: #455a64;">' + t('frozen.confirmedAmount') + '</div>';
+            html += '<div style="font-size: 1.1rem; font-weight: 700; color: #1565c0;">' + this._formatVND(frozenAmount) + ' ' + t('unit.currency') + '</div>';
+            html += '</div>';
+            html += '<div style="background: rgba(255,255,255,0.7); border-radius: 6px; padding: 8px 10px; text-align: center;">';
+            html += '<div style="font-size: 0.75rem; color: #455a64;">' + t('frozen.frozenDate') + '</div>';
+            html += '<div style="font-size: 1.1rem; font-weight: 700; color: #1565c0;">' + frozenDate + '</div>';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+        }
+
+        // Resigned employee banner: show original amount and explanation (non-frozen only)
         if (isResignedZeroed) {
             var stopDate = (window.employeeHelpers && window.employeeHelpers.getStopWorkingDate)
                 ? window.employeeHelpers.getStopWorkingDate(emp) : '';
