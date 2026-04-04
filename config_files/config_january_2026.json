@@ -16,7 +16,7 @@
     "aql_current": "2026-02-03T02:58:59.000Z"
   },
   "working_days_source": "attendance_data",
-  "working_days_updated_at": "2026-04-04T18:22:56.577604+00:00",
+  "working_days_updated_at": "2026-04-04T19:22:22.818973+00:00",
   "thresholds": {
     "attendance_rate": 88,
     "unapproved_absence": 2,
