@@ -122,7 +122,15 @@ var DashboardCharts = {
         var receivingCount = 0;
         var totalAmount = 0;
 
+        var frozenCount = 0;
+        var frozenTotal = 0;
         employees.forEach(function (emp) {
+            // Frozen employees are excluded from dashboard totals (HR handles separately)
+            if (emp.incentive_frozen === true) {
+                var fa = parseFloat(emp.frozen_amount || 0) || 0;
+                if (fa > 0) { frozenCount++; frozenTotal += fa; }
+                return;
+            }
             var amount = window.employeeHelpers
                 ? window.employeeHelpers.getDisplayIncentive(emp, 'current')
                 : (parseFloat(emp.currentIncentive || emp.current_incentive || 0) || 0);
