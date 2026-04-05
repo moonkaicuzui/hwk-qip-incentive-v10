@@ -1,24 +1,7 @@
 {
-  "notes": {
-    "reject_rate_calculation": "해당 조건에 맞는 AQL 데이터만 필터링하여 reject율 계산",
-    "usage": "각 직원의 Employee No를 키로 사용하여 담당 구역 조건을 확인",
-    "model_master_note": "Model Master (QA2A)는 전체 구역을 담당하며 별도 로직으로 처리",
-    "description": "Auditor/Trainer 및 Model Master별 담당 구역 매핑"
-  },
-  "default_reject_rate_threshold": 2.0,
   "model_master": {
+    "description": "Model Master - 전체 공장 담당",
     "employees": {
-      "620120386": {
-        "conditions": [
-          {
-            "filters": [],
-            "type": "ALL"
-          }
-        ],
-        "position": "MODEL MASTER",
-        "description": "Model Master - 전체 구역",
-        "name": "NGUYỄN NGỌC TUẤN"
-      },
       "618110097": {
         "conditions": [
           {
@@ -26,9 +9,20 @@
             "type": "ALL"
           }
         ],
-        "position": "MODEL MASTER",
         "description": "Model Master - 전체 구역",
+        "position": "MODEL MASTER",
         "name": "DANH THỊ ANH ĐÀO"
+      },
+      "620120386": {
+        "conditions": [
+          {
+            "filters": [],
+            "type": "ALL"
+          }
+        ],
+        "description": "Model Master - 전체 구역",
+        "position": "MODEL MASTER",
+        "name": "NGUYỄN NGỌC TUẤN"
       },
       "618030241": {
         "conditions": [
@@ -37,12 +31,11 @@
             "type": "ALL"
           }
         ],
-        "position": "MODEL MASTER",
         "description": "Model Master - 전체 구역",
+        "position": "MODEL MASTER",
         "name": "TRẦN THỊ THÚY ANH"
       },
       "620080295": {
-        "position_code": "QA2A",
         "conditions": [
           {
             "filters": [],
@@ -50,12 +43,57 @@
           }
         ],
         "description": "Model Master - 전체 구역",
+        "position_code": "QA2A",
         "name": "VÕ THỊ THÙY LINH"
       }
-    },
-    "description": "Model Master - 전체 공장 담당"
+    }
+  },
+  "default_reject_rate_threshold": 2.0,
+  "notes": {
+    "reject_rate_calculation": "해당 조건에 맞는 AQL 데이터만 필터링하여 reject율 계산",
+    "usage": "각 직원의 Employee No를 키로 사용하여 담당 구역 조건을 확인",
+    "description": "Auditor/Trainer 및 Model Master별 담당 구역 매핑",
+    "model_master_note": "Model Master (QA2A)는 전체 구역을 담당하며 별도 로직으로 처리"
   },
   "auditor_trainer_areas": {
+    "623080475": {
+      "conditions": [
+        {
+          "filters": [
+            {
+              "column": "REPACKING PO",
+              "value": "NORMAL PO"
+            },
+            {
+              "column": "BUILDING",
+              "value": "C"
+            }
+          ],
+          "type": "AND"
+        }
+      ],
+      "description": "Building C",
+      "name": "SẦM TRÍ THÀNH"
+    },
+    "619070185": {
+      "conditions": [
+        {
+          "filters": [
+            {
+              "column": "REPACKING PO",
+              "value": "NORMAL PO"
+            },
+            {
+              "column": "BUILDING",
+              "value": "D"
+            }
+          ],
+          "type": "AND"
+        }
+      ],
+      "description": "Building D",
+      "name": "DANH THỊ KIM ANH"
+    },
     "618110087": {
       "conditions": [
         {
@@ -103,44 +141,6 @@
       "description": "Building B & Repacking BS",
       "name": "CAO THỊ TỐ NGUYÊN"
     },
-    "619070185": {
-      "conditions": [
-        {
-          "filters": [
-            {
-              "column": "REPACKING PO",
-              "value": "NORMAL PO"
-            },
-            {
-              "column": "BUILDING",
-              "value": "D"
-            }
-          ],
-          "type": "AND"
-        }
-      ],
-      "description": "Building D",
-      "name": "DANH THỊ KIM ANH"
-    },
-    "620070020": {
-      "conditions": [
-        {
-          "filters": [
-            {
-              "column": "REPACKING PO",
-              "value": "NORMAL PO"
-            },
-            {
-              "column": "BUILDING",
-              "value": "D"
-            }
-          ],
-          "type": "AND"
-        }
-      ],
-      "description": "Building D",
-      "name": "PHẠM MỸ HUYỀN"
-    },
     "620070013": {
       "conditions": [
         {
@@ -160,7 +160,7 @@
       "description": "Building A",
       "name": "NGUYỄN THANH TRÚC"
     },
-    "623080475": {
+    "620070020": {
       "conditions": [
         {
           "filters": [
@@ -170,14 +170,14 @@
             },
             {
               "column": "BUILDING",
-              "value": "C"
+              "value": "D"
             }
           ],
           "type": "AND"
         }
       ],
-      "description": "Building C",
-      "name": "SẦM TRÍ THÀNH"
+      "description": "Building D",
+      "name": "PHẠM MỸ HUYỀN"
     }
   }
 }
