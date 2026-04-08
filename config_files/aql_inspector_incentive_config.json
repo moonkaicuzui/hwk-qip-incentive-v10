@@ -100,6 +100,11 @@
         "part1_months": 13,
         "part3_months": 13,
         "total": 2600000
+      },
+      "april_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
       }
     },
     "619100307": {
@@ -139,6 +144,11 @@
         "part1_months": 13,
         "part3_months": 13,
         "total": 2600000
+      },
+      "april_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
       }
     },
     "620020923": {
@@ -178,6 +188,11 @@
         "part1_months": 13,
         "part3_months": 13,
         "total": 2600000
+      },
+      "april_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
       }
     },
     "620120306": {
@@ -217,6 +232,11 @@
         "part1_months": 12,
         "part3_months": 12,
         "total": 2400000
+      },
+      "april_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
       }
     },
     "621110376": {
@@ -256,6 +276,11 @@
         "part1_months": 1,
         "part3_months": 1,
         "total": 850000
+      },
+      "april_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
       }
     },
     "622030225": {
@@ -295,6 +320,11 @@
         "part1_months": 12,
         "part3_months": 12,
         "total": 2400000
+      },
+      "april_2026_incentive": {
+        "part1_months": 0,
+        "part3_months": 0,
+        "total": 0
       }
     }
   },

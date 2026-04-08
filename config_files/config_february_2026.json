@@ -5,7 +5,7 @@
   "file_paths": {
     "basic_manpower": "input_files/basic manpower data february.csv",
     "5prs": "input_files/5prs data february.csv",
-    "attendance": "input_files/attendance/converted/attendance data february_converted.csv",
+    "attendance": "input_files/attendance/original/attendance data february.csv",
     "aql_current": "input_files/AQL history/1.HSRG AQL REPORT-FEBRUARY.2026.csv",
     "previous_incentive": "output_files/output_QIP_incentive_january_2026_Complete_V10.0_Complete.csv"
   },
@@ -31,7 +31,7 @@
     "aql_current": "2026-03-02T14:22:43.000Z"
   },
   "working_days_source": "attendance_data",
-  "working_days_updated_at": "2026-04-08T14:25:57.335223+00:00",
+  "working_days_updated_at": "2026-04-08T16:05:48.662767+00:00",
   "data_source": "google_drive",
   "last_updated": "2026-03-11T08:48:19.000Z",
   "thresholds_synced_at": "2026-03-06T05:03:09.407431Z",
