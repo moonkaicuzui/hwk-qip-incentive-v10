@@ -10,6 +10,7 @@ const {
   onDocumentCreated,
   onDocumentUpdated,
 } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { logger } = require("firebase-functions");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
@@ -19,6 +20,10 @@ const {
   buildReplyEmail,
   buildStatusChangeEmail,
 } = require("./templates/feedbackEmail");
+const {
+  sendIncentiveMonthlyEmail,
+} = require("./services/incentiveReportEmail");
+const { sendDiscordMessage } = require("./services/discordService");
 
 initializeApp();
 const db = getFirestore();
@@ -305,6 +310,140 @@ exports.sendFeedbackReply = onCall(
         stack: err.stack,
       });
       throw new HttpsError("internal", "이메일 전송에 실패했습니다.");
+    }
+  }
+);
+
+// ─── 4. Incentive 월간 성과 이메일 보고서 (매월 1일 12:00 VN) ──
+
+exports.scheduledIncentiveMonthlyEmail = onSchedule(
+  {
+    schedule: "0 12 1 * *",
+    timeZone: "Asia/Ho_Chi_Minh",
+    region: REGION,
+    memory: "512MiB",
+    timeoutSeconds: 120,
+  },
+  async () => {
+    logger.info("[Incentive-MonthlyEmail] Starting monthly report");
+    try {
+      await sendIncentiveMonthlyEmail();
+      logger.info("[Incentive-MonthlyEmail] Monthly report completed");
+    } catch (error) {
+      logger.error("[Incentive-MonthlyEmail] Failed:", error);
+    }
+  }
+);
+
+// ─── 5. Incentive 월간 Discord 보고서 (매월 1일 09:00 VN) ──
+
+exports.scheduledIncentiveMonthlyDiscord = onSchedule(
+  {
+    schedule: "0 9 1 * *",
+    timeZone: "Asia/Ho_Chi_Minh",
+    region: REGION,
+    memory: "512MiB",
+    timeoutSeconds: 120,
+  },
+  async () => {
+    logger.info("[Incentive-MonthlyDiscord] Starting monthly Discord report");
+    try {
+      // Previous month
+      const now = new Date();
+      const vnNow = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
+      let year = vnNow.getFullYear();
+      let month = vnNow.getMonth(); // 0-indexed, so current month index = previous month number
+      if (month === 0) { year--; month = 12; }
+      const yearMonth = year + "-" + String(month).padStart(2, "0");
+
+      // Previous-previous month for comparison
+      let prevYear = year;
+      let prevMonth = month - 1;
+      if (prevMonth <= 0) { prevYear--; prevMonth += 12; }
+      const prevYearMonth = prevYear + "-" + String(prevMonth).padStart(2, "0");
+
+      // Query current month data
+      const snapshot = await db
+        .collection("incentiveRecords")
+        .where("month", "==", yearMonth)
+        .get();
+
+      if (snapshot.empty) {
+        logger.info("[Incentive-MonthlyDiscord] No data for", yearMonth);
+        await sendDiscordMessage(
+          `💰 **[Incentive] 월간 보고 (${year}년 ${String(month).padStart(2, "0")}월)**\n━━━━━━━━━━━━━━━━━━\n데이터 없음\n\n_Incentive • 자동 보고서_`
+        );
+        return;
+      }
+
+      // Aggregate
+      let totalScore = 0;
+      let count = 0;
+      const lines = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const quality = data.qualityScore || data.quality || 0;
+        const productivity = data.productivityScore || data.productivity || 0;
+        const attendance = data.attendanceScore || data.attendance || 0;
+        const total = data.totalScore || (quality + productivity + attendance);
+        const building = data.building || data.factory || "";
+        const line = data.line || data.lineNo || "";
+
+        totalScore += total;
+        count++;
+        lines.push({ name: building + "-" + line, score: total });
+      });
+
+      const avgScore = count > 0 ? (totalScore / count).toFixed(1) : "데이터 없음";
+
+      // Sort for top/bottom
+      lines.sort((a, b) => b.score - a.score);
+      const topLines = lines
+        .slice(0, 3)
+        .map((l) => `${l.name} ${l.score.toFixed(1)}점`)
+        .join(", ");
+      const bottomLines = lines
+        .slice(-3)
+        .reverse()
+        .map((l) => `${l.name} ${l.score.toFixed(1)}점`)
+        .join(", ");
+
+      // Previous month comparison
+      let deltaStr = "";
+      const prevSnap = await db
+        .collection("incentiveRecords")
+        .where("month", "==", prevYearMonth)
+        .get();
+      if (!prevSnap.empty) {
+        let prevTotal = 0;
+        let prevCount = 0;
+        prevSnap.forEach((doc) => {
+          const data = doc.data();
+          prevTotal += data.totalScore || ((data.qualityScore || data.quality || 0) + (data.productivityScore || data.productivity || 0) + (data.attendanceScore || data.attendance || 0));
+          prevCount++;
+        });
+        if (prevCount > 0) {
+          const prevAvg = prevTotal / prevCount;
+          const delta = (totalScore / count) - prevAvg;
+          deltaStr = delta >= 0 ? `▲${delta.toFixed(1)}점` : `▼${Math.abs(delta).toFixed(1)}점`;
+        }
+      }
+
+      let msg = `💰 **[Incentive] 월간 보고 (${year}년 ${String(month).padStart(2, "0")}월)**\n`;
+      msg += `━━━━━━━━━━━━━━━━━━\n`;
+      msg += `평균 점수: ${avgScore} | 총 라인: ${count}\n`;
+      msg += `상위 라인: ${topLines || "데이터 없음"}\n`;
+      msg += `하위 라인: ${bottomLines || "데이터 없음"}\n`;
+      if (deltaStr) msg += `전월 대비: ${deltaStr}\n`;
+
+      const timeStr = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", hour12: false });
+      msg += `\n_Incentive • 자동 보고서 • ${timeStr}_`;
+
+      await sendDiscordMessage(msg);
+      logger.info("[Incentive-MonthlyDiscord] Monthly Discord report sent");
+    } catch (error) {
+      logger.error("[Incentive-MonthlyDiscord] Failed:", error);
     }
   }
 );
