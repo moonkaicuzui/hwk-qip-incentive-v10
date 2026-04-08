@@ -1,0 +1,281 @@
+- generic [ref=e1]:
+  - text: 
+  - banner [ref=e26]:
+    - generic [ref=e27]:
+      - heading "HWK QIP Incentive Dashboard" [level=1] [ref=e28]
+      - generic [ref=e29]:
+        - text: "March 2026 | 최종 업데이트: 2026. 4. 3. 오후 1:16:51"
+        - 'generic "데이터 동기화: 10분 전 | 다음 자동 동기화: 20분 후" [ref=e1072] [cursor=pointer]':
+          - generic [ref=e1073]: 🟢 최신 데이터
+          - generic [ref=e1074]: 10분 전
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - button "KO" [ref=e33] [cursor=pointer]
+        - button "EN" [ref=e34] [cursor=pointer]
+        - button "VN" [ref=e35] [cursor=pointer]
+      - generic [ref=e36]:
+        - button "📋" [ref=e37] [cursor=pointer]
+        - button " 내 인센티브" [ref=e38] [cursor=pointer]:
+          - generic [ref=e39]: 
+          - text: 내 인센티브
+        - button " Excel" [ref=e40] [cursor=pointer]:
+          - generic [ref=e41]: 
+          - text: Excel
+        - button "📅 📋 최종 보고서" [ref=e85] [cursor=pointer]
+      - generic [ref=e43]:
+        - link "← 월 선택" [ref=e86] [cursor=pointer]:
+          - /url: selector.html
+        - generic [ref=e87]: ksmoon@hsvina.com
+        - button " 로그아웃" [ref=e46] [cursor=pointer]:
+          - generic [ref=e47]: 
+          - text: 로그아웃
+  - tablist [ref=e48]:
+    - tab "요약" [ref=e49] [cursor=pointer]
+    - tab "직급별 상세" [ref=e50] [cursor=pointer]
+    - tab "개인별 상세" [selected] [ref=e51] [cursor=pointer]
+    - tab "인센티브 기준" [ref=e52] [cursor=pointer]
+    - tab "조직도" [ref=e53] [cursor=pointer]
+    - tab "팀 관리" [ref=e54] [cursor=pointer]
+    - tab "요약 및 시스템 검증" [ref=e55] [cursor=pointer]
+    - tab " 🔍 개인 출결 조회" [ref=e88] [cursor=pointer]:
+      - generic [ref=e57]: 
+      - text: 🔍 개인 출결 조회
+  - text:                        
+  - tabpanel [ref=e284]:
+    - generic [ref=e285]:
+      - textbox "사번 또는 이름 검색" [ref=e286]: "619100381"
+      - combobox [ref=e287]:
+        - option "전체 직급" [selected]
+        - option "(V) SUPERVISOR"
+        - option "A.MANAGER"
+        - option "AQL INSPECTOR"
+        - option "ASSEMBLY INSPECTOR"
+        - option "AUDIT & TRAINING TEAM"
+        - option "BOTTOM INSPECTOR"
+        - option "CUTTING INSPECTOR"
+        - option "GROUP LEADER"
+        - option "LINE LEADER"
+        - option "MANAGER"
+        - option "MODEL MASTER"
+        - option "MTL INSPECTOR"
+        - option "NEW"
+        - option "OCPT STFF"
+        - option "OSC INSPECTOR"
+        - option "QA TEAM"
+        - option "RQC"
+        - option "STITCHING INSPECTOR"
+      - combobox [ref=e288]:
+        - option "전체 Building" [selected]
+        - option "A"
+        - option "A1"
+        - option "A2"
+        - option "B"
+        - option "B1"
+        - option "B2"
+        - option "B3"
+        - option "C"
+        - option "D"
+        - option "E1"
+        - option "E2"
+        - option "EZ HAPPO"
+        - option "FG-WH"
+        - option "INHOUSE EZ"
+        - option "INHOUSE PRINTING"
+        - option "MTL WH"
+        - option "QA OFFICE"
+        - option "QIP OFFICE"
+      - combobox [ref=e289]:
+        - option "전체" [selected]
+        - option "수령"
+        - option "미수령"
+      - combobox [ref=e290]:
+        - option "전체 TYPE" [selected]
+        - option "TYPE-1"
+        - option "TYPE-2"
+        - option "TYPE-3"
+    - table [ref=e292]:
+      - rowgroup [ref=e293]:
+        - row "번호 사번 이름 직급 Building TYPE 출근율 AQL 5PRS 인센티브 상세" [ref=e294]:
+          - columnheader "번호" [ref=e295]
+          - columnheader "사번" [ref=e296] [cursor=pointer]
+          - columnheader "이름" [ref=e297] [cursor=pointer]
+          - columnheader "직급" [ref=e298] [cursor=pointer]
+          - columnheader "Building" [ref=e299] [cursor=pointer]
+          - columnheader "TYPE" [ref=e300] [cursor=pointer]
+          - columnheader "출근율" [ref=e301]
+          - columnheader "AQL" [ref=e302] [cursor=pointer]
+          - columnheader "5PRS" [ref=e303]
+          - columnheader "인센티브" [ref=e304] [cursor=pointer]
+          - columnheader "상세" [ref=e305]
+      - rowgroup [ref=e306]:
+        - row "1 619100381 TRẦN THỊ TỐ QUYÊN LINE LEADER C TYPE-2 96.2% ➖ N/A ➖ N/A 358.501 VND " [ref=e1075]:
+          - cell "1" [ref=e1076]
+          - cell "619100381" [ref=e1077]
+          - cell "TRẦN THỊ TỐ QUYÊN" [ref=e1078]:
+            - link "TRẦN THỊ TỐ QUYÊN" [ref=e1079] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "LINE LEADER" [ref=e1080]
+          - cell "C" [ref=e1081]
+          - cell "TYPE-2" [ref=e1082]
+          - cell "96.2%" [ref=e1083]
+          - cell "➖ N/A" [ref=e1084]
+          - cell "➖ N/A" [ref=e1085]
+          - cell "358.501 VND" [ref=e1086]
+          - cell "" [ref=e1087]:
+            - button "" [ref=e1088] [cursor=pointer]:
+              - generic [ref=e1089]: 
+    - generic [ref=e1090]:
+      - generic [ref=e1091]: 1-1 / 1명
+      - generic [ref=e1092]:
+        - button "" [disabled] [ref=e1093]:
+          - generic [ref=e1094]: 
+        - button "1" [ref=e1095] [cursor=pointer]
+        - button "" [disabled] [ref=e1096]:
+          - generic [ref=e1097]: 
+  - text:  −  −     −   −  −    −  −           %                  
+  - dialog [active] [ref=e1098]:
+    - generic [ref=e1099]:
+      - generic [ref=e1100]:
+        - heading "TRẦN THỊ TỐ QUYÊN - LINE LEADER" [level=5] [ref=e1101]
+        - button "Close" [ref=e1102] [cursor=pointer]
+      - generic [ref=e1103]:
+        - generic [ref=e1104]:
+          - heading "직원 상세 정보" [level=3] [ref=e1105]
+          - generic [ref=e1106]:
+            - generic [ref=e1107]:
+              - generic [ref=e1108]: 사번
+              - generic [ref=e1109]: "619100381"
+            - generic [ref=e1110]:
+              - generic [ref=e1111]: Building
+              - generic [ref=e1112]: C
+            - generic [ref=e1113]:
+              - generic [ref=e1114]: TYPE
+              - generic [ref=e1115]: TYPE-2
+            - generic [ref=e1116]:
+              - generic [ref=e1117]: 입사일
+              - generic [ref=e1118]: 10/25/2019
+            - generic [ref=e1119]:
+              - generic [ref=e1120]: 상사명
+              - generic [ref=e1121]: LƯƠNG THỊ CẨM TIÊN 👆
+        - generic [ref=e1122]:
+          - heading "출근 정보" [level=3] [ref=e1123]
+          - generic [ref=e1124]:
+            - generic [ref=e1125]:
+              - generic [ref=e1126]: 출근율
+              - generic [ref=e1127]: 96.2%
+            - generic [ref=e1128]:
+              - generic [ref=e1129]: 실제 근무일
+              - generic [ref=e1130]: 23일
+            - generic [ref=e1131]:
+              - generic [ref=e1132]: 총 근무일수
+              - generic [ref=e1133]: 26일
+            - generic [ref=e1134]:
+              - generic [ref=e1135]: 무단결근
+              - generic [ref=e1136]: 0일
+            - generic [ref=e1137]:
+              - generic [ref=e1138]: 승인 휴가
+              - generic [ref=e1139]: 2일
+          - generic [ref=e1140]:
+            - strong [ref=e1141]: 📊 출근율 계산
+            - text: "결근일 = 총근무일 - 실근무일 - 승인휴가: 26 - 23 - 2 ="
+            - strong [ref=e1142]: 1일
+            - text: "출근율: 100 - (1/26 × 100) ="
+            - strong [ref=e1143]: 96.2%
+        - generic [ref=e1144]:
+          - heading "조건 충족 현황" [level=3] [ref=e1145]
+          - table [ref=e1147]:
+            - rowgroup [ref=e1148]:
+              - row "# 조건 값 기준값 결과" [ref=e1149]:
+                - columnheader "#" [ref=e1150]
+                - columnheader "조건" [ref=e1151]
+                - columnheader "값" [ref=e1152]
+                - columnheader "기준값" [ref=e1153]
+                - columnheader "결과" [ref=e1154]
+            - rowgroup [ref=e1155]:
+              - row "1 출근율 96.2% 90.0% 통과" [ref=e1156]:
+                - cell "1" [ref=e1157]
+                - cell "출근율" [ref=e1158]
+                - cell "96.2%" [ref=e1159]
+                - cell "90.0%" [ref=e1160]
+                - cell "통과" [ref=e1161]
+              - row "2 무단결근 0 1 통과" [ref=e1162]:
+                - cell "2" [ref=e1163]
+                - cell "무단결근" [ref=e1164]
+                - cell "0" [ref=e1165]
+                - cell "1" [ref=e1166]
+                - cell "통과" [ref=e1167]
+              - row "3 실제 근무일 23 -- 통과" [ref=e1168]:
+                - cell "3" [ref=e1169]
+                - cell "실제 근무일" [ref=e1170]
+                - cell "23" [ref=e1171]
+                - cell "--" [ref=e1172]
+                - cell "통과" [ref=e1173]
+              - row "4 최소 근무일 23 12 통과" [ref=e1174]:
+                - cell "4" [ref=e1175]
+                - cell "최소 근무일" [ref=e1176]
+                - cell "23" [ref=e1177]
+                - cell "12" [ref=e1178]
+                - cell "통과" [ref=e1179]
+              - row "5 개인 AQL 실패 -- -- 해당없음" [ref=e1180]:
+                - cell "5" [ref=e1181]
+                - cell "개인 AQL 실패" [ref=e1182]
+                - cell "--" [ref=e1183]
+                - cell "--" [ref=e1184]
+                - cell "해당없음" [ref=e1185]
+              - row "6 AQL 연속 실패 -- -- 해당없음" [ref=e1186]:
+                - cell "6" [ref=e1187]
+                - cell "AQL 연속 실패" [ref=e1188]
+                - cell "--" [ref=e1189]
+                - cell "--" [ref=e1190]
+                - cell "해당없음" [ref=e1191]
+              - row "7 팀/구역 AQL -- -- 해당없음" [ref=e1192]:
+                - cell "7" [ref=e1193]
+                - cell "팀/구역 AQL" [ref=e1194]
+                - cell "--" [ref=e1195]
+                - cell "--" [ref=e1196]
+                - cell "해당없음" [ref=e1197]
+              - row "8 구역 Reject Rate -- -- 해당없음" [ref=e1198]:
+                - cell "8" [ref=e1199]
+                - cell "구역 Reject Rate" [ref=e1200]
+                - cell "--" [ref=e1201]
+                - cell "--" [ref=e1202]
+                - cell "해당없음" [ref=e1203]
+              - row "9 5PRS 통과율 -- -- 해당없음" [ref=e1204]:
+                - cell "9" [ref=e1205]
+                - cell "5PRS 통과율" [ref=e1206]
+                - cell "--" [ref=e1207]
+                - cell "--" [ref=e1208]
+                - cell "해당없음" [ref=e1209]
+              - row "10 5PRS 검사량 -- -- 해당없음" [ref=e1210]:
+                - cell "10" [ref=e1211]
+                - cell "5PRS 검사량" [ref=e1212]
+                - cell "--" [ref=e1213]
+                - cell "--" [ref=e1214]
+                - cell "해당없음" [ref=e1215]
+          - paragraph [ref=e1218]: 4/4 개 조건 충족 (100%) ✅
+        - generic [ref=e1219]:
+          - heading "인센티브 정보" [level=3] [ref=e1220]
+          - generic [ref=e1221]:
+            - generic [ref=e1222]: 🔒 퇴사자 확정 인센티브
+            - generic [ref=e1223]: 이 직원은 2026-03-31에 퇴사하여, 퇴사일 기준으로 인센티브 금액이 확정되었습니다. 이후 파이프라인 재실행에도 이 금액은 변동되지 않습니다.
+            - generic [ref=e1224]:
+              - generic [ref=e1225]:
+                - generic [ref=e1226]: 확정 금액
+                - generic [ref=e1227]: 358.501 VND
+              - generic [ref=e1228]:
+                - generic [ref=e1229]: 확정일 (퇴사일)
+                - generic [ref=e1230]: 2026-03-31
+          - generic [ref=e1231]:
+            - generic [ref=e1232]:
+              - generic [ref=e1233]: 당월 인센티브
+              - generic [ref=e1234]: 358.501 VND
+            - generic [ref=e1235]:
+              - generic [ref=e1236]: 전월 인센티브
+              - generic [ref=e1237]: 470.024 VND
+        - generic [ref=e1238]:
+          - heading "AQL" [level=3] [ref=e1239]
+          - paragraph [ref=e1240]: 해당없음 이 TYPE에는 AQL 조건 미적용
+        - generic [ref=e1241]:
+          - heading "5PRS" [level=3] [ref=e1242]
+          - paragraph [ref=e1243]: 해당없음 이 TYPE에는 5PRS 조건 미적용
+  - contentinfo [ref=e81]: "HWK QIP Incentive Dashboard v10.0 | Data source: Firestore | 2026. 4. 3. 오후 1:26:01"

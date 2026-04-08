@@ -1,0 +1,82 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - paragraph [ref=e4]: 데이터를 불러오는 중...
+    - list [ref=e7]:
+      - listitem [ref=e8]:
+        - generic [ref=e9]: ○
+        - generic [ref=e10]: 직원 데이터 로딩...
+      - listitem [ref=e11]:
+        - generic [ref=e12]: ○
+        - generic [ref=e13]: 요약 데이터 로딩...
+      - listitem [ref=e14]:
+        - generic [ref=e15]: ○
+        - generic [ref=e16]: 임계값 로딩...
+      - listitem [ref=e17]:
+        - generic [ref=e18]: ○
+        - generic [ref=e19]: 차트 렌더링...
+    - generic [ref=e20]:
+      - generic [ref=e21]: 오후 1:36:41 v=rest8 init start
+      - generic [ref=e22]: "오후 1:36:41 firebase: OK (apps=1)"
+      - generic [ref=e23]: "오후 1:36:41 checkAuth: function"
+      - generic [ref=e24]: "오후 1:36:41 DashboardData: object"
+      - generic [ref=e25]: "오후 1:36:41 Step 1: authenticating..."
+  - text: 
+  - banner [ref=e26]:
+    - generic [ref=e27]:
+      - heading "HWK QIP Incentive Dashboard" [level=1] [ref=e28]
+      - generic [ref=e29]: "-- | 최종 업데이트: --"
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - button "KO" [ref=e33] [cursor=pointer]
+        - button "EN" [ref=e34] [cursor=pointer]
+        - button "VN" [ref=e35] [cursor=pointer]
+      - generic [ref=e36]:
+        - button "📋" [ref=e37] [cursor=pointer]
+        - button " 내 인센티브" [ref=e38] [cursor=pointer]:
+          - generic [ref=e39]: 
+          - text: 내 인센티브
+        - button " Excel" [ref=e40] [cursor=pointer]:
+          - generic [ref=e41]: 
+          - text: Excel
+        - button "📅 최종 보고서" [ref=e42] [cursor=pointer]
+      - generic [ref=e43]:
+        - link " 월 선택" [ref=e44] [cursor=pointer]:
+          - /url: selector.html
+          - generic [ref=e45]: 
+          - text: 월 선택
+        - button " 로그아웃" [ref=e46] [cursor=pointer]:
+          - generic [ref=e47]: 
+          - text: 로그아웃
+  - tablist [ref=e48]:
+    - tab "요약" [selected] [ref=e49] [cursor=pointer]
+    - tab "직급별 상세" [ref=e50] [cursor=pointer]
+    - tab "개인별 상세" [ref=e51] [cursor=pointer]
+    - tab "인센티브 기준" [ref=e52] [cursor=pointer]
+    - tab "조직도" [ref=e53] [cursor=pointer]
+    - tab "팀 관리" [ref=e54] [cursor=pointer]
+    - tab "요약 및 시스템 검증" [ref=e55] [cursor=pointer]
+    - tab " 개인 출결 조회" [ref=e56] [cursor=pointer]:
+      - generic [ref=e57]: 
+      - text: 개인 출결 조회
+  - tabpanel [ref=e58]:
+    - generic [ref=e59]:
+      - generic [ref=e60]:
+        - generic [ref=e61]: 👤
+        - generic [ref=e62]: 전체 직원
+        - generic [ref=e63]: "--"
+      - generic [ref=e64]:
+        - generic [ref=e65]: 👥
+        - generic [ref=e66]: 수령 직원
+        - generic [ref=e67]: "--"
+      - generic [ref=e68]:
+        - generic [ref=e69]: 📊
+        - generic [ref=e70]: 지급률
+        - generic [ref=e71]: "--"
+      - generic [ref=e73]:
+        - generic [ref=e74]: 💰
+        - generic [ref=e75]: 총 지급액
+        - generic [ref=e76]: "--"
+    - heading "TYPE별 현황" [level=3] [ref=e78]
+    - heading "조건별 충족 현황" [level=3] [ref=e80]
+  - text:        %             
+  - contentinfo [ref=e81]: "HWK QIP Incentive Dashboard v10.0 | Data source: Firestore |"

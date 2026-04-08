@@ -1,0 +1,510 @@
+- generic [ref=e1]:
+  - text: 
+  - banner [ref=e26]:
+    - generic [ref=e27]:
+      - heading "HWK QIP Incentive Dashboard" [level=1] [ref=e28]
+      - generic [ref=e29]:
+        - text: "March 2026 | 최종 업데이트: 2026. 4. 3. 오후 1:16:51"
+        - 'generic "데이터 동기화: 20분 전 | 다음 자동 동기화: 10분 후" [ref=e82] [cursor=pointer]':
+          - generic [ref=e83]: 🟡 업데이트 권장
+          - generic [ref=e84]: 20분 전
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - button "KO" [ref=e33] [cursor=pointer]
+        - button "EN" [ref=e34] [cursor=pointer]
+        - button "VN" [ref=e35] [cursor=pointer]
+      - generic [ref=e36]:
+        - button "📋" [ref=e37] [cursor=pointer]
+        - button " 내 인센티브" [ref=e38] [cursor=pointer]:
+          - generic [ref=e39]: 
+          - text: 내 인센티브
+        - button " Excel" [ref=e40] [cursor=pointer]:
+          - generic [ref=e41]: 
+          - text: Excel
+        - button "📅 📋 최종 보고서" [ref=e85] [cursor=pointer]
+      - generic [ref=e43]:
+        - link "← 월 선택" [ref=e86] [cursor=pointer]:
+          - /url: selector.html
+        - generic [ref=e87]: ksmoon@hsvina.com
+        - button " 로그아웃" [ref=e46] [cursor=pointer]:
+          - generic [ref=e47]: 
+          - text: 로그아웃
+  - tablist [ref=e48]:
+    - tab "요약" [ref=e49] [cursor=pointer]
+    - tab "직급별 상세" [ref=e50] [cursor=pointer]
+    - tab "개인별 상세" [ref=e51] [cursor=pointer]
+    - tab "인센티브 기준" [active] [selected] [ref=e52] [cursor=pointer]
+    - tab "조직도" [ref=e53] [cursor=pointer]
+    - tab "팀 관리" [ref=e54] [cursor=pointer]
+    - tab "요약 및 시스템 검증" [ref=e55] [cursor=pointer]
+    - tab " 🔍 개인 출결 조회" [ref=e88] [cursor=pointer]:
+      - generic [ref=e57]: 
+      - text: 🔍 개인 출결 조회
+  - text:                                                                            
+  - tabpanel [ref=e284]:
+    - generic [ref=e285]:
+      - heading "10가지 조건 개요" [level=3] [ref=e286]
+      - generic [ref=e287]:
+        - table [ref=e289]:
+          - rowgroup [ref=e290]:
+            - row "# 분류 조건 기준값 설명 Pass Fail" [ref=e291]:
+              - columnheader "#" [ref=e292]
+              - columnheader "분류" [ref=e293]
+              - columnheader "조건" [ref=e294]
+              - columnheader "기준값" [ref=e295]
+              - columnheader "설명" [ref=e296]
+              - columnheader "Pass" [ref=e297]
+              - columnheader "Fail" [ref=e298]
+          - rowgroup [ref=e299]:
+            - row "C1 출근 출근율 >= 90% 월 출근율 기준 충족 378 20" [ref=e300]:
+              - cell "C1" [ref=e301]
+              - cell "출근" [ref=e302]:
+                - generic [ref=e303]: 출근
+              - cell "출근율" [ref=e304]
+              - cell ">= 90%" [ref=e305]:
+                - code [ref=e306]: ">= 90%"
+              - cell "월 출근율 기준 충족" [ref=e307]
+              - cell "378" [ref=e308]
+              - cell "20" [ref=e309]
+            - row "C2 출근 무단결근 <= 1일 무단결근 허용 한도 374 16" [ref=e310]:
+              - cell "C2" [ref=e311]
+              - cell "출근" [ref=e312]:
+                - generic [ref=e313]: 출근
+              - cell "무단결근" [ref=e314]
+              - cell "<= 1일" [ref=e315]:
+                - code [ref=e316]: <= 1일
+              - cell "무단결근 허용 한도" [ref=e317]
+              - cell "374" [ref=e318]
+              - cell "16" [ref=e319]
+            - row "C3 출근 실제 근무일 > 0 최소 1일 이상 근무 372 33" [ref=e320]:
+              - cell "C3" [ref=e321]
+              - cell "출근" [ref=e322]:
+                - generic [ref=e323]: 출근
+              - cell "실제 근무일" [ref=e324]
+              - cell "> 0" [ref=e325]:
+                - code [ref=e326]: "> 0"
+              - cell "최소 1일 이상 근무" [ref=e327]
+              - cell "372" [ref=e328]
+              - cell "33" [ref=e329]
+            - row "C4 출근 최소 근무일 >= 12일 자격 요건 최소 근무일 360 45" [ref=e330]:
+              - cell "C4" [ref=e331]
+              - cell "출근" [ref=e332]:
+                - generic [ref=e333]: 출근
+              - cell "최소 근무일" [ref=e334]
+              - cell ">= 12일" [ref=e335]:
+                - code [ref=e336]: ">= 12일"
+              - cell "자격 요건 최소 근무일" [ref=e337]
+              - cell "360" [ref=e338]
+              - cell "45" [ref=e339]
+            - row "C5 AQL AQL 실패 (당월) = 0 당월 개인 AQL 실패 없음 87 19" [ref=e340]:
+              - cell "C5" [ref=e341]
+              - cell "AQL" [ref=e342]:
+                - generic [ref=e343]: AQL
+              - cell "AQL 실패 (당월)" [ref=e344]
+              - cell "= 0" [ref=e345]:
+                - code [ref=e346]: = 0
+              - cell "당월 개인 AQL 실패 없음" [ref=e347]
+              - cell "87" [ref=e348]
+              - cell "19" [ref=e349]
+            - row "C6 AQL AQL 연속 실패 3개월 연속 = NO 연속 월 AQL 실패 없음 100 0" [ref=e350]:
+              - cell "C6" [ref=e351]
+              - cell "AQL" [ref=e352]:
+                - generic [ref=e353]: AQL
+              - cell "AQL 연속 실패" [ref=e354]
+              - cell "3개월 연속 = NO" [ref=e355]:
+                - code [ref=e356]: 3개월 연속 = NO
+              - cell "연속 월 AQL 실패 없음" [ref=e357]
+              - cell "100" [ref=e358]
+              - cell "0" [ref=e359]
+            - row "C7 AQL 팀 AQL 연속 3개월 연속 = NO 팀/구역 연속 실패 없음 15 0" [ref=e360]:
+              - cell "C7" [ref=e361]
+              - cell "AQL" [ref=e362]:
+                - generic [ref=e363]: AQL
+              - cell "팀 AQL 연속" [ref=e364]
+              - cell "3개월 연속 = NO" [ref=e365]:
+                - code [ref=e366]: 3개월 연속 = NO
+              - cell "팀/구역 연속 실패 없음" [ref=e367]
+              - cell "15" [ref=e368]
+              - cell "0" [ref=e369]
+            - row "C8 AQL 구역 Reject Rate < 2% 구역 불량률 기준 이하 10 0" [ref=e370]:
+              - cell "C8" [ref=e371]
+              - cell "AQL" [ref=e372]:
+                - generic [ref=e373]: AQL
+              - cell "구역 Reject Rate" [ref=e374]
+              - cell "< 2%" [ref=e375]:
+                - code [ref=e376]: < 2%
+              - cell "구역 불량률 기준 이하" [ref=e377]
+              - cell "10" [ref=e378]
+              - cell "0" [ref=e379]
+            - row "C9 5PRS 5PRS 통과율 >= 97% 검사 통과율 기준 충족 77 23" [ref=e380]:
+              - cell "C9" [ref=e381]
+              - cell "5PRS" [ref=e382]:
+                - generic [ref=e383]: 5PRS
+              - cell "5PRS 통과율" [ref=e384]
+              - cell ">= 97%" [ref=e385]:
+                - code [ref=e386]: ">= 97%"
+              - cell "검사 통과율 기준 충족" [ref=e387]
+              - cell "77" [ref=e388]
+              - cell "23" [ref=e389]
+            - row "C10 5PRS 5PRS 검사량 >= 150 족 최소 검사량 필수 67 8" [ref=e390]:
+              - cell "C10" [ref=e391]
+              - cell "5PRS" [ref=e392]:
+                - generic [ref=e393]: 5PRS
+              - cell "5PRS 검사량" [ref=e394]
+              - cell ">= 150 족" [ref=e395]:
+                - code [ref=e396]: ">= 150 족"
+              - cell "최소 검사량 필수" [ref=e397]
+              - cell "67" [ref=e398]
+              - cell "8" [ref=e399]
+        - generic [ref=e400]:
+          - heading "결근 사유 분류" [level=4] [ref=e401]
+          - generic [ref=e403]:
+            - generic [ref=e404]:
+              - paragraph [ref=e405]: ✅ 결근율에 포함 안됨 (승인된 휴가)
+              - list [ref=e406]:
+                - listitem [ref=e407]: Sinh thường 1 con (출산휴가)
+                - listitem [ref=e408]: Phép năm (연차휴가)
+                - listitem [ref=e409]: Vắng có phép (승인된 휴가)
+                - listitem [ref=e410]: Dưỡng sức sinh thường (출산 후 요양)
+                - listitem [ref=e411]: Khám thai bình thường (산전검진)
+                - listitem [ref=e412]: Con dưới 3 tuổi bị bệnh (육아휴가)
+                - listitem [ref=e413]: AR2 - ốm ngắn ngày (병가)
+                - listitem [ref=e414]: Đi công tác (출장)
+                - listitem [ref=e415]: Nghĩa vụ quân sự (군복무)
+                - listitem [ref=e416]: Đi làm không quẹt thẻ (출퇴근 체크 누락)
+                - listitem [ref=e417]: Công nhân viên mới (신규입사 특례)
+                - listitem [ref=e418]: Nghỉ bù (대체휴무)
+            - generic [ref=e419]:
+              - paragraph [ref=e420]: ❌ 결근율에 포함됨 (무단결근)
+              - list [ref=e421]:
+                - listitem [ref=e422]:
+                  - strong [ref=e423]: AR1 - Vắng không phép
+                  - text: (무단결근)
+                - listitem [ref=e424]:
+                  - strong [ref=e425]: AR1 - Gửi thư
+                  - text: (서면통지 결근)
+              - generic [ref=e426]:
+                - strong [ref=e427]: 📢 무단결근 카운팅 규칙
+                - list [ref=e428]:
+                  - listitem [ref=e429]: AR1 카테고리만 무단결근으로 카운트
+                  - listitem [ref=e430]: 1일까지는 인센티브 지급 가능
+                  - listitem [ref=e431]: 1일 초과 시 인센티브 0원
+          - generic [ref=e432]:
+            - heading "조건 충족 기준" [level=6] [ref=e433]
+            - list [ref=e434]:
+              - listitem [ref=e435]:
+                - strong [ref=e436]: "출근율: ≥ 90%"
+              - listitem [ref=e437]:
+                - strong [ref=e438]: "무단결근: ≤ 1일 (AR1 카테고리만 해당)"
+              - listitem [ref=e439]:
+                - strong [ref=e440]: "실제 근무일: > 0일"
+              - listitem [ref=e441]:
+                - strong [ref=e442]: "최소 근무일: ≥ 12일"
+            - generic [ref=e443]:
+              - strong [ref=e444]: 📊 출근율 계산 공식
+              - list [ref=e445]:
+                - listitem [ref=e446]: 결근일 = 총 근무일 - 실제 근무일 - 승인휴가일
+                - listitem [ref=e447]: 결근율 = 결근일 / 총 근무일 × 100
+                - listitem [ref=e448]: 출근율 = 100 - 결근율 (승인휴가는 출근으로 인정)
+            - generic [ref=e449]:
+              - strong [ref=e450]: ⚠️ 당월 퇴사자 출근율 계산
+              - paragraph [ref=e451]:
+                - text: 당월 중 퇴사한 직원의 출근율은
+                - strong [ref=e452]: 출결 데이터의 실제 근무일 중 퇴사일까지의 일수
+                - text: 를 총 근무일로 사용합니다. 퇴사 후 미출근일은 결근으로 처리하지 않습니다.
+              - paragraph [ref=e453]: "예: 3월 총 근무일 22일, 3/20 퇴사 → 퇴사일 포함 근무가능일 = 17일, 퇴사 후 5일은 결근 미처리"
+        - generic [ref=e454]:
+          - heading "TYPE-1 누진 인센티브 표 (VND)" [level=4] [ref=e455]
+          - table [ref=e457]:
+            - rowgroup [ref=e458]:
+              - row "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15" [ref=e459]:
+                - columnheader "1" [ref=e460]
+                - columnheader "2" [ref=e461]
+                - columnheader "3" [ref=e462]
+                - columnheader "4" [ref=e463]
+                - columnheader "5" [ref=e464]
+                - columnheader "6" [ref=e465]
+                - columnheader "7" [ref=e466]
+                - columnheader "8" [ref=e467]
+                - columnheader "9" [ref=e468]
+                - columnheader "10" [ref=e469]
+                - columnheader "11" [ref=e470]
+                - columnheader "12" [ref=e471]
+                - columnheader "13" [ref=e472]
+                - columnheader "14" [ref=e473]
+                - columnheader "15" [ref=e474]
+            - rowgroup [ref=e475]:
+              - row "150.000 250.000 300.000 350.000 400.000 450.000 500.000 650.000 750.000 850.000 950.000 1.000.000 1.000.000 1.000.000 1.000.000" [ref=e476]:
+                - cell "150.000" [ref=e477]
+                - cell "250.000" [ref=e478]
+                - cell "300.000" [ref=e479]
+                - cell "350.000" [ref=e480]
+                - cell "400.000" [ref=e481]
+                - cell "450.000" [ref=e482]
+                - cell "500.000" [ref=e483]
+                - cell "650.000" [ref=e484]
+                - cell "750.000" [ref=e485]
+                - cell "850.000" [ref=e486]
+                - cell "950.000" [ref=e487]
+                - cell "1.000.000" [ref=e488]
+                - cell "1.000.000" [ref=e489]
+                - cell "1.000.000" [ref=e490]
+                - cell "1.000.000" [ref=e491]
+          - paragraph [ref=e492]: "* 개월 = 조건 100% 충족 연속 개월수. 1회라도 미충족 시 0으로 리셋."
+        - generic [ref=e493]:
+          - heading "TYPE별 조건 적용" [level=4] [ref=e494]
+          - table [ref=e496]:
+            - rowgroup [ref=e497]:
+              - row "TYPE 적용 조건 인센티브 방식" [ref=e498]:
+                - columnheader "TYPE" [ref=e499]
+                - columnheader "적용 조건" [ref=e500]
+                - columnheader "인센티브 방식" [ref=e501]
+            - rowgroup [ref=e502]:
+              - row "TYPE-1 C1~C10 (10개 조건 전체) 누진표 (1~15개월)" [ref=e503]:
+                - cell "TYPE-1" [ref=e504]
+                - cell "C1~C10 (10개 조건 전체)" [ref=e505]
+                - cell "누진표 (1~15개월)" [ref=e506]
+              - row "TYPE-2 C1~C4 (출근 조건만) TYPE-1 직급 평균 기준" [ref=e507]:
+                - cell "TYPE-2" [ref=e508]
+                - cell "C1~C4 (출근 조건만)" [ref=e509]
+                - cell "TYPE-1 직급 평균 기준" [ref=e510]
+              - row "TYPE-3 없음 (정책 제외) 0 VND (미대상)" [ref=e511]:
+                - cell "TYPE-3" [ref=e512]
+                - cell "없음 (정책 제외)" [ref=e513]
+                - cell "0 VND (미대상)" [ref=e514]
+          - paragraph [ref=e515]: "* RQC Assembly Inspector (A1B): C10 면제 — 공정 점검 및 보고 업무 특성상 검사량 조건 적용 제외"
+    - generic [ref=e516]:
+      - heading "TYPE별 인센티브 계산 방법" [level=3] [ref=e517]
+      - generic [ref=e518]:
+        - generic [ref=e519]:
+          - strong [ref=e520]: "📊 TYPE-2 TYPE-2:"
+          - text: TYPE-2 직급은 해당하는 TYPE-1 직급의 수령자 평균 인센티브를 기준으로 계산됩니다.
+        - generic [ref=e521]:
+          - strong [ref=e522]: "✅ 모든 평균 계산:"
+          - text: 모든 평균 계산은 수령자만 대상으로 합니다. (0 VND 제외)
+          - text: "예: LINE LEADER 10명 중 7명만 인센티브 수령 시, 7명의 평균으로 계산 (10명 전체 평균 아님)"
+        - table [ref=e524]:
+          - rowgroup [ref=e525]:
+            - row "# TYPE-2 직급 참조 TYPE-1 직급 계산 방법 현재 평균" [ref=e526]:
+              - columnheader "#" [ref=e527]
+              - columnheader "TYPE-2 직급" [ref=e528]
+              - columnheader "참조 TYPE-1 직급" [ref=e529]
+              - columnheader "계산 방법" [ref=e530]
+              - columnheader "현재 평균" [ref=e531]
+          - rowgroup [ref=e532]:
+            - row "1 MANAGER TYPE-1 LINE LEADER LINE LEADER 수령자 평균 × 3.5 1.254.757 VND" [ref=e533]:
+              - cell "1" [ref=e534]
+              - cell "MANAGER" [ref=e535]
+              - cell "TYPE-1 LINE LEADER" [ref=e536]
+              - cell "LINE LEADER 수령자 평균 × 3.5" [ref=e537]
+              - cell "1.254.757 VND" [ref=e538]
+            - row "2 (V) SUPERVISOR TYPE-1 LINE LEADER LINE LEADER 수령자 평균 × 2.5 896.255 VND" [ref=e539]:
+              - cell "2" [ref=e540]
+              - cell "(V) SUPERVISOR" [ref=e541]
+              - cell "TYPE-1 LINE LEADER" [ref=e542]
+              - cell "LINE LEADER 수령자 평균 × 2.5" [ref=e543]
+              - cell "896.255 VND" [ref=e544]
+            - row "3 A.MANAGER TYPE-1 LINE LEADER LINE LEADER 수령자 평균 × 3 1.075.506 VND" [ref=e545]:
+              - cell "3" [ref=e546]
+              - cell "A.MANAGER" [ref=e547]
+              - cell "TYPE-1 LINE LEADER" [ref=e548]
+              - cell "LINE LEADER 수령자 평균 × 3" [ref=e549]
+              - cell "1.075.506 VND" [ref=e550]
+            - row "4 GROUP LEADER TYPE-1 LINE LEADER LINE LEADER 수령자 평균 × 2 717.004 VND" [ref=e551]:
+              - cell "4" [ref=e552]
+              - cell "GROUP LEADER" [ref=e553]
+              - cell "TYPE-1 LINE LEADER" [ref=e554]
+              - cell "LINE LEADER 수령자 평균 × 2" [ref=e555]
+              - cell "717.004 VND" [ref=e556]
+            - row "5 LINE LEADER TYPE-1 ASSEMBLY INSPECTOR 부하 INSPECTOR 인센티브 합계 × 12% × 수급비율 358.502 VND" [ref=e557]:
+              - cell "5" [ref=e558]
+              - cell "LINE LEADER" [ref=e559]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e560]
+              - cell "부하 INSPECTOR 인센티브 합계 × 12% × 수급비율" [ref=e561]
+              - cell "358.502 VND" [ref=e562]
+            - row "6 AQL INSPECTOR TYPE-1 ASSEMBLY INSPECTOR ASSEMBLY INSPECTOR 수령자 평균 462.319 VND" [ref=e563]:
+              - cell "6" [ref=e564]
+              - cell "AQL INSPECTOR" [ref=e565]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e566]
+              - cell "ASSEMBLY INSPECTOR 수령자 평균" [ref=e567]
+              - cell "462.319 VND" [ref=e568]
+            - row "7 ASSEMBLY INSPECTOR TYPE-1 ASSEMBLY INSPECTOR ASSEMBLY INSPECTOR 수령자 평균 462.319 VND" [ref=e569]:
+              - cell "7" [ref=e570]
+              - cell "ASSEMBLY INSPECTOR" [ref=e571]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e572]
+              - cell "ASSEMBLY INSPECTOR 수령자 평균" [ref=e573]
+              - cell "462.319 VND" [ref=e574]
+            - row "8 STITCHING INSPECTOR TYPE-1 ASSEMBLY INSPECTOR ASSEMBLY INSPECTOR 수령자 평균 462.319 VND" [ref=e575]:
+              - cell "8" [ref=e576]
+              - cell "STITCHING INSPECTOR" [ref=e577]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e578]
+              - cell "ASSEMBLY INSPECTOR 수령자 평균" [ref=e579]
+              - cell "462.319 VND" [ref=e580]
+            - row "9 BOTTOM INSPECTOR TYPE-1 ASSEMBLY INSPECTOR ASSEMBLY INSPECTOR 수령자 평균 462.319 VND" [ref=e581]:
+              - cell "9" [ref=e582]
+              - cell "BOTTOM INSPECTOR" [ref=e583]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e584]
+              - cell "ASSEMBLY INSPECTOR 수령자 평균" [ref=e585]
+              - cell "462.319 VND" [ref=e586]
+            - row "10 CUTTING INSPECTOR TYPE-1 ASSEMBLY INSPECTOR ASSEMBLY INSPECTOR 수령자 평균 462.319 VND" [ref=e587]:
+              - cell "10" [ref=e588]
+              - cell "CUTTING INSPECTOR" [ref=e589]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e590]
+              - cell "ASSEMBLY INSPECTOR 수령자 평균" [ref=e591]
+              - cell "462.319 VND" [ref=e592]
+            - row "11 MTL INSPECTOR TYPE-1 ASSEMBLY INSPECTOR ASSEMBLY INSPECTOR 수령자 평균 462.319 VND" [ref=e593]:
+              - cell "11" [ref=e594]
+              - cell "MTL INSPECTOR" [ref=e595]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e596]
+              - cell "ASSEMBLY INSPECTOR 수령자 평균" [ref=e597]
+              - cell "462.319 VND" [ref=e598]
+            - row "12 OCPT STAFF TYPE-1 ASSEMBLY INSPECTOR ASSEMBLY INSPECTOR 수령자 평균 462.319 VND" [ref=e599]:
+              - cell "12" [ref=e600]
+              - cell "OCPT STAFF" [ref=e601]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e602]
+              - cell "ASSEMBLY INSPECTOR 수령자 평균" [ref=e603]
+              - cell "462.319 VND" [ref=e604]
+            - row "13 OSC INSPECTOR TYPE-1 ASSEMBLY INSPECTOR ASSEMBLY INSPECTOR 수령자 평균 462.319 VND" [ref=e605]:
+              - cell "13" [ref=e606]
+              - cell "OSC INSPECTOR" [ref=e607]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e608]
+              - cell "ASSEMBLY INSPECTOR 수령자 평균" [ref=e609]
+              - cell "462.319 VND" [ref=e610]
+            - row "14 QA TEAM (QA3B) TYPE-1 ASSEMBLY INSPECTOR ASSEMBLY INSPECTOR 수령자 평균 462.319 VND" [ref=e611]:
+              - cell "14" [ref=e612]
+              - cell "QA TEAM (QA3B)" [ref=e613]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e614]
+              - cell "ASSEMBLY INSPECTOR 수령자 평균" [ref=e615]
+              - cell "462.319 VND" [ref=e616]
+            - row "15 QA TEAM (QA3A) TYPE-1 GROUP LEADER GROUP LEADER 수령자 평균 765.414 VND" [ref=e617]:
+              - cell "15" [ref=e618]
+              - cell "QA TEAM (QA3A)" [ref=e619]
+              - cell "TYPE-1 GROUP LEADER" [ref=e620]
+              - cell "GROUP LEADER 수령자 평균" [ref=e621]
+              - cell "765.414 VND" [ref=e622]
+            - row "16 RQC TYPE-1 ASSEMBLY INSPECTOR ASSEMBLY INSPECTOR 수령자 평균 462.319 VND" [ref=e623]:
+              - cell "16" [ref=e624]
+              - cell "RQC" [ref=e625]
+              - cell "TYPE-1 ASSEMBLY INSPECTOR" [ref=e626]
+              - cell "ASSEMBLY INSPECTOR 수령자 평균" [ref=e627]
+              - cell "462.319 VND" [ref=e628]
+        - generic [ref=e629]:
+          - strong [ref=e630]: "⚠️ GROUP LEADER:"
+          - text: "TYPE-2 GROUP LEADER: 기본 = TYPE-1 LINE LEADER 수령자 평균 × 2. Fallback = TYPE-2 LINE LEADER 수령자 평균 × 2."
+        - generic [ref=e631]:
+          - strong [ref=e632]: "📋 QA TEAM:"
+          - text: "QA TEAM: QA3B = ASSEMBLY INSPECTOR 수령자 평균, QA3A = TYPE-1 LINE LEADER 수령자 평균 × 2 (GROUP LEADER와 동일)"
+        - generic [ref=e633]:
+          - strong [ref=e634]: ✅
+          - text: TYPE-2는 출근 조건(1-4번)만 충족하면 인센티브 지급
+    - generic [ref=e636]:
+      - heading "🔒 퇴사자 인센티브 자동 확정 (Freeze)" [level=3] [ref=e637]
+      - generic [ref=e638]:
+        - paragraph [ref=e639]: 당월 중 퇴사한 직원의 인센티브 금액은 퇴사일 기준으로 자동 확정(Freeze)됩니다.
+        - paragraph [ref=e640]: 확정된 금액은 이후 파이프라인 재실행에도 변동되지 않으며, 대시보드와 모달에서 항상 동일한 금액으로 표시됩니다.
+        - paragraph [ref=e641]: 인센티브 조건을 충족하지 못한 퇴사자는 0 VND으로 확정됩니다.
+      - generic [ref=e642]:
+        - generic [ref=e643]:
+          - generic [ref=e644]: "46"
+          - generic [ref=e645]: 당월 퇴사자 (Frozen)
+        - generic [ref=e646]:
+          - generic [ref=e647]: "3"
+          - generic [ref=e648]: 인센티브 수령 퇴사자
+        - generic [ref=e649]:
+          - generic [ref=e650]: "43"
+          - generic [ref=e651]: 미수령 퇴사자
+      - table [ref=e653]:
+        - rowgroup [ref=e654]:
+          - row "사번 이름 Building 확정 금액 확정일 (퇴사일)" [ref=e655]:
+            - columnheader "사번" [ref=e656]
+            - columnheader "이름" [ref=e657]
+            - columnheader "Building" [ref=e658]
+            - columnheader "확정 금액" [ref=e659]
+            - columnheader "확정일 (퇴사일)" [ref=e660]
+        - rowgroup [ref=e661]:
+          - row "624070250 NGUYỄN THÚY VY MTL WH 462.318 VND 2026-03-26" [ref=e662]:
+            - cell "624070250" [ref=e663]
+            - cell "NGUYỄN THÚY VY" [ref=e664]
+            - cell "MTL WH" [ref=e665]
+            - cell "462.318 VND" [ref=e666]
+            - cell "2026-03-26" [ref=e667]
+          - row "619100381 TRẦN THỊ TỐ QUYÊN C 358.501 VND 2026-03-31" [ref=e668]:
+            - cell "619100381" [ref=e669]
+            - cell "TRẦN THỊ TỐ QUYÊN" [ref=e670]
+            - cell "C" [ref=e671]
+            - cell "358.501 VND" [ref=e672]
+            - cell "2026-03-31" [ref=e673]
+          - row "624110015 TRƯƠNG THỦY TIÊN B 462.318 VND 2026-03-20" [ref=e674]:
+            - cell "624110015" [ref=e675]
+            - cell "TRƯƠNG THỦY TIÊN" [ref=e676]
+            - cell "B" [ref=e677]
+            - cell "462.318 VND" [ref=e678]
+            - cell "2026-03-20" [ref=e679]
+    - generic [ref=e681]:
+      - heading "⚠️ 퇴사자 인센티브 처리 안내" [level=3] [ref=e682]
+      - list [ref=e683]:
+        - listitem [ref=e684]: 당월 중 퇴사한 직원의 인센티브는 퇴사일 기준으로 조건을 평가합니다.
+        - listitem [ref=e685]: 퇴사일에 인센티브 조건을 충족한 경우, 해당 인센티브 금액은 퇴사 처리 시 총무팀에 별도 지급 통보됩니다.
+        - listitem [ref=e686]: 퇴사자의 인센티브 금액은 퇴사일 기준으로 자동 확정(Freeze)되며, 이후 파이프라인 재실행에도 변동되지 않습니다.
+        - listitem [ref=e687]: 퇴사자의 확정된 인센티브 금액은 개인별 상세 모달에서 🔒 배지와 함께 확인할 수 있습니다.
+        - listitem [ref=e688]: 확정된 금액은 대시보드, 모달, 엑셀 다운로드에서 항상 동일한 금액으로 표시됩니다.
+    - generic [ref=e689]:
+      - heading "자주 묻는 질문 (FAQ)" [level=3] [ref=e690]
+      - generic [ref=e691]:
+        - generic [ref=e692]:
+          - generic [ref=e693] [cursor=pointer]:
+            - generic [ref=e694]: Q1. 왜 나는 인센티브를 못 받았나요?
+            - generic [ref=e695]: ▼
+          - paragraph [ref=e696]: "인센티브를 받으려면 해당 TYPE에 적용되는 모든 조건을 100% 충족해야 합니다. 다음과 같은 이유로 미수령될 수 있습니다: • 최소 근무일 12일 미충족 • 출근율 90% 미만 • 무단결근 1일 초과 • 당월 AQL 실패 발생 • 5PRS 통과율 97% 미만"
+        - generic [ref=e697]:
+          - generic [ref=e698] [cursor=pointer]:
+            - generic [ref=e699]: Q2. 무단결근이 며칠까지 허용되나요?
+            - generic [ref=e700]: ▼
+          - paragraph [ref=e701]: 무단결근은 월 1일 이하여야 합니다. 1일을 초과하면 인센티브 지급 대상에서 제외됩니다.
+        - generic [ref=e702]:
+          - generic [ref=e703] [cursor=pointer]:
+            - generic [ref=e704]: Q3. TYPE-2 직급의 인센티브는 어떻게 계산되나요?
+            - generic [ref=e705]: ▼
+          - paragraph [ref=e706]: "TYPE-2 직급은 해당하는 TYPE-1 직급의 수령자 평균 인센티브를 기준으로 합니다. 예: LINE LEADER(TYPE-2) = TYPE-1 LINE LEADER 수령자 평균, GROUP LEADER(TYPE-2) = TYPE-1 LINE LEADER 수령자 평균 × 2"
+        - generic [ref=e707]:
+          - generic [ref=e708] [cursor=pointer]:
+            - generic [ref=e709]: Q4. ASSEMBLY INSPECTOR의 연속 근무 개월은 어떻게 계산되나요?
+            - generic [ref=e710]: ▼
+          - paragraph [ref=e711]: 매월 모든 조건을 100% 충족하면 연속 개월이 1씩 증가합니다 (최대 15개월). 한 달이라도 조건 미충족 시 0으로 리셋됩니다. 연속 개월에 따라 Progressive Table의 인센티브 금액이 적용됩니다.
+        - generic [ref=e712]:
+          - generic [ref=e713] [cursor=pointer]:
+            - generic [ref=e714]: Q5. AQL 실패가 무엇이고 어떤 영향을 미치나요?
+            - generic [ref=e715]: ▼
+          - paragraph [ref=e716]: AQL(Acceptable Quality Level) 실패는 품질 검사에서 기준 미달을 의미합니다. 당월 AQL 실패가 1건이라도 있으면 조건 5번 미충족으로 인센티브를 받을 수 없습니다. 또한 3개월 연속 AQL 실패 시 조건 6번도 미충족됩니다.
+        - generic [ref=e717]:
+          - generic [ref=e718] [cursor=pointer]:
+            - generic [ref=e719]: Q6. 5PRS 검사량이 부족하면 어떻게 되나요?
+            - generic [ref=e720]: ▼
+          - paragraph [ref=e721]: 5PRS 검사량이 150족 미만이면 조건 10번 미충족으로 인센티브를 받을 수 없습니다. 또한 5PRS 통과율이 97% 미만이면 조건 9번도 미충족됩니다.
+        - generic [ref=e722]:
+          - generic [ref=e723] [cursor=pointer]:
+            - generic [ref=e724]: Q7. 출산휴가나 병가 중에도 인센티브를 받을 수 있나요?
+            - generic [ref=e725]: ▼
+          - paragraph [ref=e726]: 승인된 휴가(출산휴가, 병가 등)는 출근으로 인정됩니다. 다만 실제 근무일이 12일 미만이면 조건 4번 미충족으로 인센티브를 받을 수 없습니다.
+        - generic [ref=e727]:
+          - generic [ref=e728] [cursor=pointer]:
+            - generic [ref=e729]: Q8. 전월 인센티브와 차이가 나는 이유는 무엇인가요?
+            - generic [ref=e730]: ▼
+          - paragraph [ref=e731]: "여러 이유가 있을 수 있습니다: • TYPE-1: 연속 개월 증가/리셋으로 인센티브 금액 변동 • TYPE-2: 참조하는 TYPE-1 평균값 변동 • 임계값 변경 (관리자 정책 업데이트) • 출근율, AQL, 5PRS 결과 변동"
+        - generic [ref=e732]:
+          - generic [ref=e733] [cursor=pointer]:
+            - generic [ref=e734]: Q9. TYPE-3에서 TYPE-2로 승진하면 인센티브가 어떻게 변하나요?
+            - generic [ref=e735]: ▼
+          - paragraph [ref=e736]: TYPE-3 (정책 제외)에서 TYPE-2로 승진하면 출근 조건(1-4번)만 충족하면 인센티브를 받을 수 있습니다. TYPE-2 인센티브 금액은 해당하는 TYPE-1 직급의 수령자 평균으로 결정됩니다.
+        - generic [ref=e737]:
+          - generic [ref=e738] [cursor=pointer]:
+            - generic [ref=e739]: Q10. 조건을 모두 충족했는데도 인센티브가 0인 이유는 무엇인가요?
+            - generic [ref=e740]: ▼
+          - paragraph [ref=e741]: "가능한 이유: • TYPE-3 직급 (정책 제외 대상) • 해당 월 중도 입사/퇴사 • TYPE-2인데 참조 TYPE-1 수령자가 없어 평균 0 • 시스템 데이터 반영 지연 (관리자에게 문의)"
+        - generic [ref=e742]:
+          - generic [ref=e743] [cursor=pointer]:
+            - generic [ref=e744]: Q11. TYPE-2 GROUP LEADER가 인센티브를 못 받는 경우가 있나요?
+            - generic [ref=e745]: ▼
+          - paragraph [ref=e746]: 네, 가능합니다. 출근 조건(1-4번) 미충족 시 인센티브를 받을 수 없습니다. 또한 참조하는 TYPE-1 LINE LEADER 수령자가 없으면 평균이 0이 되어 인센티브가 0 VND가 됩니다.
+  - text:  −  −     −   −  −    −  −           %                  
+  - contentinfo [ref=e81]: "HWK QIP Incentive Dashboard v10.0 | Data source: Firestore | 2026. 4. 3. 오후 1:37:33"

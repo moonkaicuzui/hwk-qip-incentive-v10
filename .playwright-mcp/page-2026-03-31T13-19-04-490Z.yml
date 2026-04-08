@@ -1,0 +1,141 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: Q
+        - generic [ref=e6]:
+          - generic [ref=e7]: System Feedback
+          - generic [ref=e8]: Issue Report & Improvement Request
+      - generic [ref=e9]:
+        - link " Dashboard" [ref=e10] [cursor=pointer]:
+          - /url: selector.html
+          - generic [ref=e11]: 
+          - text: Dashboard
+        - generic [ref=e12]: ksmoon@hsvina.com
+        - button "" [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: 
+  - generic [ref=e15]:
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: "3"
+        - generic [ref=e19]: Total
+      - generic [ref=e20]:
+        - generic [ref=e21]: "0"
+        - generic [ref=e22]: Submitted
+      - generic [ref=e23]:
+        - generic [ref=e24]: "0"
+        - generic [ref=e25]: Reviewing
+      - generic [ref=e26]:
+        - generic [ref=e27]: "0"
+        - generic [ref=e28]: In Progress
+      - generic [ref=e29]:
+        - generic [ref=e30]: "3"
+        - generic [ref=e31]: Completed
+      - generic [ref=e32]:
+        - generic [ref=e33]: "0"
+        - generic [ref=e34]: Rejected
+    - generic [ref=e35]:
+      - button " Feedback List" [ref=e36] [cursor=pointer]:
+        - generic [ref=e37]: 
+        - text: Feedback List
+      - button " New Request" [ref=e38] [cursor=pointer]:
+        - generic [ref=e39]: 
+        - text: New Request
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - button "All" [ref=e42] [cursor=pointer]
+        - button "Submitted" [ref=e43] [cursor=pointer]
+        - button "Reviewing" [ref=e44] [cursor=pointer]
+        - button "In Progress" [ref=e45] [cursor=pointer]
+        - button "Completed" [ref=e46] [cursor=pointer]
+        - button "Rejected" [ref=e47] [cursor=pointer]
+      - generic [ref=e48]:
+        - generic [ref=e52] [cursor=pointer]:
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - text: Request to Correct C6 & C7 Logic from 2 to 3 consective months
+              - generic [ref=e55]:
+                - generic [ref=e56]: 
+                - text: "3"
+            - generic [ref=e57]:
+              - generic [ref=e58]: HIGH
+              - generic [ref=e59]: BUG
+              - generic [ref=e60]: COMPLETED
+          - generic [ref=e61]: Dear sir, According to the policy, the fail condition should be triggered after 3 consecutive months. (2026 no change condition 6 & 7) However, the sy...
+          - generic [ref=e62]:
+            - generic [ref=e63]: 
+            - text: huynhnhurgqa04@hsvina.com ·
+            - generic [ref=e64]: 
+            - text: 2026-03-31 16:39
+        - generic [ref=e65] [cursor=pointer]:
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - text: Incentive February System Data Not Updating
+              - generic [ref=e68]:
+                - generic [ref=e69]: 
+                - text: "2"
+            - generic [ref=e70]:
+              - generic [ref=e71]: CRITICAL
+              - generic [ref=e72]: BUG
+              - generic [ref=e73]: COMPLETED
+          - generic [ref=e74]: Dear Sir, I would like to report an issue regarding the data update on the Incentive February System. Currently, I uploaded the updated basic_manpower...
+          - generic [ref=e75]:
+            - generic [ref=e76]: 
+            - text: huynhnhurgqa04@hsvina.com ·
+            - generic [ref=e77]: 
+            - text: 2026-03-11 18:07
+        - generic [ref=e78] [cursor=pointer]:
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - text: Feedback page missing previously reported issues
+              - generic [ref=e81]:
+                - generic [ref=e82]: 
+                - text: "1"
+            - generic [ref=e83]:
+              - generic [ref=e84]: HIGH
+              - generic [ref=e85]: BUG
+              - generic [ref=e86]: COMPLETED
+          - generic [ref=e87]: Dear sir, I found an issue on the Feedback page. The issues that were previously reported are now missing and cannot be seen in the list. Could you ...
+          - generic [ref=e88]:
+            - generic [ref=e89]: 
+            - text: ksmoon@hsvina.com ·
+            - generic [ref=e90]: 
+            - text: 2026-03-10 09:01
+    - text:     
+  - dialog [active] [ref=e91]:
+    - generic [ref=e92]:
+      - generic [ref=e93]:
+        - heading "Incentive February System Data Not Updating" [level=5] [ref=e94]
+        - button [ref=e95] [cursor=pointer]
+      - generic [ref=e96]:
+        - generic [ref=e97]:
+          - generic [ref=e98]: BUG
+          - generic [ref=e99]: CRITICAL
+          - generic [ref=e100]: COMPLETED
+        - generic [ref=e101]:
+          - generic [ref=e102]:
+            - generic [ref=e103]: 
+            - text: huynhnhurgqa04@hsvina.com · 2026-03-11 18:07
+          - generic [ref=e104]:
+            - generic [ref=e105]: 
+            - text: "Notification: ksmoon@hsvina.com"
+          - generic [ref=e106]: Dear Sir, I would like to report an issue regarding the data update on the Incentive February System. Currently, I uploaded the updated basic_manpower_data.csv file of February at 3:48 PM. After that, I waited for more than 30 minutes for the system to process and update the data. However, up to now, lthe system still has not reflected the updated information from the fie I uploaded to Google Drive. Please kindly help me to review and fix issue. Thanks Sir.
+        - heading " Attachments (2)" [level=6] [ref=e107]:
+          - generic [ref=e108]: 
+          - text: Attachments (2)
+        - generic [ref=e109]:
+          - generic "Click to enlarge" [ref=e110] [cursor=pointer]:
+            - img "Screenshot 2026-03-11 174550.png" [ref=e111]
+          - generic "Click to enlarge" [ref=e112] [cursor=pointer]:
+            - img "Screenshot 2026-03-11 175041.png" [ref=e113]
+        - heading " Timeline" [level=6] [ref=e114]:
+          - generic [ref=e115]: 
+          - text: Timeline
+        - generic [ref=e118]:
+          - generic [ref=e119]: Submitted by huynhnhurgqa04@hsvina.com
+          - generic [ref=e120]: 2026-03-11 18:07
+      - generic [ref=e121]:
+        - button " Reopen" [ref=e122] [cursor=pointer]:
+          - generic [ref=e123]: 
+          - text: Reopen
+        - button "Close" [ref=e124] [cursor=pointer]

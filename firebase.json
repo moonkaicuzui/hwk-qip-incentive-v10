@@ -1,7 +1,13 @@
 {
   "hosting": {
     "public": "web",
-    "ignore": ["firebase.json", ".firebaserc", "*.md", "*.py", "*.pyc", "__pycache__"]
+    "ignore": ["firebase.json", ".firebaserc", "*.md", "*.py", "*.pyc", "__pycache__"],
+    "predeploy": [
+      "node /Users/ksmoon/Coding/quality-os/scripts/maintenance-toggle.mjs on INCENTIVE \"배포 중...\""
+    ],
+    "postdeploy": [
+      "node /Users/ksmoon/Coding/quality-os/scripts/maintenance-toggle.mjs off INCENTIVE"
+    ]
   },
   "firestore": {
     "rules": "firestore.rules"

@@ -1,0 +1,244 @@
+- generic [active] [ref=e1]:
+  - text: 
+  - banner [ref=e26]:
+    - generic [ref=e27]:
+      - heading "HWK QIP Incentive Dashboard" [level=1] [ref=e28]
+      - generic [ref=e29]:
+        - text: "March 2026 | 최종 업데이트: 2026. 4. 3. 오후 1:16:51"
+        - 'generic "데이터 동기화: 19분 전 | 다음 자동 동기화: 11분 후" [ref=e82] [cursor=pointer]':
+          - generic [ref=e83]: 🟢 최신 데이터
+          - generic [ref=e84]: 19분 전
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - button "KO" [ref=e33] [cursor=pointer]
+        - button "EN" [ref=e34] [cursor=pointer]
+        - button "VN" [ref=e35] [cursor=pointer]
+      - generic [ref=e36]:
+        - button "📋" [ref=e37] [cursor=pointer]
+        - button " 내 인센티브" [ref=e38] [cursor=pointer]:
+          - generic [ref=e39]: 
+          - text: 내 인센티브
+        - button " Excel" [ref=e40] [cursor=pointer]:
+          - generic [ref=e41]: 
+          - text: Excel
+        - button "📅 📋 최종 보고서" [ref=e85] [cursor=pointer]
+      - generic [ref=e43]:
+        - link "← 월 선택" [ref=e86] [cursor=pointer]:
+          - /url: selector.html
+        - generic [ref=e87]: ksmoon@hsvina.com
+        - button " 로그아웃" [ref=e46] [cursor=pointer]:
+          - generic [ref=e47]: 
+          - text: 로그아웃
+  - tablist [ref=e48]:
+    - tab "요약" [selected] [ref=e49] [cursor=pointer]
+    - tab "직급별 상세" [ref=e50] [cursor=pointer]
+    - tab "개인별 상세" [ref=e51] [cursor=pointer]
+    - tab "인센티브 기준" [ref=e52] [cursor=pointer]
+    - tab "조직도" [ref=e53] [cursor=pointer]
+    - tab "팀 관리" [ref=e54] [cursor=pointer]
+    - tab "요약 및 시스템 검증" [ref=e55] [cursor=pointer]
+    - tab " 🔍 개인 출결 조회" [ref=e88] [cursor=pointer]:
+      - generic [ref=e57]: 
+      - text: 🔍 개인 출결 조회
+  - tabpanel [ref=e58]:
+    - generic [ref=e59]:
+      - generic [ref=e60]:
+        - generic [ref=e61]: 👤
+        - generic [ref=e62]: 전체 직원
+        - generic [ref=e63]: "448"
+        - generic [ref=e89]: "수령/전체: 337/448"
+      - generic [ref=e64]:
+        - generic [ref=e65]: 👥
+        - generic [ref=e66]: 수령 직원
+        - generic [ref=e67]: "337"
+      - generic [ref=e68]:
+        - generic [ref=e69]: 📊
+        - generic [ref=e70]: 지급률
+        - generic [ref=e71]: 75.2%
+      - generic [ref=e73]:
+        - generic [ref=e74]: 💰
+        - generic [ref=e75]: 총 지급액
+        - generic [ref=e76]: 176.667.702 VND
+    - heading "전월 대비 인센티브 분석" [level=3] [ref=e92]
+    - generic [ref=e77]:
+      - heading "TYPE별 현황" [level=3] [ref=e78]
+      - table [ref=e102]:
+        - rowgroup [ref=e103]:
+          - row "TYPE 전체 인원 수령 인원 지급률 (%) 총 지급액 (VND) 평균(수령자) 평균(전체)" [ref=e104]:
+            - columnheader "TYPE" [ref=e105]
+            - columnheader "전체 인원" [ref=e106]
+            - columnheader "수령 인원" [ref=e107]
+            - columnheader "지급률 (%)" [ref=e108]
+            - columnheader "총 지급액 (VND)" [ref=e109]
+            - columnheader "평균(수령자)" [ref=e110]
+            - columnheader "평균(전체)" [ref=e111]
+        - rowgroup [ref=e112]:
+          - row "TYPE-1 132 100 75.8% 61.788.049 617.880 468.091" [ref=e113]:
+            - cell "TYPE-1" [ref=e114]
+            - cell "132" [ref=e115]
+            - cell "100" [ref=e116]
+            - cell "75.8%" [ref=e117]
+            - cell "61.788.049" [ref=e118]
+            - cell "617.880" [ref=e119]
+            - cell "468.091" [ref=e120]
+          - row "TYPE-2 273 237 86.8% 114.879.653 484.724 420.805" [ref=e121]:
+            - cell "TYPE-2" [ref=e122]
+            - cell "273" [ref=e123]
+            - cell "237" [ref=e124]
+            - cell "86.8%" [ref=e125]
+            - cell "114.879.653" [ref=e126]
+            - cell "484.724" [ref=e127]
+            - cell "420.805" [ref=e128]
+          - row "TYPE-3 43 0 0.0% 0 0 0" [ref=e129]:
+            - cell "TYPE-3" [ref=e130]
+            - cell "43" [ref=e131]
+            - cell "0" [ref=e132]
+            - cell "0.0%" [ref=e133]
+            - cell "0" [ref=e134]
+            - cell "0" [ref=e135]
+            - cell "0" [ref=e136]
+          - row "전체 인원 448 337 75.2% 176.667.702 524.237 394.348" [ref=e137]:
+            - cell "전체 인원" [ref=e138]
+            - cell "448" [ref=e139]
+            - cell "337" [ref=e140]
+            - cell "75.2%" [ref=e141]
+            - cell "176.667.702" [ref=e142]
+            - cell "524.237" [ref=e143]
+            - cell "394.348" [ref=e144]
+    - generic [ref=e79]:
+      - heading "조건별 충족 현황" [level=3] [ref=e80]
+      - table [ref=e146]:
+        - rowgroup [ref=e147]:
+          - row "조건 PASS FAIL N/A 충족률" [ref=e148]:
+            - columnheader "조건" [ref=e149]
+            - columnheader "PASS" [ref=e150]
+            - columnheader "FAIL" [ref=e151]
+            - columnheader "N/A" [ref=e152]
+            - columnheader "충족률" [ref=e153]
+        - rowgroup [ref=e154]:
+          - 'row "C1: 출근율 378 20 50 PASS: 378 FAIL: 20 N/A: 50 95.0%" [ref=e155]':
+            - 'cell "C1: 출근율" [ref=e156]'
+            - cell "378" [ref=e157]
+            - cell "20" [ref=e158]
+            - cell "50" [ref=e159]
+            - 'cell "PASS: 378 FAIL: 20 N/A: 50 95.0%" [ref=e160]':
+              - generic [ref=e161]:
+                - generic [ref=e162]:
+                  - 'generic "PASS: 378" [ref=e163]'
+                  - 'generic "FAIL: 20" [ref=e164]'
+                  - 'generic "N/A: 50" [ref=e165]'
+                - generic [ref=e166]: 95.0%
+          - 'row "C2: 무단결근 374 16 58 PASS: 374 FAIL: 16 N/A: 58 95.9%" [ref=e167]':
+            - 'cell "C2: 무단결근" [ref=e168]'
+            - cell "374" [ref=e169]
+            - cell "16" [ref=e170]
+            - cell "58" [ref=e171]
+            - 'cell "PASS: 374 FAIL: 16 N/A: 58 95.9%" [ref=e172]':
+              - generic [ref=e173]:
+                - generic [ref=e174]:
+                  - 'generic "PASS: 374" [ref=e175]'
+                  - 'generic "FAIL: 16" [ref=e176]'
+                  - 'generic "N/A: 58" [ref=e177]'
+                - generic [ref=e178]: 95.9%
+          - 'row "C3: 실제 근무일 372 33 43 PASS: 372 FAIL: 33 N/A: 43 91.9%" [ref=e179]':
+            - 'cell "C3: 실제 근무일" [ref=e180]'
+            - cell "372" [ref=e181]
+            - cell "33" [ref=e182]
+            - cell "43" [ref=e183]
+            - 'cell "PASS: 372 FAIL: 33 N/A: 43 91.9%" [ref=e184]':
+              - generic [ref=e185]:
+                - generic [ref=e186]:
+                  - 'generic "PASS: 372" [ref=e187]'
+                  - 'generic "FAIL: 33" [ref=e188]'
+                  - 'generic "N/A: 43" [ref=e189]'
+                - generic [ref=e190]: 91.9%
+          - 'row "C4: 최소 근무일 360 45 43 PASS: 360 FAIL: 45 N/A: 43 88.9%" [ref=e191]':
+            - 'cell "C4: 최소 근무일" [ref=e192]'
+            - cell "360" [ref=e193]
+            - cell "45" [ref=e194]
+            - cell "43" [ref=e195]
+            - 'cell "PASS: 360 FAIL: 45 N/A: 43 88.9%" [ref=e196]':
+              - generic [ref=e197]:
+                - generic [ref=e198]:
+                  - 'generic "PASS: 360" [ref=e199]'
+                  - 'generic "FAIL: 45" [ref=e200]'
+                  - 'generic "N/A: 43" [ref=e201]'
+                - generic [ref=e202]: 88.9%
+          - 'row "C5: AQL 실패 (당월) 87 19 342 PASS: 87 FAIL: 19 N/A: 342 82.1%" [ref=e203]':
+            - 'cell "C5: AQL 실패 (당월)" [ref=e204]'
+            - cell "87" [ref=e205]
+            - cell "19" [ref=e206]
+            - cell "342" [ref=e207]
+            - 'cell "PASS: 87 FAIL: 19 N/A: 342 82.1%" [ref=e208]':
+              - generic [ref=e209]:
+                - generic [ref=e210]:
+                  - 'generic "PASS: 87" [ref=e211]'
+                  - 'generic "FAIL: 19" [ref=e212]'
+                  - 'generic "N/A: 342" [ref=e213]'
+                - generic [ref=e214]: 82.1%
+          - 'row "C6: AQL 연속 실패 100 0 348 PASS: 100 N/A: 348 100.0%" [ref=e215]':
+            - 'cell "C6: AQL 연속 실패" [ref=e216]'
+            - cell "100" [ref=e217]
+            - cell "0" [ref=e218]
+            - cell "348" [ref=e219]
+            - 'cell "PASS: 100 N/A: 348 100.0%" [ref=e220]':
+              - generic [ref=e221]:
+                - generic [ref=e222]:
+                  - 'generic "PASS: 100" [ref=e223]'
+                  - 'generic "N/A: 348" [ref=e224]'
+                - generic [ref=e225]: 100.0%
+          - 'row "C7: 팀 AQL 연속 15 0 433 PASS: 15 N/A: 433 100.0%" [ref=e226]':
+            - 'cell "C7: 팀 AQL 연속" [ref=e227]'
+            - cell "15" [ref=e228]
+            - cell "0" [ref=e229]
+            - cell "433" [ref=e230]
+            - 'cell "PASS: 15 N/A: 433 100.0%" [ref=e231]':
+              - generic [ref=e232]:
+                - generic [ref=e233]:
+                  - 'generic "PASS: 15" [ref=e234]'
+                  - 'generic "N/A: 433" [ref=e235]'
+                - generic [ref=e236]: 100.0%
+          - 'row "C8: 구역 Reject Rate 10 0 438 PASS: 10 N/A: 438 100.0%" [ref=e237]':
+            - 'cell "C8: 구역 Reject Rate" [ref=e238]'
+            - cell "10" [ref=e239]
+            - cell "0" [ref=e240]
+            - cell "438" [ref=e241]
+            - 'cell "PASS: 10 N/A: 438 100.0%" [ref=e242]':
+              - generic [ref=e243]:
+                - generic [ref=e244]:
+                  - 'generic "PASS: 10" [ref=e245]'
+                  - 'generic "N/A: 438" [ref=e246]'
+                - generic [ref=e247]: 100.0%
+          - 'row "C9: 5PRS 통과율 77 23 348 PASS: 77 FAIL: 23 N/A: 348 77.0%" [ref=e248]':
+            - 'cell "C9: 5PRS 통과율" [ref=e249]'
+            - cell "77" [ref=e250]
+            - cell "23" [ref=e251]
+            - cell "348" [ref=e252]
+            - 'cell "PASS: 77 FAIL: 23 N/A: 348 77.0%" [ref=e253]':
+              - generic [ref=e254]:
+                - generic [ref=e255]:
+                  - 'generic "PASS: 77" [ref=e256]'
+                  - 'generic "FAIL: 23" [ref=e257]'
+                  - 'generic "N/A: 348" [ref=e258]'
+                - generic [ref=e259]: 77.0%
+          - 'row "C10: 5PRS 검사량 67 8 373 PASS: 67 FAIL: 8 N/A: 373 89.3%" [ref=e260]':
+            - 'cell "C10: 5PRS 검사량" [ref=e261]'
+            - cell "67" [ref=e262]
+            - cell "8" [ref=e263]
+            - cell "373" [ref=e264]
+            - 'cell "PASS: 67 FAIL: 8 N/A: 373 89.3%" [ref=e265]':
+              - generic [ref=e266]:
+                - generic [ref=e267]:
+                  - 'generic "PASS: 67" [ref=e268]'
+                  - 'generic "FAIL: 8" [ref=e269]'
+                  - 'generic "N/A: 373" [ref=e270]'
+                - generic [ref=e271]: 89.3%
+          - row "총 1840 164 2476 91.8%" [ref=e272]:
+            - cell "총" [ref=e273]
+            - cell "1840" [ref=e274]
+            - cell "164" [ref=e275]
+            - cell "2476" [ref=e276]
+            - cell "91.8%" [ref=e277]:
+              - generic [ref=e283]: 91.8%
+  - text:                                                                              −  −     −   −  −    −  −           %                  
+  - contentinfo [ref=e81]: "HWK QIP Incentive Dashboard v10.0 | Data source: Firestore | 2026. 4. 3. 오후 1:36:44"

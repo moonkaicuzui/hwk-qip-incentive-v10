@@ -1,0 +1,926 @@
+- generic [ref=e1]:
+  - text: 
+  - banner [ref=e26]:
+    - generic [ref=e27]:
+      - heading "HWK QIP Incentive Dashboard" [level=1] [ref=e28]
+      - generic [ref=e29]:
+        - text: "March 2026 | 최종 업데이트: 2026. 4. 3. 오후 1:16:51"
+        - 'generic "데이터 동기화: 9분 전 | 다음 자동 동기화: 21분 후" [ref=e82] [cursor=pointer]':
+          - generic [ref=e83]: 🟢 최신 데이터
+          - generic [ref=e84]: 9분 전
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - button "KO" [ref=e33] [cursor=pointer]
+        - button "EN" [ref=e34] [cursor=pointer]
+        - button "VN" [ref=e35] [cursor=pointer]
+      - generic [ref=e36]:
+        - button "📋" [ref=e37] [cursor=pointer]
+        - button " 내 인센티브" [ref=e38] [cursor=pointer]:
+          - generic [ref=e39]: 
+          - text: 내 인센티브
+        - button " Excel" [ref=e40] [cursor=pointer]:
+          - generic [ref=e41]: 
+          - text: Excel
+        - button "📅 📋 최종 보고서" [ref=e85] [cursor=pointer]
+      - generic [ref=e43]:
+        - link "← 월 선택" [ref=e86] [cursor=pointer]:
+          - /url: selector.html
+        - generic [ref=e87]: ksmoon@hsvina.com
+        - button " 로그아웃" [ref=e46] [cursor=pointer]:
+          - generic [ref=e47]: 
+          - text: 로그아웃
+  - tablist [ref=e48]:
+    - tab "요약" [ref=e49] [cursor=pointer]
+    - tab "직급별 상세" [ref=e50] [cursor=pointer]
+    - tab "개인별 상세" [active] [selected] [ref=e51] [cursor=pointer]
+    - tab "인센티브 기준" [ref=e52] [cursor=pointer]
+    - tab "조직도" [ref=e53] [cursor=pointer]
+    - tab "팀 관리" [ref=e54] [cursor=pointer]
+    - tab "요약 및 시스템 검증" [ref=e55] [cursor=pointer]
+    - tab " 🔍 개인 출결 조회" [ref=e88] [cursor=pointer]:
+      - generic [ref=e57]: 
+      - text: 🔍 개인 출결 조회
+  - text:                        
+  - tabpanel [ref=e284]:
+    - generic [ref=e285]:
+      - textbox "사번 또는 이름 검색" [ref=e286]
+      - combobox [ref=e287]:
+        - option "전체 직급" [selected]
+        - option "(V) SUPERVISOR"
+        - option "A.MANAGER"
+        - option "AQL INSPECTOR"
+        - option "ASSEMBLY INSPECTOR"
+        - option "AUDIT & TRAINING TEAM"
+        - option "BOTTOM INSPECTOR"
+        - option "CUTTING INSPECTOR"
+        - option "GROUP LEADER"
+        - option "LINE LEADER"
+        - option "MANAGER"
+        - option "MODEL MASTER"
+        - option "MTL INSPECTOR"
+        - option "NEW"
+        - option "OCPT STFF"
+        - option "OSC INSPECTOR"
+        - option "QA TEAM"
+        - option "RQC"
+        - option "STITCHING INSPECTOR"
+      - combobox [ref=e288]:
+        - option "전체 Building" [selected]
+        - option "A"
+        - option "A1"
+        - option "A2"
+        - option "B"
+        - option "B1"
+        - option "B2"
+        - option "B3"
+        - option "C"
+        - option "D"
+        - option "E1"
+        - option "E2"
+        - option "EZ HAPPO"
+        - option "FG-WH"
+        - option "INHOUSE EZ"
+        - option "INHOUSE PRINTING"
+        - option "MTL WH"
+        - option "QA OFFICE"
+        - option "QIP OFFICE"
+      - combobox [ref=e289]:
+        - option "전체" [selected]
+        - option "수령"
+        - option "미수령"
+      - combobox [ref=e290]:
+        - option "전체 TYPE" [selected]
+        - option "TYPE-1"
+        - option "TYPE-2"
+        - option "TYPE-3"
+    - table [ref=e292]:
+      - rowgroup [ref=e293]:
+        - row "번호 사번 이름 직급 Building TYPE 출근율 AQL 5PRS 인센티브 상세" [ref=e294]:
+          - columnheader "번호" [ref=e295]
+          - columnheader "사번" [ref=e296] [cursor=pointer]
+          - columnheader "이름" [ref=e297] [cursor=pointer]
+          - columnheader "직급" [ref=e298] [cursor=pointer]
+          - columnheader "Building" [ref=e299] [cursor=pointer]
+          - columnheader "TYPE" [ref=e300] [cursor=pointer]
+          - columnheader "출근율" [ref=e301]
+          - columnheader "AQL" [ref=e302] [cursor=pointer]
+          - columnheader "5PRS" [ref=e303]
+          - columnheader "인센티브" [ref=e304] [cursor=pointer]
+          - columnheader "상세" [ref=e305]
+      - rowgroup [ref=e306]:
+        - row "1 617100049 ĐINH KIM NGOAN GROUP LEADER QIP OFFICE TYPE-2 100.0% ➖ N/A ➖ N/A 717.003 VND " [ref=e307]:
+          - cell "1" [ref=e308]
+          - cell "617100049" [ref=e309]
+          - cell "ĐINH KIM NGOAN" [ref=e310]:
+            - link "ĐINH KIM NGOAN" [ref=e311] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "GROUP LEADER" [ref=e312]
+          - cell "QIP OFFICE" [ref=e313]
+          - cell "TYPE-2" [ref=e314]
+          - cell "100.0%" [ref=e315]
+          - cell "➖ N/A" [ref=e316]
+          - cell "➖ N/A" [ref=e317]
+          - cell "717.003 VND" [ref=e318]
+          - cell "" [ref=e319]:
+            - button "" [ref=e320] [cursor=pointer]:
+              - generic [ref=e321]: 
+        - row "2 618030024 TRẦN KIỀU EM (V) SUPERVISOR A TYPE-2 100.0% ➖ N/A ➖ N/A 896.254 VND " [ref=e322]:
+          - cell "2" [ref=e323]
+          - cell "618030024" [ref=e324]
+          - cell "TRẦN KIỀU EM" [ref=e325]:
+            - link "TRẦN KIỀU EM" [ref=e326] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "(V) SUPERVISOR" [ref=e327]
+          - cell "A" [ref=e328]
+          - cell "TYPE-2" [ref=e329]
+          - cell "100.0%" [ref=e330]
+          - cell "➖ N/A" [ref=e331]
+          - cell "➖ N/A" [ref=e332]
+          - cell "896.254 VND" [ref=e333]
+          - cell "" [ref=e334]:
+            - button "" [ref=e335] [cursor=pointer]:
+              - generic [ref=e336]: 
+        - row "3 618030049 LƯƠNG THỊ CẨM TIÊN A.MANAGER C TYPE-1 100.0% ✅ PASS ➖ N/A 1.148.122 VND " [ref=e337]:
+          - cell "3" [ref=e338]
+          - cell "618030049" [ref=e339]
+          - cell "LƯƠNG THỊ CẨM TIÊN" [ref=e340]:
+            - link "LƯƠNG THỊ CẨM TIÊN" [ref=e341] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "A.MANAGER" [ref=e342]
+          - cell "C" [ref=e343]
+          - cell "TYPE-1" [ref=e344]
+          - cell "100.0%" [ref=e345]
+          - cell "✅ PASS" [ref=e346]
+          - cell "➖ N/A" [ref=e347]
+          - cell "1.148.122 VND" [ref=e348]
+          - cell "" [ref=e349]:
+            - button "" [ref=e350] [cursor=pointer]:
+              - generic [ref=e351]: 
+        - row "4 618030189 NGUYỄN THỊ BÍCH NGỌC BOTTOM INSPECTOR A2 TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e352]:
+          - cell "4" [ref=e353]
+          - cell "618030189" [ref=e354]
+          - cell "NGUYỄN THỊ BÍCH NGỌC" [ref=e355]:
+            - link "NGUYỄN THỊ BÍCH NGỌC" [ref=e356] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "BOTTOM INSPECTOR" [ref=e357]
+          - cell "A2" [ref=e358]
+          - cell "TYPE-2" [ref=e359]
+          - cell "100.0%" [ref=e360]
+          - cell "➖ N/A" [ref=e361]
+          - cell "➖ N/A" [ref=e362]
+          - cell "462.318 VND" [ref=e363]
+          - cell "" [ref=e364]:
+            - button "" [ref=e365] [cursor=pointer]:
+              - generic [ref=e366]: 
+        - row "5 618030241 TRẦN THỊ THÚY ANH MODEL MASTER C TYPE-1 100.0% ✅ PASS ➖ N/A 1.000.000 VND " [ref=e367]:
+          - cell "5" [ref=e368]
+          - cell "618030241" [ref=e369]
+          - cell "TRẦN THỊ THÚY ANH" [ref=e370]:
+            - link "TRẦN THỊ THÚY ANH" [ref=e371] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "MODEL MASTER" [ref=e372]
+          - cell "C" [ref=e373]
+          - cell "TYPE-1" [ref=e374]
+          - cell "100.0%" [ref=e375]
+          - cell "✅ PASS" [ref=e376]
+          - cell "➖ N/A" [ref=e377]
+          - cell "1.000.000 VND" [ref=e378]
+          - cell "" [ref=e379]:
+            - button "" [ref=e380] [cursor=pointer]:
+              - generic [ref=e381]: 
+        - row "6 618040412 CAO THỊ MIỀN (V) SUPERVISOR B2 TYPE-1 100.0% ✅ PASS ➖ N/A 450.000 VND " [ref=e382]:
+          - cell "6" [ref=e383]
+          - cell "618040412" [ref=e384]
+          - cell "CAO THỊ MIỀN" [ref=e385]:
+            - link "CAO THỊ MIỀN" [ref=e386] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "(V) SUPERVISOR" [ref=e387]
+          - cell "B2" [ref=e388]
+          - cell "TYPE-1" [ref=e389]
+          - cell "100.0%" [ref=e390]
+          - cell "✅ PASS" [ref=e391]
+          - cell "➖ N/A" [ref=e392]
+          - cell "450.000 VND" [ref=e393]
+          - cell "" [ref=e394]:
+            - button "" [ref=e395] [cursor=pointer]:
+              - generic [ref=e396]: 
+        - row "7 618060092 CAO THỊ TỐ NGUYÊN AUDIT & TRAINING TEAM QA OFFICE TYPE-1 100.0% ✅ PASS ➖ N/A 650.000 VND " [ref=e397]:
+          - cell "7" [ref=e398]
+          - cell "618060092" [ref=e399]
+          - cell "CAO THỊ TỐ NGUYÊN" [ref=e400]:
+            - link "CAO THỊ TỐ NGUYÊN" [ref=e401] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AUDIT & TRAINING TEAM" [ref=e402]
+          - cell "QA OFFICE" [ref=e403]
+          - cell "TYPE-1" [ref=e404]
+          - cell "100.0%" [ref=e405]
+          - cell "✅ PASS" [ref=e406]
+          - cell "➖ N/A" [ref=e407]
+          - cell "650.000 VND" [ref=e408]
+          - cell "" [ref=e409]:
+            - button "" [ref=e410] [cursor=pointer]:
+              - generic [ref=e411]: 
+        - row "8 618100175 THỊ BÍCH NGÀ LINE LEADER MTL WH TYPE-2 100.0% ➖ N/A ➖ N/A 358.501 VND " [ref=e412]:
+          - cell "8" [ref=e413]
+          - cell "618100175" [ref=e414]
+          - cell "THỊ BÍCH NGÀ" [ref=e415]:
+            - link "THỊ BÍCH NGÀ" [ref=e416] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "LINE LEADER" [ref=e417]
+          - cell "MTL WH" [ref=e418]
+          - cell "TYPE-2" [ref=e419]
+          - cell "100.0%" [ref=e420]
+          - cell "➖ N/A" [ref=e421]
+          - cell "➖ N/A" [ref=e422]
+          - cell "358.501 VND" [ref=e423]
+          - cell "" [ref=e424]:
+            - button "" [ref=e425] [cursor=pointer]:
+              - generic [ref=e426]: 
+        - row "9 618110042 NGUYỄN THỊ HỒNG NHUNG (V) SUPERVISOR D TYPE-1 100.0% ✅ PASS ➖ N/A 978.392 VND " [ref=e427]:
+          - cell "9" [ref=e428]
+          - cell "618110042" [ref=e429]
+          - cell "NGUYỄN THỊ HỒNG NHUNG" [ref=e430]:
+            - link "NGUYỄN THỊ HỒNG NHUNG" [ref=e431] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "(V) SUPERVISOR" [ref=e432]
+          - cell "D" [ref=e433]
+          - cell "TYPE-1" [ref=e434]
+          - cell "100.0%" [ref=e435]
+          - cell "✅ PASS" [ref=e436]
+          - cell "➖ N/A" [ref=e437]
+          - cell "978.392 VND" [ref=e438]
+          - cell "" [ref=e439]:
+            - button "" [ref=e440] [cursor=pointer]:
+              - generic [ref=e441]: 
+        - row "10 618110077 LÊ NGỌC LÂM MỸ HUỲNH AQL INSPECTOR FG-WH TYPE-1 100.0% ✅ PASS ➖ N/A 2.600.000 VND " [ref=e442]:
+          - cell "10" [ref=e443]
+          - cell "618110077" [ref=e444]
+          - cell "LÊ NGỌC LÂM MỸ HUỲNH" [ref=e445]:
+            - link "LÊ NGỌC LÂM MỸ HUỲNH" [ref=e446] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AQL INSPECTOR" [ref=e447]
+          - cell "FG-WH" [ref=e448]
+          - cell "TYPE-1" [ref=e449]
+          - cell "100.0%" [ref=e450]
+          - cell "✅ PASS" [ref=e451]
+          - cell "➖ N/A" [ref=e452]
+          - cell "2.600.000 VND" [ref=e453]
+          - cell "" [ref=e454]:
+            - button "" [ref=e455] [cursor=pointer]:
+              - generic [ref=e456]: 
+        - row "11 618110087 NGUYỄN THÚY HẰNG AUDIT & TRAINING TEAM QA OFFICE TYPE-1 100.0% ✅ PASS ➖ N/A 400.000 VND " [ref=e457]:
+          - cell "11" [ref=e458]
+          - cell "618110087" [ref=e459]
+          - cell "NGUYỄN THÚY HẰNG" [ref=e460]:
+            - link "NGUYỄN THÚY HẰNG" [ref=e461] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AUDIT & TRAINING TEAM" [ref=e462]
+          - cell "QA OFFICE" [ref=e463]
+          - cell "TYPE-1" [ref=e464]
+          - cell "100.0%" [ref=e465]
+          - cell "✅ PASS" [ref=e466]
+          - cell "➖ N/A" [ref=e467]
+          - cell "400.000 VND" [ref=e468]
+          - cell "" [ref=e469]:
+            - button "" [ref=e470] [cursor=pointer]:
+              - generic [ref=e471]: 
+        - row "12 618110097 DANH THỊ ANH ĐÀO MODEL MASTER QA OFFICE TYPE-1 100.0% ✅ PASS ➖ N/A 1.000.000 VND " [ref=e472]:
+          - cell "12" [ref=e473]
+          - cell "618110097" [ref=e474]
+          - cell "DANH THỊ ANH ĐÀO" [ref=e475]:
+            - link "DANH THỊ ANH ĐÀO" [ref=e476] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "MODEL MASTER" [ref=e477]
+          - cell "QA OFFICE" [ref=e478]
+          - cell "TYPE-1" [ref=e479]
+          - cell "100.0%" [ref=e480]
+          - cell "✅ PASS" [ref=e481]
+          - cell "➖ N/A" [ref=e482]
+          - cell "1.000.000 VND" [ref=e483]
+          - cell "" [ref=e484]:
+            - button "" [ref=e485] [cursor=pointer]:
+              - generic [ref=e486]: 
+        - row "13 621030996 DANH MINH HIẾU ASSEMBLY INSPECTOR B2 TYPE-1 96.2% ✅ PASS 99.1% 0 VND " [ref=e487]:
+          - cell "13" [ref=e488]
+          - cell "621030996" [ref=e489]
+          - cell "DANH MINH HIẾU" [ref=e490]:
+            - link "DANH MINH HIẾU" [ref=e491] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "ASSEMBLY INSPECTOR" [ref=e492]
+          - cell "B2" [ref=e493]
+          - cell "TYPE-1" [ref=e494]
+          - cell "96.2%" [ref=e495]
+          - cell "✅ PASS" [ref=e496]
+          - cell "99.1%" [ref=e497]
+          - cell "0 VND" [ref=e498]
+          - cell "" [ref=e499]:
+            - button "" [ref=e500] [cursor=pointer]:
+              - generic [ref=e501]: 
+        - row "14 621040446 THÁI THỊ XUÂN ASSEMBLY INSPECTOR D TYPE-1 100.0% ✅ PASS 98.6% 1.000.000 VND " [ref=e502]:
+          - cell "14" [ref=e503]
+          - cell "621040446" [ref=e504]
+          - cell "THÁI THỊ XUÂN" [ref=e505]:
+            - link "THÁI THỊ XUÂN" [ref=e506] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "ASSEMBLY INSPECTOR" [ref=e507]
+          - cell "D" [ref=e508]
+          - cell "TYPE-1" [ref=e509]
+          - cell "100.0%" [ref=e510]
+          - cell "✅ PASS" [ref=e511]
+          - cell "98.6%" [ref=e512]
+          - cell "1.000.000 VND" [ref=e513]
+          - cell "" [ref=e514]:
+            - button "" [ref=e515] [cursor=pointer]:
+              - generic [ref=e516]: 
+        - row "15 619100307 DANH THÁI AQL INSPECTOR FG-WH TYPE-1 100.0% ✅ PASS ➖ N/A 2.600.000 VND " [ref=e517]:
+          - cell "15" [ref=e518]
+          - cell "619100307" [ref=e519]
+          - cell "DANH THÁI" [ref=e520]:
+            - link "DANH THÁI" [ref=e521] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AQL INSPECTOR" [ref=e522]
+          - cell "FG-WH" [ref=e523]
+          - cell "TYPE-1" [ref=e524]
+          - cell "100.0%" [ref=e525]
+          - cell "✅ PASS" [ref=e526]
+          - cell "➖ N/A" [ref=e527]
+          - cell "2.600.000 VND" [ref=e528]
+          - cell "" [ref=e529]:
+            - button "" [ref=e530] [cursor=pointer]:
+              - generic [ref=e531]: 
+        - row "16 619040194 TRẦN THỊ MAI STITCHING INSPECTOR A2 TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e532]:
+          - cell "16" [ref=e533]
+          - cell "619040194" [ref=e534]
+          - cell "TRẦN THỊ MAI" [ref=e535]:
+            - link "TRẦN THỊ MAI" [ref=e536] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "STITCHING INSPECTOR" [ref=e537]
+          - cell "A2" [ref=e538]
+          - cell "TYPE-2" [ref=e539]
+          - cell "100.0%" [ref=e540]
+          - cell "➖ N/A" [ref=e541]
+          - cell "➖ N/A" [ref=e542]
+          - cell "462.318 VND" [ref=e543]
+          - cell "" [ref=e544]:
+            - button "" [ref=e545] [cursor=pointer]:
+              - generic [ref=e546]: 
+        - row "17 619020343 THỊ KIM THO GROUP LEADER QIP OFFICE TYPE-2 100.0% ➖ N/A ➖ N/A 717.003 VND " [ref=e547]:
+          - cell "17" [ref=e548]
+          - cell "619020343" [ref=e549]
+          - cell "THỊ KIM THO" [ref=e550]:
+            - link "THỊ KIM THO" [ref=e551] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "GROUP LEADER" [ref=e552]
+          - cell "QIP OFFICE" [ref=e553]
+          - cell "TYPE-2" [ref=e554]
+          - cell "100.0%" [ref=e555]
+          - cell "➖ N/A" [ref=e556]
+          - cell "➖ N/A" [ref=e557]
+          - cell "717.003 VND" [ref=e558]
+          - cell "" [ref=e559]:
+            - button "" [ref=e560] [cursor=pointer]:
+              - generic [ref=e561]: 
+        - row "18 619020468 THỊ MY LINE LEADER B2 TYPE-1 100.0% ✅ PASS ➖ N/A 180.000 VND " [ref=e562]:
+          - cell "18" [ref=e563]
+          - cell "619020468" [ref=e564]
+          - cell "THỊ MY" [ref=e565]:
+            - link "THỊ MY" [ref=e566] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "LINE LEADER" [ref=e567]
+          - cell "B2" [ref=e568]
+          - cell "TYPE-1" [ref=e569]
+          - cell "100.0%" [ref=e570]
+          - cell "✅ PASS" [ref=e571]
+          - cell "➖ N/A" [ref=e572]
+          - cell "180.000 VND" [ref=e573]
+          - cell "" [ref=e574]:
+            - button "" [ref=e575] [cursor=pointer]:
+              - generic [ref=e576]: 
+        - row "19 620020923 BÙI TRƯƠNG NGỌC NHỨT AQL INSPECTOR FG-WH TYPE-1 100.0% ✅ PASS ➖ N/A 2.600.000 VND " [ref=e577]:
+          - cell "19" [ref=e578]
+          - cell "620020923" [ref=e579]
+          - cell "BÙI TRƯƠNG NGỌC NHỨT" [ref=e580]:
+            - link "BÙI TRƯƠNG NGỌC NHỨT" [ref=e581] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AQL INSPECTOR" [ref=e582]
+          - cell "FG-WH" [ref=e583]
+          - cell "TYPE-1" [ref=e584]
+          - cell "100.0%" [ref=e585]
+          - cell "✅ PASS" [ref=e586]
+          - cell "➖ N/A" [ref=e587]
+          - cell "2.600.000 VND" [ref=e588]
+          - cell "" [ref=e589]:
+            - button "" [ref=e590] [cursor=pointer]:
+              - generic [ref=e591]: 
+        - row "20 619030390 NGUYỄN THỊ BÍCH CHƯƠNG GROUP LEADER C TYPE-1 100.0% ✅ PASS ➖ N/A 765.414 VND " [ref=e592]:
+          - cell "20" [ref=e593]
+          - cell "619030390" [ref=e594]
+          - cell "NGUYỄN THỊ BÍCH CHƯƠNG" [ref=e595]:
+            - link "NGUYỄN THỊ BÍCH CHƯƠNG" [ref=e596] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "GROUP LEADER" [ref=e597]
+          - cell "C" [ref=e598]
+          - cell "TYPE-1" [ref=e599]
+          - cell "100.0%" [ref=e600]
+          - cell "✅ PASS" [ref=e601]
+          - cell "➖ N/A" [ref=e602]
+          - cell "765.414 VND" [ref=e603]
+          - cell "" [ref=e604]:
+            - button "" [ref=e605] [cursor=pointer]:
+              - generic [ref=e606]: 
+        - row "21 619050317 DANH THỊ CẨM MINH STITCHING INSPECTOR A2 TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e607]:
+          - cell "21" [ref=e608]
+          - cell "619050317" [ref=e609]
+          - cell "DANH THỊ CẨM MINH" [ref=e610]:
+            - link "DANH THỊ CẨM MINH" [ref=e611] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "STITCHING INSPECTOR" [ref=e612]
+          - cell "A2" [ref=e613]
+          - cell "TYPE-2" [ref=e614]
+          - cell "100.0%" [ref=e615]
+          - cell "➖ N/A" [ref=e616]
+          - cell "➖ N/A" [ref=e617]
+          - cell "462.318 VND" [ref=e618]
+          - cell "" [ref=e619]:
+            - button "" [ref=e620] [cursor=pointer]:
+              - generic [ref=e621]: 
+        - row "22 619050074 LÊ THỊ DIỄM LINH (V) SUPERVISOR A2 TYPE-2 100.0% ➖ N/A ➖ N/A 896.254 VND " [ref=e622]:
+          - cell "22" [ref=e623]
+          - cell "619050074" [ref=e624]
+          - cell "LÊ THỊ DIỄM LINH" [ref=e625]:
+            - link "LÊ THỊ DIỄM LINH" [ref=e626] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "(V) SUPERVISOR" [ref=e627]
+          - cell "A2" [ref=e628]
+          - cell "TYPE-2" [ref=e629]
+          - cell "100.0%" [ref=e630]
+          - cell "➖ N/A" [ref=e631]
+          - cell "➖ N/A" [ref=e632]
+          - cell "896.254 VND" [ref=e633]
+          - cell "" [ref=e634]:
+            - button "" [ref=e635] [cursor=pointer]:
+              - generic [ref=e636]: 
+        - row "23 619070140 DANH THỊ THANH HUYỀN STITCHING INSPECTOR D TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e637]:
+          - cell "23" [ref=e638]
+          - cell "619070140" [ref=e639]
+          - cell "DANH THỊ THANH HUYỀN" [ref=e640]:
+            - link "DANH THỊ THANH HUYỀN" [ref=e641] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "STITCHING INSPECTOR" [ref=e642]
+          - cell "D" [ref=e643]
+          - cell "TYPE-2" [ref=e644]
+          - cell "100.0%" [ref=e645]
+          - cell "➖ N/A" [ref=e646]
+          - cell "➖ N/A" [ref=e647]
+          - cell "462.318 VND" [ref=e648]
+          - cell "" [ref=e649]:
+            - button "" [ref=e650] [cursor=pointer]:
+              - generic [ref=e651]: 
+        - row "24 620120306 NGUYỄN NGÔ TUYẾT NGÂN AQL INSPECTOR FG-WH TYPE-1 100.0% ✅ PASS ➖ N/A 2.400.000 VND " [ref=e652]:
+          - cell "24" [ref=e653]
+          - cell "620120306" [ref=e654]
+          - cell "NGUYỄN NGÔ TUYẾT NGÂN" [ref=e655]:
+            - link "NGUYỄN NGÔ TUYẾT NGÂN" [ref=e656] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AQL INSPECTOR" [ref=e657]
+          - cell "FG-WH" [ref=e658]
+          - cell "TYPE-1" [ref=e659]
+          - cell "100.0%" [ref=e660]
+          - cell "✅ PASS" [ref=e661]
+          - cell "➖ N/A" [ref=e662]
+          - cell "2.400.000 VND" [ref=e663]
+          - cell "" [ref=e664]:
+            - button "" [ref=e665] [cursor=pointer]:
+              - generic [ref=e666]: 
+        - row "25 621060243 HÀ CÔNG NHANH ASSEMBLY INSPECTOR B2 TYPE-1 100.0% ✅ PASS 98.9% 750.000 VND " [ref=e667]:
+          - cell "25" [ref=e668]
+          - cell "621060243" [ref=e669]
+          - cell "HÀ CÔNG NHANH" [ref=e670]:
+            - link "HÀ CÔNG NHANH" [ref=e671] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "ASSEMBLY INSPECTOR" [ref=e672]
+          - cell "B2" [ref=e673]
+          - cell "TYPE-1" [ref=e674]
+          - cell "100.0%" [ref=e675]
+          - cell "✅ PASS" [ref=e676]
+          - cell "98.9%" [ref=e677]
+          - cell "750.000 VND" [ref=e678]
+          - cell "" [ref=e679]:
+            - button "" [ref=e680] [cursor=pointer]:
+              - generic [ref=e681]: 
+        - row "26 619070072 THÁI UYỂN NHI (V) SUPERVISOR A2 TYPE-1 100.0% ✅ PASS ➖ N/A 976.730 VND " [ref=e682]:
+          - cell "26" [ref=e683]
+          - cell "619070072" [ref=e684]
+          - cell "THÁI UYỂN NHI" [ref=e685]:
+            - link "THÁI UYỂN NHI" [ref=e686] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "(V) SUPERVISOR" [ref=e687]
+          - cell "A2" [ref=e688]
+          - cell "TYPE-1" [ref=e689]
+          - cell "100.0%" [ref=e690]
+          - cell "✅ PASS" [ref=e691]
+          - cell "➖ N/A" [ref=e692]
+          - cell "976.730 VND" [ref=e693]
+          - cell "" [ref=e694]:
+            - button "" [ref=e695] [cursor=pointer]:
+              - generic [ref=e696]: 
+        - row "27 619070107 TÔ THỊ LOAN ANH GROUP LEADER MTL WH TYPE-2 100.0% ➖ N/A ➖ N/A 717.003 VND " [ref=e697]:
+          - cell "27" [ref=e698]
+          - cell "619070107" [ref=e699]
+          - cell "TÔ THỊ LOAN ANH" [ref=e700]:
+            - link "TÔ THỊ LOAN ANH" [ref=e701] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "GROUP LEADER" [ref=e702]
+          - cell "MTL WH" [ref=e703]
+          - cell "TYPE-2" [ref=e704]
+          - cell "100.0%" [ref=e705]
+          - cell "➖ N/A" [ref=e706]
+          - cell "➖ N/A" [ref=e707]
+          - cell "717.003 VND" [ref=e708]
+          - cell "" [ref=e709]:
+            - button "" [ref=e710] [cursor=pointer]:
+              - generic [ref=e711]: 
+        - row "28 620120027 ĐẶNG THỊ TUYẾT TRINH STITCHING INSPECTOR C TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e712]:
+          - cell "28" [ref=e713]
+          - cell "620120027" [ref=e714]
+          - cell "ĐẶNG THỊ TUYẾT TRINH" [ref=e715]:
+            - link "ĐẶNG THỊ TUYẾT TRINH" [ref=e716] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "STITCHING INSPECTOR" [ref=e717]
+          - cell "C" [ref=e718]
+          - cell "TYPE-2" [ref=e719]
+          - cell "100.0%" [ref=e720]
+          - cell "➖ N/A" [ref=e721]
+          - cell "➖ N/A" [ref=e722]
+          - cell "462.318 VND" [ref=e723]
+          - cell "" [ref=e724]:
+            - button "" [ref=e725] [cursor=pointer]:
+              - generic [ref=e726]: 
+        - row "29 619070185 DANH THỊ KIM ANH AUDIT & TRAINING TEAM QA OFFICE TYPE-1 100.0% ✅ PASS ➖ N/A 400.000 VND " [ref=e727]:
+          - cell "29" [ref=e728]
+          - cell "619070185" [ref=e729]
+          - cell "DANH THỊ KIM ANH" [ref=e730]:
+            - link "DANH THỊ KIM ANH" [ref=e731] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AUDIT & TRAINING TEAM" [ref=e732]
+          - cell "QA OFFICE" [ref=e733]
+          - cell "TYPE-1" [ref=e734]
+          - cell "100.0%" [ref=e735]
+          - cell "✅ PASS" [ref=e736]
+          - cell "➖ N/A" [ref=e737]
+          - cell "400.000 VND" [ref=e738]
+          - cell "" [ref=e739]:
+            - button "" [ref=e740] [cursor=pointer]:
+              - generic [ref=e741]: 
+        - row "30 622020636 TRẦN THỊ THÙY ANH STITCHING INSPECTOR A1 TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e742]:
+          - cell "30" [ref=e743]
+          - cell "622020636" [ref=e744]
+          - cell "TRẦN THỊ THÙY ANH" [ref=e745]:
+            - link "TRẦN THỊ THÙY ANH" [ref=e746] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "STITCHING INSPECTOR" [ref=e747]
+          - cell "A1" [ref=e748]
+          - cell "TYPE-2" [ref=e749]
+          - cell "100.0%" [ref=e750]
+          - cell "➖ N/A" [ref=e751]
+          - cell "➖ N/A" [ref=e752]
+          - cell "462.318 VND" [ref=e753]
+          - cell "" [ref=e754]:
+            - button "" [ref=e755] [cursor=pointer]:
+              - generic [ref=e756]: 
+        - row "31 621030380 TRẦN NHÃ LINH OSC INSPECTOR INHOUSE PRINTING TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e757]:
+          - cell "31" [ref=e758]
+          - cell "621030380" [ref=e759]
+          - cell "TRẦN NHÃ LINH" [ref=e760]:
+            - link "TRẦN NHÃ LINH" [ref=e761] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "OSC INSPECTOR" [ref=e762]
+          - cell "INHOUSE PRINTING" [ref=e763]
+          - cell "TYPE-2" [ref=e764]
+          - cell "100.0%" [ref=e765]
+          - cell "➖ N/A" [ref=e766]
+          - cell "➖ N/A" [ref=e767]
+          - cell "462.318 VND" [ref=e768]
+          - cell "" [ref=e769]:
+            - button "" [ref=e770] [cursor=pointer]:
+              - generic [ref=e771]: 
+        - row "32 619080083 VÕ THỊ TÝ NỊ (V) SUPERVISOR C TYPE-2 100.0% ➖ N/A ➖ N/A 896.254 VND " [ref=e772]:
+          - cell "32" [ref=e773]
+          - cell "619080083" [ref=e774]
+          - cell "VÕ THỊ TÝ NỊ" [ref=e775]:
+            - link "VÕ THỊ TÝ NỊ" [ref=e776] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "(V) SUPERVISOR" [ref=e777]
+          - cell "C" [ref=e778]
+          - cell "TYPE-2" [ref=e779]
+          - cell "100.0%" [ref=e780]
+          - cell "➖ N/A" [ref=e781]
+          - cell "➖ N/A" [ref=e782]
+          - cell "896.254 VND" [ref=e783]
+          - cell "" [ref=e784]:
+            - button "" [ref=e785] [cursor=pointer]:
+              - generic [ref=e786]: 
+        - row "33 619080327 NGUYỄN THỊ MỸ TRÂM LINE LEADER D TYPE-1 100.0% ✅ PASS ➖ N/A 184.000 VND " [ref=e787]:
+          - cell "33" [ref=e788]
+          - cell "619080327" [ref=e789]
+          - cell "NGUYỄN THỊ MỸ TRÂM" [ref=e790]:
+            - link "NGUYỄN THỊ MỸ TRÂM" [ref=e791] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "LINE LEADER" [ref=e792]
+          - cell "D" [ref=e793]
+          - cell "TYPE-1" [ref=e794]
+          - cell "100.0%" [ref=e795]
+          - cell "✅ PASS" [ref=e796]
+          - cell "➖ N/A" [ref=e797]
+          - cell "184.000 VND" [ref=e798]
+          - cell "" [ref=e799]:
+            - button "" [ref=e800] [cursor=pointer]:
+              - generic [ref=e801]: 
+        - row "34 622020914 VÕ THỊ BÍCH NGÂN STITCHING INSPECTOR C TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e802]:
+          - cell "34" [ref=e803]
+          - cell "622020914" [ref=e804]
+          - cell "VÕ THỊ BÍCH NGÂN" [ref=e805]:
+            - link "VÕ THỊ BÍCH NGÂN" [ref=e806] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "STITCHING INSPECTOR" [ref=e807]
+          - cell "C" [ref=e808]
+          - cell "TYPE-2" [ref=e809]
+          - cell "100.0%" [ref=e810]
+          - cell "➖ N/A" [ref=e811]
+          - cell "➖ N/A" [ref=e812]
+          - cell "462.318 VND" [ref=e813]
+          - cell "" [ref=e814]:
+            - button "" [ref=e815] [cursor=pointer]:
+              - generic [ref=e816]: 
+        - row "35 619090315 LÝ KIỀU LOAN (V) SUPERVISOR A1 TYPE-2 100.0% ➖ N/A ➖ N/A 896.254 VND " [ref=e817]:
+          - cell "35" [ref=e818]
+          - cell "619090315" [ref=e819]
+          - cell "LÝ KIỀU LOAN" [ref=e820]:
+            - link "LÝ KIỀU LOAN" [ref=e821] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "(V) SUPERVISOR" [ref=e822]
+          - cell "A1" [ref=e823]
+          - cell "TYPE-2" [ref=e824]
+          - cell "100.0%" [ref=e825]
+          - cell "➖ N/A" [ref=e826]
+          - cell "➖ N/A" [ref=e827]
+          - cell "896.254 VND" [ref=e828]
+          - cell "" [ref=e829]:
+            - button "" [ref=e830] [cursor=pointer]:
+              - generic [ref=e831]: 
+        - row "36 621110376 ĐOÀN PHAN NHI AQL INSPECTOR FG-WH TYPE-1 100.0% ✅ PASS ➖ N/A 850.000 VND " [ref=e832]:
+          - cell "36" [ref=e833]
+          - cell "621110376" [ref=e834]
+          - cell "ĐOÀN PHAN NHI" [ref=e835]:
+            - link "ĐOÀN PHAN NHI" [ref=e836] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AQL INSPECTOR" [ref=e837]
+          - cell "FG-WH" [ref=e838]
+          - cell "TYPE-1" [ref=e839]
+          - cell "100.0%" [ref=e840]
+          - cell "✅ PASS" [ref=e841]
+          - cell "➖ N/A" [ref=e842]
+          - cell "850.000 VND" [ref=e843]
+          - cell "" [ref=e844]:
+            - button "" [ref=e845] [cursor=pointer]:
+              - generic [ref=e846]: 
+        - row "37 619100392 PHẠM MINH HUY LINE LEADER C TYPE-1 100.0% ✅ PASS ➖ N/A 232.615 VND " [ref=e847]:
+          - cell "37" [ref=e848]
+          - cell "619100392" [ref=e849]
+          - cell "PHẠM MINH HUY" [ref=e850]:
+            - link "PHẠM MINH HUY" [ref=e851] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "LINE LEADER" [ref=e852]
+          - cell "C" [ref=e853]
+          - cell "TYPE-1" [ref=e854]
+          - cell "100.0%" [ref=e855]
+          - cell "✅ PASS" [ref=e856]
+          - cell "➖ N/A" [ref=e857]
+          - cell "232.615 VND" [ref=e858]
+          - cell "" [ref=e859]:
+            - button "" [ref=e860] [cursor=pointer]:
+              - generic [ref=e861]: 
+        - row "38 622030225 NGUYỄN THỊ TƯỜNG VY AQL INSPECTOR FG-WH TYPE-1 100.0% ✅ PASS ➖ N/A 2.400.000 VND " [ref=e862]:
+          - cell "38" [ref=e863]
+          - cell "622030225" [ref=e864]
+          - cell "NGUYỄN THỊ TƯỜNG VY" [ref=e865]:
+            - link "NGUYỄN THỊ TƯỜNG VY" [ref=e866] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AQL INSPECTOR" [ref=e867]
+          - cell "FG-WH" [ref=e868]
+          - cell "TYPE-1" [ref=e869]
+          - cell "100.0%" [ref=e870]
+          - cell "✅ PASS" [ref=e871]
+          - cell "➖ N/A" [ref=e872]
+          - cell "2.400.000 VND" [ref=e873]
+          - cell "" [ref=e874]:
+            - button "" [ref=e875] [cursor=pointer]:
+              - generic [ref=e876]: 
+        - row "39 622050074 LÊ THỊ THANH TUYỀN STITCHING INSPECTOR A2 TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e877]:
+          - cell "39" [ref=e878]
+          - cell "622050074" [ref=e879]
+          - cell "LÊ THỊ THANH TUYỀN" [ref=e880]:
+            - link "LÊ THỊ THANH TUYỀN" [ref=e881] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "STITCHING INSPECTOR" [ref=e882]
+          - cell "A2" [ref=e883]
+          - cell "TYPE-2" [ref=e884]
+          - cell "100.0%" [ref=e885]
+          - cell "➖ N/A" [ref=e886]
+          - cell "➖ N/A" [ref=e887]
+          - cell "462.318 VND" [ref=e888]
+          - cell "" [ref=e889]:
+            - button "" [ref=e890] [cursor=pointer]:
+              - generic [ref=e891]: 
+        - row "40 620020691 VÕ VĂN KIỆT (V) SUPERVISOR A2 TYPE-1 100.0% ✅ PASS ➖ N/A 976.730 VND " [ref=e892]:
+          - cell "40" [ref=e893]
+          - cell "620020691" [ref=e894]
+          - cell "VÕ VĂN KIỆT" [ref=e895]:
+            - link "VÕ VĂN KIỆT" [ref=e896] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "(V) SUPERVISOR" [ref=e897]
+          - cell "A2" [ref=e898]
+          - cell "TYPE-1" [ref=e899]
+          - cell "100.0%" [ref=e900]
+          - cell "✅ PASS" [ref=e901]
+          - cell "➖ N/A" [ref=e902]
+          - cell "976.730 VND" [ref=e903]
+          - cell "" [ref=e904]:
+            - button "" [ref=e905] [cursor=pointer]:
+              - generic [ref=e906]: 
+        - row "41 620020705 NGUYỄN THỊ BÍCH PHƯỢNG (V) SUPERVISOR D TYPE-2 100.0% ➖ N/A ➖ N/A 896.254 VND " [ref=e907]:
+          - cell "41" [ref=e908]
+          - cell "620020705" [ref=e909]
+          - cell "NGUYỄN THỊ BÍCH PHƯỢNG" [ref=e910]:
+            - link "NGUYỄN THỊ BÍCH PHƯỢNG" [ref=e911] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "(V) SUPERVISOR" [ref=e912]
+          - cell "D" [ref=e913]
+          - cell "TYPE-2" [ref=e914]
+          - cell "100.0%" [ref=e915]
+          - cell "➖ N/A" [ref=e916]
+          - cell "➖ N/A" [ref=e917]
+          - cell "896.254 VND" [ref=e918]
+          - cell "" [ref=e919]:
+            - button "" [ref=e920] [cursor=pointer]:
+              - generic [ref=e921]: 
+        - row "42 621040472 NGUYỄN TẤN THÀNH AQL INSPECTOR FG-WH TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e922]:
+          - cell "42" [ref=e923]
+          - cell "621040472" [ref=e924]
+          - cell "NGUYỄN TẤN THÀNH" [ref=e925]:
+            - link "NGUYỄN TẤN THÀNH" [ref=e926] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AQL INSPECTOR" [ref=e927]
+          - cell "FG-WH" [ref=e928]
+          - cell "TYPE-2" [ref=e929]
+          - cell "100.0%" [ref=e930]
+          - cell "➖ N/A" [ref=e931]
+          - cell "➖ N/A" [ref=e932]
+          - cell "462.318 VND" [ref=e933]
+          - cell "" [ref=e934]:
+            - button "" [ref=e935] [cursor=pointer]:
+              - generic [ref=e936]: 
+        - row "43 622020703 DANH CHÀNH THUƠL ASSEMBLY INSPECTOR B2 TYPE-1 100.0% ❌ FAIL 96.3% 0 VND " [ref=e937]:
+          - cell "43" [ref=e938]
+          - cell "622020703" [ref=e939]
+          - cell "DANH CHÀNH THUƠL" [ref=e940]:
+            - link "DANH CHÀNH THUƠL" [ref=e941] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "ASSEMBLY INSPECTOR" [ref=e942]
+          - cell "B2" [ref=e943]
+          - cell "TYPE-1" [ref=e944]
+          - cell "100.0%" [ref=e945]
+          - cell "❌ FAIL" [ref=e946]
+          - cell "96.3%" [ref=e947]
+          - cell "0 VND" [ref=e948]
+          - cell "" [ref=e949]:
+            - button "" [ref=e950] [cursor=pointer]:
+              - generic [ref=e951]: 
+        - row "44 620030052 THỊ NGỌC CHÚC BOTTOM INSPECTOR A2 TYPE-2 100.0% ➖ N/A ➖ N/A 462.318 VND " [ref=e952]:
+          - cell "44" [ref=e953]
+          - cell "620030052" [ref=e954]
+          - cell "THỊ NGỌC CHÚC" [ref=e955]:
+            - link "THỊ NGỌC CHÚC" [ref=e956] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "BOTTOM INSPECTOR" [ref=e957]
+          - cell "A2" [ref=e958]
+          - cell "TYPE-2" [ref=e959]
+          - cell "100.0%" [ref=e960]
+          - cell "➖ N/A" [ref=e961]
+          - cell "➖ N/A" [ref=e962]
+          - cell "462.318 VND" [ref=e963]
+          - cell "" [ref=e964]:
+            - button "" [ref=e965] [cursor=pointer]:
+              - generic [ref=e966]: 
+        - row "45 620030340 NGUYỄN THỊ MỸ TIÊN GROUP LEADER A2 TYPE-2 100.0% ➖ N/A ➖ N/A 717.003 VND " [ref=e967]:
+          - cell "45" [ref=e968]
+          - cell "620030340" [ref=e969]
+          - cell "NGUYỄN THỊ MỸ TIÊN" [ref=e970]:
+            - link "NGUYỄN THỊ MỸ TIÊN" [ref=e971] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "GROUP LEADER" [ref=e972]
+          - cell "A2" [ref=e973]
+          - cell "TYPE-2" [ref=e974]
+          - cell "100.0%" [ref=e975]
+          - cell "➖ N/A" [ref=e976]
+          - cell "➖ N/A" [ref=e977]
+          - cell "717.003 VND" [ref=e978]
+          - cell "" [ref=e979]:
+            - button "" [ref=e980] [cursor=pointer]:
+              - generic [ref=e981]: 
+        - row "46 622021407 DANH TRƯỜNG ASSEMBLY INSPECTOR A2 TYPE-1 100.0% ✅ PASS 98.8% 650.000 VND " [ref=e982]:
+          - cell "46" [ref=e983]
+          - cell "622021407" [ref=e984]
+          - cell "DANH TRƯỜNG" [ref=e985]:
+            - link "DANH TRƯỜNG" [ref=e986] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "ASSEMBLY INSPECTOR" [ref=e987]
+          - cell "A2" [ref=e988]
+          - cell "TYPE-1" [ref=e989]
+          - cell "100.0%" [ref=e990]
+          - cell "✅ PASS" [ref=e991]
+          - cell "98.8%" [ref=e992]
+          - cell "650.000 VND" [ref=e993]
+          - cell "" [ref=e994]:
+            - button "" [ref=e995] [cursor=pointer]:
+              - generic [ref=e996]: 
+        - row "47 620060085 NGUYỄN THỊ HẠNH LINE LEADER A1 TYPE-2 100.0% ➖ N/A ➖ N/A 358.501 VND " [ref=e997]:
+          - cell "47" [ref=e998]
+          - cell "620060085" [ref=e999]
+          - cell "NGUYỄN THỊ HẠNH" [ref=e1000]:
+            - link "NGUYỄN THỊ HẠNH" [ref=e1001] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "LINE LEADER" [ref=e1002]
+          - cell "A1" [ref=e1003]
+          - cell "TYPE-2" [ref=e1004]
+          - cell "100.0%" [ref=e1005]
+          - cell "➖ N/A" [ref=e1006]
+          - cell "➖ N/A" [ref=e1007]
+          - cell "358.501 VND" [ref=e1008]
+          - cell "" [ref=e1009]:
+            - button "" [ref=e1010] [cursor=pointer]:
+              - generic [ref=e1011]: 
+        - row "48 620060128 LÊ HUỲNH GIAO (V) SUPERVISOR D TYPE-1 100.0% ✅ PASS ➖ N/A 978.392 VND " [ref=e1012]:
+          - cell "48" [ref=e1013]
+          - cell "620060128" [ref=e1014]
+          - cell "LÊ HUỲNH GIAO" [ref=e1015]:
+            - link "LÊ HUỲNH GIAO" [ref=e1016] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "(V) SUPERVISOR" [ref=e1017]
+          - cell "D" [ref=e1018]
+          - cell "TYPE-1" [ref=e1019]
+          - cell "100.0%" [ref=e1020]
+          - cell "✅ PASS" [ref=e1021]
+          - cell "➖ N/A" [ref=e1022]
+          - cell "978.392 VND" [ref=e1023]
+          - cell "" [ref=e1024]:
+            - button "" [ref=e1025] [cursor=pointer]:
+              - generic [ref=e1026]: 
+        - row "49 620070012 TRẦN THỊ BÍCH LY MANAGER QIP OFFICE TYPE-1 100.0% ✅ PASS ➖ N/A 1.254.756 VND " [ref=e1027]:
+          - cell "49" [ref=e1028]
+          - cell "620070012" [ref=e1029]
+          - cell "TRẦN THỊ BÍCH LY" [ref=e1030]:
+            - link "TRẦN THỊ BÍCH LY" [ref=e1031] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "MANAGER" [ref=e1032]
+          - cell "QIP OFFICE" [ref=e1033]
+          - cell "TYPE-1" [ref=e1034]
+          - cell "100.0%" [ref=e1035]
+          - cell "✅ PASS" [ref=e1036]
+          - cell "➖ N/A" [ref=e1037]
+          - cell "1.254.756 VND" [ref=e1038]
+          - cell "" [ref=e1039]:
+            - button "" [ref=e1040] [cursor=pointer]:
+              - generic [ref=e1041]: 
+        - row "50 620070013 NGUYỄN THANH TRÚC AUDIT & TRAINING TEAM QA OFFICE TYPE-1 100.0% ✅ PASS ➖ N/A 150.000 VND " [ref=e1042]:
+          - cell "50" [ref=e1043]
+          - cell "620070013" [ref=e1044]
+          - cell "NGUYỄN THANH TRÚC" [ref=e1045]:
+            - link "NGUYỄN THANH TRÚC" [ref=e1046] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "AUDIT & TRAINING TEAM" [ref=e1047]
+          - cell "QA OFFICE" [ref=e1048]
+          - cell "TYPE-1" [ref=e1049]
+          - cell "100.0%" [ref=e1050]
+          - cell "✅ PASS" [ref=e1051]
+          - cell "➖ N/A" [ref=e1052]
+          - cell "150.000 VND" [ref=e1053]
+          - cell "" [ref=e1054]:
+            - button "" [ref=e1055] [cursor=pointer]:
+              - generic [ref=e1056]: 
+    - generic [ref=e1058]:
+      - generic [ref=e1059]: 1-50 / 448명
+      - generic [ref=e1060]:
+        - button "" [disabled] [ref=e1061]:
+          - generic [ref=e1062]: 
+        - button "1" [ref=e1063] [cursor=pointer]
+        - button "2" [ref=e1064] [cursor=pointer]
+        - button "3" [ref=e1065] [cursor=pointer]
+        - button "4" [ref=e1066] [cursor=pointer]
+        - button "5" [ref=e1067] [cursor=pointer]
+        - generic [ref=e1068]: ...
+        - button "9" [ref=e1069] [cursor=pointer]
+        - button "" [ref=e1070] [cursor=pointer]:
+          - generic [ref=e1071]: 
+  - text:  −  −     −   −  −    −  −           %                  
+  - contentinfo [ref=e81]: "HWK QIP Incentive Dashboard v10.0 | Data source: Firestore | 2026. 4. 3. 오후 1:26:01"

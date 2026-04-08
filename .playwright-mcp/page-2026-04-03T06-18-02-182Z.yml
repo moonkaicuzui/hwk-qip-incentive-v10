@@ -1,0 +1,23 @@
+- generic [active] [ref=e1]:
+  - status [ref=e3]:
+    - generic [ref=e4]: Loading...
+  - generic [ref=e5]:
+    - button "KO" [ref=e6] [cursor=pointer]
+    - button "EN" [ref=e7] [cursor=pointer]
+    - button "VN" [ref=e8] [cursor=pointer]
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]: ⚙
+      - heading "HWK QIP Incentive System" [level=1] [ref=e12]
+      - generic [ref=e13]: 품질 인센티브 관리 시스템
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]: 이메일
+        - textbox "이메일" [ref=e18]:
+          - /placeholder: email@example.com
+      - generic [ref=e19]:
+        - generic [ref=e20]: 비밀번호
+        - textbox "비밀번호" [ref=e21]:
+          - /placeholder: ••••••••
+      - button "로그인" [ref=e22] [cursor=pointer]
+  - generic [ref=e23]: Version 10.0 - Firestore Secure Architecture

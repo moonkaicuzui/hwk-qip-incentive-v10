@@ -1,0 +1,157 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: Q
+        - generic [ref=e6]:
+          - generic [ref=e7]: System Feedback
+          - generic [ref=e8]: Issue Report & Improvement Request
+      - generic [ref=e9]:
+        - link " Dashboard" [ref=e10] [cursor=pointer]:
+          - /url: selector.html
+          - generic [ref=e11]: 
+          - text: Dashboard
+        - generic [ref=e12]: ksmoon@hsvina.com
+        - button "" [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: 
+  - generic [ref=e15]:
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: "3"
+        - generic [ref=e19]: Total
+      - generic [ref=e20]:
+        - generic [ref=e21]: "0"
+        - generic [ref=e22]: Submitted
+      - generic [ref=e23]:
+        - generic [ref=e24]: "0"
+        - generic [ref=e25]: Reviewing
+      - generic [ref=e26]:
+        - generic [ref=e27]: "0"
+        - generic [ref=e28]: In Progress
+      - generic [ref=e29]:
+        - generic [ref=e30]: "3"
+        - generic [ref=e31]: Completed
+      - generic [ref=e32]:
+        - generic [ref=e33]: "0"
+        - generic [ref=e34]: Rejected
+    - generic [ref=e35]:
+      - button " Feedback List" [ref=e36] [cursor=pointer]:
+        - generic [ref=e37]: 
+        - text: Feedback List
+      - button " New Request" [ref=e38] [cursor=pointer]:
+        - generic [ref=e39]: 
+        - text: New Request
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - button "All" [ref=e42] [cursor=pointer]
+        - button "Submitted" [ref=e43] [cursor=pointer]
+        - button "Reviewing" [ref=e44] [cursor=pointer]
+        - button "In Progress" [ref=e45] [cursor=pointer]
+        - button "Completed" [ref=e46] [cursor=pointer]
+        - button "Rejected" [ref=e47] [cursor=pointer]
+      - generic [ref=e48]:
+        - generic [ref=e52] [cursor=pointer]:
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - text: Request to Correct C6 & C7 Logic from 2 to 3 consective months
+              - generic [ref=e55]:
+                - generic [ref=e56]: 
+                - text: "3"
+            - generic [ref=e57]:
+              - generic [ref=e58]: HIGH
+              - generic [ref=e59]: BUG
+              - generic [ref=e60]: COMPLETED
+          - generic [ref=e61]: Dear sir, According to the policy, the fail condition should be triggered after 3 consecutive months. (2026 no change condition 6 & 7) However, the sy...
+          - generic [ref=e62]:
+            - generic [ref=e63]: 
+            - text: huynhnhurgqa04@hsvina.com ·
+            - generic [ref=e64]: 
+            - text: 2026-03-31 16:39
+        - generic [ref=e65] [cursor=pointer]:
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - text: Incentive February System Data Not Updating
+              - generic [ref=e68]:
+                - generic [ref=e69]: 
+                - text: "2"
+            - generic [ref=e70]:
+              - generic [ref=e71]: CRITICAL
+              - generic [ref=e72]: BUG
+              - generic [ref=e73]: COMPLETED
+          - generic [ref=e74]: Dear Sir, I would like to report an issue regarding the data update on the Incentive February System. Currently, I uploaded the updated basic_manpower...
+          - generic [ref=e75]:
+            - generic [ref=e76]: 
+            - text: huynhnhurgqa04@hsvina.com ·
+            - generic [ref=e77]: 
+            - text: 2026-03-11 18:07
+        - generic [ref=e78] [cursor=pointer]:
+          - generic [ref=e79]:
+            - generic [ref=e80]:
+              - text: Feedback page missing previously reported issues
+              - generic [ref=e81]:
+                - generic [ref=e82]: 
+                - text: "1"
+            - generic [ref=e83]:
+              - generic [ref=e84]: HIGH
+              - generic [ref=e85]: BUG
+              - generic [ref=e86]: COMPLETED
+          - generic [ref=e87]: Dear sir, I found an issue on the Feedback page. The issues that were previously reported are now missing and cannot be seen in the list. Could you ...
+          - generic [ref=e88]:
+            - generic [ref=e89]: 
+            - text: ksmoon@hsvina.com ·
+            - generic [ref=e90]: 
+            - text: 2026-03-10 09:01
+    - text:     
+  - dialog [active] [ref=e91]:
+    - generic [ref=e92]:
+      - generic [ref=e93]:
+        - heading "Request to Correct C6 & C7 Logic from 2 to 3 consective months" [level=5] [ref=e126]
+        - button [ref=e95] [cursor=pointer]
+      - generic [ref=e96]:
+        - generic [ref=e127]:
+          - generic [ref=e128]: BUG
+          - generic [ref=e129]: HIGH
+          - generic [ref=e130]: COMPLETED
+        - generic [ref=e131]:
+          - generic [ref=e132]:
+            - generic [ref=e133]: 
+            - text: huynhnhurgqa04@hsvina.com · 2026-03-31 16:39
+          - generic [ref=e134]:
+            - generic [ref=e135]: 
+            - text: "Notification: ksmoon@hsvina.com"
+          - generic [ref=e136]: "Dear sir, According to the policy, the fail condition should be triggered after 3 consecutive months. (2026 no change condition 6 & 7) However, the system is currently triggering the fail status after 2 consecutive months. Previously, I already updated the threshold setting to 3 consecutive months (pic 2), but it appears that the system logic has not applied this change yet. Example: Employee ID 624060040 failed 2 consecutive months (pic 1), but the system already marked C6 as Fail (pic 3). As a result, Direct Boss ID 620090386 was also marked Fail under C7(pic 3). Please review and help us to update the logic of C6 and C7 to correctly apply the 3-consecutive-month."
+        - heading " Attachments (3)" [level=6] [ref=e137]:
+          - generic [ref=e138]: 
+          - text: Attachments (3)
+        - generic [ref=e139]:
+          - generic "Click to enlarge" [ref=e140] [cursor=pointer]:
+            - img "incenitve 3.31 1.png" [ref=e141]
+          - generic "Click to enlarge" [ref=e142] [cursor=pointer]:
+            - img "incenitve 3.31 3.png" [ref=e143]
+          - generic "Click to enlarge" [ref=e144] [cursor=pointer]:
+            - img "incentive 3.31 2.png" [ref=e145]
+        - heading " Timeline" [level=6] [ref=e146]:
+          - generic [ref=e147]: 
+          - text: Timeline
+        - generic [ref=e150]:
+          - generic [ref=e151]: Submitted by huynhnhurgqa04@hsvina.com
+          - generic [ref=e152]: 2026-03-31 16:39
+        - generic [ref=e155]:
+          - generic [ref=e156]: Review started by Admin
+          - generic [ref=e157]: 2026-03-31 17:12
+        - generic [ref=e160]:
+          - generic [ref=e161]: Work started by Admin
+          - generic [ref=e162]: 2026-03-31 17:12
+        - generic [ref=e165]:
+          - generic [ref=e166]: Completed by Admin
+          - generic [ref=e167]: 2026-03-31 20:04
+        - generic [ref=e168]:
+          - generic [ref=e169]:
+            - generic [ref=e170]: 
+            - text: Admin Response
+          - generic [ref=e171]: "수정 완료 및 검증 완료. _is_consecutive_failure_for_year()가 config.thresholds.consecutive_aql_months(=3)를 참조하도록 변경. 파이프라인 재실행 후 확인: 624060040 C6=PASS, 620090386 C7=PASS. (624060040은 C5/C9 다른 조건 미충족으로 인센티브 0 유지)"
+      - generic [ref=e121]:
+        - button " Reopen" [ref=e172] [cursor=pointer]:
+          - generic [ref=e173]: 
+          - text: Reopen
+        - button "Close" [ref=e174] [cursor=pointer]

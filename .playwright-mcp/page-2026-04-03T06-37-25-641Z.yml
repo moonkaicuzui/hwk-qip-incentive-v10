@@ -1,0 +1,29 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: ⚙
+        - generic [ref=e6]:
+          - generic [ref=e7]: HWK QIP Incentive Dashboard
+          - generic [ref=e8]: 월별 인센티브 현황
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - button "KO" [ref=e11] [cursor=pointer]
+          - button "EN" [ref=e12] [cursor=pointer]
+          - button "VN" [ref=e13] [cursor=pointer]
+        - link " Feedback" [ref=e14] [cursor=pointer]:
+          - /url: feedback.html
+          - generic [ref=e15]: 
+          - text: Feedback
+        - link "Admin" [ref=e16] [cursor=pointer]:
+          - /url: admin.html
+        - generic [ref=e17]: ksmoon@hsvina.com
+        - button "⏻ 로그아웃" [ref=e18] [cursor=pointer]
+  - main [ref=e19]:
+    - heading "대시보드 월 선택" [level=2] [ref=e20]
+    - paragraph [ref=e21]: 조회할 월을 선택하세요. 최신 데이터가 맨 위에 표시됩니다.
+    - generic [ref=e22]:
+      - status [ref=e23]:
+        - generic [ref=e24]: Loading...
+      - paragraph [ref=e25]: 데이터를 불러오는 중...
+  - contentinfo [ref=e26]: Version 10.0 - Firestore Secure Architecture

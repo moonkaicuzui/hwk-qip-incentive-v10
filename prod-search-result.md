@@ -1,0 +1,136 @@
+- generic [ref=e1]:
+  - text: 
+  - banner [ref=e26]:
+    - generic [ref=e27]:
+      - heading "HWK QIP Incentive Dashboard" [level=1] [ref=e28]
+      - generic [ref=e29]:
+        - text: "March 2026 | 최종 업데이트: 2026. 3. 27. 오후 10:39:34"
+        - 'generic "데이터 동기화: 18분 전 | 다음 자동 동기화: 12분 후" [ref=e1097] [cursor=pointer]':
+          - generic [ref=e1098]: 🟢 최신 데이터
+          - generic [ref=e1099]: 18분 전
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - button "KO" [ref=e33] [cursor=pointer]
+        - button "EN" [ref=e34] [cursor=pointer]
+        - button "VN" [ref=e35] [cursor=pointer]
+      - generic [ref=e36]:
+        - button "📋" [ref=e37] [cursor=pointer]
+        - button " 내 인센티브" [ref=e38] [cursor=pointer]:
+          - generic [ref=e39]: 
+          - text: 내 인센티브
+        - button " Excel" [ref=e40] [cursor=pointer]:
+          - generic [ref=e41]: 
+          - text: Excel
+        - button "📅 📋 최종 보고서" [ref=e85] [cursor=pointer]
+      - generic [ref=e43]:
+        - link "← 월 선택" [ref=e86] [cursor=pointer]:
+          - /url: selector.html
+        - generic [ref=e87]: ksmoon@hsvina.com
+        - button " 로그아웃" [ref=e46] [cursor=pointer]:
+          - generic [ref=e47]: 
+          - text: 로그아웃
+  - tablist [ref=e48]:
+    - tab "요약" [ref=e49] [cursor=pointer]
+    - tab "직급별 상세" [ref=e50] [cursor=pointer]
+    - tab "개인별 상세" [selected] [ref=e51] [cursor=pointer]
+    - tab "인센티브 기준" [ref=e52] [cursor=pointer]
+    - tab "조직도" [ref=e53] [cursor=pointer]
+    - tab "팀 관리" [ref=e54] [cursor=pointer]
+    - tab "요약 및 시스템 검증" [ref=e55] [cursor=pointer]
+    - tab " 🔍 개인 출결 조회" [ref=e88] [cursor=pointer]:
+      - generic [ref=e57]: 
+      - text: 🔍 개인 출결 조회
+  - text:                        
+  - tabpanel [ref=e286]:
+    - generic [ref=e287]:
+      - textbox "사번 또는 이름 검색" [active] [ref=e288]: "624110015"
+      - combobox [ref=e289]:
+        - option "전체 직급" [selected]
+        - option "(V) SUPERVISOR"
+        - option "A.MANAGER"
+        - option "AQL INSPECTOR"
+        - option "ASSEMBLY INSPECTOR"
+        - option "AUDIT & TRAINING TEAM"
+        - option "BOTTOM INSPECTOR"
+        - option "CUTTING INSPECTOR"
+        - option "GROUP LEADER"
+        - option "LINE LEADER"
+        - option "MANAGER"
+        - option "MODEL MASTER"
+        - option "MTL INSPECTOR"
+        - option "NEW"
+        - option "OCPT STFF"
+        - option "OSC INSPECTOR"
+        - option "QA TEAM"
+        - option "RQC"
+        - option "STITCHING INSPECTOR"
+      - combobox [ref=e290]:
+        - option "전체 Building" [selected]
+        - option "A"
+        - option "A1"
+        - option "A2"
+        - option "B"
+        - option "B1"
+        - option "B2"
+        - option "B3"
+        - option "C"
+        - option "D"
+        - option "E1"
+        - option "E2"
+        - option "EZ HAPPO"
+        - option "FG-WH"
+        - option "INHOUSE EZ"
+        - option "INHOUSE PRINTING"
+        - option "MTL WH"
+        - option "QA OFFICE"
+        - option "QIP OFFICE"
+      - combobox [ref=e291]:
+        - option "전체" [selected]
+        - option "수령"
+        - option "미수령"
+      - combobox [ref=e292]:
+        - option "전체 TYPE" [selected]
+        - option "TYPE-1"
+        - option "TYPE-2"
+        - option "TYPE-3"
+    - table [ref=e294]:
+      - rowgroup [ref=e295]:
+        - row "번호 사번 이름 직급 Building TYPE 출근율 AQL 5PRS 인센티브 상세" [ref=e296]:
+          - columnheader "번호" [ref=e297]
+          - columnheader "사번" [ref=e298] [cursor=pointer]
+          - columnheader "이름" [ref=e299] [cursor=pointer]
+          - columnheader "직급" [ref=e300] [cursor=pointer]
+          - columnheader "Building" [ref=e301] [cursor=pointer]
+          - columnheader "TYPE" [ref=e302] [cursor=pointer]
+          - columnheader "출근율" [ref=e303]
+          - columnheader "AQL" [ref=e304] [cursor=pointer]
+          - columnheader "5PRS" [ref=e305]
+          - columnheader "인센티브" [ref=e306] [cursor=pointer]
+          - columnheader "상세" [ref=e307]
+      - rowgroup [ref=e308]:
+        - row "1 624110015 TRƯƠNG THỦY TIÊN OSC INSPECTOR B TYPE-2 94.1% ➖ N/A ➖ N/A 461.764 VND " [ref=e1074]:
+          - cell "1" [ref=e1075]
+          - cell "624110015" [ref=e1076]
+          - cell "TRƯƠNG THỦY TIÊN" [ref=e1077]:
+            - link "TRƯƠNG THỦY TIÊN" [ref=e1078] [cursor=pointer]:
+              - /url: javascript:void(0)
+          - cell "OSC INSPECTOR" [ref=e1079]
+          - cell "B" [ref=e1080]
+          - cell "TYPE-2" [ref=e1081]
+          - cell "94.1%" [ref=e1082]
+          - cell "➖ N/A" [ref=e1083]
+          - cell "➖ N/A" [ref=e1084]
+          - cell "461.764 VND" [ref=e1085]
+          - cell "" [ref=e1086]:
+            - button "" [ref=e1087] [cursor=pointer]:
+              - generic [ref=e1088]: 
+    - generic [ref=e1089]:
+      - generic [ref=e1090]: 1-1 / 1명
+      - generic [ref=e1091]:
+        - button "" [disabled] [ref=e1092]:
+          - generic [ref=e1093]: 
+        - button "1" [ref=e1094] [cursor=pointer]
+        - button "" [disabled] [ref=e1095]:
+          - generic [ref=e1096]: 
+  - text:  −  −     −   −  −    −  −           %                      
+  - contentinfo [ref=e81]: "HWK QIP Incentive Dashboard v10.0 | Data source: Firestore | 2026. 3. 27. 오후 10:56:35"

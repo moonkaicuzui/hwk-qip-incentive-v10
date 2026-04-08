@@ -1,0 +1,101 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: ⚙
+        - generic [ref=e9]:
+          - generic [ref=e10]: HWK QIP Incentive Dashboard
+          - generic [ref=e11]: 월별 인센티브 현황
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - button "KO" [ref=e14] [cursor=pointer]
+          - button "EN" [ref=e15] [cursor=pointer]
+          - button "VN" [ref=e16] [cursor=pointer]
+        - link " Feedback" [ref=e17] [cursor=pointer]:
+          - /url: feedback.html
+          - generic [ref=e18]: 
+          - text: Feedback
+        - link "Admin" [ref=e28] [cursor=pointer]:
+          - /url: admin.html
+        - generic [ref=e29]: ksmoon@hsvina.com
+        - button "⏻ 로그아웃" [ref=e19] [cursor=pointer]
+  - main [ref=e20]:
+    - heading "대시보드 월 선택" [level=2] [ref=e21]
+    - paragraph [ref=e22]: 조회할 월을 선택하세요. 최신 데이터가 맨 위에 표시됩니다.
+    - generic [ref=e30]:
+      - link "2026년 3월 MARCH 2026 448 직원 수 176.7M 총 인센티브 337 수령자" [ref=e31] [cursor=pointer]:
+        - /url: dashboard.html?month=march&year=2026
+        - generic [ref=e32]:
+          - generic [ref=e33]: 2026년 3월
+          - generic [ref=e34]: MARCH 2026
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37]: "448"
+            - generic [ref=e38]: 직원 수
+          - generic [ref=e40]:
+            - generic [ref=e41]: 176.7M
+            - generic [ref=e42]: 총 인센티브
+          - generic [ref=e44]:
+            - generic [ref=e45]: "337"
+            - generic [ref=e46]: 수령자
+      - link "2026년 2월 FEBRUARY 2026 429 직원 수 188.5M 총 인센티브 358 수령자" [ref=e47] [cursor=pointer]:
+        - /url: dashboard.html?month=february&year=2026
+        - generic [ref=e48]:
+          - generic [ref=e49]: 2026년 2월
+          - generic [ref=e50]: FEBRUARY 2026
+        - generic [ref=e51]:
+          - generic [ref=e52]:
+            - generic [ref=e53]: "429"
+            - generic [ref=e54]: 직원 수
+          - generic [ref=e56]:
+            - generic [ref=e57]: 188.5M
+            - generic [ref=e58]: 총 인센티브
+          - generic [ref=e60]:
+            - generic [ref=e61]: "358"
+            - generic [ref=e62]: 수령자
+      - link "2026년 1월 JANUARY 2026 420 직원 수 184.4M 총 인센티브 379 수령자" [ref=e63] [cursor=pointer]:
+        - /url: dashboard.html?month=january&year=2026
+        - generic [ref=e64]:
+          - generic [ref=e65]: 2026년 1월
+          - generic [ref=e66]: JANUARY 2026
+        - generic [ref=e67]:
+          - generic [ref=e68]:
+            - generic [ref=e69]: "420"
+            - generic [ref=e70]: 직원 수
+          - generic [ref=e72]:
+            - generic [ref=e73]: 184.4M
+            - generic [ref=e74]: 총 인센티브
+          - generic [ref=e76]:
+            - generic [ref=e77]: "379"
+            - generic [ref=e78]: 수령자
+      - link "2025년 12월 DECEMBER 2025 421 직원 수 180.8M 총 인센티브 372 수령자" [ref=e79] [cursor=pointer]:
+        - /url: dashboard.html?month=december&year=2025
+        - generic [ref=e80]:
+          - generic [ref=e81]: 2025년 12월
+          - generic [ref=e82]: DECEMBER 2025
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - generic [ref=e85]: "421"
+            - generic [ref=e86]: 직원 수
+          - generic [ref=e88]:
+            - generic [ref=e89]: 180.8M
+            - generic [ref=e90]: 총 인센티브
+          - generic [ref=e92]:
+            - generic [ref=e93]: "372"
+            - generic [ref=e94]: 수령자
+      - link "2025년 11월 NOVEMBER 2025 422 직원 수 80.2M 총 인센티브 311 수령자" [ref=e95] [cursor=pointer]:
+        - /url: dashboard.html?month=november&year=2025
+        - generic [ref=e96]:
+          - generic [ref=e97]: 2025년 11월
+          - generic [ref=e98]: NOVEMBER 2025
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - generic [ref=e101]: "422"
+            - generic [ref=e102]: 직원 수
+          - generic [ref=e104]:
+            - generic [ref=e105]: 80.2M
+            - generic [ref=e106]: 총 인센티브
+          - generic [ref=e108]:
+            - generic [ref=e109]: "311"
+            - generic [ref=e110]: 수령자
+  - contentinfo [ref=e27]: Version 10.0 - Firestore Secure Architecture

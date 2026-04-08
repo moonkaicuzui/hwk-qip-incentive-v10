@@ -1,0 +1,33 @@
+{
+  "qosContractVersion": "1.0",
+  "projectId": "hwk-qip-incentive-dashboard",
+  "projectName": "QIP Incentive Dashboard",
+  "qosCentralProject": "hwk-quality-os",
+  "collections": {
+    "system_feedback": {
+      "purpose": "system_feedback",
+      "syncDirection": "bidirectional",
+      "requiredFields": ["title", "status", "category", "priority", "createdBy", "createdAt", "updatedAt"],
+      "statusValues": ["open", "in_progress", "resolved", "closed"],
+      "categoryValues": ["bug", "feature", "question", "data_issue", "other"],
+      "priorityValues": ["low", "medium", "high", "critical"]
+    }
+  },
+  "settings": {
+    "email": { "path": "config/email", "syncDirection": "bidirectional", "qosOverride": false },
+    "smtp": { "path": "config/smtp_settings", "syncDirection": "qos_to_project", "qosOverride": true },
+    "suppliers": { "path": "config/suppliers", "syncDirection": "qos_to_project", "qosOverride": true },
+    "factoryLines": { "path": "config/factory_lines", "syncDirection": "qos_to_project", "qosOverride": true }
+  },
+  "syncMetadata": {
+    "originField": "_syncOrigin",
+    "timestampField": "_syncTimestamp",
+    "versionField": "_syncVersion",
+    "qosOriginValue": "hwk-quality-os"
+  },
+  "rules": {
+    "doNotModify": ["config/smtp_settings", "config/suppliers", "config/factory_lines"],
+    "doNotRename": ["system_feedback"],
+    "doNotRemoveFields": ["_syncOrigin", "_syncTimestamp"]
+  }
+}
