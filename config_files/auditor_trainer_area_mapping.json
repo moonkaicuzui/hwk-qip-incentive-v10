@@ -66,9 +66,9 @@
         }
       ]
     },
-    "619070185": {
-      "description": "Building D",
-      "name": "DANH THỊ KIM ANH",
+    "623080475": {
+      "description": "Building C",
+      "name": "SẦM TRÍ THÀNH",
       "conditions": [
         {
           "type": "AND",
@@ -78,7 +78,7 @@
               "column": "REPACKING PO"
             },
             {
-              "value": "D",
+              "value": "C",
               "column": "BUILDING"
             }
           ]
@@ -104,9 +104,9 @@
         }
       ]
     },
-    "623080475": {
-      "description": "Building C",
-      "name": "SẦM TRÍ THÀNH",
+    "619070185": {
+      "description": "Building D",
+      "name": "DANH THỊ KIM ANH",
       "conditions": [
         {
           "type": "AND",
@@ -116,7 +116,7 @@
               "column": "REPACKING PO"
             },
             {
-              "value": "C",
+              "value": "D",
               "column": "BUILDING"
             }
           ]
@@ -128,10 +128,10 @@
   "model_master": {
     "description": "Model Master - 전체 공장 담당",
     "employees": {
-      "620120386": {
+      "618030241": {
         "description": "Model Master - 전체 구역",
-        "name": "NGUYỄN NGỌC TUẤN",
         "position": "MODEL MASTER",
+        "name": "TRẦN THỊ THÚY ANH",
         "conditions": [
           {
             "type": "ALL",
@@ -141,8 +141,8 @@
       },
       "618110097": {
         "description": "Model Master - 전체 구역",
-        "name": "DANH THỊ ANH ĐÀO",
         "position": "MODEL MASTER",
+        "name": "DANH THỊ ANH ĐÀO",
         "conditions": [
           {
             "type": "ALL",
@@ -152,19 +152,19 @@
       },
       "620080295": {
         "description": "Model Master - 전체 구역",
+        "position_code": "QA2A",
         "name": "VÕ THỊ THÙY LINH",
         "conditions": [
           {
             "type": "ALL",
             "filters": []
           }
-        ],
-        "position_code": "QA2A"
+        ]
       },
-      "618030241": {
+      "620120386": {
         "description": "Model Master - 전체 구역",
-        "name": "TRẦN THỊ THÚY ANH",
         "position": "MODEL MASTER",
+        "name": "NGUYỄN NGỌC TUẤN",
         "conditions": [
           {
             "type": "ALL",
