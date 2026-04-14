@@ -1,64 +1,64 @@
 {
-  "description": "QIP Talent Pool 특별 인센티브 관리",
+  "last_updated": "2025-08-29",
   "version": "1.0",
+  "talent_pool": {
+    "members": [
+      {
+        "employee_id": "623060116",
+        "status": "active",
+        "currency": "VND",
+        "name": "Talent Pool Member 1",
+        "start_date": "2025-07-01",
+        "reason": "QIP Talent Pool Special Incentive",
+        "monthly_bonus": 150000,
+        "notes": "추가 인센티브 지급 대상자",
+        "end_date": "2025-12-31"
+      }
+    ],
+    "settings": {
+      "auto_apply": true,
+      "payment_timing": "with_regular_incentive",
+      "stack_with_regular": true,
+      "require_conditions": false
+    },
+    "eligibility_rules": {
+      "exclude_maternity_leave": false,
+      "minimum_attendance_rate": 0,
+      "require_active_status": true,
+      "exclude_resigned": true
+    }
+  },
+  "audit_trail": [
+    {
+      "employee_id": "623060116",
+      "authorized_by": "System Admin",
+      "action": "created",
+      "amount": 150000,
+      "period": "2025-07 to 2025-12",
+      "date": "2025-08-29"
+    }
+  ],
   "bonus_history": {
     "2025": {
       "8": [
         "623060116"
       ],
-      "11": [
-        "623060116"
-      ],
-      "7": [
+      "12": [
         "623060116"
       ],
       "9": [
         "623060116"
       ],
-      "12": [
+      "11": [
         "623060116"
       ],
       "10": [
         "623060116"
+      ],
+      "7": [
+        "623060116"
       ]
     }
   },
-  "talent_pool": {
-    "members": [
-      {
-        "currency": "VND",
-        "monthly_bonus": 150000,
-        "start_date": "2025-07-01",
-        "notes": "추가 인센티브 지급 대상자",
-        "reason": "QIP Talent Pool Special Incentive",
-        "name": "Talent Pool Member 1",
-        "status": "active",
-        "employee_id": "623060116",
-        "end_date": "2025-12-31"
-      }
-    ],
-    "eligibility_rules": {
-      "minimum_attendance_rate": 0,
-      "exclude_maternity_leave": false,
-      "require_active_status": true,
-      "exclude_resigned": true
-    },
-    "settings": {
-      "require_conditions": false,
-      "payment_timing": "with_regular_incentive",
-      "stack_with_regular": true,
-      "auto_apply": true
-    }
-  },
-  "audit_trail": [
-    {
-      "period": "2025-07 to 2025-12",
-      "date": "2025-08-29",
-      "authorized_by": "System Admin",
-      "employee_id": "623060116",
-      "amount": 150000,
-      "action": "created"
-    }
-  ],
-  "last_updated": "2025-08-29"
+  "description": "QIP Talent Pool 특별 인센티브 관리"
 }
