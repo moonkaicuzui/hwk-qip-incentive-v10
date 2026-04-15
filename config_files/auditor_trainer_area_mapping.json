@@ -1,13 +1,6 @@
 {
-  "default_reject_rate_threshold": 2.0,
-  "notes": {
-    "usage": "각 직원의 Employee No를 키로 사용하여 담당 구역 조건을 확인",
-    "model_master_note": "Model Master (QA2A)는 전체 구역을 담당하며 별도 로직으로 처리",
-    "reject_rate_calculation": "해당 조건에 맞는 AQL 데이터만 필터링하여 reject율 계산",
-    "description": "Auditor/Trainer 및 Model Master별 담당 구역 매핑"
-  },
   "auditor_trainer_areas": {
-    "618060092": {
+    "623080475": {
       "conditions": [
         {
           "type": "AND",
@@ -17,23 +10,14 @@
               "column": "REPACKING PO"
             },
             {
-              "value": "B",
+              "value": "C",
               "column": "BUILDING"
-            }
-          ]
-        },
-        {
-          "type": "OR",
-          "filters": [
-            {
-              "value": "REPACKING PO",
-              "column": "REPACKING PO"
             }
           ]
         }
       ],
-      "name": "CAO THỊ TỐ NGUYÊN",
-      "description": "Building B & Repacking BS"
+      "name": "SẦM TRÍ THÀNH",
+      "description": "Building C"
     },
     "618110087": {
       "conditions": [
@@ -92,6 +76,34 @@
       "name": "PHẠM MỸ HUYỀN",
       "description": "Building D"
     },
+    "618060092": {
+      "conditions": [
+        {
+          "type": "AND",
+          "filters": [
+            {
+              "value": "NORMAL PO",
+              "column": "REPACKING PO"
+            },
+            {
+              "value": "B",
+              "column": "BUILDING"
+            }
+          ]
+        },
+        {
+          "type": "OR",
+          "filters": [
+            {
+              "value": "REPACKING PO",
+              "column": "REPACKING PO"
+            }
+          ]
+        }
+      ],
+      "name": "CAO THỊ TỐ NGUYÊN",
+      "description": "Building B & Repacking BS"
+    },
     "619070185": {
       "conditions": [
         {
@@ -110,31 +122,18 @@
       ],
       "name": "DANH THỊ KIM ANH",
       "description": "Building D"
-    },
-    "623080475": {
-      "conditions": [
-        {
-          "type": "AND",
-          "filters": [
-            {
-              "value": "NORMAL PO",
-              "column": "REPACKING PO"
-            },
-            {
-              "value": "C",
-              "column": "BUILDING"
-            }
-          ]
-        }
-      ],
-      "name": "SẦM TRÍ THÀNH",
-      "description": "Building C"
     }
   },
+  "notes": {
+    "reject_rate_calculation": "해당 조건에 맞는 AQL 데이터만 필터링하여 reject율 계산",
+    "model_master_note": "Model Master (QA2A)는 전체 구역을 담당하며 별도 로직으로 처리",
+    "description": "Auditor/Trainer 및 Model Master별 담당 구역 매핑",
+    "usage": "각 직원의 Employee No를 키로 사용하여 담당 구역 조건을 확인"
+  },
+  "default_reject_rate_threshold": 2.0,
   "model_master": {
     "employees": {
       "620120386": {
-        "position": "MODEL MASTER",
         "conditions": [
           {
             "type": "ALL",
@@ -142,17 +141,7 @@
           }
         ],
         "name": "NGUYỄN NGỌC TUẤN",
-        "description": "Model Master - 전체 구역"
-      },
-      "618110097": {
         "position": "MODEL MASTER",
-        "conditions": [
-          {
-            "type": "ALL",
-            "filters": []
-          }
-        ],
-        "name": "DANH THỊ ANH ĐÀO",
         "description": "Model Master - 전체 구역"
       },
       "620080295": {
@@ -163,11 +152,21 @@
           }
         ],
         "name": "VÕ THỊ THÙY LINH",
-        "position_code": "QA2A",
+        "description": "Model Master - 전체 구역",
+        "position_code": "QA2A"
+      },
+      "618110097": {
+        "conditions": [
+          {
+            "type": "ALL",
+            "filters": []
+          }
+        ],
+        "name": "DANH THỊ ANH ĐÀO",
+        "position": "MODEL MASTER",
         "description": "Model Master - 전체 구역"
       },
       "618030241": {
-        "position": "MODEL MASTER",
         "conditions": [
           {
             "type": "ALL",
@@ -175,6 +174,7 @@
           }
         ],
         "name": "TRẦN THỊ THÚY ANH",
+        "position": "MODEL MASTER",
         "description": "Model Master - 전체 구역"
       }
     },
