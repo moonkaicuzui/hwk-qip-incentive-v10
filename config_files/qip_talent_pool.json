@@ -1,56 +1,52 @@
 {
-  "version": "1.0",
   "audit_trail": [
     {
+      "employee_id": "623060116",
       "period": "2025-07 to 2025-12",
+      "action": "created",
       "date": "2025-08-29",
       "amount": 150000,
-      "authorized_by": "System Admin",
-      "action": "created",
-      "employee_id": "623060116"
+      "authorized_by": "System Admin"
     }
   ],
-  "description": "QIP Talent Pool 특별 인센티브 관리",
-  "last_updated": "2025-08-29",
   "talent_pool": {
     "settings": {
+      "payment_timing": "with_regular_incentive",
       "require_conditions": false,
       "auto_apply": true,
-      "stack_with_regular": true,
-      "payment_timing": "with_regular_incentive"
+      "stack_with_regular": true
     },
     "members": [
       {
-        "end_date": "2025-12-31",
-        "status": "active",
-        "monthly_bonus": 150000,
-        "reason": "QIP Talent Pool Special Incentive",
         "start_date": "2025-07-01",
-        "currency": "VND",
         "notes": "추가 인센티브 지급 대상자",
+        "end_date": "2025-12-31",
         "name": "Talent Pool Member 1",
-        "employee_id": "623060116"
+        "status": "active",
+        "reason": "QIP Talent Pool Special Incentive",
+        "currency": "VND",
+        "employee_id": "623060116",
+        "monthly_bonus": 150000
       }
     ],
     "eligibility_rules": {
+      "minimum_attendance_rate": 0,
       "exclude_maternity_leave": false,
       "require_active_status": true,
-      "minimum_attendance_rate": 0,
       "exclude_resigned": true
     }
   },
+  "version": "1.0",
+  "description": "QIP Talent Pool 특별 인센티브 관리",
   "bonus_history": {
     "2025": {
-      "11": [
-        "623060116"
-      ],
       "9": [
         "623060116"
       ],
-      "12": [
+      "7": [
         "623060116"
       ],
-      "7": [
+      "12": [
         "623060116"
       ],
       "8": [
@@ -58,7 +54,11 @@
       ],
       "10": [
         "623060116"
+      ],
+      "11": [
+        "623060116"
       ]
     }
-  }
+  },
+  "last_updated": "2025-08-29"
 }
