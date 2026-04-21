@@ -322,9 +322,9 @@
         "total": 2400000
       },
       "april_2026_incentive": {
-        "part1_months": 0,
-        "part3_months": 0,
-        "total": 0
+        "part1_months": 13,
+        "part3_months": 13,
+        "total": 2600000
       }
     }
   },
