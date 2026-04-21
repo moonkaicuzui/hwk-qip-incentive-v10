@@ -1,30 +1,22 @@
 {
   "position_mappings": {
     "AQL INSPECTOR": {
-      "mapped_to": "ASSEMBLY INSPECTOR",
-      "description": "TYPE-2 AQL INSPECTOR는 TYPE-1 ASSEMBLY INSPECTOR 평균"
-    },
-    "RQC": {
-      "mapped_to": "ASSEMBLY INSPECTOR",
-      "description": "RQC는 Assembly Inspector와 동일한 계산"
-    },
-    "GROUP LEADER": {
-      "mapped_to": "GROUP LEADER",
-      "description": "TYPE-2 GROUP LEADER는 TYPE-1 GROUP LEADER 평균"
-    },
-    "OCPT STFF": {
-      "mapped_to": "ASSEMBLY INSPECTOR",
-      "description": "OCPT Staff는 Assembly Inspector와 동일한 계산"
+      "description": "TYPE-2 AQL INSPECTOR는 TYPE-1 ASSEMBLY INSPECTOR 평균",
+      "mapped_to": "ASSEMBLY INSPECTOR"
     },
     "LINE LEADER": {
-      "mapped_to": "LINE LEADER",
-      "description": "TYPE-2 LINE LEADER는 TYPE-1 LINE LEADER 평균"
+      "description": "TYPE-2 LINE LEADER는 TYPE-1 LINE LEADER 평균",
+      "mapped_to": "LINE LEADER"
     },
-    "CUTTING INSPECTOR": {
-      "mapped_to": "ASSEMBLY INSPECTOR",
-      "description": "Cutting Inspector는 Assembly Inspector와 동일한 계산"
+    "OCPT STFF": {
+      "description": "OCPT Staff는 Assembly Inspector와 동일한 계산",
+      "mapped_to": "ASSEMBLY INSPECTOR"
     },
     "QA TEAM": {
+      "QA3B": {
+        "description": "QA3B 코드는 ASSEMBLY INSPECTOR 평균 적용",
+        "mapped_to": "ASSEMBLY INSPECTOR"
+      },
       "default": {
         "description": "기본값은 ASSEMBLY INSPECTOR 평균 적용",
         "mapped_to": "ASSEMBLY INSPECTOR"
@@ -32,39 +24,47 @@
       "QA3A": {
         "description": "QA3A 코드는 GROUP LEADER 평균 적용",
         "mapped_to": "GROUP LEADER"
-      },
-      "QA3B": {
-        "description": "QA3B 코드는 ASSEMBLY INSPECTOR 평균 적용",
-        "mapped_to": "ASSEMBLY INSPECTOR"
       }
     },
-    "(V) SUPERVISOR": {
-      "mapped_to": "(VICE) SUPERVISOR",
-      "description": "TYPE-2 (V) SUPERVISOR는 TYPE-1 (VICE) SUPERVISOR 평균"
+    "GROUP LEADER": {
+      "description": "TYPE-2 GROUP LEADER는 TYPE-1 GROUP LEADER 평균",
+      "mapped_to": "GROUP LEADER"
     },
-    "OSC INSPECTOR": {
-      "mapped_to": "ASSEMBLY INSPECTOR",
-      "description": "OSC Inspector는 Assembly Inspector와 동일한 계산"
-    },
-    "ASSEMBLY INSPECTOR": {
-      "mapped_to": "ASSEMBLY INSPECTOR",
-      "description": "TYPE-2 ASSEMBLY INSPECTOR는 TYPE-1 ASSEMBLY INSPECTOR 평균"
-    },
-    "MTL INSPECTOR": {
-      "mapped_to": "ASSEMBLY INSPECTOR",
-      "description": "MTL Inspector는 Assembly Inspector와 동일한 계산"
+    "CUTTING INSPECTOR": {
+      "description": "Cutting Inspector는 Assembly Inspector와 동일한 계산",
+      "mapped_to": "ASSEMBLY INSPECTOR"
     },
     "STITCHING INSPECTOR": {
-      "mapped_to": "ASSEMBLY INSPECTOR",
-      "description": "Stitching Inspector는 Assembly Inspector와 동일한 계산"
+      "description": "Stitching Inspector는 Assembly Inspector와 동일한 계산",
+      "mapped_to": "ASSEMBLY INSPECTOR"
+    },
+    "OSC INSPECTOR": {
+      "description": "OSC Inspector는 Assembly Inspector와 동일한 계산",
+      "mapped_to": "ASSEMBLY INSPECTOR"
+    },
+    "RQC": {
+      "description": "RQC는 Assembly Inspector와 동일한 계산",
+      "mapped_to": "ASSEMBLY INSPECTOR"
+    },
+    "MTL INSPECTOR": {
+      "description": "MTL Inspector는 Assembly Inspector와 동일한 계산",
+      "mapped_to": "ASSEMBLY INSPECTOR"
     },
     "BOTTOM INSPECTOR": {
-      "mapped_to": "ASSEMBLY INSPECTOR",
-      "description": "Bottom Inspector는 Assembly Inspector와 동일한 계산"
+      "description": "Bottom Inspector는 Assembly Inspector와 동일한 계산",
+      "mapped_to": "ASSEMBLY INSPECTOR"
+    },
+    "ASSEMBLY INSPECTOR": {
+      "description": "TYPE-2 ASSEMBLY INSPECTOR는 TYPE-1 ASSEMBLY INSPECTOR 평균",
+      "mapped_to": "ASSEMBLY INSPECTOR"
     },
     "A.MANAGER": {
-      "mapped_to": "ASSISTANT MANAGER",
-      "description": "TYPE-2 A.MANAGER는 TYPE-1 ASSISTANT MANAGER 평균"
+      "description": "TYPE-2 A.MANAGER는 TYPE-1 ASSISTANT MANAGER 평균",
+      "mapped_to": "ASSISTANT MANAGER"
+    },
+    "(V) SUPERVISOR": {
+      "description": "TYPE-2 (V) SUPERVISOR는 TYPE-1 (VICE) SUPERVISOR 평균",
+      "mapped_to": "(VICE) SUPERVISOR"
     }
   }
 }
