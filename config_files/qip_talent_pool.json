@@ -1,4 +1,16 @@
 {
+  "audit_trail": [
+    {
+      "date": "2025-08-29",
+      "period": "2025-07 to 2025-12",
+      "authorized_by": "System Admin",
+      "employee_id": "623060116",
+      "action": "created",
+      "amount": 150000
+    }
+  ],
+  "description": "QIP Talent Pool 특별 인센티브 관리",
+  "version": "1.0",
   "bonus_history": {
     "2025": {
       "8": [
@@ -7,34 +19,35 @@
       "12": [
         "623060116"
       ],
-      "7": [
+      "11": [
         "623060116"
       ],
-      "11": [
+      "9": [
         "623060116"
       ],
       "10": [
         "623060116"
       ],
-      "9": [
+      "7": [
         "623060116"
       ]
     }
   },
   "last_updated": "2025-08-29",
-  "version": "1.0",
-  "audit_trail": [
-    {
-      "employee_id": "623060116",
-      "authorized_by": "System Admin",
-      "amount": 150000,
-      "period": "2025-07 to 2025-12",
-      "action": "created",
-      "date": "2025-08-29"
-    }
-  ],
-  "description": "QIP Talent Pool 특별 인센티브 관리",
   "talent_pool": {
+    "members": [
+      {
+        "reason": "QIP Talent Pool Special Incentive",
+        "end_date": "2025-12-31",
+        "start_date": "2025-07-01",
+        "currency": "VND",
+        "status": "active",
+        "monthly_bonus": 150000,
+        "name": "Talent Pool Member 1",
+        "employee_id": "623060116",
+        "notes": "추가 인센티브 지급 대상자"
+      }
+    ],
     "settings": {
       "require_conditions": false,
       "auto_apply": true,
@@ -42,23 +55,10 @@
       "payment_timing": "with_regular_incentive"
     },
     "eligibility_rules": {
-      "exclude_maternity_leave": false,
-      "minimum_attendance_rate": 0,
       "require_active_status": true,
-      "exclude_resigned": true
-    },
-    "members": [
-      {
-        "name": "Talent Pool Member 1",
-        "start_date": "2025-07-01",
-        "monthly_bonus": 150000,
-        "notes": "추가 인센티브 지급 대상자",
-        "status": "active",
-        "reason": "QIP Talent Pool Special Incentive",
-        "end_date": "2025-12-31",
-        "currency": "VND",
-        "employee_id": "623060116"
-      }
-    ]
+      "exclude_resigned": true,
+      "exclude_maternity_leave": false,
+      "minimum_attendance_rate": 0
+    }
   }
 }
