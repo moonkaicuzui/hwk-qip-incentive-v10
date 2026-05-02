@@ -1,17 +1,47 @@
 {
   "description": "QIP Talent Pool 특별 인센티브 관리",
+  "audit_trail": [
+    {
+      "period": "2025-07 to 2025-12",
+      "date": "2025-08-29",
+      "amount": 150000,
+      "action": "created",
+      "employee_id": "623060116",
+      "authorized_by": "System Admin"
+    }
+  ],
+  "last_updated": "2025-08-29",
+  "version": "1.0",
+  "talent_pool": {
+    "members": [
+      {
+        "currency": "VND",
+        "end_date": "2025-12-31",
+        "name": "Talent Pool Member 1",
+        "monthly_bonus": 150000,
+        "notes": "추가 인센티브 지급 대상자",
+        "reason": "QIP Talent Pool Special Incentive",
+        "employee_id": "623060116",
+        "start_date": "2025-07-01",
+        "status": "active"
+      }
+    ],
+    "settings": {
+      "auto_apply": true,
+      "payment_timing": "with_regular_incentive",
+      "require_conditions": false,
+      "stack_with_regular": true
+    },
+    "eligibility_rules": {
+      "minimum_attendance_rate": 0,
+      "require_active_status": true,
+      "exclude_maternity_leave": false,
+      "exclude_resigned": true
+    }
+  },
   "bonus_history": {
     "2025": {
-      "10": [
-        "623060116"
-      ],
       "8": [
-        "623060116"
-      ],
-      "9": [
-        "623060116"
-      ],
-      "7": [
         "623060116"
       ],
       "11": [
@@ -19,46 +49,16 @@
       ],
       "12": [
         "623060116"
+      ],
+      "7": [
+        "623060116"
+      ],
+      "9": [
+        "623060116"
+      ],
+      "10": [
+        "623060116"
       ]
     }
-  },
-  "talent_pool": {
-    "members": [
-      {
-        "monthly_bonus": 150000,
-        "employee_id": "623060116",
-        "start_date": "2025-07-01",
-        "name": "Talent Pool Member 1",
-        "currency": "VND",
-        "status": "active",
-        "reason": "QIP Talent Pool Special Incentive",
-        "end_date": "2025-12-31",
-        "notes": "추가 인센티브 지급 대상자"
-      }
-    ],
-    "eligibility_rules": {
-      "exclude_resigned": true,
-      "minimum_attendance_rate": 0,
-      "exclude_maternity_leave": false,
-      "require_active_status": true
-    },
-    "settings": {
-      "stack_with_regular": true,
-      "auto_apply": true,
-      "require_conditions": false,
-      "payment_timing": "with_regular_incentive"
-    }
-  },
-  "version": "1.0",
-  "audit_trail": [
-    {
-      "period": "2025-07 to 2025-12",
-      "amount": 150000,
-      "employee_id": "623060116",
-      "authorized_by": "System Admin",
-      "date": "2025-08-29",
-      "action": "created"
-    }
-  ],
-  "last_updated": "2025-08-29"
+  }
 }
