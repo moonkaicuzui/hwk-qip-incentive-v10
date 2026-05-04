@@ -98,6 +98,8 @@ def main():
         "customHtml": BODY_HTML,
         "attachments": attachments,
         "type": "aql_allowance_announcement",
+        # process_notifications.py는 sent==False 필터로 큐잉 문서 처리
+        "sent": False,
         "status": "pending",
         "createdAt": datetime.now(timezone.utc).isoformat() + "Z",
         "createdBy": "ksmoon@hsvina.com (manual queue)",
