@@ -1352,10 +1352,35 @@ const DashboardI18n = {
         'admin.aqlAllowances.revokeReason': { ko: '철회 사유 (선택)', en: 'Revoke Reason (optional)', vi: 'Lý do thu hồi (tùy chọn)' },
         'admin.aqlAllowances.applyError': { ko: 'AQL Allowance 적용 실패', en: 'AQL Allowance apply failed', vi: 'Áp dụng AQL Allowance thất bại' },
 
+        // ─── AQL Allowance — admin alert / 동적 라벨 (admin-aql-allowances.js) ──
+        'admin.aqlAllowances.attachmentMaxLimit': { ko: '첨부 파일은 최대 3개까지 가능합니다.', en: 'Maximum 3 attachments allowed.', vi: 'Tối đa 3 tệp đính kèm.' },
+        'admin.aqlAllowances.attachmentSizeExceeded': { ko: '파일이 너무 큽니다 (최대 2MB)', en: 'File too large (max 2MB)', vi: 'Tệp quá lớn (tối đa 2MB)' },
+        'admin.aqlAllowances.noResultReturned': { ko: '반환된 결과가 없습니다.', en: 'No result returned.', vi: 'Không có kết quả trả về.' },
+        'admin.aqlAllowances.previewRequired': { ko: '먼저 미리보기를 실행하세요.', en: 'Please run preview first.', vi: 'Vui lòng chạy xem trước trước.' },
+        'admin.aqlAllowances.allowanceNotFound': { ko: 'Allowance를 찾을 수 없습니다.', en: 'Allowance not found.', vi: 'Không tìm thấy Allowance.' },
+        'admin.aqlAllowances.modelsLabel': { ko: '모델', en: 'Models', vi: 'Mô hình' },
+        'admin.aqlAllowances.buildingsLabel': { ko: '건물', en: 'Buildings', vi: 'Tòa nhà' },
+        'admin.aqlAllowances.linesLabel': { ko: '라인', en: 'Lines', vi: 'Dây chuyền' },
+        'admin.aqlAllowances.revokeLabel': { ko: '철회 사유', en: 'Revoked', vi: 'Đã thu hồi' },
+        'admin.aqlAllowances.revokeError': { ko: 'AQL Allowance 철회 실패', en: 'AQL Allowance revoke failed', vi: 'Thu hồi AQL Allowance thất bại' },
+        'admin.aqlAllowances.actionStatusError': { ko: '액션 상태 변경 실패', en: 'Action status update failed', vi: 'Cập nhật trạng thái hành động thất bại' },
+
         // 모달용 AQL Allowance 뱃지 (출결과 구분, 파란색)
         'aqlAllowance.badge': { ko: 'AQL Allowance', en: 'AQL Allowance', vi: 'AQL Allowance' },
         'aqlAllowance.applied': { ko: 'AQL Allowance 적용됨', en: 'AQL Allowance Applied', vi: 'Đã áp dụng AQL Allowance' },
         'aqlAllowance.poRefs': { ko: 'PO 면제', en: 'PO Exemption', vi: 'Miễn PO' },
+        'aqlAllowance.appliedSection': { ko: 'AQL Allowance 적용 내역', en: 'AQL Allowance Details', vi: 'Chi tiết AQL Allowance' },
+        'aqlAllowance.countUnit': { ko: '건', en: ' item(s)', vi: ' mục' },
+        'aqlAllowance.exemptConditionsLabel': { ko: '면제 조건', en: 'Exempt Conditions', vi: 'Điều kiện miễn' },
+        'aqlAllowance.actionDueDateLabel': { ko: '액션 마감', en: 'Action Due Date', vi: 'Ngày hạn thực hiện' },
+        'aqlAllowance.statusLabel': { ko: '상태', en: 'Status', vi: 'Trạng thái' },
+        'aqlAllowance.rootCauseLabel': { ko: '근본 원인', en: 'Root Cause', vi: 'Nguyên nhân gốc' },
+        'aqlAllowance.actionPlanLabel': { ko: '액션 플랜', en: 'Action Plan', vi: 'Kế hoạch hành động' },
+        'aqlAllowance.beforeLabel': { ko: 'Before', en: 'Before', vi: 'Trước' },
+        'aqlAllowance.afterLabel': { ko: 'After', en: 'After', vi: 'Sau' },
+        'aqlAllowance.passRateLabel': { ko: 'Pass Rate', en: 'Pass Rate', vi: 'Tỷ lệ Pass' },
+        'aqlAllowance.incentiveLabel': { ko: 'Incentive', en: 'Incentive', vi: 'Incentive' },
+        'aqlAllowance.tooltipReasonLabel': { ko: '사유', en: 'Reason', vi: 'Lý do' },
 
         // Error messages (data loading)
         'error.loadEmployees': { ko: '직원 데이터를 불러올 수 없습니다. 연결 상태를 확인하고 다시 시도해주세요.', en: 'Failed to load employee data. Please check your connection and try again.', vi: 'Không thể tải dữ liệu nhân viên. Vui lòng kiểm tra kết nối và thử lại.' },
@@ -1506,6 +1531,14 @@ const DashboardI18n = {
                 dpSpan.setAttribute('data-i18n', dpKey);
                 dpSpan.textContent = DashboardI18n.t(dpKey);
             }
+        }
+        // Re-render admin allowance tables on language switch (Tab 5: 출결 / Tab 6: AQL)
+        // 동적 생성된 테이블은 [data-i18n] 자동 갱신 대상이 아니므로 명시적 재렌더 필요
+        if (typeof AdminAllowances !== 'undefined' && AdminAllowances.loadActiveList) {
+            try { AdminAllowances.loadActiveList(); } catch (e) { /* ignore */ }
+        }
+        if (typeof AdminAqlAllowances !== 'undefined' && AdminAqlAllowances.loadActiveList) {
+            try { AdminAqlAllowances.loadActiveList(); } catch (e) { /* ignore */ }
         }
         // (Dark mode toggle removed)
     },

@@ -163,7 +163,7 @@ var AdminAqlAllowances = {
         var self = this;
         if (!files || files.length === 0) return;
         if (files.length > 3) {
-            alert('첨부 파일은 최대 3개까지 가능합니다.');
+            alert(self._t('admin.aqlAllowances.attachmentMaxLimit'));
             document.getElementById('aql-attachments').value = '';
             return;
         }
@@ -174,7 +174,7 @@ var AdminAqlAllowances = {
 
         Array.prototype.forEach.call(files, function (file) {
             if (file.size > 1024 * 1024 * 2) { // 2MB 제한
-                alert(file.name + ': 파일이 너무 큽니다 (최대 2MB)');
+                alert(file.name + ': ' + self._t('admin.aqlAllowances.attachmentSizeExceeded'));
                 return;
             }
             var reader = new FileReader();
@@ -285,7 +285,7 @@ var AdminAqlAllowances = {
         if (!resultEl) return;
 
         if (!result || !result.autoComputed) {
-            resultEl.innerHTML = '<div class="alert alert-warning">No result returned.</div>';
+            resultEl.innerHTML = '<div class="alert alert-warning">' + t('admin.aqlAllowances.noResultReturned') + '</div>';
             return;
         }
 
@@ -310,15 +310,15 @@ var AdminAqlAllowances = {
 
         // Models, Buildings, Lines
         if (ac.models && ac.models.length > 0) {
-            html += '<div class="mb-2"><strong>Models:</strong> ' + ac.models.slice(0, 5).map(esc).join(', ');
+            html += '<div class="mb-2"><strong>' + t('admin.aqlAllowances.modelsLabel') + ':</strong> ' + ac.models.slice(0, 5).map(esc).join(', ');
             if (ac.models.length > 5) html += ' <span class="text-muted">… +' + (ac.models.length - 5) + '</span>';
             html += '</div>';
         }
         if (ac.buildings && ac.buildings.length > 0) {
-            html += '<div class="mb-2"><strong>Buildings:</strong> ' + ac.buildings.map(esc).join(', ') + '</div>';
+            html += '<div class="mb-2"><strong>' + t('admin.aqlAllowances.buildingsLabel') + ':</strong> ' + ac.buildings.map(esc).join(', ') + '</div>';
         }
         if (ac.lines && ac.lines.length > 0) {
-            html += '<div class="mb-2"><strong>Lines:</strong> ' + ac.lines.slice(0, 8).map(esc).join(', ');
+            html += '<div class="mb-2"><strong>' + t('admin.aqlAllowances.linesLabel') + ':</strong> ' + ac.lines.slice(0, 8).map(esc).join(', ');
             if (ac.lines.length > 8) html += ' <span class="text-muted">… +' + (ac.lines.length - 8) + '</span>';
             html += '</div>';
         }
@@ -368,7 +368,7 @@ var AdminAqlAllowances = {
     applyAllowance: async function () {
         var t = this._t.bind(this);
         if (!this._previewResult || !this._previewResult.autoComputed) {
-            alert('먼저 미리보기를 실행하세요.'); return;
+            alert(t('admin.aqlAllowances.previewRequired')); return;
         }
 
         var affected = this._previewResult.autoComputed.affectedEmployees || [];
@@ -521,7 +521,7 @@ var AdminAqlAllowances = {
 
             var allowanceRef = db.collection('aql_reject_pos').doc(monthYear).collection('items').doc(docId);
             var allowanceDoc = await allowanceRef.get();
-            if (!allowanceDoc.exists) { alert('Not found'); return; }
+            if (!allowanceDoc.exists) { alert(t('admin.aqlAllowances.allowanceNotFound')); return; }
 
             var data = allowanceDoc.data();
             var affected = (data.autoComputed && data.autoComputed.affectedEmployees) || [];
@@ -544,7 +544,7 @@ var AdminAqlAllowances = {
 
         } catch (err) {
             console.error('[AdminAqlAllowances] revoke error:', err);
-            alert('Error: ' + err.message);
+            alert(t('admin.aqlAllowances.revokeError') + ': ' + err.message);
         }
     },
 
@@ -618,6 +618,7 @@ var AdminAqlAllowances = {
     // ─── Update Action Status ────────────────────────────────────
 
     updateActionStatus: async function (docId, newStatus) {
+        var t = this._t.bind(this);
         try {
             var db = this._db();
             var monthYear = this._getMonthYear();
@@ -628,7 +629,7 @@ var AdminAqlAllowances = {
             this.loadActiveList();
         } catch (err) {
             console.error('[AdminAqlAllowances] updateActionStatus error:', err);
-            alert('Error: ' + err.message);
+            alert(t('admin.aqlAllowances.actionStatusError') + ': ' + err.message);
         }
     },
 
@@ -700,7 +701,7 @@ var AdminAqlAllowances = {
                     html += '<i class="fa-solid fa-xmark me-1"></i>' + t('admin.aqlAllowances.revoke') + '</button>';
                 }
                 if (d.status === 'REVOKED' && d.revokeReason) {
-                    html += '<small class="text-muted d-block mt-1">Revoked: ' + esc(d.revokeReason) + '</small>';
+                    html += '<small class="text-muted d-block mt-1">' + t('admin.aqlAllowances.revokeLabel') + ': ' + esc(d.revokeReason) + '</small>';
                 }
                 html += '</td>';
                 html += '</tr>';

@@ -652,8 +652,8 @@ var DashboardModals = {
             var aqlInfo = aqlExemptConds['c' + i];
             if (aqlInfo) {
                 var poTitle = 'PO: ' + (aqlInfo.poNumbers || []).join(', ');
-                if (aqlInfo.rootCause) poTitle += '\n사유: ' + aqlInfo.rootCause;
-                badge += ' <span style="display:inline-block; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; background:#dbeafe; color:#1e40af; border:1px solid #3b82f6;" title="' + poTitle.replace(/"/g, '&quot;') + '">AQL Allowance</span>';
+                if (aqlInfo.rootCause) poTitle += '\n' + t('aqlAllowance.tooltipReasonLabel') + ': ' + aqlInfo.rootCause;
+                badge += ' <span style="display:inline-block; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; background:#dbeafe; color:#1e40af; border:1px solid #3b82f6;" title="' + poTitle.replace(/"/g, '&quot;') + '">' + t('aqlAllowance.badge') + '</span>';
             }
 
             if (result !== 'N/A') {
@@ -708,10 +708,14 @@ var DashboardModals = {
 
         // AQL Reject PO Allowance 상세 박스 (적용된 경우)
         if (empAqlPoAllowances.length > 0) {
+            // 현재 언어에 맞는 로케일 (숫자/날짜 포맷용) — 한국어/영어 사용자에게 vi-VN 강제 적용 방지
+            var modalLang = (typeof DashboardI18n !== 'undefined') ? DashboardI18n.currentLang : 'ko';
+            var modalLocale = modalLang === 'en' ? 'en-US' : (modalLang === 'vi' ? 'vi-VN' : 'ko-KR');
+
             html += '<div style="margin-top: 14px; padding: 12px 14px; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 6px;">';
             html += '<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">';
             html += '<i class="fa-solid fa-clipboard-check" style="color:#1e40af;"></i>';
-            html += '<strong style="color:#1e40af;">AQL Allowance 적용 내역 (' + empAqlPoAllowances.length + '건)</strong>';
+            html += '<strong style="color:#1e40af;">' + t('aqlAllowance.appliedSection') + ' (' + empAqlPoAllowances.length + t('aqlAllowance.countUnit') + ')</strong>';
             html += '</div>';
             empAqlPoAllowances.forEach(function (a, idx) {
                 var statusColor = a.actionStatus === 'COMPLETED' ? '#059669' :
@@ -720,27 +724,27 @@ var DashboardModals = {
                 html += '<div style="' + (idx > 0 ? 'border-top:1px solid #bfdbfe; padding-top:10px; margin-top:10px;' : '') + '">';
                 html += '<div style="display:flex; flex-wrap:wrap; gap:14px 24px; font-size:0.85rem;">';
                 html += '<div><strong>PO:</strong> <span style="font-family:monospace;">' + (a.poNumbers || []).map(function (p) { return '<span style="background:#3b82f6; color:#fff; padding:1px 6px; border-radius:3px; margin-right:3px;">' + String(p).replace(/</g, '&lt;') + '</span>'; }).join('') + '</span></div>';
-                html += '<div><strong>면제 조건:</strong> ' + (a.exemptConditions || []).map(function (c) { return c.toUpperCase(); }).join(', ') + '</div>';
-                html += '<div><strong>액션 마감:</strong> ' + (a.actionDueDate || '--') + '</div>';
-                html += '<div><strong>상태:</strong> <span style="color:' + statusColor + '; font-weight:600;">' + statusLabel + '</span></div>';
+                html += '<div><strong>' + t('aqlAllowance.exemptConditionsLabel') + ':</strong> ' + (a.exemptConditions || []).map(function (c) { return c.toUpperCase(); }).join(', ') + '</div>';
+                html += '<div><strong>' + t('aqlAllowance.actionDueDateLabel') + ':</strong> ' + (a.actionDueDate || '--') + '</div>';
+                html += '<div><strong>' + t('aqlAllowance.statusLabel') + ':</strong> <span style="color:' + statusColor + '; font-weight:600;">' + statusLabel + '</span></div>';
                 html += '</div>';
                 if (a.rootCause) {
-                    html += '<div style="margin-top:6px; font-size:0.85rem;"><strong>근본 원인:</strong> <span style="color:#374151;">' + String(a.rootCause).replace(/</g, '&lt;') + '</span></div>';
+                    html += '<div style="margin-top:6px; font-size:0.85rem;"><strong>' + t('aqlAllowance.rootCauseLabel') + ':</strong> <span style="color:#374151;">' + String(a.rootCause).replace(/</g, '&lt;') + '</span></div>';
                 }
                 if (a.actionPlan) {
-                    html += '<div style="margin-top:4px; font-size:0.85rem;"><strong>액션 플랜:</strong> <span style="color:#374151;">' + String(a.actionPlan).replace(/</g, '&lt;') + '</span></div>';
+                    html += '<div style="margin-top:4px; font-size:0.85rem;"><strong>' + t('aqlAllowance.actionPlanLabel') + ':</strong> <span style="color:#374151;">' + String(a.actionPlan).replace(/</g, '&lt;') + '</span></div>';
                 }
                 // Before / After 비교
                 html += '<div style="margin-top:8px; display:flex; gap:12px; font-size:0.82rem;">';
-                html += '<div style="flex:1; padding:6px 8px; background:#fee2e2; border-radius:4px;"><div style="color:#991b1b; font-weight:600; margin-bottom:2px;">Before</div>';
-                html += 'Pass Rate: ' + (a.before.passRate || 0).toFixed(1) + '% (' + a.before.passed + '/' + a.before.applicable + ') | Incentive: ' + (a.before.incentive || 0).toLocaleString('vi-VN') + ' VND</div>';
-                html += '<div style="flex:1; padding:6px 8px; background:#d1fae5; border-radius:4px;"><div style="color:#065f46; font-weight:600; margin-bottom:2px;">After</div>';
-                html += 'Pass Rate: ' + (a.after.passRate || 0).toFixed(1) + '% (' + a.after.passed + '/' + a.after.applicable + ') | Incentive: ' + (a.after.incentive || 0).toLocaleString('vi-VN') + ' VND</div>';
+                html += '<div style="flex:1; padding:6px 8px; background:#fee2e2; border-radius:4px;"><div style="color:#991b1b; font-weight:600; margin-bottom:2px;">' + t('aqlAllowance.beforeLabel') + '</div>';
+                html += t('aqlAllowance.passRateLabel') + ': ' + (a.before.passRate || 0).toFixed(1) + '% (' + a.before.passed + '/' + a.before.applicable + ') | ' + t('aqlAllowance.incentiveLabel') + ': ' + (a.before.incentive || 0).toLocaleString(modalLocale) + ' VND</div>';
+                html += '<div style="flex:1; padding:6px 8px; background:#d1fae5; border-radius:4px;"><div style="color:#065f46; font-weight:600; margin-bottom:2px;">' + t('aqlAllowance.afterLabel') + '</div>';
+                html += t('aqlAllowance.passRateLabel') + ': ' + (a.after.passRate || 0).toFixed(1) + '% (' + a.after.passed + '/' + a.after.applicable + ') | ' + t('aqlAllowance.incentiveLabel') + ': ' + (a.after.incentive || 0).toLocaleString(modalLocale) + ' VND</div>';
                 html += '</div>';
                 if (a.appliedByEmail) {
                     var appliedDate = '';
                     if (a.appliedAt && a.appliedAt.seconds) {
-                        try { appliedDate = ' · ' + new Date(a.appliedAt.seconds * 1000).toLocaleString(); } catch (e) {}
+                        try { appliedDate = ' · ' + new Date(a.appliedAt.seconds * 1000).toLocaleString(modalLocale); } catch (e) {}
                     }
                     html += '<div style="margin-top:6px; font-size:0.78rem; color:#6b7280;"><i class="fa-solid fa-user me-1"></i>' + String(a.appliedByEmail).replace(/</g, '&lt;') + appliedDate + '</div>';
                 }
