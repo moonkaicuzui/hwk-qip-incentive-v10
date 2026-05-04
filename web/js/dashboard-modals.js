@@ -587,12 +587,38 @@ var DashboardModals = {
         // Check for AQL Reject PO Allowance on this employee
         var aqlPos = (window.DashboardData && window.DashboardData.aqlRejectPos) || [];
         var aqlExemptConds = {}; // condKey → { poNumbers, rootCause }
+        var empAqlPoAllowances = []; // 이 직원에게 적용된 AQL Allowance 전체 (액션플랜 포함)
         for (var qi = 0; qi < aqlPos.length; qi++) {
             var po = aqlPos[qi];
             if (po.status !== 'APPLIED') continue;
             var affected = (po.autoComputed && po.autoComputed.affectedEmployees) || [];
             for (var aj = 0; aj < affected.length; aj++) {
                 if (String(affected[aj].empNo) === empNo) {
+                    empAqlPoAllowances.push({
+                        docId: po._id,
+                        poNumbers: po.poNumbers || [],
+                        rootCause: po.rootCause || '',
+                        actionPlan: po.actionPlan || '',
+                        actionDueDate: po.actionDueDate || '',
+                        actionStatus: po.actionStatus || 'PLANNED',
+                        appliedAt: po.appliedAt || null,
+                        appliedByEmail: (po.appliedBy && po.appliedBy.email) || '',
+                        exemptConditions: po.exemptConditions || [],
+                        before: {
+                            passRate: affected[aj].originalPassRate,
+                            passed: affected[aj].originalPassed,
+                            applicable: affected[aj].conditionsApplicable,
+                            incentive: affected[aj].originalIncentive,
+                            conditions: affected[aj].originalConditions || {},
+                        },
+                        after: {
+                            passRate: affected[aj].overriddenPassRate,
+                            passed: affected[aj].overriddenPassed,
+                            applicable: affected[aj].conditionsApplicable,
+                            incentive: affected[aj].overriddenIncentive,
+                            conditions: affected[aj].overriddenConditions || {},
+                        },
+                    });
                     var ovr = affected[aj].overriddenConditions || {};
                     (po.exemptConditions || []).forEach(function (k) {
                         if (ovr[k] === 'YES') {
@@ -679,6 +705,49 @@ var DashboardModals = {
         }
 
         html += '</tbody></table></div>';
+
+        // AQL Reject PO Allowance 상세 박스 (적용된 경우)
+        if (empAqlPoAllowances.length > 0) {
+            html += '<div style="margin-top: 14px; padding: 12px 14px; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 6px;">';
+            html += '<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">';
+            html += '<i class="fa-solid fa-clipboard-check" style="color:#1e40af;"></i>';
+            html += '<strong style="color:#1e40af;">AQL Allowance 적용 내역 (' + empAqlPoAllowances.length + '건)</strong>';
+            html += '</div>';
+            empAqlPoAllowances.forEach(function (a, idx) {
+                var statusColor = a.actionStatus === 'COMPLETED' ? '#059669' :
+                                  a.actionStatus === 'IN_PROGRESS' ? '#d97706' : '#6b7280';
+                var statusLabel = t('admin.aqlAllowances.actionStatus.' + a.actionStatus) || a.actionStatus;
+                html += '<div style="' + (idx > 0 ? 'border-top:1px solid #bfdbfe; padding-top:10px; margin-top:10px;' : '') + '">';
+                html += '<div style="display:flex; flex-wrap:wrap; gap:14px 24px; font-size:0.85rem;">';
+                html += '<div><strong>PO:</strong> <span style="font-family:monospace;">' + (a.poNumbers || []).map(function (p) { return '<span style="background:#3b82f6; color:#fff; padding:1px 6px; border-radius:3px; margin-right:3px;">' + String(p).replace(/</g, '&lt;') + '</span>'; }).join('') + '</span></div>';
+                html += '<div><strong>면제 조건:</strong> ' + (a.exemptConditions || []).map(function (c) { return c.toUpperCase(); }).join(', ') + '</div>';
+                html += '<div><strong>액션 마감:</strong> ' + (a.actionDueDate || '--') + '</div>';
+                html += '<div><strong>상태:</strong> <span style="color:' + statusColor + '; font-weight:600;">' + statusLabel + '</span></div>';
+                html += '</div>';
+                if (a.rootCause) {
+                    html += '<div style="margin-top:6px; font-size:0.85rem;"><strong>근본 원인:</strong> <span style="color:#374151;">' + String(a.rootCause).replace(/</g, '&lt;') + '</span></div>';
+                }
+                if (a.actionPlan) {
+                    html += '<div style="margin-top:4px; font-size:0.85rem;"><strong>액션 플랜:</strong> <span style="color:#374151;">' + String(a.actionPlan).replace(/</g, '&lt;') + '</span></div>';
+                }
+                // Before / After 비교
+                html += '<div style="margin-top:8px; display:flex; gap:12px; font-size:0.82rem;">';
+                html += '<div style="flex:1; padding:6px 8px; background:#fee2e2; border-radius:4px;"><div style="color:#991b1b; font-weight:600; margin-bottom:2px;">Before</div>';
+                html += 'Pass Rate: ' + (a.before.passRate || 0).toFixed(1) + '% (' + a.before.passed + '/' + a.before.applicable + ') | Incentive: ' + (a.before.incentive || 0).toLocaleString('vi-VN') + ' VND</div>';
+                html += '<div style="flex:1; padding:6px 8px; background:#d1fae5; border-radius:4px;"><div style="color:#065f46; font-weight:600; margin-bottom:2px;">After</div>';
+                html += 'Pass Rate: ' + (a.after.passRate || 0).toFixed(1) + '% (' + a.after.passed + '/' + a.after.applicable + ') | Incentive: ' + (a.after.incentive || 0).toLocaleString('vi-VN') + ' VND</div>';
+                html += '</div>';
+                if (a.appliedByEmail) {
+                    var appliedDate = '';
+                    if (a.appliedAt && a.appliedAt.seconds) {
+                        try { appliedDate = ' · ' + new Date(a.appliedAt.seconds * 1000).toLocaleString(); } catch (e) {}
+                    }
+                    html += '<div style="margin-top:6px; font-size:0.78rem; color:#6b7280;"><i class="fa-solid fa-user me-1"></i>' + String(a.appliedByEmail).replace(/</g, '&lt;') + appliedDate + '</div>';
+                }
+                html += '</div>';
+            });
+            html += '</div>';
+        }
 
         // Summary line + Doughnut
         var failCount = totalApplicable - passCount;

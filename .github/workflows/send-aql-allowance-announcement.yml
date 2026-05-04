@@ -1,0 +1,36 @@
+name: Send AQL Allowance Announcement Email
+
+# 일회성 발송용 — workflow_dispatch로 수동 트리거
+# Nguyen Thi Huynh Nhu(huynhnhurgqa04) 에게 ko/en/vi 3개 첨부 발송
+on:
+  workflow_dispatch:
+    inputs:
+      to_email:
+        description: 'Recipient email'
+        required: true
+        default: 'huynhnhurgqa04@hsvina.com'
+      cc_email:
+        description: 'CC email'
+        required: true
+        default: 'ksmoon@hsvina.com'
+
+jobs:
+  send-announcement:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: cd scripts && npm install
+
+      - name: Send announcement email
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          TO_EMAIL: ${{ github.event.inputs.to_email }}
+          CC_EMAIL: ${{ github.event.inputs.cc_email }}
+        run: cd scripts && node send_aql_allowance_announcement.js
