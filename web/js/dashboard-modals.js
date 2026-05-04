@@ -584,6 +584,27 @@ var DashboardModals = {
         }
         var allowedConditions = empAllowance ? (empAllowance.conditions || []) : [];
 
+        // Check for AQL Reject PO Allowance on this employee
+        var aqlPos = (window.DashboardData && window.DashboardData.aqlRejectPos) || [];
+        var aqlExemptConds = {}; // condKey → { poNumbers, rootCause }
+        for (var qi = 0; qi < aqlPos.length; qi++) {
+            var po = aqlPos[qi];
+            if (po.status !== 'APPLIED') continue;
+            var affected = (po.autoComputed && po.autoComputed.affectedEmployees) || [];
+            for (var aj = 0; aj < affected.length; aj++) {
+                if (String(affected[aj].empNo) === empNo) {
+                    var ovr = affected[aj].overriddenConditions || {};
+                    (po.exemptConditions || []).forEach(function (k) {
+                        if (ovr[k] === 'YES') {
+                            if (!aqlExemptConds[k]) aqlExemptConds[k] = { poNumbers: [], rootCause: po.rootCause || '' };
+                            aqlExemptConds[k].poNumbers = aqlExemptConds[k].poNumbers.concat(po.poNumbers || []);
+                        }
+                    });
+                    break;
+                }
+            }
+        }
+
         for (var i = 1; i <= 10; i++) {
             var result = helpers ? helpers.getCondition(emp, i) : 'N/A';
             var value = helpers ? helpers.getConditionValue(emp, i) : 0;
@@ -596,10 +617,17 @@ var DashboardModals = {
 
             var badge = this._formatBadge(result, 'condition');
 
-            // Add Allowance badge if this condition was overridden
+            // 출결 Allowance 뱃지 (노란색)
             var isAllowedCond = allowedConditions.indexOf('c' + i) !== -1;
             if (isAllowedCond) {
-                badge += ' <span style="display:inline-block; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; background:#fff3cd; color:#856404; border:1px solid #ffc107;">Allowance</span>';
+                badge += ' <span style="display:inline-block; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; background:#fff3cd; color:#856404; border:1px solid #ffc107;" title="' + (empAllowance && empAllowance.reasonDetail ? String(empAllowance.reasonDetail).replace(/"/g, '&quot;') : '') + '">Allowance</span>';
+            }
+            // AQL Allowance 뱃지 (파란색)
+            var aqlInfo = aqlExemptConds['c' + i];
+            if (aqlInfo) {
+                var poTitle = 'PO: ' + (aqlInfo.poNumbers || []).join(', ');
+                if (aqlInfo.rootCause) poTitle += '\n사유: ' + aqlInfo.rootCause;
+                badge += ' <span style="display:inline-block; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; background:#dbeafe; color:#1e40af; border:1px solid #3b82f6;" title="' + poTitle.replace(/"/g, '&quot;') + '">AQL Allowance</span>';
             }
 
             if (result !== 'N/A') {

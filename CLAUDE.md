@@ -405,3 +405,19 @@ Node.js 22, firebase-admin>=13.0.0, firebase-functions>=6.3.0, nodemailer>=6.9.1
 4. _syncOrigin, _syncTimestamp 메타데이터 필드를 삭제하지 마세요
 5. 변경 전 `QOS_CONTRACT.json`의 계약 내용을 확인하세요
 
+
+
+---
+
+## 📚 Knowledge Vault Sync Protocol
+
+이 프로젝트의 도메인·데이터 지식은 `/Users/ksmoon/knowledge/` Obsidian vault에 정리되어 있다.
+
+**프로젝트별 cross-reference**: `./KNOWLEDGE-VAULT.md` (이 프로젝트의 vault 노트 link 모음)
+
+**필수 참조** (변경 시 검토):
+- 메타 철학: `/Users/ksmoon/knowledge/20-refined/domain/business-rules/임계값-시작점-운영-철학.md`
+- 동기화 메커니즘: `/Users/ksmoon/knowledge/20-refined/recipes/vault-자동-갱신-시스템.md`
+- QOS Contract: `/Users/ksmoon/knowledge/20-refined/concepts/qos-contract-크로스-프로젝트-표준.md`
+
+**Vault 갱신 의무**: 도메인 영향 변경(임계값/schema/룰/외부연동/rename) 시 코드 PR + vault 갱신 PR을 **함께** 작성. 상세는 `KNOWLEDGE-VAULT.md` 참조.

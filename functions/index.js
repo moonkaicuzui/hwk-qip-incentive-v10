@@ -24,6 +24,7 @@ const {
   sendIncentiveMonthlyEmail,
 } = require("./services/incentiveReportEmail");
 const { sendDiscordMessage } = require("./services/discordService");
+const { computeAqlPoImpact } = require("./services/aqlAllowanceService");
 
 initializeApp();
 const db = getFirestore();
@@ -310,6 +311,50 @@ exports.sendFeedbackReply = onCall(
         stack: err.stack,
       });
       throw new HttpsError("internal", "이메일 전송에 실패했습니다.");
+    }
+  }
+);
+
+// ─── 3.5. AQL Reject PO 영향 직원 산출 (관리자 전용) ──────────
+
+exports.computeAqlPoImpact = onCall(
+  {
+    region: REGION,
+    timeoutSeconds: 60,
+    memory: "512MiB",
+  },
+  async (request) => {
+    verifyAdmin(request);
+
+    var data = request.data || {};
+    var monthYear = data.monthYear;
+    var poNumbers = data.poNumbers || [];
+    var exemptConditions = data.exemptConditions || ["c5", "c6", "c7", "c8"];
+
+    if (!monthYear || typeof monthYear !== "string") {
+      throw new HttpsError("invalid-argument", "monthYear required (e.g. february_2026)");
+    }
+    if (!Array.isArray(poNumbers) || poNumbers.length === 0) {
+      throw new HttpsError("invalid-argument", "poNumbers required (non-empty array)");
+    }
+
+    try {
+      var result = await computeAqlPoImpact({ monthYear, poNumbers, exemptConditions });
+      logger.info("[computeAqlPoImpact] success:", {
+        monthYear,
+        poCount: poNumbers.length,
+        affectedCount: result.autoComputed.affectedEmployees.length,
+        elapsedMs: result.meta.elapsedMs,
+      });
+      return result;
+    } catch (err) {
+      logger.error("[computeAqlPoImpact] error:", {
+        monthYear,
+        poNumbers,
+        error: err.message,
+        stack: err.stack,
+      });
+      throw new HttpsError("internal", err.message || "AQL PO impact computation failed");
     }
   }
 );

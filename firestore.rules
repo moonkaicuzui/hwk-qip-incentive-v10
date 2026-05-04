@@ -43,10 +43,10 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // System Feedback: public read/write for issue management (QOS sync)
+    // System Feedback: authenticated read/write for issue management (QOS sync)
     // Collection name: system_feedback (snake_case convention)
     match /system_feedback/{document=**} {
-      allow read, write: if true;
+      allow read, write: if request.auth != null;
     }
 
     // Legacy collection name (backward compat)
@@ -84,8 +84,26 @@ service cloud.firestore {
                       request.auth.token.email in ['ksmoon@hsvina.com', 'huynhnhurgqa04@hsvina.com'];
     }
 
-    // Allowances: auth read, admin write
+    // Allowances (출결): auth read, admin write
     match /allowances/{monthYear}/items/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // AQL Reject PO Allowance: auth read, admin write
+    match /aql_reject_pos/{monthYear}/items/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // AQL records (사전 집계, Cloud Function이 PO 시뮬레이션에 사용)
+    // - Read: auth user (Cloud Function이 user 컨텍스트로 읽음)
+    // - Write: admin only (파이프라인은 service account → rules 우회)
+    match /aql_records/{monthYear} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /aql_records/{monthYear}/chunks/{chunkId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
     }

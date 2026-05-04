@@ -683,6 +683,13 @@ var AdminPage = {
                 }
             }
 
+            if (target === '#pane-aql-allowances' && !loadedTabs['aql-allowances']) {
+                loadedTabs['aql-allowances'] = true;
+                if (typeof AdminAqlAllowances !== 'undefined') {
+                    AdminAqlAllowances.init();
+                }
+            }
+
             if (target === '#pane-email' && !loadedTabs['email']) {
                 loadedTabs['email'] = true;
                 if (typeof AdminEmail !== 'undefined') {

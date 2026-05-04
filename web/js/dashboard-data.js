@@ -355,8 +355,9 @@ var DashboardData = {
         });
 
         var allowancesPromise = self.loadAllowances(month, year);
+        var aqlPosPromise = self.loadAqlRejectPos(month, year);
 
-        return Promise.all([employeesPromise, summaryPromise, thresholdsPromise, allowancesPromise])
+        return Promise.all([employeesPromise, summaryPromise, thresholdsPromise, allowancesPromise, aqlPosPromise])
             .then(function (results) {
                 self._updateLoadingStep(3, 'done');
                 self._updateLoadingStep(4, 'active');
@@ -365,6 +366,7 @@ var DashboardData = {
                 var summary = results[1];
                 var thresholds = results[2];
                 // results[3] = allowances (stored in DashboardData.allowances)
+                // results[4] = aqlRejectPos (stored in DashboardData.aqlRejectPos)
 
                 // Phase 1: Data normalization
                 if (employees && employees.length > 0) {
@@ -435,6 +437,40 @@ var DashboardData = {
             return allowances;
         }).catch(function () {
             window.DashboardData.allowances = [];
+            return [];
+        });
+    },
+
+    /**
+     * Load active AQL Reject PO Allowances for the given month.
+     * Stored in window.DashboardData.aqlRejectPos.
+     * 모달 뱃지 + 직원별 매핑(empNoMap)에 사용.
+     */
+    loadAqlRejectPos: function (month, year) {
+        var self = this;
+        var key = self._cacheKey(month, year, 'aqlpos');
+
+        var cached = self._getCache(key);
+        if (cached) {
+            window.DashboardData.aqlRejectPos = cached;
+            return Promise.resolve(cached);
+        }
+
+        var collectionPath = 'aql_reject_pos/' + month + '_' + year + '/items';
+
+        return self._getToken().then(function (token) {
+            return _firestoreRestList(collectionPath, token);
+        }).then(function (docs) {
+            var items = docs.filter(function (d) {
+                return d.data && d.data.status === 'APPLIED';
+            }).map(function (d) {
+                return Object.assign({ _id: d.id }, d.data);
+            });
+            window.DashboardData.aqlRejectPos = items;
+            if (items.length > 0) self._setCache(key, items);
+            return items;
+        }).catch(function () {
+            window.DashboardData.aqlRejectPos = [];
             return [];
         });
     },

@@ -499,6 +499,251 @@ def reapply_allowances(db, month_year: str):
         print(f"   ⚠️ Allowance 재적용 오류 (비치명적): {e}")
 
 
+# ---------------------------------------------------------------------------
+# AQL 사전 집계 적재 (AQL Reject PO Allowance용)
+# ---------------------------------------------------------------------------
+
+def upload_aql_records(db, month: str, year: int, dry_run: bool = False):
+    """AQL 원본 CSV를 가공하여 aql_records/{month_year} 단일 문서로 적재
+
+    Cloud Function이 PO 시뮬레이션에 사용. 직원별 AQL 검사 결과를
+    압축된 형태로 저장 (각 행 < 100바이트, 총 < 1MB 목표).
+
+    Schema:
+        aql_records/{month_year}:
+            month, year, total_rows, generated_at,
+            records: [
+                { e: emp_no, p1: po_no_1, p2: po_no_2, r: 'PASS'|'FAIL',
+                  b: building, l: line, m: model, q: qty, d: date }
+            ]
+
+    Args:
+        db: Firestore client
+        month: 'february' 등 lowercase
+        year: 2026 등
+        dry_run: True면 업로드 건너뜀
+    """
+    print(f"\n📥 AQL 사전 집계 적재")
+
+    month_year = f"{month}_{year}"
+    month_capitalized = month.capitalize()
+
+    # AQL CSV 파일 경로 탐색
+    aql_dir = "input_files/AQL history"
+    if not os.path.isdir(aql_dir):
+        print(f"   ⚠️ AQL 디렉토리 없음 ({aql_dir}) — 건너뜀")
+        return
+
+    # 패턴: '*-FEBRUARY.2026.csv'
+    target_pattern = f"-{month.upper()}.{year}.csv"
+    aql_file = None
+    for fname in os.listdir(aql_dir):
+        if fname.upper().endswith(target_pattern.upper()):
+            aql_file = os.path.join(aql_dir, fname)
+            break
+
+    if not aql_file:
+        print(f"   ⚠️ {month_capitalized} {year} AQL 파일 없음 — 건너뜀")
+        return
+
+    try:
+        aql_df = pd.read_csv(aql_file, dtype=str)
+        print(f"   ✅ AQL CSV 로드: {os.path.basename(aql_file)} ({len(aql_df)}행)")
+    except Exception as e:
+        print(f"   ❌ AQL CSV 로드 실패: {e}")
+        return
+
+    # 필요한 컬럼만 추출, 안전하게 처리
+    def col(row, *names, default=""):
+        for n in names:
+            if n in row and pd.notna(row[n]):
+                v = str(row[n]).strip()
+                if v and v.lower() != "nan":
+                    return v
+        return default
+
+    records = []
+    for _, row in aql_df.iterrows():
+        emp_no = col(row, "EMPLOYEE NO", "Employee No")
+        if not emp_no:
+            continue
+        # 9자리 패딩 (Firestore employees 문서와 일치)
+        try:
+            emp_no = emp_no.split(".")[0].zfill(9)
+        except Exception:
+            pass
+
+        result = col(row, "RESULT").upper()
+        if result not in ("PASS", "FAIL"):
+            continue
+
+        record = {
+            "e": emp_no,
+            "p1": col(row, "PO NO 1.", "PO NO 1"),
+            "p2": col(row, "PO NO 2.", "PO NO 2"),
+            "r": result,
+            "b": col(row, "BUILDING"),
+            "l": col(row, "LINE"),
+            "m": col(row, "MODEL"),
+            "q": safe_int(row.get("QTY", 0)),
+            "d": col(row, "DATE"),
+            "rp": col(row, "REPACKING ", "REPACKING") or "",  # NORMAL PO 식별
+        }
+        records.append(record)
+
+    print(f"   변환 완료: {len(records)}건")
+
+    if dry_run:
+        print(f"   🔸 [DRY-RUN] aql_records/{month_year} 업로드 건너뜀")
+        return
+
+    if not db:
+        print(f"   ⚠️ db 없음 — 건너뜀")
+        return
+
+    doc_data = {
+        "month": month,
+        "year": year,
+        "total_rows": len(records),
+        "generated_at": datetime.now(timezone.utc).isoformat() + "Z",
+        "records": records,
+    }
+
+    try:
+        # Firestore 단일 문서 1MB 제한 — 초과 시 청크 분할
+        import json as _json
+        size_estimate = len(_json.dumps(doc_data, ensure_ascii=False).encode("utf-8"))
+        print(f"   문서 크기 추정: {size_estimate / 1024:.1f} KB")
+
+        if size_estimate > 900_000:  # 900KB 이상이면 청크 분할
+            print(f"   ⚠️ 문서 크기 초과 — 청크 분할 적용")
+            chunk_size = 2000  # 행 단위
+            chunks = [records[i:i + chunk_size] for i in range(0, len(records), chunk_size)]
+            base_ref = db.collection("aql_records").document(month_year)
+            base_ref.set({
+                "month": month,
+                "year": year,
+                "total_rows": len(records),
+                "chunk_count": len(chunks),
+                "generated_at": datetime.now(timezone.utc).isoformat() + "Z",
+            })
+            for i, chunk in enumerate(chunks):
+                base_ref.collection("chunks").document(f"chunk_{i:03d}").set({
+                    "index": i,
+                    "records": chunk,
+                })
+            print(f"   ✅ aql_records/{month_year} 청크 {len(chunks)}개 업로드 완료")
+        else:
+            db.collection("aql_records").document(month_year).set(doc_data)
+            print(f"   ✅ aql_records/{month_year} 업로드 완료 ({len(records)}건)")
+    except Exception as e:
+        print(f"   ❌ AQL 사전 집계 업로드 실패 (비치명적): {e}")
+
+
+def reapply_aql_reject_pos(db, month_year: str):
+    """파이프라인 재업로드 후 활성 AQL Reject PO Allowance를 자동 재적용
+
+    각 PO Allowance 문서의 autoComputed.affectedEmployees 정보를 사용하여
+    영향 직원의 c5~c8을 YES로 override하고 인센티브 재계산.
+
+    Args:
+        db: Firestore client
+        month_year: 문서 ID (e.g. "february_2026")
+    """
+    print(f"\n🔄 AQL Reject PO 재적용 확인")
+
+    try:
+        items_ref = db.collection("aql_reject_pos").document(month_year).collection("items")
+        active_docs = items_ref.where("status", "==", "APPLIED").stream()
+        active_list = list(active_docs)
+
+        if not active_list:
+            print(f"   활성 AQL Reject PO 없음 — 건너뜀")
+            return
+
+        print(f"   활성 AQL Reject PO {len(active_list)}건 발견 — 재적용 시작")
+
+        # Load employee data
+        emp_ref = db.collection("employees").document(month_year).collection("all_data").document("data")
+        emp_doc = emp_ref.get()
+        if not emp_doc.exists:
+            print(f"   ⚠️ 직원 데이터 없음 — 재적용 건너뜀")
+            return
+
+        data = emp_doc.to_dict()
+        employees = data.get("employees", [])
+        emp_map = {}
+        for i, emp in enumerate(employees):
+            emp_no = str(emp.get("emp_no", emp.get("Employee No", "")))
+            emp_map[emp_no] = i
+
+        modified = False
+        for adoc in active_list:
+            allow = adoc.to_dict()
+            exempt_conds = allow.get("exemptConditions", [])
+            auto = allow.get("autoComputed", {}) or {}
+            affected = auto.get("affectedEmployees", []) or []
+
+            for entry in affected:
+                emp_no = str(entry.get("empNo", ""))
+                if emp_no not in emp_map:
+                    continue
+
+                idx = emp_map[emp_no]
+                emp = employees[idx]
+
+                if "conditions" not in emp:
+                    emp["conditions"] = {}
+
+                # 영향받은 조건만 YES 처리
+                overridden_conds = entry.get("overriddenConditions", {}) or {}
+                for cond_key in exempt_conds:
+                    if overridden_conds.get(cond_key) == "YES":
+                        emp["conditions"][cond_key] = "YES"
+
+                # 통계 갱신
+                emp["conditions_passed"] = entry.get("overriddenPassed", emp.get("conditions_passed", 0))
+                emp["conditions_pass_rate"] = entry.get("overriddenPassRate", emp.get("conditions_pass_rate", 0))
+                emp["current_incentive"] = entry.get("overriddenIncentive", emp.get("current_incentive", 0))
+
+                # 식별 플래그
+                emp["aql_po_exempt"] = True
+                refs = list(set((emp.get("aql_po_refs") or []) + [adoc.id]))
+                emp["aql_po_refs"] = refs
+                emp["aql_exempt_conditions"] = list(set(
+                    (emp.get("aql_exempt_conditions") or []) + exempt_conds
+                ))
+
+                employees[idx] = emp
+                modified = True
+
+            print(f"   ✅ AQL Reject PO {adoc.id}: {len(affected)}명 재적용")
+
+        if modified:
+            data["employees"] = employees
+            data["meta"]["updated_at"] = datetime.now(timezone.utc).isoformat() + "Z"
+            emp_ref.set(data)
+            print(f"   ✅ 직원 데이터 업데이트 완료 (AQL PO 재적용)")
+
+            # Recalculate summary
+            sum_ref = db.collection("dashboard_summary").document(month_year)
+            sum_doc = sum_ref.get()
+            if sum_doc.exists:
+                summary = sum_doc.to_dict()
+                total = len(employees)
+                receiving = sum(1 for e in employees if float(e.get("current_incentive", 0) or 0) > 0)
+                total_inc = sum(float(e.get("current_incentive", 0) or 0) for e in employees)
+                summary["receiving_employees"] = receiving
+                summary["total_incentive"] = total_inc
+                summary["payment_rate"] = (receiving / total * 100) if total > 0 else 0
+                summary["data_updated_at"] = datetime.now(timezone.utc).isoformat() + "Z"
+                sum_ref.set(summary, merge=True)
+                print(f"   ✅ 대시보드 요약 재계산 완료")
+
+    except Exception as e:
+        print(f"   ⚠️ AQL Reject PO 재적용 오류 (비치명적): {e}")
+
+
 def _preserve_frozen_incentives(db, month_year: str, employees: list) -> int:
     """기존 Firestore의 frozen 인센티브를 새 데이터에 보존
 
@@ -826,6 +1071,14 @@ def main():
     # 6.5. Re-apply active allowances if any exist
     if not dry_run:
         reapply_allowances(db, month_year)
+
+    # 6.6. AQL 사전 집계 적재 (Cloud Function용 PO 시뮬레이션 데이터)
+    if not dry_run:
+        upload_aql_records(db, month, year, dry_run=dry_run)
+
+    # 6.7. AQL Reject PO Allowance 재적용
+    if not dry_run:
+        reapply_aql_reject_pos(db, month_year)
 
     # 7. 최종 요약
     print("\n" + "=" * 60)

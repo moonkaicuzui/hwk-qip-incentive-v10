@@ -864,7 +864,12 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tab-allowances" data-bs-toggle="tab" data-bs-target="#pane-allowances" type="button" role="tab">
-                    <i class="fa-solid fa-user-shield"></i> <span data-i18n="admin.tabAllowances">Allowances</span>
+                    <i class="fa-solid fa-user-shield"></i> <span data-i18n="admin.tabAllowances">출결 Allowance</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-aql-allowances" data-bs-toggle="tab" data-bs-target="#pane-aql-allowances" type="button" role="tab">
+                    <i class="fa-solid fa-clipboard-check"></i> <span data-i18n="admin.tabAqlAllowances">AQL Allowance</span>
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -1450,15 +1455,15 @@
         </div><!-- /.admin-grid -->
         </div><!-- /#pane-data -->
 
-        <!-- ==================== TAB 5: Allowances ==================== -->
+        <!-- ==================== TAB 5: 출결 Allowance ==================== -->
         <div class="tab-pane fade" id="pane-allowances" role="tabpanel">
         <div class="admin-grid">
 
-            <!-- ===== Panel: Allowance Management ===== -->
+            <!-- ===== Panel: Attendance Allowance Management ===== -->
             <div class="panel-card" style="grid-column: 1 / -1;">
                 <div class="panel-header">
                     <div class="panel-icon settings"><i class="fa-solid fa-user-shield"></i></div>
-                    <div class="panel-title" data-i18n="admin.allowances.title">Allowance Management (Exception Override)</div>
+                    <div class="panel-title" data-i18n="admin.allowances.title">출결 Allowance 관리 (예외 승인)</div>
                 </div>
                 <div class="panel-body">
                     <div class="info-banner" style="margin-bottom: 16px;">
@@ -1545,7 +1550,141 @@
         </div><!-- /.admin-grid -->
         </div><!-- /#pane-allowances -->
 
-        <!-- ==================== TAB 6: Email Settings (Enhanced) ==================== -->
+        <!-- ==================== TAB 6: AQL Allowance ==================== -->
+        <div class="tab-pane fade" id="pane-aql-allowances" role="tabpanel">
+        <div class="admin-grid">
+
+            <!-- ===== Panel: AQL Allowance Management ===== -->
+            <div class="panel-card" style="grid-column: 1 / -1;">
+                <div class="panel-header">
+                    <div class="panel-icon settings" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <div class="panel-title" data-i18n="admin.aqlAllowances.title">AQL Allowance 관리 (PO 기반 예외 승인)</div>
+                </div>
+                <div class="panel-body">
+                    <div class="info-banner" style="margin-bottom: 16px;">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span data-i18n="admin.aqlAllowances.infoGuide">AQL 검사에서 reject된 PO를 등록하면, 시스템이 영향받는 직원의 c5~c8 조건을 자동 산출하여 면제 처리합니다. 원본 데이터는 보존됩니다.</span>
+                    </div>
+
+                    <!-- Month/Year Selector -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label" data-i18n="admin.month">Month</label>
+                            <select class="form-select form-control-admin" id="aql-allowance-month">
+                                <option value="january">January</option>
+                                <option value="february">February</option>
+                                <option value="march">March</option>
+                                <option value="april" selected>April</option>
+                                <option value="may">May</option>
+                                <option value="june">June</option>
+                                <option value="july">July</option>
+                                <option value="august">August</option>
+                                <option value="september">September</option>
+                                <option value="october">October</option>
+                                <option value="november">November</option>
+                                <option value="december">December</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label" data-i18n="admin.year">Year</label>
+                            <select class="form-select form-control-admin" id="aql-allowance-year">
+                                <option value="2025">2025</option>
+                                <option value="2026" selected>2026</option>
+                                <option value="2027">2027</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Registration Form -->
+                    <div class="card mb-3" style="border-left: 4px solid #3b82f6;">
+                        <div class="card-body">
+                            <h6><i class="fa-solid fa-pen-to-square me-1"></i> <span data-i18n="admin.aqlAllowances.title">AQL Allowance 등록</span></h6>
+
+                            <!-- PO Numbers (multi-input) -->
+                            <div class="mb-3">
+                                <label class="form-label" data-i18n="admin.aqlAllowances.poInputLabel">PO 번호 (복수 입력 가능, Enter로 추가)</label>
+                                <div id="aql-po-tags" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; min-height: 44px; border: 1px solid #ced4da; border-radius: 6px; background: #fff; align-items: center;">
+                                    <input type="text" class="form-control" id="aql-po-input" data-i18n-placeholder="admin.aqlAllowances.poInputPlaceholder" placeholder="PO 번호 입력 후 Enter (예: 902219963)" style="flex: 1; min-width: 180px; border: none; outline: none; box-shadow: none; padding: 4px;">
+                                </div>
+                            </div>
+
+                            <!-- Root Cause -->
+                            <div class="mb-3">
+                                <label class="form-label" data-i18n="admin.aqlAllowances.rootCause">근본 원인 (필수)</label>
+                                <textarea class="form-control form-control-admin" id="aql-root-cause" rows="2" data-i18n-placeholder="admin.aqlAllowances.rootCausePlaceholder" placeholder="예: 원자재 결함으로 인한 외관 불량"></textarea>
+                            </div>
+
+                            <!-- Action Plan + Due Date -->
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <label class="form-label" data-i18n="admin.aqlAllowances.actionPlan">액션 플랜 (필수)</label>
+                                    <textarea class="form-control form-control-admin" id="aql-action-plan" rows="2" data-i18n-placeholder="admin.aqlAllowances.actionPlanPlaceholder" placeholder="예: 공급사 시정 요구 + 입고 검사 강화"></textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" data-i18n="admin.aqlAllowances.actionDueDate">액션 마감일 (필수)</label>
+                                    <input type="date" class="form-control form-control-admin" id="aql-action-due-date">
+                                </div>
+                            </div>
+
+                            <!-- Attachments -->
+                            <div class="mb-3">
+                                <label class="form-label" data-i18n="admin.aqlAllowances.attachments">첨부 파일 (사진/문서, 최대 3개)</label>
+                                <input type="file" class="form-control form-control-admin" id="aql-attachments" multiple accept="image/*,.pdf,.doc,.docx">
+                                <div id="aql-attachment-preview" style="margin-top: 8px;"></div>
+                            </div>
+
+                            <!-- Exempt Conditions -->
+                            <div class="mb-3">
+                                <label class="form-label" data-i18n="admin.aqlAllowances.exemptConditions">면제 조건 선택</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="aql-exempt-c5" value="c5" checked>
+                                        <label class="form-check-label" for="aql-exempt-c5" data-i18n="admin.aqlAllowances.exemptC5">C5: 개인 AQL FAIL</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="aql-exempt-c6" value="c6" checked>
+                                        <label class="form-check-label" for="aql-exempt-c6" data-i18n="admin.aqlAllowances.exemptC6">C6: 연속 AQL FAIL</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="aql-exempt-c7" value="c7" checked>
+                                        <label class="form-check-label" for="aql-exempt-c7" data-i18n="admin.aqlAllowances.exemptC7">C7: 팀/구역 AQL</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="aql-exempt-c8" value="c8" checked>
+                                        <label class="form-check-label" for="aql-exempt-c8" data-i18n="admin.aqlAllowances.exemptC8">C8: 구역 Reject율</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div>
+                                <button class="btn btn-outline-admin me-2" type="button" onclick="AdminAqlAllowances.computeImpact()" id="aql-btn-preview">
+                                    <i class="fa-solid fa-eye me-1"></i> <span data-i18n="admin.aqlAllowances.computeImpact">영향 직원 미리보기</span>
+                                </button>
+                                <button class="btn btn-primary-admin" type="button" onclick="AdminAqlAllowances.applyAllowance()" id="aql-btn-apply" disabled>
+                                    <i class="fa-solid fa-check me-1"></i> <span data-i18n="admin.aqlAllowances.apply">AQL Allowance 적용</span>
+                                </button>
+                            </div>
+
+                            <!-- Preview Result -->
+                            <div id="aql-preview-result" style="margin-top: 16px;"></div>
+                        </div>
+                    </div>
+
+                    <hr style="margin: 24px 0;">
+
+                    <!-- Active AQL Allowances List -->
+                    <h5 style="margin-bottom: 12px;" data-i18n="admin.aqlAllowances.activeList">등록된 AQL Allowance 목록</h5>
+                    <div id="aql-allowance-active-list">
+                        <p class="text-muted" data-i18n="admin.aqlAllowances.noActive">이 월에 등록된 AQL Allowance가 없습니다.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /.admin-grid -->
+        </div><!-- /#pane-aql-allowances -->
+
+        <!-- ==================== TAB 7: Email Settings (Enhanced) ==================== -->
         <div class="tab-pane fade" id="pane-email" role="tabpanel">
         <div class="admin-grid" style="grid-template-columns: 1fr;">
 
@@ -1653,6 +1792,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" crossorigin="anonymous"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js" crossorigin="anonymous"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js" crossorigin="anonymous"></script>
 
     <!-- Project modules -->
     <script src="js/firebase-config.js?v=rest6"></script>
@@ -1662,6 +1802,7 @@
     <script src="js/admin.js?v=rest6"></script>
     <script src="js/admin-configs.js"></script>
     <script src="js/admin-allowances.js"></script>
+    <script src="js/admin-aql-allowances.js"></script>
     <script src="js/admin-email.js"></script>
 
 </body>
