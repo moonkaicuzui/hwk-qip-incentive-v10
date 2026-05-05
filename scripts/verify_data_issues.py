@@ -164,12 +164,17 @@ def detect_issues(db, month, year):
             # Skip top-level managers — they legitimately have no boss
             if any(sp in pos for sp in supervisor_positions):
                 continue
+            att = e.get("attendance") or {}
             no_boss.append({
                 "emp_no": e.get("emp_no", ""),
                 "name": e.get("full_name", ""),
                 "building": e.get("building", ""),
                 "type": e.get("type", ""),
                 "position": e.get("position", ""),
+                "actual_days": att.get("actual_days", 0),
+                "approved_leave": att.get("approved_leave", 0),
+                "total_days": att.get("total_days", 0),
+                "unapproved_absence": att.get("unapproved_absence", 0),
             })
     if no_boss:
         issues.append({
@@ -184,7 +189,9 @@ def detect_issues(db, month, year):
             "action": (
                 "1. Check Basic Manpower file — is the boss_id column filled for these employees?<br/>"
                 "2. Assign the correct Line Leader or Supervisor.<br/>"
-                "3. If they report directly to management, this can be ignored."
+                "3. If they report directly to management, this can be ignored.<br/>"
+                "<span style=\"color:#7c3aed;\">★ If <b>Working Days ≈ 0</b> and <b>Approved Leave ≈ Total Days</b> "
+                "(shown in italic gray) → likely on long-term leave (maternity/medical) and can be ignored.</span>"
             ),
             "employees": no_boss,
             "table_type": "no_boss",
@@ -252,14 +259,27 @@ def build_alert_html(issues, month, year):
                 <th style="padding:10px;text-align:center;border-bottom:2px solid #e2e8f0;">Building</th>
                 <th style="padding:10px;text-align:center;border-bottom:2px solid #e2e8f0;">TYPE</th>
                 <th style="padding:10px;text-align:left;border-bottom:2px solid #e2e8f0;">Position</th>
+                <th style="padding:10px;text-align:center;border-bottom:2px solid #e2e8f0;">Working Days</th>
+                <th style="padding:10px;text-align:center;border-bottom:2px solid #e2e8f0;">Approved Leave</th>
+                <th style="padding:10px;text-align:center;border-bottom:2px solid #e2e8f0;">Unapp. Absence</th>
             </tr>"""
             for emp in emps:
+                actual = emp.get('actual_days', 0) or 0
+                approved = emp.get('approved_leave', 0) or 0
+                total = emp.get('total_days', 0) or 0
+                unapp = emp.get('unapproved_absence', 0) or 0
+                # 장기 승인 휴가 시각적 강조 (raw 데이터만 표시, 자동 분류 X)
+                long_leave = total > 0 and actual <= total * 0.2 and approved >= total * 0.8
+                wd_style = "color:#94a3b8;font-style:italic;" if long_leave else ""
                 rows += f"""<tr style="background:{sev_bg};">
                     <td style="padding:8px;border-bottom:1px solid #eee;">{emp['emp_no']}</td>
                     <td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;">{emp['name']}</td>
                     <td style="padding:8px;text-align:center;border-bottom:1px solid #eee;">{emp['building']}</td>
                     <td style="padding:8px;text-align:center;border-bottom:1px solid #eee;">{emp.get('type','')}</td>
                     <td style="padding:8px;border-bottom:1px solid #eee;">{emp.get('position','')}</td>
+                    <td style="padding:8px;text-align:center;border-bottom:1px solid #eee;{wd_style}">{actual} / {total}</td>
+                    <td style="padding:8px;text-align:center;border-bottom:1px solid #eee;{wd_style}">{approved}</td>
+                    <td style="padding:8px;text-align:center;border-bottom:1px solid #eee;{'color:#dc2626;font-weight:700;' if unapp > 0 else ''}">{unapp}</td>
                 </tr>"""
         else:  # absence
             header = """<tr style="background:#f8f9fb;">
