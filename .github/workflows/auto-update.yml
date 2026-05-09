@@ -292,10 +292,16 @@ jobs:
           TARGET_MONTHS: ${{ steps.target_month.outputs.target_months }}
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "⚠️ HR_DASHBOARD_FIREBASE_SA not set, skipping HR Dashboard upload"
+          # Diagnostic: distinguish "secret unregistered" vs "secret registered but empty"
+          SA_LEN=${#FIREBASE_SERVICE_ACCOUNT}
+          if [ "$SA_LEN" -eq 0 ]; then
+            echo "⚠️ HR_DASHBOARD_FIREBASE_SA is empty (length=0). Re-enter the secret value in repo Settings → Secrets."
+            exit 0
+          elif [ "$SA_LEN" -lt 100 ]; then
+            echo "⚠️ HR_DASHBOARD_FIREBASE_SA length=$SA_LEN — too short to be a valid service account JSON. Skipping."
             exit 0
           fi
+          echo "✅ HR_DASHBOARD_FIREBASE_SA loaded (length=$SA_LEN)"
 
           echo "📊 Uploading to HR Dashboard (hr-dashboard-7521b)..."
           git clone --depth 1 https://x-access-token:${GH_PAT}@github.com/moonkaicuzui/HR-Dashboard-V2.git /tmp/hr-v2
