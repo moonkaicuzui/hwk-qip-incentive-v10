@@ -24,61 +24,81 @@ Usage:
 # ---------------------------------------------------------------------------
 
 STYLES = {
-    "body": "margin:0;padding:0;background-color:#f4f6f9;font-family:'Segoe UI',Arial,sans-serif;",
-    "container": "max-width:2100px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);",
-    "header": "background:linear-gradient(135deg,#1e3a5f,#2d5a87);color:#ffffff;padding:24px 32px;",
-    "header_title": "font-size:20px;font-weight:700;margin:0 0 4px 0;",
-    "header_sub": "font-size:13px;color:#a8c8e8;margin:0;",
-    "section_title": "font-size:16px;font-weight:700;color:#1e3a5f;margin:0 0 12px 0;padding:16px 24px 0 24px;",
-    "section_body": "padding:0 24px 20px 24px;",
-    "section_card": "background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;margin:12px 20px;padding:0;box-shadow:0 1px 4px rgba(0,0,0,0.06);overflow:hidden;",
+    # ── Foundation ──────────────────────────────────────────────
+    "body": "margin:0;padding:0;background-color:#eef2f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;color:#1f2937;-webkit-text-size-adjust:100%;",
+    "container": "max-width:880px;margin:0 auto;background:#ffffff;",
+    # ── Header (executive style) ────────────────────────────────
+    "header": "background:#0f1f3a;color:#ffffff;padding:36px 40px 32px 40px;border-bottom:3px solid #c8a96a;",
+    "header_eyebrow": "font-size:11px;letter-spacing:2.5px;color:#c8a96a;text-transform:uppercase;font-weight:600;margin:0 0 8px 0;",
+    "header_title": "font-size:26px;font-weight:600;margin:0 0 6px 0;letter-spacing:-0.3px;line-height:1.25;",
+    "header_sub": "font-size:13px;color:#9aa8c0;margin:0;font-weight:400;",
+    # ── Section structure ───────────────────────────────────────
+    "section_title": "font-size:14px;font-weight:700;color:#0f1f3a;margin:0;padding:20px 28px 0 28px;letter-spacing:0.3px;text-transform:uppercase;border-left:3px solid #c8a96a;padding-left:25px;margin:20px 28px 14px 28px;",
+    "section_body": "padding:0 28px 24px 28px;",
+    "section_card": "background:#ffffff;border:1px solid #e5e9f0;border-radius:6px;margin:14px 24px;padding:0;overflow:hidden;",
     "divider": "border:none;margin:0;",
-    # Progress banner
-    "progress_banner": "background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:12px 16px;margin:16px 32px;font-size:13px;color:#1e40af;",
-    "progress_bar_bg": "background:#e5e7eb;border-radius:4px;height:8px;width:100%;overflow:hidden;",
-    "progress_bar_fill": "background:linear-gradient(90deg,#3b82f6,#60a5fa);height:8px;border-radius:4px;",
-    # Condition bars
-    "cond_bar_bg": "background:#e5e7eb;border-radius:3px;height:16px;width:100%;position:relative;overflow:hidden;",
-    "cond_bar_green": "background:#22c55e;height:16px;border-radius:3px;",
-    "cond_bar_yellow": "background:#f59e0b;height:16px;border-radius:3px;",
-    "cond_bar_red": "background:#ef4444;height:16px;border-radius:3px;",
-    # Comparison delta
-    "delta_up": "color:#22c55e;font-size:11px;font-weight:600;",
-    "delta_down": "color:#ef4444;font-size:11px;font-weight:600;",
-    "delta_neutral": "color:#6b7280;font-size:11px;font-weight:600;",
-    # KPI cards
+    # ── Progress banner ─────────────────────────────────────────
+    "progress_banner": "background:#f8f9fc;border:1px solid #e5e9f0;border-left:3px solid #0f1f3a;border-radius:4px;padding:16px 20px;margin:20px 28px;font-size:13px;color:#1e293b;",
+    "progress_bar_bg": "background:#e5e9f0;border-radius:2px;height:6px;width:100%;overflow:hidden;",
+    "progress_bar_fill": "background:#0f1f3a;height:6px;border-radius:2px;",
+    # ── Condition bars ──────────────────────────────────────────
+    "cond_bar_bg": "background:#eef0f4;border-radius:2px;height:14px;width:100%;position:relative;overflow:hidden;",
+    "cond_bar_green": "background:#10b981;height:14px;border-radius:2px;",
+    "cond_bar_yellow": "background:#d97706;height:14px;border-radius:2px;",
+    "cond_bar_red": "background:#dc2626;height:14px;border-radius:2px;",
+    # ── Comparison delta (refined) ──────────────────────────────
+    "delta_up": "color:#059669;font-size:11px;font-weight:600;",
+    "delta_down": "color:#dc2626;font-size:11px;font-weight:600;",
+    "delta_neutral": "color:#94a3b8;font-size:11px;font-weight:500;",
+    # ── KPI cards (executive numbers) ───────────────────────────
     "kpi_table": "width:100%;border-collapse:collapse;",
-    "kpi_cell": "text-align:center;padding:12px 8px;width:25%;",
-    "kpi_value": "font-size:24px;font-weight:700;color:#1e3a5f;margin:0;",
-    "kpi_label": "font-size:11px;color:#6b7b8d;text-transform:uppercase;letter-spacing:0.5px;margin:4px 0 0 0;",
-    # Tables
+    "kpi_cell": "text-align:center;padding:18px 12px;width:25%;border-right:1px solid #eef0f4;",
+    "kpi_cell_last": "text-align:center;padding:18px 12px;width:25%;",
+    "kpi_value": "font-size:28px;font-weight:600;color:#0f1f3a;margin:0;letter-spacing:-0.5px;line-height:1.1;",
+    "kpi_label": "font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1.2px;margin:6px 0 0 0;font-weight:500;",
+    # ── Tables (clean grid) ─────────────────────────────────────
     "table": "width:100%;border-collapse:collapse;font-size:13px;",
-    "th": "background:#f0f4f8;color:#1e3a5f;font-weight:600;padding:8px 10px;text-align:left;border-bottom:2px solid #d0d8e0;",
-    "th_center": "background:#f0f4f8;color:#1e3a5f;font-weight:600;padding:8px 10px;text-align:center;border-bottom:2px solid #d0d8e0;",
-    "td": "padding:8px 10px;border-bottom:1px solid #eef1f5;color:#333;",
-    "td_center": "padding:8px 10px;border-bottom:1px solid #eef1f5;color:#333;text-align:center;",
-    "tr_total": "background:#f8f9fb;font-weight:700;",
-    # Badges
-    "badge_a": "display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#dcfce7;color:#166534;",
-    "badge_b": "display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#fef9c3;color:#854d0e;",
-    "badge_c": "display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#fecaca;color:#991b1b;",
-    # Action box
-    "action_box": "background:#eff6ff;border-left:4px solid #3b82f6;padding:10px 14px;margin:8px 0 16px 0;border-radius:0 6px 6px 0;font-size:12px;color:#1e40af;",
-    "action_box_red": "background:#fef2f2;border-left:4px solid #ef4444;padding:10px 14px;margin:8px 0 16px 0;border-radius:0 6px 6px 0;font-size:12px;color:#991b1b;",
-    "action_box_yellow": "background:#fefce8;border-left:4px solid #f59e0b;padding:10px 14px;margin:8px 0 16px 0;border-radius:0 6px 6px 0;font-size:12px;color:#854d0e;",
-    # Building colors
-    "bldg_a": "display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:#fee2e2;color:#b91c1c;",
-    "bldg_b": "display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:#dbeafe;color:#1d4ed8;",
-    "bldg_b3": "display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:#e9d5ff;color:#7c3aed;",
-    "bldg_c": "display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:#dcfce7;color:#166534;",
-    "bldg_d": "display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:#ffedd5;color:#c2410c;",
-    "bldg_default": "display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:#f3f4f6;color:#4b5563;",
-    # Footer
-    "footer": "background:#f8f9fb;padding:16px 32px;text-align:center;font-size:11px;color:#9ca3af;",
-    # Subtitle for sub-sections
-    "subtitle": "font-size:14px;font-weight:600;color:#374151;margin:12px 0 8px 0;",
-    # Boss chain text
-    "boss_chain": "font-size:11px;color:#6b7280;margin:0;",
+    "th": "background:#fafbfc;color:#475569;font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid #e5e9f0;font-size:11px;text-transform:uppercase;letter-spacing:0.6px;",
+    "th_center": "background:#fafbfc;color:#475569;font-weight:600;padding:10px 12px;text-align:center;border-bottom:1px solid #e5e9f0;font-size:11px;text-transform:uppercase;letter-spacing:0.6px;",
+    "td": "padding:10px 12px;border-bottom:1px solid #f1f3f7;color:#1e293b;",
+    "td_center": "padding:10px 12px;border-bottom:1px solid #f1f3f7;color:#1e293b;text-align:center;",
+    "tr_total": "background:#fafbfc;font-weight:600;",
+    # ── Badges (refined) ────────────────────────────────────────
+    "badge_a": "display:inline-block;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;background:#d1fae5;color:#065f46;letter-spacing:0.4px;",
+    "badge_b": "display:inline-block;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;background:#fef3c7;color:#92400e;letter-spacing:0.4px;",
+    "badge_c": "display:inline-block;padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;background:#fee2e2;color:#991b1b;letter-spacing:0.4px;",
+    # ── Callout boxes ───────────────────────────────────────────
+    "action_box": "background:#f0f4fa;border-left:3px solid #0f1f3a;padding:12px 16px;margin:10px 0 16px 0;border-radius:0 4px 4px 0;font-size:12px;color:#1e293b;line-height:1.6;",
+    "action_box_red": "background:#fef5f5;border-left:3px solid #dc2626;padding:12px 16px;margin:10px 0 16px 0;border-radius:0 4px 4px 0;font-size:12px;color:#7f1d1d;line-height:1.6;",
+    "action_box_yellow": "background:#fffbeb;border-left:3px solid #d97706;padding:12px 16px;margin:10px 0 16px 0;border-radius:0 4px 4px 0;font-size:12px;color:#78350f;line-height:1.6;",
+    # ── Building tag chips ──────────────────────────────────────
+    "bldg_a": "display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#fee2e2;color:#991b1b;letter-spacing:0.5px;",
+    "bldg_b": "display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#dbeafe;color:#1e40af;letter-spacing:0.5px;",
+    "bldg_b3": "display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#e9d5ff;color:#6b21a8;letter-spacing:0.5px;",
+    "bldg_c": "display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#d1fae5;color:#065f46;letter-spacing:0.5px;",
+    "bldg_d": "display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#ffedd5;color:#9a3412;letter-spacing:0.5px;",
+    "bldg_default": "display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#f1f5f9;color:#475569;letter-spacing:0.5px;",
+    # ── Footer (corporate) ──────────────────────────────────────
+    "footer": "background:#0f1f3a;padding:24px 40px;color:#9aa8c0;",
+    "footer_brand": "font-size:12px;font-weight:600;color:#c8a96a;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 6px 0;",
+    "footer_meta": "font-size:11px;color:#9aa8c0;margin:0;line-height:1.7;",
+    "footer_legal": "font-size:10px;color:#5e6b85;margin:8px 0 0 0;border-top:1px solid #1e3050;padding-top:10px;",
+    # ── Misc ────────────────────────────────────────────────────
+    "subtitle": "font-size:13px;font-weight:600;color:#0f1f3a;margin:14px 0 10px 0;letter-spacing:0.2px;",
+    "boss_chain": "font-size:11px;color:#64748b;margin:0;",
+    # ── Change tracking (new) ───────────────────────────────────
+    "change_arrow": "color:#94a3b8;font-weight:400;padding:0 6px;",
+    "change_old": "color:#94a3b8;text-decoration:line-through;font-size:12px;",
+    "change_new": "color:#0f1f3a;font-weight:600;font-size:12px;",
+    # Field-specific chip colors (executive priority encoding)
+    "chip_type": "display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#fee2e2;color:#991b1b;letter-spacing:0.4px;margin-right:6px;",
+    "chip_position": "display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#dbeafe;color:#1e40af;letter-spacing:0.4px;margin-right:6px;",
+    "chip_position_code": "display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#f1f5f9;color:#475569;letter-spacing:0.4px;margin-right:6px;",
+    "chip_boss": "display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#ede9fe;color:#5b21b6;letter-spacing:0.4px;margin-right:6px;",
+    "chip_building": "display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#cffafe;color:#155e75;letter-spacing:0.4px;margin-right:6px;",
+    "chip_cfa": "display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#fef3c7;color:#92400e;letter-spacing:0.4px;margin-right:6px;",
+    "chip_talent": "display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#fce7f3;color:#9d174d;letter-spacing:0.4px;margin-right:6px;",
+    "change_field_chip": "display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;background:#f1f5f9;color:#475569;letter-spacing:0.3px;margin-right:6px;",
 }
 
 
@@ -183,6 +203,19 @@ I18N = {
         "prs_title": "5PRS 미달자 상세 (품질 검사 관리)",
         "attendance_title": "출근 미달자 상세 (근태 관리)",
         "type_title": "TYPE별 인센티브 현황",
+        # Personnel changes section
+        "changes_title": "인사 변동 사항 (전월 대비)",
+        "changes_none": "전월 대비 변동된 인사 정보가 없습니다.",
+        "changes_subtitle": "전월 대비 직급·역할·소속 변경이 발생한 직원입니다.",
+        "changes_total": "변동",
+        "changes_field_type": "TYPE",
+        "changes_field_position": "직책",
+        "changes_field_position_code": "직책 코드",
+        "changes_field_boss_name": "직속상사",
+        "changes_field_building": "소속 Building",
+        "changes_field_cfa_certified": "CFA 자격",
+        "changes_field_talent_pool_member": "Talent Pool",
+        "changes_arrow": "→",
         "link_title": "액션 링크",
         # KPI labels
         "total_emp": "총 직원", "eligible_emp": "적격 직원",
@@ -256,6 +289,18 @@ I18N = {
         "prs_title": "5PRS Underperformers (Quality Inspection)",
         "attendance_title": "Attendance Underperformers (Attendance Management)",
         "type_title": "Incentive Status by TYPE",
+        "changes_title": "Personnel Changes (vs Previous Month)",
+        "changes_none": "No personnel changes detected versus the previous month.",
+        "changes_subtitle": "Employees whose role, position, or assignment changed since last month.",
+        "changes_total": "Changes",
+        "changes_field_type": "TYPE",
+        "changes_field_position": "Position",
+        "changes_field_position_code": "Position Code",
+        "changes_field_boss_name": "Supervisor",
+        "changes_field_building": "Building",
+        "changes_field_cfa_certified": "CFA",
+        "changes_field_talent_pool_member": "Talent Pool",
+        "changes_arrow": "→",
         "link_title": "Action Links",
         # KPI labels
         "total_emp": "Total Employees", "eligible_emp": "Eligible Employees",
@@ -329,6 +374,18 @@ I18N = {
         "prs_title": "Chi ti\u1ebft ch\u01b0a \u0111\u1ea1t 5PRS (Qu\u1ea3n l\u00fd ki\u1ec3m tra ch\u1ea5t l\u01b0\u1ee3ng)",
         "attendance_title": "Chi ti\u1ebft ch\u01b0a \u0111\u1ea1t chuy\u00ean c\u1ea7n (Qu\u1ea3n l\u00fd \u0111i l\u00e0m)",
         "type_title": "Th\u01b0\u1edfng theo TYPE",
+        "changes_title": "Thay \u0111\u1ed5i nh\u00e2n s\u1ef1 (so v\u1edbi th\u00e1ng tr\u01b0\u1edbc)",
+        "changes_none": "Kh\u00f4ng c\u00f3 thay \u0111\u1ed5i so v\u1edbi th\u00e1ng tr\u01b0\u1edbc.",
+        "changes_subtitle": "Nh\u00e2n vi\u00ean c\u00f3 thay \u0111\u1ed5i v\u1ec1 vai tr\u00f2, v\u1ecb tr\u00ed ho\u1eb7c ph\u00e2n c\u00f4ng.",
+        "changes_total": "Thay \u0111\u1ed5i",
+        "changes_field_type": "TYPE",
+        "changes_field_position": "V\u1ecb tr\u00ed",
+        "changes_field_position_code": "M\u00e3 v\u1ecb tr\u00ed",
+        "changes_field_boss_name": "C\u1ea5p tr\u00ean",
+        "changes_field_building": "Building",
+        "changes_field_cfa_certified": "CFA",
+        "changes_field_talent_pool_member": "Talent Pool",
+        "changes_arrow": "\u2192",
         "link_title": "Li\u00ean k\u1ebft h\u00e0nh \u0111\u1ed9ng",
         # KPI labels
         "total_emp": "T\u1ed5ng NV", "eligible_emp": "NV \u0111\u1ee7 \u0111i\u1ec1u ki\u1ec7n",
@@ -558,7 +615,7 @@ def _section_1b_condition_rates(data):
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F3AF; {_t(data, 'condition_title')}</h2>
+    <h2 style="{STYLES['section_title']}">{_t(data, 'condition_title')}</h2>
     <div style="{STYLES['section_body']}">
       <table style="{STYLES['table']}">
         <tr>
@@ -615,7 +672,7 @@ def _section_1_kpi(data):
     if receiving == 0 and total > 0:
         # In-progress month: show condition analysis instead of zeros
         return f'''
-    <h2 style="{STYLES['section_title']}">&#x1F4CA; {_t(data, 'kpi_title')}</h2>
+    <h2 style="{STYLES['section_title']}">{_t(data, 'kpi_title')}</h2>
     <div style="{STYLES['section_body']}">
       <table style="{STYLES['kpi_table']}">
         <tr>
@@ -643,7 +700,7 @@ def _section_1_kpi(data):
         # Completed month: show incentive-focused metrics
         receiving_delta = _delta_html(pct, prev_rate) if prev_rate else ""
         return f'''
-    <h2 style="{STYLES['section_title']}">&#x1F4CA; {_t(data, 'kpi_title')}</h2>
+    <h2 style="{STYLES['section_title']}">{_t(data, 'kpi_title')}</h2>
     <div style="{STYLES['section_body']}">
       <table style="{STYLES['kpi_table']}">
         <tr>
@@ -943,7 +1000,7 @@ def _section_2_building(data):
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F3ED; {_t(data, 'building_title')}</h2>
+    <h2 style="{STYLES['section_title']}">{_t(data, 'building_title')}</h2>
     <div style="{STYLES['section_body']}">
       {''.join(html_parts)}
       {total_html}
@@ -1020,7 +1077,7 @@ def _section_3_aql_failures(data):
     if not has_failures:
         return f'''
         <hr style="{STYLES['divider']}"/>
-        <h2 style="{STYLES['section_title']}">&#x1F6A8; {_t(data, 'aql_fail_title')}</h2>
+        <h2 style="{STYLES['section_title']}">{_t(data, 'aql_fail_title')}</h2>
         <div style="{STYLES['section_body']}">
           <p style="color:#22c55e;font-weight:600;">&#x2705; {_t(data, 'aql_none')}</p>
         </div>
@@ -1028,7 +1085,7 @@ def _section_3_aql_failures(data):
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F6A8; {_t(data, 'aql_fail_title')}</h2>
+    <h2 style="{STYLES['section_title']}">{_t(data, 'aql_fail_title')}</h2>
     <div style="{STYLES['section_body']}">
       {html}
     </div>
@@ -1109,7 +1166,7 @@ def _section_4_consecutive_aql(data):
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x26A0;&#xFE0F; {_t(data, 'consecutive_title')}</h2>
+    <h2 style="{STYLES['section_title']}">{_t(data, 'consecutive_title')}</h2>
     <div style="{STYLES['section_body']}">
       {html}
     </div>
@@ -1216,7 +1273,7 @@ def _section_5_5prs(data):
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F50D; {_t(data, 'prs_title')}</h2>
+    <h2 style="{STYLES['section_title']}">{_t(data, 'prs_title')}</h2>
     <div style="{STYLES['section_body']}">
       {html}
     </div>
@@ -1359,7 +1416,7 @@ def _section_6_attendance(data):
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F4C5; {_t(data, 'attendance_title')}</h2>
+    <h2 style="{STYLES['section_title']}">{_t(data, 'attendance_title')}</h2>
     <div style="{STYLES['section_body']}">
       {html}
     </div>
@@ -1392,7 +1449,7 @@ def _section_7_type_breakdown(data):
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F4CA; {_t(data, 'type_title')}</h2>
+    <h2 style="{STYLES['section_title']}">{_t(data, 'type_title')}</h2>
     <div style="{STYLES['section_body']}">
       <table style="{STYLES['table']}">
         <tr>
@@ -1408,13 +1465,111 @@ def _section_7_type_breakdown(data):
     '''
 
 
+def _section_changes(data):
+    """전월 대비 인사 변동 사항 섹션 (TYPE / 직책 / 직속상사 / Building / CFA / Talent Pool)."""
+    changes = data.get("employee_changes", []) or []
+    # Hide entire section if previous month data was unavailable AND no changes
+    if not changes and not data.get("previous_month_name"):
+        return ""
+
+    t = data.get("_t") or I18N["ko"]
+    title = t.get("changes_title", "Personnel Changes")
+    subtitle = t.get("changes_subtitle", "")
+    arrow = t.get("changes_arrow", "→")
+
+    # Field label map
+    field_labels = {
+        "type": t.get("changes_field_type", "TYPE"),
+        "position": t.get("changes_field_position", "Position"),
+        "position_code": t.get("changes_field_position_code", "Code"),
+        "boss_name": t.get("changes_field_boss_name", "Supervisor"),
+        "building": t.get("changes_field_building", "Building"),
+        "cfa_certified": t.get("changes_field_cfa_certified", "CFA"),
+        "talent_pool_member": t.get("changes_field_talent_pool_member", "Talent Pool"),
+    }
+
+    # Field → chip style map (priority/severity encoding)
+    field_chip_style = {
+        "type": STYLES["chip_type"],
+        "position": STYLES["chip_position"],
+        "position_code": STYLES["chip_position_code"],
+        "boss_name": STYLES["chip_boss"],
+        "building": STYLES["chip_building"],
+        "cfa_certified": STYLES["chip_cfa"],
+        "talent_pool_member": STYLES["chip_talent"],
+    }
+
+    if not changes:
+        body = f'<p style="font-size:13px;color:#64748b;margin:8px 0 4px 0;">{t.get("changes_none","")}</p>'
+    else:
+        rows = ""
+        # Limit to 30 rows in email; provide note when truncated
+        display_changes = changes[:30]
+        for c in display_changes:
+            emp_no = c.get("emp_no", "")
+            name = c.get("name", "—")
+            curr = c.get("current", {})
+            curr_type = str(curr.get("type", "") or "—")
+            change_cells = []
+            for fld, (old, new) in c["changes"].items():
+                label = field_labels.get(fld, fld)
+                chip_style = field_chip_style.get(fld, STYLES["change_field_chip"])
+                old_disp = old if old not in ("", "None", "False") else "—"
+                new_disp = new if new not in ("", "None", "False") else "—"
+                # boolean prettification
+                if fld in ("cfa_certified", "talent_pool_member"):
+                    old_disp = "Yes" if str(old).lower() in ("true", "1", "yes") else "No"
+                    new_disp = "Yes" if str(new).lower() in ("true", "1", "yes") else "No"
+                change_cells.append(
+                    f'<div style="margin:3px 0;font-size:12px;line-height:1.7;">'
+                    f'<span style="{chip_style}">{label}</span>'
+                    f'<span style="{STYLES["change_old"]}">{old_disp}</span>'
+                    f'<span style="{STYLES["change_arrow"]}">{arrow}</span>'
+                    f'<span style="{STYLES["change_new"]}">{new_disp}</span>'
+                    f'</div>'
+                )
+            rows += f'''
+            <tr>
+              <td style="{STYLES['td_center']};font-family:'SF Mono',Consolas,monospace;font-size:12px;color:#64748b;">{emp_no}</td>
+              <td style="{STYLES['td']};font-weight:600;">{name}</td>
+              <td style="{STYLES['td_center']};"><span style="{STYLES['badge_a'] if curr_type=='TYPE-1' else STYLES['badge_b'] if curr_type=='TYPE-2' else STYLES['badge_c'] if curr_type=='TYPE-3' else STYLES['bldg_default']}">{curr_type}</span></td>
+              <td style="{STYLES['td']}">{''.join(change_cells)}</td>
+            </tr>'''
+
+        truncation_note = ""
+        if len(changes) > 30:
+            truncation_note = f'<p style="font-size:11px;color:#94a3b8;margin:8px 0 0 0;font-style:italic;">… +{len(changes)-30} {t.get("more","more")}</p>'
+
+        body = f'''
+        <p style="font-size:12px;color:#64748b;margin:0 0 12px 0;">{subtitle} <span style="color:#0f1f3a;font-weight:600;">{len(changes)} {t.get("changes_total","Changes")}</span></p>
+        <table style="{STYLES['table']}">
+          <tr>
+            <th style="{STYLES['th_center']};width:90px;">{t.get('emp_no','#')}</th>
+            <th style="{STYLES['th']};width:160px;">{t.get('name','Name')}</th>
+            <th style="{STYLES['th_center']};width:80px;">{t.get('type','TYPE')}</th>
+            <th style="{STYLES['th']}">{t.get('changes_title','Changes')}</th>
+          </tr>
+          {rows}
+        </table>
+        {truncation_note}
+        '''
+
+    return f'''
+    <hr style="{STYLES['divider']}"/>
+    <h2 style="{STYLES['section_title']}">{title}</h2>
+    <div style="{STYLES['section_body']}">
+      {body}
+    </div>
+    '''
+
+
 def _section_8_links(data, dashboard_url=None):
     """Section 8: 액션 링크"""
     url = dashboard_url or "https://moonkaicuzui.github.io/hwk-qip-incentive-v10/"
 
     return f'''
     <hr style="{STYLES['divider']}"/>
-    <h2 style="{STYLES['section_title']}">&#x1F517; {_t(data, 'link_title')}</h2>
+    <h2 style="{STYLES['section_title']}">{_t(data, 'link_title')}</h2>
     <div style="{STYLES['section_body']}">
       <table style="width:100%;border-collapse:collapse;">
         <tr>
@@ -1528,6 +1683,7 @@ def generate_email_html(action_data, month="february", year=2026, dashboard_url=
     s0 = _section_0_progress(action_data, month_local, year)
     s1 = _section_1_kpi(action_data)
     s1b = _section_1b_condition_rates(action_data)
+    sc = _section_changes(action_data)  # NEW: personnel changes
     s2 = _section_2_building(action_data)
     s3 = _section_3_aql_failures(action_data)
     s4 = _section_4_consecutive_aql(action_data)
@@ -1544,25 +1700,37 @@ def generate_email_html(action_data, month="february", year=2026, dashboard_url=
         return f'<div style="{card}">{content}</div>'
 
     html_lang = "vi" if lang == "vi" else "en" if lang == "en" else "ko"
+
+    # Build executive-style header eyebrow + title
+    eyebrow_text = "HWK QUALITY · MANAGEMENT REPORT" if lang == "en" else \
+                   "HWK QUALITY · BÁO CÁO QUẢN TRỊ" if lang == "vi" else \
+                   "HWK QUALITY · 경영 리포트"
+    issue_label = "Issue" if lang == "en" else "Số" if lang == "vi" else "발행"
+    issue_id = f"{year}-{['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month_idx-1]}"
+
     html = f'''<!DOCTYPE html>
 <html lang="{html_lang}">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QIP Incentive Report - {year} {month_local}</title>
+  <meta name="color-scheme" content="light"/>
+  <meta name="supported-color-schemes" content="light"/>
+  <title>QIP Incentive Report — {year} {month_local}</title>
 </head>
 <body style="{STYLES['body']}">
   <div style="{STYLES['container']}">
 
-    <!-- Header -->
+    <!-- Executive Header -->
     <div style="{STYLES['header']}">
-      <h1 style="{STYLES['header_title']}">QIP - {year} {month_local}</h1>
-      <p style="{STYLES['header_sub']}">HWK QIP Incentive Dashboard V10</p>
+      <p style="{STYLES['header_eyebrow']}">{eyebrow_text}</p>
+      <h1 style="{STYLES['header_title']}">QIP Incentive Status — {month_local} {year}</h1>
+      <p style="{STYLES['header_sub']}">HWK QIP Incentive Dashboard · {issue_label} {issue_id}</p>
       {_header_data_period(config, lang)}
     </div>
 
     {s0}
     {_card(s1 + s1b)}
+    {_card(sc)}
     {_card(s2)}
     {_card(s3)}
     {_card(s4)}
@@ -1571,10 +1739,16 @@ def generate_email_html(action_data, month="february", year=2026, dashboard_url=
     {_card(s7)}
     {_card(s8)}
 
-    <!-- Footer -->
+    <!-- Corporate Footer -->
     <div style="{STYLES['footer']}">
-      &#x1F4C5; {_t(action_data, 'data_as_of')} {generated_at} {_t(action_data, 'auto_gen')}<br/>
-      {_t(action_data, 'auto_sent')}
+      <p style="{STYLES['footer_brand']}">HWK · Quality Operations</p>
+      <p style="{STYLES['footer_meta']}">
+        {_t(action_data, 'data_as_of')} {generated_at} (UTC) · {_t(action_data, 'auto_gen')}<br/>
+        {_t(action_data, 'auto_sent')}
+      </p>
+      <p style="{STYLES['footer_legal']}">
+        Confidential — for internal recipients only. © {year} Hwaseung Vina · QIP Incentive Dashboard V10
+      </p>
     </div>
 
   </div>

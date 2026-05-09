@@ -28,8 +28,10 @@ from datetime import datetime, timezone
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from scripts.utils.firebase_common import init_firestore
 
+# Port 587 STARTTLS — port 465 SSL was silently dropping self-sent mail
+# (ksmoon → ksmoon) on the Hwaseung mail server. Watchdog (port 587) reaches.
 SMTP_HOST = "mail.hsvina.com"
-SMTP_PORT = 465
+SMTP_PORT = 587
 FROM_NAME = "QIP Incentive Dashboard"
 FROM_EMAIL = "ksmoon@hsvina.com"
 
@@ -102,7 +104,12 @@ def build_notification_html(title, new_status, comment, changed_by):
 def send_notification(to_email, subject, html_body, smtp_user, smtp_password, attachment=None, attachments=None):
     try:
         ctx = ssl.create_default_context()
-        server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=30, context=ctx)
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        # Port 587 STARTTLS path (consistent with workflow-watchdog dawidd6 pattern)
+        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30)
+        server.ehlo()
+        server.starttls(context=ctx)
         server.ehlo()
         code, resp = server.docmd("AUTH LOGIN", base64.b64encode(smtp_user.encode()).decode())
         if code == 334:

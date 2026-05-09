@@ -129,7 +129,7 @@ def load_previous_month(db, month, year):
     """전월 데이터 로드 (비교용)
 
     Returns:
-        dict: {summary, condition_stats, building_breakdown} or empty dict
+        dict: {summary, condition_stats, building_breakdown, employees, ...} or empty dict
     """
     prev_month = PREV_MONTH_MAP.get(month, "")
     prev_year = year - 1 if month == "january" else year
@@ -149,6 +149,18 @@ def load_previous_month(db, month, year):
     print(f"    전월: {summary.get('total_employees', 0)}명, "
           f"{summary.get('receiving_employees', 0)}명 수령")
 
+    # 전월 employees 데이터도 로드 (type/position/boss 변경 추적용)
+    prev_employees = []
+    try:
+        emp_ref = (db.collection("employees").document(month_year)
+                   .collection("all_data").document("data"))
+        emp_doc = emp_ref.get()
+        if emp_doc.exists:
+            prev_employees = emp_doc.to_dict().get("employees", [])
+            print(f"    전월 employees: {len(prev_employees)}명 로드")
+    except Exception as e:
+        print(f"    전월 employees 로드 실패: {e}")
+
     months = ["january","february","march","april","may","june",
               "july","august","september","october","november","december"]
     prev_month_idx = months.index(prev_month) + 1 if prev_month in months else None
@@ -159,7 +171,71 @@ def load_previous_month(db, month, year):
         "building_breakdown": summary.get("building_breakdown", {}),
         "month_ko": MONTH_KO.get(prev_month, prev_month),
         "month_idx": prev_month_idx,
+        "month_name": prev_month,
+        "year": prev_year,
+        "employees": prev_employees,
     }
+
+
+def detect_employee_changes(current_employees, prev_employees):
+    """전월 대비 직원의 type/position/boss/building 변경 사항을 감지.
+
+    Returns:
+        list of dict: [{
+            'emp_no': str, 'name': str,
+            'changes': {'type': (old, new), 'position': (old, new), ...},
+            'current': dict (current emp),
+        }]
+    """
+    if not prev_employees:
+        return []
+
+    prev_map = {}
+    for e in prev_employees:
+        emp_no = str(e.get("emp_no", "")).strip()
+        if emp_no:
+            prev_map[emp_no] = e
+
+    tracked_fields = [
+        ("type", "TYPE"),
+        ("position", "Position"),
+        ("position_code", "Position Code"),
+        ("boss_name", "Supervisor"),
+        ("building", "Building"),
+        ("cfa_certified", "CFA"),
+        ("talent_pool_member", "Talent Pool"),
+    ]
+
+    changes_list = []
+    for emp in current_employees:
+        emp_no = str(emp.get("emp_no", "")).strip()
+        if not emp_no or emp_no not in prev_map:
+            continue
+        prev = prev_map[emp_no]
+        diffs = {}
+        for fld, _label in tracked_fields:
+            curr_val = emp.get(fld)
+            prev_val = prev.get(fld)
+            # Normalize for comparison
+            curr_str = str(curr_val).strip() if curr_val is not None else ""
+            prev_str = str(prev_val).strip() if prev_val is not None else ""
+            if curr_str != prev_str:
+                diffs[fld] = (prev_str, curr_str)
+        if diffs:
+            changes_list.append({
+                "emp_no": emp_no,
+                "name": str(emp.get("full_name", "")).strip() or "—",
+                "changes": diffs,
+                "current": emp,
+            })
+
+    # Sort: most-impactful first (type change > position > boss > building)
+    priority = {"type": 0, "position": 1, "position_code": 2, "boss_name": 3, "building": 4, "talent_pool_member": 5, "cfa_certified": 6}
+    def _sort_key(c):
+        keys = sorted(c["changes"].keys(), key=lambda k: priority.get(k, 99))
+        return (priority.get(keys[0], 99), c["emp_no"]) if keys else (99, c["emp_no"])
+    changes_list.sort(key=_sort_key)
+    return changes_list
 
 
 def build_action_report(firestore_data):
@@ -342,6 +418,11 @@ def build_action_report(firestore_data):
     prev_building = prev_data.get("building_breakdown", {}) if prev_data else {}
     prev_month_ko = prev_data.get("month_ko", "") if prev_data else ""
 
+    # 직원 변경 사항 감지 (전월 대비 type/position/boss/building 변경)
+    prev_employees = prev_data.get("employees", []) if prev_data else []
+    employee_changes = detect_employee_changes(employees, prev_employees)
+    print(f"  직원 변경 감지: {len(employee_changes)}명")
+
     return {
         "summary": summary,
         "building_quality": building_quality,
@@ -365,6 +446,9 @@ def build_action_report(firestore_data):
         "previous_building": prev_building,
         "previous_month_ko": prev_month_ko,
         "previous_month_idx": prev_data.get("month_idx") if prev_data else None,
+        # Employee role/position/boss changes detected vs previous month
+        "employee_changes": employee_changes,
+        "previous_month_name": prev_data.get("month_name", "") if prev_data else "",
     }
 
 
