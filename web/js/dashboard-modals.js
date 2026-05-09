@@ -27,6 +27,46 @@
  */
 
 // ---------------------------------------------------------------------------
+// ModalStack — Centralized z-index manager for nested modals
+// Bootstrap default: modal=1055, backdrop=1050. We start at 1060 and add 20
+// per stack level so each new modal (and its backdrop) sits above prior ones.
+// ---------------------------------------------------------------------------
+
+var ModalStack = {
+    BASE: 1060,
+    STEP: 20,
+
+    _countOpen: function () {
+        var bs = document.querySelectorAll('.modal.show').length;
+        var dyn = document.querySelectorAll('.dm-modal-overlay').length;
+        return bs + dyn;
+    },
+
+    next: function () {
+        return this.BASE + (this._countOpen() * this.STEP);
+    },
+
+    applyBootstrap: function (modalEl) {
+        var z = this.next();
+        modalEl.style.zIndex = z;
+        var onShown = function () {
+            var backdrops = document.querySelectorAll('.modal-backdrop:not([data-stacked])');
+            backdrops.forEach(function (b) {
+                b.style.zIndex = z - 1;
+                b.setAttribute('data-stacked', '1');
+            });
+        };
+        modalEl.addEventListener('shown.bs.modal', onShown, { once: true });
+        var onHidden = function () {
+            if (document.querySelectorAll('.modal.show').length > 0) {
+                document.body.classList.add('modal-open');
+            }
+        };
+        modalEl.addEventListener('hidden.bs.modal', onHidden, { once: true });
+    }
+};
+
+// ---------------------------------------------------------------------------
 // DashboardModals Namespace
 // ---------------------------------------------------------------------------
 
@@ -169,17 +209,11 @@ var DashboardModals = {
             console.error('[Phase C] Condition doughnut chart error:', e);
         }
 
-        // Show using Bootstrap 5 Modal API
+        // Show using Bootstrap 5 Modal API. ModalStack ensures nested modals
+        // always layer above any open Validation/Position/Employee modal.
         var modalEl = document.getElementById('employeeModal');
         if (modalEl) {
-            // Fix: Ensure Employee Detail appears above Position Detail (z-index stacking)
-            modalEl.style.zIndex = '1060';
-            modalEl.addEventListener('shown.bs.modal', function () {
-                var backdrops = document.querySelectorAll('.modal-backdrop');
-                if (backdrops.length > 1) {
-                    backdrops[backdrops.length - 1].style.zIndex = '1058';
-                }
-            }, { once: true });
+            ModalStack.applyBootstrap(modalEl);
             var bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
             bsModal.show();
         }
@@ -337,6 +371,7 @@ var DashboardModals = {
         // Show using Bootstrap 5 Modal API
         var modalEl = document.getElementById('positionModal');
         if (modalEl) {
+            ModalStack.applyBootstrap(modalEl);
             var bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
             bsModal.show();
         }
@@ -1329,14 +1364,13 @@ var DashboardModals = {
         else if (size === 'modal-lg') maxWidth = '900px';
         else if (size === 'modal-fullscreen') maxWidth = '100%';
 
-        // Overlay / backdrop
+        // Overlay / backdrop. ModalStack picks a z-index higher than any
+        // currently-open Bootstrap modal *and* any prior dynamic modal so
+        // nested popups always appear on top of their opener.
         var overlay = document.createElement('div');
         overlay.id = id;
         overlay.className = 'dm-modal-overlay';
-        // Calculate z-index: stack above Bootstrap modals and other dynamic modals
-        var existingOverlays = document.querySelectorAll('.dm-modal-overlay');
-        var baseZIndex = 1080; // Above Bootstrap modal (1060) and backdrop (1058)
-        var zIndex = baseZIndex + (existingOverlays.length * 10);
+        var zIndex = ModalStack.next();
 
         overlay.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; z-index:' + zIndex + ';'
             + 'background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center;'
@@ -1354,9 +1388,12 @@ var DashboardModals = {
         header.style.cssText = 'background:linear-gradient(135deg, #1a237e, #283593); color:#fff;'
             + 'padding:16px 20px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;';
         header.innerHTML = '<h5 style="margin:0; font-size:1.1rem;">' + safeTitle + '</h5>'
-            + '<button type="button" style="background:none; border:none; color:#fff; font-size:1.4rem;'
-            + 'cursor:pointer; padding:0 4px; line-height:1;" onclick="window.closeValidationModal()"'
-            + ' aria-label="Close">&times;</button>';
+            + '<button type="button" class="dm-modal-close-btn" style="background:rgba(255,255,255,0.12); border:none;'
+            + ' color:#fff; font-size:1.3rem; cursor:pointer; width:32px; height:32px; border-radius:50%;'
+            + ' display:inline-flex; align-items:center; justify-content:center; line-height:1; transition:background 0.15s;"'
+            + ' onmouseover="this.style.background=\'rgba(255,255,255,0.28)\'"'
+            + ' onmouseout="this.style.background=\'rgba(255,255,255,0.12)\'"'
+            + ' onclick="window.closeValidationModal()" aria-label="Close">&times;</button>';
 
         // Body (scrollable)
         var body = document.createElement('div');
@@ -1385,9 +1422,17 @@ var DashboardModals = {
             document.removeEventListener('keydown', escHandler);
         };
 
-        // ESC key handler
+        // ESC closes only the topmost dynamic modal (don't kill modals beneath
+        // a Bootstrap employee/position modal that has been opened on top).
         var escHandler = function (e) {
-            if (e.key === 'Escape') removeFn();
+            if (e.key !== 'Escape') return;
+            var topBootstrap = document.querySelector('.modal.show');
+            if (topBootstrap) return; // Bootstrap modal is on top — let it handle ESC
+            var allDynamic = document.querySelectorAll('.dm-modal-overlay');
+            if (!allDynamic.length) return;
+            var top = allDynamic[allDynamic.length - 1];
+            if (top.id !== id) return;
+            removeFn();
         };
         document.addEventListener('keydown', escHandler);
 

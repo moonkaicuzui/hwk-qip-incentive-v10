@@ -2169,6 +2169,26 @@ class DataProcessor:
                     expected_month = month_map.get(month_name.upper())
 
                     if expected_month is not None:
+                        # MONTH 정규화: 'YYYY-MM', 'YYYY-MM-DD', '5', 5, 5.0 → 5
+                        def _to_month_num_inner(val):
+                            if pd.isna(val):
+                                return None
+                            s = str(val).strip()
+                            if not s:
+                                return None
+                            if '-' in s:
+                                parts = s.split('-')
+                                if len(parts) >= 2:
+                                    try:
+                                        return int(parts[1])
+                                    except (ValueError, TypeError):
+                                        return None
+                            try:
+                                return int(float(s))
+                            except (ValueError, TypeError):
+                                return None
+                        df['MONTH'] = df['MONTH'].apply(_to_month_num_inner)
+
                         # 전체 행의 MONTH 값 확인
                         unique_months = df['MONTH'].dropna().unique()
 
@@ -2222,7 +2242,30 @@ class DataProcessor:
                     if df is not None and not df.empty:
                         # ==========================================
                         # 개선된 검증 로직 (2025-10-07)
+                        # MONTH 컬럼 형식 변경 대응 (2026-05-09):
+                        #   AQL 원본이 '2026-05', '2026-05-01' 같은 YYYY-MM[-DD]
+                        #   문자열을 보낼 수 있으므로 월 번호로 정규화한다.
                         # ==========================================
+
+                        def _to_month_num(val):
+                            if pd.isna(val):
+                                return None
+                            s = str(val).strip()
+                            if not s:
+                                return None
+                            if '-' in s:
+                                parts = s.split('-')
+                                if len(parts) >= 2:
+                                    try:
+                                        return int(parts[1])
+                                    except (ValueError, TypeError):
+                                        return None
+                            try:
+                                return int(float(s))
+                            except (ValueError, TypeError):
+                                return None
+
+                        df['MONTH'] = df['MONTH'].apply(_to_month_num)
 
                         # 1. 첫 행 MONTH 확인 (기존 로직 호환)
                         first_month = df['MONTH'].iloc[0]
