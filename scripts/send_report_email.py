@@ -196,10 +196,10 @@ def detect_employee_changes(current_employees, prev_employees):
         if emp_no:
             prev_map[emp_no] = e
 
+    # position_code(예: A2A, BTS2B)는 추적 제외 — 사용자 요청. 구체적 position만.
     tracked_fields = [
         ("type", "TYPE"),
         ("position", "Position"),
-        ("position_code", "Position Code"),
         ("boss_name", "Supervisor"),
         ("building", "Building"),
         ("cfa_certified", "CFA"),
@@ -230,7 +230,7 @@ def detect_employee_changes(current_employees, prev_employees):
             })
 
     # Sort: most-impactful first (type change > position > boss > building)
-    priority = {"type": 0, "position": 1, "position_code": 2, "boss_name": 3, "building": 4, "talent_pool_member": 5, "cfa_certified": 6}
+    priority = {"type": 0, "position": 1, "boss_name": 2, "building": 3, "talent_pool_member": 4, "cfa_certified": 5}
     def _sort_key(c):
         keys = sorted(c["changes"].keys(), key=lambda k: priority.get(k, 99))
         return (priority.get(keys[0], 99), c["emp_no"]) if keys else (99, c["emp_no"])
@@ -280,6 +280,10 @@ def build_action_report(firestore_data):
             building_quality[bldg] = {
                 "count": 0, "tests": 0, "fail_count": 0,
                 "reject_rate": 0, "receiving": 0, "fail_employees": [],
+                # area_reject_rate aggregation (TYPE-1 inspectors are not tested
+                # themselves; their meaningful AQL signal is the reject rate of
+                # the area they oversee).
+                "area_reject_sum": 0.0, "area_reject_n": 0, "area_reject_max": 0.0,
             }
 
         # TYPE-grouped building_quality
@@ -289,6 +293,7 @@ def build_action_report(firestore_data):
             building_quality_by_type[emp_type][bldg] = {
                 "count": 0, "tests": 0, "fail_count": 0,
                 "reject_rate": 0, "receiving": 0, "fail_employees": [],
+                "area_reject_sum": 0.0, "area_reject_n": 0, "area_reject_max": 0.0,
             }
 
         bq = building_quality[bldg]
@@ -303,6 +308,21 @@ def build_action_report(firestore_data):
         failures = int(aql.get("failures", 0) or 0)
         bq["tests"] += tests
         bq_typed["tests"] += tests
+
+        # Track area_reject_rate separately (meaningful for TYPE-1 inspectors)
+        try:
+            arr = float(aql.get("area_reject_rate", 0) or 0)
+        except (TypeError, ValueError):
+            arr = 0.0
+        if arr is not None:
+            bq["area_reject_sum"] += arr
+            bq["area_reject_n"] += 1
+            if arr > bq["area_reject_max"]:
+                bq["area_reject_max"] = arr
+            bq_typed["area_reject_sum"] += arr
+            bq_typed["area_reject_n"] += 1
+            if arr > bq_typed["area_reject_max"]:
+                bq_typed["area_reject_max"] = arr
 
         if emp.get("current_incentive", 0) > 0:
             bq["receiving"] += 1
@@ -340,18 +360,24 @@ def build_action_report(firestore_data):
             bq["fail_employees"].append(fail_entry)
             bq_typed["fail_employees"].append(fail_entry)
 
-    # Calculate reject rate per building (flat and typed)
-    for bldg, bq in building_quality.items():
+    # Calculate reject rate per building (flat and typed).
+    # area_reject_avg / area_reject_max are also computed so the building
+    # section can show TYPE-1 inspectors a meaningful number (their personal
+    # total_tests is 0 — they are the inspectors, not the inspected).
+    def _finalize(bq):
         if bq["tests"] > 0:
             bq["reject_rate"] = (bq["fail_count"] / bq["tests"]) * 100
         else:
             bq["reject_rate"] = 0
+        n = bq.get("area_reject_n", 0)
+        bq["area_reject_avg"] = (bq["area_reject_sum"] / n) if n > 0 else 0.0
+        # area_reject_max already tracked per emp
+
+    for bldg, bq in building_quality.items():
+        _finalize(bq)
     for emp_type in building_quality_by_type:
         for bldg, bq in building_quality_by_type[emp_type].items():
-            if bq["tests"] > 0:
-                bq["reject_rate"] = (bq["fail_count"] / bq["tests"]) * 100
-            else:
-                bq["reject_rate"] = 0
+            _finalize(bq)
 
     # --- 연속 AQL 실패자 (Issue #48: startswith('YES') 사용) ---
     continuous_3m = []

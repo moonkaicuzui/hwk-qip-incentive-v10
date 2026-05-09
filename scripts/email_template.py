@@ -225,6 +225,8 @@ I18N = {
         "pass_applied": "통과/적용", "vs_prev": "전월비",
         "building": "Building", "emp_count": "직원수", "aql": "AQL",
         "fail": "실패", "reject_rate": "리젝율", "grade": "등급",
+        "inspectors": "검수원수", "area_reject_avg": "담당영역 평균 리젝율", "area_reject_max": "최대 리젝율",
+        "small_bldg_grouped": "10명 미만 건물 통합",
         "prev_recv": "전월 수령", "emp_no": "사번", "name": "이름",
         "boss_chain": "담당자 → 상사", "att_rate": "출근율",
         "unapp_abs": "무단결근", "insp_qty": "검사량",
@@ -310,6 +312,8 @@ I18N = {
         "pass_applied": "Pass/Applied", "vs_prev": "vs Prev",
         "building": "Building", "emp_count": "Employees", "aql": "AQL",
         "fail": "Fail", "reject_rate": "Reject Rate", "grade": "Grade",
+        "inspectors": "Inspectors", "area_reject_avg": "Area Reject Avg", "area_reject_max": "Area Reject Max",
+        "small_bldg_grouped": "Small buildings grouped (<10)",
         "prev_recv": "Prev Month", "emp_no": "Emp No", "name": "Name",
         "boss_chain": "Supervisor \u2192 Manager", "att_rate": "Attendance Rate",
         "unapp_abs": "Unapp. Absence", "insp_qty": "Insp. Qty",
@@ -395,6 +399,8 @@ I18N = {
         "pass_applied": "\u0110\u1ea1t/\u00c1p d\u1ee5ng", "vs_prev": "So th\u00e1ng tr\u01b0\u1edbc",
         "building": "Building", "emp_count": "S\u1ed1 NV", "aql": "AQL",
         "fail": "L\u1ed7i", "reject_rate": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i", "grade": "X\u1ebfp h\u1ea1ng",
+        "inspectors": "S\u1ed1 ki\u1ec3m s\u00e1t", "area_reject_avg": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i khu v\u1ef1c TB", "area_reject_max": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i t\u1ed1i \u0111a",
+        "small_bldg_grouped": "G\u1ed9p t\u00f2a nh\u00e0 <10 ng\u01b0\u1eddi",
         "prev_recv": "Nh\u1eadn th\u00e1ng tr\u01b0\u1edbc", "emp_no": "M\u00e3 NV", "name": "H\u1ecd t\u00ean",
         "boss_chain": "Ph\u1ee5 tr\u00e1ch \u2192 Qu\u1ea3n l\u00fd", "att_rate": "T\u1ef7 l\u1ec7 \u0111i l\u00e0m",
         "unapp_abs": "V\u1eafng KP", "insp_qty": "S\u1ed1 l\u01b0\u1ee3ng KT",
@@ -774,39 +780,47 @@ def _section_2_building(data):
         return ""
 
     def _build_type1_rows(bldg_dict):
-        """TYPE-1: AQL/5PRS columns"""
+        """TYPE-1 INSPECTOR: 본인은 검사받지 않으므로 total_tests/failures는
+        의미 없음. 대신 본인이 담당하는 영역의 area_reject_rate (avg/max)를
+        표시하여 검수 영역의 품질을 노출."""
         rows = ""
         t_emp = 0
-        t_tests = 0
-        t_fails = 0
+        t_area_n = 0
+        t_area_sum = 0.0
+        t_area_max = 0.0
         active = {}
         other_count = 0
         other_emp = 0
 
+        # TYPE-1: include any building with employees (검사 받는 게 아니므로
+        # tests > 0 조건은 무의미). 작은 building(<10명)은 "기타"로 묶음.
         for bldg, info in bldg_dict.items():
-            if info.get("tests", 0) > 0 or info.get("count", 0) >= 10:
+            if info.get("count", 0) >= 10:
                 active[bldg] = info
             else:
                 other_count += 1
                 other_emp += info.get("count", 0)
 
-        for bldg, info in sorted(active.items(), key=lambda x: (-x[1].get("reject_rate", 0), -x[1].get("count", 0))):
+        # Sort by area_reject_avg (worst first), 없으면 인원수.
+        for bldg, info in sorted(active.items(), key=lambda x: (-x[1].get("area_reject_avg", 0), -x[1].get("count", 0))):
             count = info.get("count", 0)
-            tests = info.get("tests", 0)
-            fails = info.get("fail_count", 0)
-            rr = info.get("reject_rate", 0)
+            area_avg = info.get("area_reject_avg", 0)
+            area_max = info.get("area_reject_max", 0)
+            area_n = info.get("area_reject_n", 0)
             t_emp += count
-            t_tests += tests
-            t_fails += fails
+            t_area_sum += info.get("area_reject_sum", 0)
+            t_area_n += area_n
+            if area_max > t_area_max:
+                t_area_max = area_max
             pc = _prev_col(bldg, prev_bldg)
             rows += f'''
             <tr>
-              <td style="{STYLES['td']}">{_grade_emoji(rr)} {_bldg_badge(bldg)}</td>
+              <td style="{STYLES['td']}">{_grade_emoji(area_avg)} {_bldg_badge(bldg)}</td>
               <td style="{STYLES['td_center']}">{count}</td>
-              <td style="{STYLES['td_center']}">{tests}</td>
-              <td style="{STYLES['td_center']}">{fails}</td>
-              <td style="{STYLES['td_center']}">{_fmt_pct(rr)}</td>
-              <td style="{STYLES['td_center']}">{_grade_badge(rr)}</td>
+              <td style="{STYLES['td_center']}">{area_n}</td>
+              <td style="{STYLES['td_center']};font-weight:600;">{_fmt_pct(area_avg)}</td>
+              <td style="{STYLES['td_center']};color:{'#dc2626' if area_max>=2 else '#d97706' if area_max>0 else '#94a3b8'};">{_fmt_pct(area_max)}</td>
+              <td style="{STYLES['td_center']}">{_grade_badge(area_avg)}</td>
               <td style="{STYLES['td_center']};font-size:11px;color:#6b7280;">{pc}</td>
             </tr>'''
 
@@ -815,9 +829,10 @@ def _section_2_building(data):
             rows += f'''
             <tr style="background:#fafbfc;">
               <td style="{STYLES['td']};color:#9ca3af;font-style:italic;" colspan="2">{_t(data, 'other_bldgs')} {other_count}{_t(data, 'bldg_unit')} ({other_emp}{_t(data, 'ppl')})</td>
-              <td style="{STYLES['td_center']};color:#9ca3af;" colspan="5">{_t(data, 'no_aql')}</td>
+              <td style="{STYLES['td_center']};color:#9ca3af;" colspan="5">{_t(data, 'small_bldg_grouped')}</td>
             </tr>'''
-        return rows, t_emp, t_tests, t_fails
+        avg_overall = (t_area_sum / t_area_n) if t_area_n > 0 else 0
+        return rows, t_emp, avg_overall, t_area_max
 
     def _build_type2_rows(bldg_dict):
         """TYPE-2/3: Condition pass columns (c1-c4) + AQL error check"""
@@ -917,19 +932,20 @@ def _section_2_building(data):
                   </td>
                 </tr>'''
 
-            rows, t_emp, t_tests, t_fails = _build_type1_rows(type_bldgs)
+            rows, t_emp, t_avg, t_max = _build_type1_rows(type_bldgs)
             grand_emp += t_emp
-            grand_tests += t_tests
-            grand_fails += t_fails
 
+            # TYPE-1 inspectors are not personally tested — show AREA reject
+            # rate (avg / max) of the area they oversee instead of meaningless
+            # 0/0 metrics from total_tests/failures.
             table_html = f'''
             <table style="{STYLES['table']}">
               <tr>
                 <th style="{STYLES['th']}">{_t(data, 'building')}</th>
                 <th style="{STYLES['th_center']}">{_t(data, 'emp_count')}</th>
-                <th style="{STYLES['th_center']}">{_t(data, 'aql')}</th>
-                <th style="{STYLES['th_center']}">{_t(data, 'fail')}</th>
-                <th style="{STYLES['th_center']}">{_t(data, 'reject_rate')}</th>
+                <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'inspectors')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'area_reject_avg')}</th>
+                <th style="{STYLES['th_center']}">{_t(data, 'area_reject_max')}</th>
                 <th style="{STYLES['th_center']}">{_t(data, 'grade')}</th>
                 <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'prev_recv')}</th>
               </tr>
@@ -1466,33 +1482,33 @@ def _section_7_type_breakdown(data):
 
 
 def _section_changes(data):
-    """전월 대비 인사 변동 사항 섹션 (TYPE / 직책 / 직속상사 / Building / CFA / Talent Pool)."""
+    """전월 대비 인사 변동 사항 — 시각적으로 강화된 카드형 grid.
+
+    - TYPE 변경 row는 좌측 빨강 strip + 옅은 배경으로 강조
+    - 각 변경 사항: [라벨 칩] BEFORE ━▶ AFTER (BEFORE 회색 strikethrough, AFTER bold navy)
+    - position_code(예: A2A) 추적 제외 — 사용자 요청, 구체적 position만 사용
+    - Summary tile: TYPE / 직책 / 상사 변경 카운트
+    """
     changes = data.get("employee_changes", []) or []
-    # Hide entire section if previous month data was unavailable AND no changes
     if not changes and not data.get("previous_month_name"):
         return ""
 
     t = data.get("_t") or I18N["ko"]
     title = t.get("changes_title", "Personnel Changes")
     subtitle = t.get("changes_subtitle", "")
-    arrow = t.get("changes_arrow", "→")
+    arrow = "&#x276F;"  # heavy right-pointing arrow ❯ (이메일 안전)
 
-    # Field label map
     field_labels = {
         "type": t.get("changes_field_type", "TYPE"),
         "position": t.get("changes_field_position", "Position"),
-        "position_code": t.get("changes_field_position_code", "Code"),
         "boss_name": t.get("changes_field_boss_name", "Supervisor"),
         "building": t.get("changes_field_building", "Building"),
         "cfa_certified": t.get("changes_field_cfa_certified", "CFA"),
         "talent_pool_member": t.get("changes_field_talent_pool_member", "Talent Pool"),
     }
-
-    # Field → chip style map (priority/severity encoding)
     field_chip_style = {
         "type": STYLES["chip_type"],
         "position": STYLES["chip_position"],
-        "position_code": STYLES["chip_position_code"],
         "boss_name": STYLES["chip_boss"],
         "building": STYLES["chip_building"],
         "cfa_certified": STYLES["chip_cfa"],
@@ -1501,58 +1517,117 @@ def _section_changes(data):
 
     if not changes:
         body = f'<p style="font-size:13px;color:#64748b;margin:8px 0 4px 0;">{t.get("changes_none","")}</p>'
-    else:
-        rows = ""
-        # Limit to 30 rows in email; provide note when truncated
-        display_changes = changes[:30]
-        for c in display_changes:
-            emp_no = c.get("emp_no", "")
-            name = c.get("name", "—")
-            curr = c.get("current", {})
-            curr_type = str(curr.get("type", "") or "—")
-            change_cells = []
-            for fld, (old, new) in c["changes"].items():
-                label = field_labels.get(fld, fld)
-                chip_style = field_chip_style.get(fld, STYLES["change_field_chip"])
-                old_disp = old if old not in ("", "None", "False") else "—"
-                new_disp = new if new not in ("", "None", "False") else "—"
-                # boolean prettification
-                if fld in ("cfa_certified", "talent_pool_member"):
-                    old_disp = "Yes" if str(old).lower() in ("true", "1", "yes") else "No"
-                    new_disp = "Yes" if str(new).lower() in ("true", "1", "yes") else "No"
-                change_cells.append(
-                    f'<div style="margin:3px 0;font-size:12px;line-height:1.7;">'
-                    f'<span style="{chip_style}">{label}</span>'
-                    f'<span style="{STYLES["change_old"]}">{old_disp}</span>'
-                    f'<span style="{STYLES["change_arrow"]}">{arrow}</span>'
-                    f'<span style="{STYLES["change_new"]}">{new_disp}</span>'
-                    f'</div>'
-                )
-            rows += f'''
-            <tr>
-              <td style="{STYLES['td_center']};font-family:'SF Mono',Consolas,monospace;font-size:12px;color:#64748b;">{emp_no}</td>
-              <td style="{STYLES['td']};font-weight:600;">{name}</td>
-              <td style="{STYLES['td_center']};"><span style="{STYLES['badge_a'] if curr_type=='TYPE-1' else STYLES['badge_b'] if curr_type=='TYPE-2' else STYLES['badge_c'] if curr_type=='TYPE-3' else STYLES['bldg_default']}">{curr_type}</span></td>
-              <td style="{STYLES['td']}">{''.join(change_cells)}</td>
-            </tr>'''
+        return f'''<hr style="{STYLES['divider']}"/>
+        <h2 style="{STYLES['section_title']}">{title}</h2>
+        <div style="{STYLES['section_body']}">{body}</div>'''
 
-        truncation_note = ""
-        if len(changes) > 30:
-            truncation_note = f'<p style="font-size:11px;color:#94a3b8;margin:8px 0 0 0;font-style:italic;">… +{len(changes)-30} {t.get("more","more")}</p>'
+    # ── Summary tile: 변동 종류별 카운트 ─────────────────────
+    cnt_type = sum(1 for c in changes if "type" in c["changes"])
+    cnt_pos = sum(1 for c in changes if "position" in c["changes"])
+    cnt_boss = sum(1 for c in changes if "boss_name" in c["changes"])
+    cnt_bldg = sum(1 for c in changes if "building" in c["changes"])
 
-        body = f'''
-        <p style="font-size:12px;color:#64748b;margin:0 0 12px 0;">{subtitle} <span style="color:#0f1f3a;font-weight:600;">{len(changes)} {t.get("changes_total","Changes")}</span></p>
-        <table style="{STYLES['table']}">
-          <tr>
-            <th style="{STYLES['th_center']};width:90px;">{t.get('emp_no','#')}</th>
-            <th style="{STYLES['th']};width:160px;">{t.get('name','Name')}</th>
-            <th style="{STYLES['th_center']};width:80px;">{t.get('type','TYPE')}</th>
-            <th style="{STYLES['th']}">{t.get('changes_title','Changes')}</th>
-          </tr>
-          {rows}
-        </table>
-        {truncation_note}
-        '''
+    summary_tile = f'''
+    <table style="width:100%;border-collapse:collapse;margin:0 0 16px 0;background:#fafbfc;border:1px solid #e5e9f0;border-radius:6px;">
+      <tr>
+        <td style="padding:14px 18px;border-right:1px solid #e5e9f0;text-align:center;width:25%;">
+          <div style="font-size:24px;font-weight:700;color:#991b1b;">{cnt_type}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-top:4px;">{field_labels['type']} {t.get('changes_total','')}</div>
+        </td>
+        <td style="padding:14px 18px;border-right:1px solid #e5e9f0;text-align:center;width:25%;">
+          <div style="font-size:24px;font-weight:700;color:#1e40af;">{cnt_pos}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-top:4px;">{field_labels['position']}</div>
+        </td>
+        <td style="padding:14px 18px;border-right:1px solid #e5e9f0;text-align:center;width:25%;">
+          <div style="font-size:24px;font-weight:700;color:#5b21b6;">{cnt_boss}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-top:4px;">{field_labels['boss_name']}</div>
+        </td>
+        <td style="padding:14px 18px;text-align:center;width:25%;">
+          <div style="font-size:24px;font-weight:700;color:#155e75;">{cnt_bldg}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-top:4px;">{field_labels['building']}</div>
+        </td>
+      </tr>
+    </table>'''
+
+    # ── Detailed rows ─────────────────────────────────────────
+    rows = ""
+    display_changes = changes[:30]
+    for c in display_changes:
+        emp_no = c.get("emp_no", "")
+        name = c.get("name", "—")
+        curr = c.get("current", {})
+        curr_type = str(curr.get("type", "") or "—")
+        curr_position = str(curr.get("position", "") or "—")
+        curr_building = str(curr.get("building", "") or "—")
+
+        is_type_changed = "type" in c["changes"]
+
+        # Row-level strip + soft background when TYPE changed
+        row_strip = "border-left:4px solid #dc2626;background:#fef9f9;" if is_type_changed else "border-left:4px solid #e5e9f0;"
+
+        change_cells = []
+        # Sort changes within row: type > position > boss > building > cfa > talent
+        order = {"type": 0, "position": 1, "boss_name": 2, "building": 3, "cfa_certified": 4, "talent_pool_member": 5}
+        sorted_changes = sorted(c["changes"].items(), key=lambda x: order.get(x[0], 99))
+        for fld, (old, new) in sorted_changes:
+            label = field_labels.get(fld, fld)
+            chip_style = field_chip_style.get(fld, STYLES["change_field_chip"])
+            old_disp = old if old not in ("", "None", "False") else "—"
+            new_disp = new if new not in ("", "None", "False") else "—"
+            if fld in ("cfa_certified", "talent_pool_member"):
+                old_disp = "Yes" if str(old).lower() in ("true", "1", "yes") else "No"
+                new_disp = "Yes" if str(new).lower() in ("true", "1", "yes") else "No"
+            # Each change is a 3-cell mini-row inside the cell: [chip] [old] ❯ [new]
+            change_cells.append(
+                f'<table style="width:100%;border-collapse:collapse;margin:4px 0;"><tr>'
+                f'<td style="width:90px;padding:0 8px 0 0;vertical-align:middle;"><span style="{chip_style}">{label}</span></td>'
+                f'<td style="padding:0;vertical-align:middle;text-align:right;width:42%;">'
+                f'<span style="font-size:12px;color:#94a3b8;text-decoration:line-through;">{old_disp}</span>'
+                f'</td>'
+                f'<td style="padding:0 10px;vertical-align:middle;width:30px;text-align:center;">'
+                f'<span style="color:#0f1f3a;font-size:14px;font-weight:700;">{arrow}</span>'
+                f'</td>'
+                f'<td style="padding:0;vertical-align:middle;text-align:left;">'
+                f'<span style="font-size:13px;color:#0f1f3a;font-weight:700;">{new_disp}</span>'
+                f'</td>'
+                f'</tr></table>'
+            )
+
+        type_badge_style = (STYLES["badge_a"] if curr_type == "TYPE-1"
+                            else STYLES["badge_b"] if curr_type == "TYPE-2"
+                            else STYLES["badge_c"] if curr_type == "TYPE-3"
+                            else STYLES["bldg_default"])
+
+        # Build row: 사번/이름 (with current TYPE+position chip) | 변경 사항
+        rows += f'''
+        <tr>
+          <td style="padding:14px 16px;border-bottom:1px solid #f1f3f7;{row_strip}vertical-align:top;width:280px;">
+            <div style="font-family:'SF Mono',Consolas,monospace;font-size:11px;color:#94a3b8;letter-spacing:0.3px;">{emp_no}</div>
+            <div style="font-size:14px;font-weight:700;color:#0f1f3a;margin:3px 0 6px 0;">{name}</div>
+            <div style="font-size:11px;color:#475569;line-height:1.5;">
+              <span style="{type_badge_style}">{curr_type}</span>
+              <span style="margin-left:6px;color:#475569;">{curr_position}</span>
+              <span style="margin-left:6px;color:#94a3b8;">·</span>
+              <span style="margin-left:4px;color:#155e75;font-weight:600;">{curr_building}</span>
+            </div>
+          </td>
+          <td style="padding:14px 16px;border-bottom:1px solid #f1f3f7;vertical-align:middle;">
+            {''.join(change_cells)}
+          </td>
+        </tr>'''
+
+    truncation_note = ""
+    if len(changes) > 30:
+        truncation_note = f'<p style="font-size:11px;color:#94a3b8;margin:8px 0 0 0;font-style:italic;">… +{len(changes)-30} {t.get("more","more")}</p>'
+
+    body = f'''
+    <p style="font-size:12px;color:#64748b;margin:0 0 12px 0;">{subtitle} <span style="color:#0f1f3a;font-weight:600;">{len(changes)} {t.get("changes_total","Changes")}</span></p>
+    {summary_tile}
+    <table style="width:100%;border-collapse:collapse;border-top:1px solid #e5e9f0;">
+      {rows}
+    </table>
+    {truncation_note}
+    '''
 
     return f'''
     <hr style="{STYLES['divider']}"/>
