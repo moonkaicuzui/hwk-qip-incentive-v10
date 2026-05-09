@@ -26,9 +26,9 @@ Usage:
 STYLES = {
     # ── Foundation ──────────────────────────────────────────────
     "body": "margin:0;padding:0;background-color:#eef2f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;color:#1f2937;-webkit-text-size-adjust:100%;",
-    "container": "max-width:880px;margin:0 auto;background:#ffffff;",
+    "container": "max-width:2200px;margin:0 auto;background:#ffffff;",
     # ── Header (executive style) ────────────────────────────────
-    "header": "background:#0f1f3a;color:#ffffff;padding:36px 40px 32px 40px;border-bottom:3px solid #c8a96a;",
+    "header": "background:#0f1f3a;color:#ffffff;padding:40px 56px 36px 56px;border-bottom:3px solid #c8a96a;",
     "header_eyebrow": "font-size:11px;letter-spacing:2.5px;color:#c8a96a;text-transform:uppercase;font-weight:600;margin:0 0 8px 0;",
     "header_title": "font-size:26px;font-weight:600;margin:0 0 6px 0;letter-spacing:-0.3px;line-height:1.25;",
     "header_sub": "font-size:13px;color:#9aa8c0;margin:0;font-weight:400;",
@@ -79,7 +79,7 @@ STYLES = {
     "bldg_d": "display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#ffedd5;color:#9a3412;letter-spacing:0.5px;",
     "bldg_default": "display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;background:#f1f5f9;color:#475569;letter-spacing:0.5px;",
     # ── Footer (corporate) ──────────────────────────────────────
-    "footer": "background:#0f1f3a;padding:24px 40px;color:#9aa8c0;",
+    "footer": "background:#0f1f3a;padding:28px 56px;color:#9aa8c0;",
     "footer_brand": "font-size:12px;font-weight:600;color:#c8a96a;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 6px 0;",
     "footer_meta": "font-size:11px;color:#9aa8c0;margin:0;line-height:1.7;",
     "footer_legal": "font-size:10px;color:#5e6b85;margin:8px 0 0 0;border-top:1px solid #1e3050;padding-top:10px;",
