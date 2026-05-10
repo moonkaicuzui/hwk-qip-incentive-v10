@@ -1,33 +1,32 @@
 {
-  "default_reject_rate_threshold": 2,
   "model_master": {
     "description": "Model Master - 전체 공장 담당",
     "employees": {
       "618110097": {
         "description": "Model Master - 전체 구역",
+        "position": "MODEL MASTER",
         "conditions": [
           {
             "filters": [],
             "type": "ALL"
           }
         ],
-        "position": "MODEL MASTER",
         "name": "DANH THỊ ANH ĐÀO"
       },
-      "618030241": {
+      "620120386": {
         "description": "Model Master - 전체 구역",
+        "position": "MODEL MASTER",
         "conditions": [
           {
             "filters": [],
             "type": "ALL"
           }
         ],
-        "position": "MODEL MASTER",
-        "name": "TRẦN THỊ THÚY ANH"
+        "name": "NGUYỄN NGỌC TUẤN"
       },
       "620080295": {
-        "description": "Model Master - 전체 구역",
         "position_code": "QA2A",
+        "description": "Model Master - 전체 구역",
         "conditions": [
           {
             "filters": [],
@@ -36,19 +35,20 @@
         ],
         "name": "VÕ THỊ THÙY LINH"
       },
-      "620120386": {
+      "618030241": {
         "description": "Model Master - 전체 구역",
+        "position": "MODEL MASTER",
         "conditions": [
           {
             "filters": [],
             "type": "ALL"
           }
         ],
-        "position": "MODEL MASTER",
-        "name": "NGUYỄN NGỌC TUẤN"
+        "name": "TRẦN THỊ THÚY ANH"
       }
     }
   },
+  "default_reject_rate_threshold": 2,
   "auditor_trainer_areas": {
     "618060092": {
       "description": "Building B & Repacking BS",
@@ -56,12 +56,12 @@
         {
           "filters": [
             {
-              "value": "NORMAL PO",
-              "column": "REPACKING PO"
+              "column": "REPACKING PO",
+              "value": "NORMAL PO"
             },
             {
-              "value": "C",
-              "column": "BUILDING"
+              "column": "BUILDING",
+              "value": "C"
             }
           ],
           "type": "AND"
@@ -69,65 +69,18 @@
       ],
       "name": "CAO THỊ TỐ NGUYÊN"
     },
-    "623080475": {
-      "description": "Building C",
-      "conditions": [
-        {
-          "filters": [
-            {
-              "value": "NORMAL PO",
-              "column": "REPACKING PO"
-            },
-            {
-              "value": "B",
-              "column": "BUILDING"
-            }
-          ],
-          "type": "AND"
-        },
-        {
-          "filters": [
-            {
-              "value": "REPACKING PO",
-              "column": "REPACKING PO"
-            }
-          ],
-          "type": "AND"
-        }
-      ],
-      "name": "SẦM TRÍ THÀNH"
-    },
-    "618110087": {
-      "description": "Building C",
-      "conditions": [
-        {
-          "filters": [
-            {
-              "value": "NORMAL PO",
-              "column": "REPACKING PO"
-            },
-            {
-              "value": "C",
-              "column": "BUILDING"
-            }
-          ],
-          "type": "AND"
-        }
-      ],
-      "name": "NGUYỄN THÚY HẰNG"
-    },
     "619070185": {
       "description": "Building D",
       "conditions": [
         {
           "filters": [
             {
-              "value": "NORMAL PO",
-              "column": "REPACKING PO"
+              "column": "REPACKING PO",
+              "value": "NORMAL PO"
             },
             {
-              "value": "A",
-              "column": "BUILDING"
+              "column": "BUILDING",
+              "value": "A"
             }
           ],
           "type": "AND"
@@ -135,18 +88,65 @@
       ],
       "name": "DANH THỊ KIM ANH"
     },
+    "618110087": {
+      "description": "Building C",
+      "conditions": [
+        {
+          "filters": [
+            {
+              "column": "REPACKING PO",
+              "value": "NORMAL PO"
+            },
+            {
+              "column": "BUILDING",
+              "value": "C"
+            }
+          ],
+          "type": "AND"
+        }
+      ],
+      "name": "NGUYỄN THÚY HẰNG"
+    },
+    "623080475": {
+      "description": "Building C",
+      "conditions": [
+        {
+          "filters": [
+            {
+              "column": "REPACKING PO",
+              "value": "NORMAL PO"
+            },
+            {
+              "column": "BUILDING",
+              "value": "B"
+            }
+          ],
+          "type": "AND"
+        },
+        {
+          "filters": [
+            {
+              "column": "REPACKING PO",
+              "value": "REPACKING PO"
+            }
+          ],
+          "type": "AND"
+        }
+      ],
+      "name": "SẦM TRÍ THÀNH"
+    },
     "620070013": {
       "description": "Building A",
       "conditions": [
         {
           "filters": [
             {
-              "value": "NORMAL PO",
-              "column": "REPACKING PO"
+              "column": "REPACKING PO",
+              "value": "NORMAL PO"
             },
             {
-              "value": "A",
-              "column": "BUILDING"
+              "column": "BUILDING",
+              "value": "A"
             }
           ],
           "type": "AND"
@@ -160,12 +160,12 @@
         {
           "filters": [
             {
-              "value": "NORMAL PO",
-              "column": "REPACKING PO"
+              "column": "REPACKING PO",
+              "value": "NORMAL PO"
             },
             {
-              "value": "D",
-              "column": "BUILDING"
+              "column": "BUILDING",
+              "value": "D"
             }
           ],
           "type": "AND"
