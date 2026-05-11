@@ -23,11 +23,11 @@
     "basic_manpower": "2026-05-11T15:34:48.000Z",
     "attendance": "2026-05-11T15:33:41.000Z",
     "5prs": "2026-05-11T11:55:29.000Z",
-    "aql_current": "2026-05-10T19:00:11.591Z"
+    "aql_current": "2026-05-11T19:00:11.545Z"
   },
   "working_days": 8,
   "working_days_source": "attendance_data",
-  "working_days_updated_at": "2026-05-11T17:15:10.644400+00:00",
+  "working_days_updated_at": "2026-05-11T19:21:58.282262+00:00",
   "previous_months": [
     "march",
     "april"
@@ -35,7 +35,7 @@
   "output_prefix": "output_QIP_incentive_may_2026",
   "data_source": "google_drive",
   "created_at": "2026-05-06T01:21:01.563080+00:00",
-  "last_updated": "2026-05-11T15:34:48.000Z",
+  "last_updated": "2026-05-11T19:00:11.545Z",
   "data_date_ranges": {
     "attendance": {
       "min": "2026-05-02",
