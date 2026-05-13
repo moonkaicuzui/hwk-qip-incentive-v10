@@ -216,6 +216,13 @@ I18N = {
         "changes_field_cfa_certified": "CFA 자격",
         "changes_field_talent_pool_member": "Talent Pool",
         "changes_arrow": "→",
+        # Group headers (3-그룹 layout: TYPE 변경 / 직속상사 변경 / 기타)
+        "changes_group_type": "TYPE 변경",
+        "changes_group_boss": "직속상사 변경 (조직 재편)",
+        "changes_group_other": "기타 변경 (직책 · Building · 자격)",
+        "changes_assigned_n": "{n}명 영입",
+        "changes_from": "이전:",
+        "changes_mixed_sources": "여러 출처",
         "link_title": "액션 링크",
         # KPI labels
         "total_emp": "총 직원", "eligible_emp": "적격 직원",
@@ -227,6 +234,7 @@ I18N = {
         "fail": "실패", "reject_rate": "리젝율", "grade": "등급",
         "inspectors": "검수원수", "area_reject_avg": "담당영역 평균 리젝율", "area_reject_max": "최대 리젝율",
         "small_bldg_grouped": "10명 미만 건물 통합",
+        "c4_note": "C4 최소근무일은 월말 누적 {threshold}일 기준 평가 항목 — 월 중간 시점에는 미충족이 정상입니다.",
         "prev_recv": "전월 수령", "emp_no": "사번", "name": "이름",
         "boss_chain": "담당자 → 상사", "att_rate": "출근율",
         "unapp_abs": "무단결근", "insp_qty": "검사량",
@@ -303,6 +311,12 @@ I18N = {
         "changes_field_cfa_certified": "CFA",
         "changes_field_talent_pool_member": "Talent Pool",
         "changes_arrow": "→",
+        "changes_group_type": "TYPE Changes",
+        "changes_group_boss": "Supervisor Reassignments",
+        "changes_group_other": "Other Changes (Position · Building · Certification)",
+        "changes_assigned_n": "{n} member(s) joined",
+        "changes_from": "from:",
+        "changes_mixed_sources": "various sources",
         "link_title": "Action Links",
         # KPI labels
         "total_emp": "Total Employees", "eligible_emp": "Eligible Employees",
@@ -314,6 +328,7 @@ I18N = {
         "fail": "Fail", "reject_rate": "Reject Rate", "grade": "Grade",
         "inspectors": "Inspectors", "area_reject_avg": "Area Reject Avg", "area_reject_max": "Area Reject Max",
         "small_bldg_grouped": "Small buildings grouped (<10)",
+        "c4_note": "C4 minimum working days is evaluated at month-end against a cumulative threshold of {threshold} days — unmet status is normal mid-month.",
         "prev_recv": "Prev Month", "emp_no": "Emp No", "name": "Name",
         "boss_chain": "Supervisor \u2192 Manager", "att_rate": "Attendance Rate",
         "unapp_abs": "Unapp. Absence", "insp_qty": "Insp. Qty",
@@ -390,6 +405,12 @@ I18N = {
         "changes_field_cfa_certified": "CFA",
         "changes_field_talent_pool_member": "Talent Pool",
         "changes_arrow": "\u2192",
+        "changes_group_type": "Thay \u0111\u1ed5i TYPE",
+        "changes_group_boss": "Thay \u0111\u1ed5i c\u1ea5p tr\u00ean (t\u00e1i c\u01a1 c\u1ea5u)",
+        "changes_group_other": "Thay \u0111\u1ed5i kh\u00e1c (V\u1ecb tr\u00ed \u00b7 Building \u00b7 Ch\u1ee9ng nh\u1eadn)",
+        "changes_assigned_n": "{n} ng\u01b0\u1eddi gia nh\u1eadp",
+        "changes_from": "t\u1eeb:",
+        "changes_mixed_sources": "nhi\u1ec1u ngu\u1ed3n",
         "link_title": "Li\u00ean k\u1ebft h\u00e0nh \u0111\u1ed9ng",
         # KPI labels
         "total_emp": "T\u1ed5ng NV", "eligible_emp": "NV \u0111\u1ee7 \u0111i\u1ec1u ki\u1ec7n",
@@ -401,6 +422,7 @@ I18N = {
         "fail": "L\u1ed7i", "reject_rate": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i", "grade": "X\u1ebfp h\u1ea1ng",
         "inspectors": "S\u1ed1 ki\u1ec3m s\u00e1t", "area_reject_avg": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i khu v\u1ef1c TB", "area_reject_max": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i t\u1ed1i \u0111a",
         "small_bldg_grouped": "G\u1ed9p t\u00f2a nh\u00e0 <10 ng\u01b0\u1eddi",
+        "c4_note": "C4 ng\u00e0y l\u00e0m vi\u1ec7c t\u1ed1i thi\u1ec3u \u0111\u01b0\u1ee3c \u0111\u00e1nh gi\u00e1 cu\u1ed1i th\u00e1ng v\u1edbi ng\u01b0\u1ee1ng t\u00edch l\u0169y {threshold} ng\u00e0y \u2014 ch\u01b0a \u0111\u1ea1t l\u00e0 b\u00ecnh th\u01b0\u1eddng v\u00e0o gi\u1eefa th\u00e1ng.",
         "prev_recv": "Nh\u1eadn th\u00e1ng tr\u01b0\u1edbc", "emp_no": "M\u00e3 NV", "name": "H\u1ecd t\u00ean",
         "boss_chain": "Ph\u1ee5 tr\u00e1ch \u2192 Qu\u1ea3n l\u00fd", "att_rate": "T\u1ef7 l\u1ec7 \u0111i l\u00e0m",
         "unapp_abs": "V\u1eafng KP", "insp_qty": "S\u1ed1 l\u01b0\u1ee3ng KT",
@@ -974,6 +996,10 @@ def _section_2_building(data):
                   </div>
                 </div>'''
 
+            # C4 (최소근무일)은 월말 누적 평가 항목 — 월 중간엔 미충족이 정상.
+            # 컬럼 헤더에 임계값과 함께 표시하고 footer note로 컨텍스트 제공.
+            c4_threshold = int((data.get("thresholds", {}) or {}).get("min_working_days", 12) or 12)
+            c4_note = f'<p style="font-size:11px;color:#94a3b8;margin:6px 0 0 0;font-style:italic;">* {_t(data, "c4_note").format(threshold=c4_threshold)}</p>'
             table_html = f'''
             {aql_warning}
             <table style="{STYLES['table']}">
@@ -983,7 +1009,7 @@ def _section_2_building(data):
                 <th style="{STYLES['th_center']};font-size:11px;">C1 {_t(data, 'att_rate')}</th>
                 <th style="{STYLES['th_center']};font-size:11px;">C2 {_t(data, 'unapp_abs')}</th>
                 <th style="{STYLES['th_center']};font-size:11px;">C3 {_t(data, 'c3')}</th>
-                <th style="{STYLES['th_center']};font-size:11px;">C4 {_t(data, 'c4')}</th>
+                <th style="{STYLES['th_center']};font-size:11px;">C4 {_t(data, 'c4')} <span style="font-weight:400;color:#94a3b8;">(≥{c4_threshold}{_t(data, 'days')})</span></th>
                 <th style="{STYLES['th_center']}">{_t(data, 'pay_rate')}</th>
                 <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'prev_recv')}</th>
               </tr>
@@ -996,7 +1022,8 @@ def _section_2_building(data):
                 </td>
               </tr>
               {rows}
-            </table>'''
+            </table>
+            {c4_note}'''
             html_parts.append(table_html)
 
     # Grand total
@@ -1482,12 +1509,17 @@ def _section_7_type_breakdown(data):
 
 
 def _section_changes(data):
-    """전월 대비 인사 변동 사항 — 시각적으로 강화된 카드형 grid.
+    """전월 대비 인사 변동 사항 — 변동 유형별 3그룹으로 분리.
 
-    - TYPE 변경 row는 좌측 빨강 strip + 옅은 배경으로 강조
-    - 각 변경 사항: [라벨 칩] BEFORE ━▶ AFTER (BEFORE 회색 strikethrough, AFTER bold navy)
-    - position_code(예: A2A) 추적 제외 — 사용자 요청, 구체적 position만 사용
-    - Summary tile: TYPE / 직책 / 상사 변경 카운트
+    Layout 전략 (조직 변화의 임팩트를 빠르게 인지하도록):
+      A. Summary tile (4종 변동 카운트)
+      B. Group 1 — TYPE 변경 (가장 중요, 개별 큰 카드)
+      C. Group 2 — 직속상사 변경 (Manager-clustered: 새 상사별 묶음)
+         예) "황응옥란 ← 12명 신규 영입 (이전: 응우옌반루안)"
+      D. Group 3 — 기타 (직책/Building/CFA/Talent Pool 단순 변경)
+
+    한 직원이 여러 유형 변경 시 가장 중요한 1개 그룹에만 표시:
+    TYPE > Boss > Other.
     """
     changes = data.get("employee_changes", []) or []
     if not changes and not data.get("previous_month_name"):
@@ -1496,7 +1528,7 @@ def _section_changes(data):
     t = data.get("_t") or I18N["ko"]
     title = t.get("changes_title", "Personnel Changes")
     subtitle = t.get("changes_subtitle", "")
-    arrow = "&#x276F;"  # heavy right-pointing arrow ❯ (이메일 안전)
+    arrow = "&#x276F;"
 
     field_labels = {
         "type": t.get("changes_field_type", "TYPE"),
@@ -1521,55 +1553,78 @@ def _section_changes(data):
         <h2 style="{STYLES['section_title']}">{title}</h2>
         <div style="{STYLES['section_body']}">{body}</div>'''
 
-    # ── Summary tile: 변동 종류별 카운트 ─────────────────────
+    # ── Summary tile (4종) ────────────────────────────────────
     cnt_type = sum(1 for c in changes if "type" in c["changes"])
     cnt_pos = sum(1 for c in changes if "position" in c["changes"])
     cnt_boss = sum(1 for c in changes if "boss_name" in c["changes"])
     cnt_bldg = sum(1 for c in changes if "building" in c["changes"])
 
     summary_tile = f'''
-    <table style="width:100%;border-collapse:collapse;margin:0 0 16px 0;background:#fafbfc;border:1px solid #e5e9f0;border-radius:6px;">
+    <table style="width:100%;border-collapse:collapse;margin:0 0 18px 0;background:#fafbfc;border:1px solid #e5e9f0;border-radius:6px;">
       <tr>
-        <td style="padding:14px 18px;border-right:1px solid #e5e9f0;text-align:center;width:25%;">
-          <div style="font-size:24px;font-weight:700;color:#991b1b;">{cnt_type}</div>
-          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-top:4px;">{field_labels['type']} {t.get('changes_total','')}</div>
+        <td style="padding:16px 18px;border-right:1px solid #e5e9f0;text-align:center;width:25%;">
+          <div style="font-size:28px;font-weight:700;color:#991b1b;letter-spacing:-0.5px;">{cnt_type}</div>
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-top:4px;">{field_labels['type']}</div>
         </td>
-        <td style="padding:14px 18px;border-right:1px solid #e5e9f0;text-align:center;width:25%;">
-          <div style="font-size:24px;font-weight:700;color:#1e40af;">{cnt_pos}</div>
+        <td style="padding:16px 18px;border-right:1px solid #e5e9f0;text-align:center;width:25%;">
+          <div style="font-size:28px;font-weight:700;color:#1e40af;letter-spacing:-0.5px;">{cnt_pos}</div>
           <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-top:4px;">{field_labels['position']}</div>
         </td>
-        <td style="padding:14px 18px;border-right:1px solid #e5e9f0;text-align:center;width:25%;">
-          <div style="font-size:24px;font-weight:700;color:#5b21b6;">{cnt_boss}</div>
+        <td style="padding:16px 18px;border-right:1px solid #e5e9f0;text-align:center;width:25%;">
+          <div style="font-size:28px;font-weight:700;color:#5b21b6;letter-spacing:-0.5px;">{cnt_boss}</div>
           <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-top:4px;">{field_labels['boss_name']}</div>
         </td>
-        <td style="padding:14px 18px;text-align:center;width:25%;">
-          <div style="font-size:24px;font-weight:700;color:#155e75;">{cnt_bldg}</div>
+        <td style="padding:16px 18px;text-align:center;width:25%;">
+          <div style="font-size:28px;font-weight:700;color:#155e75;letter-spacing:-0.5px;">{cnt_bldg}</div>
           <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-top:4px;">{field_labels['building']}</div>
         </td>
       </tr>
     </table>'''
 
-    # ── Detailed rows ─────────────────────────────────────────
-    rows = ""
-    display_changes = changes[:30]
-    for c in display_changes:
+    # ── Mutually-exclusive partition (한 직원은 한 그룹만) ─────
+    type_group = []
+    boss_group = []  # boss-only or boss+other (non-type)
+    other_group = []
+
+    for c in changes:
+        if "type" in c["changes"]:
+            type_group.append(c)
+        elif "boss_name" in c["changes"]:
+            boss_group.append(c)
+        else:
+            other_group.append(c)
+
+    def _type_badge(curr_type):
+        return (STYLES["badge_a"] if curr_type == "TYPE-1"
+                else STYLES["badge_b"] if curr_type == "TYPE-2"
+                else STYLES["badge_c"] if curr_type == "TYPE-3"
+                else STYLES["bldg_default"])
+
+    def _emp_identity_block(c):
+        """직원 사번/이름/현재상태 블록 (그룹 내 공통)."""
         emp_no = c.get("emp_no", "")
         name = c.get("name", "—")
         curr = c.get("current", {})
         curr_type = str(curr.get("type", "") or "—")
         curr_position = str(curr.get("position", "") or "—")
         curr_building = str(curr.get("building", "") or "—")
+        return f'''
+          <div style="font-family:'SF Mono',Consolas,monospace;font-size:11px;color:#94a3b8;letter-spacing:0.3px;">{emp_no}</div>
+          <div style="font-size:14px;font-weight:700;color:#0f1f3a;margin:3px 0 6px 0;">{name}</div>
+          <div style="font-size:11px;color:#475569;line-height:1.5;">
+            <span style="{_type_badge(curr_type)}">{curr_type}</span>
+            <span style="margin-left:6px;color:#475569;">{curr_position}</span>
+            <span style="margin-left:6px;color:#94a3b8;">·</span>
+            <span style="margin-left:4px;color:#155e75;font-weight:600;">{curr_building}</span>
+          </div>'''
 
-        is_type_changed = "type" in c["changes"]
-
-        # Row-level strip + soft background when TYPE changed
-        row_strip = "border-left:4px solid #dc2626;background:#fef9f9;" if is_type_changed else "border-left:4px solid #e5e9f0;"
-
-        change_cells = []
-        # Sort changes within row: type > position > boss > building > cfa > talent
+    def _change_grid(changes_dict, exclude_field=None):
+        """변경 사항 grid: [chip][old] ❯ [new]. exclude_field는 그룹 헤더에 이미 표시한 필드라 제외."""
         order = {"type": 0, "position": 1, "boss_name": 2, "building": 3, "cfa_certified": 4, "talent_pool_member": 5}
-        sorted_changes = sorted(c["changes"].items(), key=lambda x: order.get(x[0], 99))
-        for fld, (old, new) in sorted_changes:
+        cells = []
+        for fld, (old, new) in sorted(changes_dict.items(), key=lambda x: order.get(x[0], 99)):
+            if fld == exclude_field:
+                continue
             label = field_labels.get(fld, fld)
             chip_style = field_chip_style.get(fld, STYLES["change_field_chip"])
             old_disp = old if old not in ("", "None", "False") else "—"
@@ -1577,56 +1632,166 @@ def _section_changes(data):
             if fld in ("cfa_certified", "talent_pool_member"):
                 old_disp = "Yes" if str(old).lower() in ("true", "1", "yes") else "No"
                 new_disp = "Yes" if str(new).lower() in ("true", "1", "yes") else "No"
-            # Each change is a 3-cell mini-row inside the cell: [chip] [old] ❯ [new]
-            change_cells.append(
+            cells.append(
                 f'<table style="width:100%;border-collapse:collapse;margin:4px 0;"><tr>'
                 f'<td style="width:90px;padding:0 8px 0 0;vertical-align:middle;"><span style="{chip_style}">{label}</span></td>'
                 f'<td style="padding:0;vertical-align:middle;text-align:right;width:42%;">'
-                f'<span style="font-size:12px;color:#94a3b8;text-decoration:line-through;">{old_disp}</span>'
-                f'</td>'
+                f'<span style="font-size:12px;color:#94a3b8;text-decoration:line-through;">{old_disp}</span></td>'
                 f'<td style="padding:0 10px;vertical-align:middle;width:30px;text-align:center;">'
-                f'<span style="color:#0f1f3a;font-size:14px;font-weight:700;">{arrow}</span>'
-                f'</td>'
+                f'<span style="color:#0f1f3a;font-size:14px;font-weight:700;">{arrow}</span></td>'
                 f'<td style="padding:0;vertical-align:middle;text-align:left;">'
-                f'<span style="font-size:13px;color:#0f1f3a;font-weight:700;">{new_disp}</span>'
-                f'</td>'
+                f'<span style="font-size:13px;color:#0f1f3a;font-weight:700;">{new_disp}</span></td>'
                 f'</tr></table>'
             )
+        return "".join(cells) or '<span style="color:#94a3b8;font-size:11px;">—</span>'
 
-        type_badge_style = (STYLES["badge_a"] if curr_type == "TYPE-1"
-                            else STYLES["badge_b"] if curr_type == "TYPE-2"
-                            else STYLES["badge_c"] if curr_type == "TYPE-3"
-                            else STYLES["bldg_default"])
+    # ── GROUP 1: TYPE 변경 (개별 강조) ────────────────────────
+    g1_html = ""
+    if type_group:
+        rows = ""
+        for c in type_group:
+            type_old, type_new = c["changes"]["type"]
+            rows += f'''
+            <tr>
+              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;border-left:4px solid #dc2626;background:#fef9f9;vertical-align:top;width:300px;">
+                {_emp_identity_block(c)}
+              </td>
+              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;background:#fef9f9;vertical-align:middle;width:280px;">
+                <div style="display:inline-block;padding:8px 14px;background:#ffffff;border:1px solid #fecaca;border-radius:4px;">
+                  <span style="font-size:13px;color:#94a3b8;text-decoration:line-through;font-weight:600;">{type_old}</span>
+                  <span style="color:#dc2626;font-size:16px;font-weight:700;margin:0 10px;">{arrow}</span>
+                  <span style="font-size:15px;color:#991b1b;font-weight:800;">{type_new}</span>
+                </div>
+              </td>
+              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;background:#fef9f9;vertical-align:middle;">
+                {_change_grid(c["changes"], exclude_field="type")}
+              </td>
+            </tr>'''
+        g1_html = f'''
+        <h3 style="font-size:12px;font-weight:700;color:#991b1b;margin:18px 0 8px 0;letter-spacing:0.8px;text-transform:uppercase;">
+          <span style="display:inline-block;width:8px;height:8px;background:#dc2626;border-radius:50%;margin-right:8px;vertical-align:middle;"></span>
+          {t.get("changes_group_type", "TYPE Changes")} ({len(type_group)})
+        </h3>
+        <table style="width:100%;border-collapse:collapse;border-top:1px solid #e5e9f0;border-bottom:1px solid #e5e9f0;">
+          {rows}
+        </table>'''
 
-        # Build row: 사번/이름 (with current TYPE+position chip) | 변경 사항
-        rows += f'''
-        <tr>
-          <td style="padding:14px 16px;border-bottom:1px solid #f1f3f7;{row_strip}vertical-align:top;width:280px;">
-            <div style="font-family:'SF Mono',Consolas,monospace;font-size:11px;color:#94a3b8;letter-spacing:0.3px;">{emp_no}</div>
-            <div style="font-size:14px;font-weight:700;color:#0f1f3a;margin:3px 0 6px 0;">{name}</div>
-            <div style="font-size:11px;color:#475569;line-height:1.5;">
-              <span style="{type_badge_style}">{curr_type}</span>
-              <span style="margin-left:6px;color:#475569;">{curr_position}</span>
-              <span style="margin-left:6px;color:#94a3b8;">·</span>
-              <span style="margin-left:4px;color:#155e75;font-weight:600;">{curr_building}</span>
-            </div>
-          </td>
-          <td style="padding:14px 16px;border-bottom:1px solid #f1f3f7;vertical-align:middle;">
-            {''.join(change_cells)}
-          </td>
-        </tr>'''
+    # ── GROUP 2: Boss 변경 (Manager-clustered) ────────────────
+    g2_html = ""
+    if boss_group:
+        # Cluster by new boss
+        from collections import defaultdict
+        clusters = defaultdict(list)  # new_boss -> list of (c, old_boss)
+        for c in boss_group:
+            old_boss, new_boss = c["changes"]["boss_name"]
+            clusters[new_boss].append((c, old_boss))
 
-    truncation_note = ""
-    if len(changes) > 30:
-        truncation_note = f'<p style="font-size:11px;color:#94a3b8;margin:8px 0 0 0;font-style:italic;">… +{len(changes)-30} {t.get("more","more")}</p>'
+        # Sort clusters by size desc
+        sorted_clusters = sorted(clusters.items(), key=lambda x: -len(x[1]))
+
+        cluster_blocks = []
+        for new_boss, members in sorted_clusters:
+            new_boss_disp = new_boss if new_boss not in ("", "None", "False") else "—"
+            # Find dominant old_boss
+            old_boss_counts = defaultdict(int)
+            for _c, ob in members:
+                old_boss_counts[ob if ob not in ("", "None", "False") else "—"] += 1
+            dominant_old = max(old_boss_counts.items(), key=lambda x: x[1])
+            n_members = len(members)
+            # If single dominant old boss covers most members, show clearly
+            from_label = dominant_old[0] if dominant_old[1] == n_members else t.get("changes_mixed_sources", "various")
+
+            # Member list rows
+            member_rows = ""
+            for c, ob in members:
+                emp_no = c.get("emp_no", "")
+                name = c.get("name", "—")
+                curr = c.get("current", {})
+                curr_type = str(curr.get("type", "") or "—")
+                curr_position = str(curr.get("position", "") or "—")
+                curr_building = str(curr.get("building", "") or "—")
+                # Per-member non-boss changes summary
+                extra = _change_grid(c["changes"], exclude_field="boss_name")
+                extra_html = ""
+                if "—" not in extra or "padding:0" in extra:  # has real cells
+                    if 'padding:0 8px 0 0' in extra:
+                        extra_html = f'<td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;vertical-align:middle;width:340px;">{extra}</td>'
+                if not extra_html:
+                    extra_html = '<td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;color:#cbd5e1;font-size:11px;vertical-align:middle;width:340px;">—</td>'
+
+                ob_disp = ob if ob not in ("", "None", "False") else "—"
+                src_chip = ""
+                if dominant_old[1] != n_members:
+                    src_chip = f'<div style="font-size:10px;color:#94a3b8;margin-top:2px;">← {ob_disp}</div>'
+
+                member_rows += f'''
+                <tr>
+                  <td style="padding:8px 12px;border-bottom:1px solid #f1f3f7;font-family:'SF Mono',Consolas,monospace;font-size:11px;color:#94a3b8;vertical-align:middle;width:90px;">{emp_no}</td>
+                  <td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;vertical-align:middle;">
+                    <div style="font-size:13px;font-weight:700;color:#0f1f3a;">{name}</div>
+                    {src_chip}
+                  </td>
+                  <td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;vertical-align:middle;width:80px;text-align:center;">
+                    <span style="{_type_badge(curr_type)}">{curr_type}</span>
+                  </td>
+                  <td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;vertical-align:middle;font-size:12px;color:#475569;">{curr_position}</td>
+                  <td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;vertical-align:middle;font-size:12px;color:#155e75;font-weight:600;width:80px;">{curr_building}</td>
+                  {extra_html}
+                </tr>'''
+
+            # Cluster header: "New boss ← N members (from: Old boss)"
+            cluster_header = f'''
+            <tr>
+              <td colspan="6" style="padding:12px 16px;background:#f5f3ff;border-left:4px solid #5b21b6;border-bottom:1px solid #e0d4f7;">
+                <div style="font-size:14px;color:#0f1f3a;">
+                  <span style="font-size:13px;font-weight:700;color:#5b21b6;">{new_boss_disp}</span>
+                  <span style="color:#94a3b8;margin:0 8px;">{arrow}</span>
+                  <span style="font-size:13px;color:#475569;font-weight:600;">{t.get("changes_assigned_n", "{n}명 영입").format(n=n_members)}</span>
+                  <span style="font-size:11px;color:#94a3b8;margin-left:10px;">({t.get("changes_from","from")} <span style="text-decoration:line-through;">{from_label}</span>)</span>
+                </div>
+              </td>
+            </tr>'''
+
+            cluster_blocks.append(f"{cluster_header}{member_rows}")
+
+        g2_html = f'''
+        <h3 style="font-size:12px;font-weight:700;color:#5b21b6;margin:22px 0 8px 0;letter-spacing:0.8px;text-transform:uppercase;">
+          <span style="display:inline-block;width:8px;height:8px;background:#5b21b6;border-radius:50%;margin-right:8px;vertical-align:middle;"></span>
+          {t.get("changes_group_boss", "Supervisor Reassignments")} ({len(boss_group)})
+        </h3>
+        <table style="width:100%;border-collapse:collapse;border:1px solid #e5e9f0;border-radius:4px;">
+          {"".join(cluster_blocks)}
+        </table>'''
+
+    # ── GROUP 3: 기타 (position/building/CFA/talent only) ────
+    g3_html = ""
+    if other_group:
+        rows = ""
+        for c in other_group:
+            rows += f'''
+            <tr>
+              <td style="padding:12px 16px;border-bottom:1px solid #f1f3f7;border-left:4px solid #e5e9f0;vertical-align:top;width:280px;">
+                {_emp_identity_block(c)}
+              </td>
+              <td style="padding:12px 16px;border-bottom:1px solid #f1f3f7;vertical-align:middle;">
+                {_change_grid(c["changes"])}
+              </td>
+            </tr>'''
+        g3_html = f'''
+        <h3 style="font-size:12px;font-weight:700;color:#475569;margin:22px 0 8px 0;letter-spacing:0.8px;text-transform:uppercase;">
+          <span style="display:inline-block;width:8px;height:8px;background:#94a3b8;border-radius:50%;margin-right:8px;vertical-align:middle;"></span>
+          {t.get("changes_group_other", "Other Changes")} ({len(other_group)})
+        </h3>
+        <table style="width:100%;border-collapse:collapse;border-top:1px solid #e5e9f0;border-bottom:1px solid #e5e9f0;">
+          {rows}
+        </table>'''
 
     body = f'''
-    <p style="font-size:12px;color:#64748b;margin:0 0 12px 0;">{subtitle} <span style="color:#0f1f3a;font-weight:600;">{len(changes)} {t.get("changes_total","Changes")}</span></p>
+    <p style="font-size:12px;color:#64748b;margin:0 0 12px 0;">{subtitle} <span style="color:#0f1f3a;font-weight:700;">{len(changes)} {t.get("changes_total","Changes")}</span></p>
     {summary_tile}
-    <table style="width:100%;border-collapse:collapse;border-top:1px solid #e5e9f0;">
-      {rows}
-    </table>
-    {truncation_note}
+    {g1_html}
+    {g2_html}
+    {g3_html}
     '''
 
     return f'''
