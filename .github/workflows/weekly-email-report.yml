@@ -26,7 +26,15 @@ jobs:
           cache: 'pip'
 
       - name: "Step 2.1: Install dependencies"
-        run: pip install firebase-admin
+        run: pip install firebase-admin google-api-python-client google-auth-oauthlib
+
+      - name: "Step 2.5: Download basic_manpower CSV from Google Drive (for QIP POSITION enrichment)"
+        env:
+          GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+        run: |
+          echo "📥 Downloading basic_manpower CSV from Google Drive..."
+          python scripts/download_from_gdrive.py || echo "⚠️ gdrive download skipped (CSV will be skipped in report)"
+          echo "✅ Download step complete"
 
       - name: "Step 3: Determine current month/year"
         id: period
