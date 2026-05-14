@@ -52,6 +52,102 @@ DEFAULT_SMTP = {
 # Firestore data loading
 # ---------------------------------------------------------------------------
 
+def load_basic_manpower_csv(month):
+    """basic manpower CSV에서 QIP POSITION 1ST/2ND/3RD NAME, 부서(remark)를
+    emp_no → dict로 매핑하여 반환.
+
+    Firestore employees에는 통합되어 있지 않으므로 보고서 전용으로 join한다.
+    파일이 없으면 빈 dict 반환 (graceful degradation).
+    """
+    import csv, os
+    candidates = [
+        f"input_files/basic manpower data {month}.csv",
+        f"input_files/basic manpower data {month.lower()}.csv",
+    ]
+    path = next((p for p in candidates if os.path.exists(p)), None)
+    if not path:
+        print(f"  ⓘ basic_manpower CSV not found for {month} — skipping QIP POSITION join")
+        return {}
+    enrichment = {}
+    try:
+        with open(path, encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                emp_no = str(row.get("Employee No", "") or "").strip()
+                if not emp_no:
+                    continue
+                enrichment[emp_no] = {
+                    "qip_pos_1st": str(row.get("QIP POSITION 1ST  NAME", "") or "").strip(),
+                    "qip_pos_2nd": str(row.get("QIP POSITION 2ND  NAME", "") or "").strip(),
+                    "qip_pos_3rd": str(row.get("QIP POSITION 3RD  NAME", "") or "").strip(),
+                    "qip_pos_code1": str(row.get("QIP POSITION NAME CODE1", "") or "").strip(),
+                    "qip_pos_code2": str(row.get("QIP POSITION NAME CODE2", "") or "").strip(),
+                    "qip_pos_final_code": str(row.get("FINAL QIP POSITION NAME CODE", "") or "").strip(),
+                    "lab_or_qip": str(row.get("remark -lab or qip", "") or "").strip(),
+                    "mst_boss_id": str(row.get("MST direct boss name", "") or "").strip(),
+                    "mst_boss_name": str(row.get("direct boss name", "") or "").strip(),
+                }
+        print(f"  ✅ basic_manpower CSV loaded: {len(enrichment)} employees ({os.path.basename(path)})")
+    except Exception as e:
+        print(f"  ⚠️ basic_manpower CSV load failed: {e}")
+    return enrichment
+
+
+def merge_type_change_history(db, employee_changes, year_month_key):
+    """TYPE 변경 직원의 (emp_no, prev_type, new_type) 조합을
+    `type_change_history` 컬렉션에 idempotent 기록하고, 각 변경에
+    detected_at(datetime) 필드를 추가하여 반환.
+
+    같은 조합이 이미 기록되어 있으면 기존 detected_at을 재사용한다.
+    => 매주/매월 메일이 발송되어도 first-detection 시각을 유지.
+    """
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+    coll = db.collection("type_change_history")
+    for c in employee_changes:
+        type_change = c["changes"].get("type")
+        if not type_change:
+            continue
+        prev_type, new_type = type_change
+        emp_no = str(c.get("emp_no", "")).strip()
+        if not emp_no:
+            continue
+        doc_id = f"{emp_no}__{prev_type}__{new_type}__{year_month_key}"
+        # safer doc id (Firestore 1500-byte limit + no '/' chars)
+        doc_id = doc_id.replace("/", "_")
+        doc_ref = coll.document(doc_id)
+        snap = doc_ref.get()
+        if snap.exists:
+            data = snap.to_dict() or {}
+            detected_at = data.get("detected_at")
+        else:
+            doc_ref.set({
+                "emp_no": emp_no,
+                "name": c.get("name", ""),
+                "prev_type": prev_type,
+                "new_type": new_type,
+                "year_month": year_month_key,
+                "detected_at": now,
+            })
+            detected_at = now
+        # Convert Firestore Timestamp to datetime (idempotent)
+        try:
+            if hasattr(detected_at, "to_datetime"):
+                detected_at = detected_at.to_datetime()
+            elif hasattr(detected_at, "timestamp_pb"):
+                detected_at = detected_at.timestamp_pb().ToDatetime().replace(tzinfo=timezone.utc)
+        except Exception:
+            detected_at = now
+        c["type_detected_at"] = detected_at
+        # days_since
+        try:
+            delta = now - detected_at if detected_at.tzinfo else now.replace(tzinfo=None) - detected_at
+            c["type_days_since"] = int(delta.total_seconds() // 86400)
+        except Exception:
+            c["type_days_since"] = 0
+    return employee_changes
+
+
 def load_firestore_data(db, month, year):
     """Firestore에서 이메일 리포트에 필요한 모든 데이터 로드
 
@@ -510,6 +606,13 @@ def _build_emp_chain(emp, emp_map):
         "boss_boss_position": boss_boss.get("position", ""),
         "emp_status": emp_status,
         "stop_working_date": stop_date,
+        # QIP POSITION 1ST/2ND/3RD NAME (basic_manpower CSV enrichment)
+        # — TYPE-3 신입공 표시 강화에 사용
+        "qip_pos_1st": emp.get("qip_pos_1st", ""),
+        "qip_pos_2nd": emp.get("qip_pos_2nd", ""),
+        "qip_pos_3rd": emp.get("qip_pos_3rd", ""),
+        "qip_pos_final_code": emp.get("qip_pos_final_code", ""),
+        "lab_or_qip": emp.get("lab_or_qip", ""),
     }
 
 

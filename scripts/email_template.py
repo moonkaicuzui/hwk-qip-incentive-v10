@@ -223,6 +223,14 @@ I18N = {
         "changes_assigned_n": "{n}명 영입",
         "changes_from": "이전:",
         "changes_mixed_sources": "여러 출처",
+        "changes_detected_at": "변경 감지일",
+        "changes_days_ago": "{n}일 전",
+        "changes_recent": "최근 7일 이내",
+        "type3_placement": "배치(Building)",
+        "type3_qip_position": "QIP POSITION (1ST·2ND·3RD)",
+        "type3_unassigned": "신입공 미배치",
+        "type3_no_supervisor": "직속상사 미지정",
+        "type3_ssot_note": "TYPE-3 신입공은 basic_manpower SSOT에도 boss 미지정 상태가 정상입니다 (정식 배치 대기).",
         "link_title": "액션 링크",
         # KPI labels
         "total_emp": "총 직원", "eligible_emp": "적격 직원",
@@ -317,6 +325,14 @@ I18N = {
         "changes_assigned_n": "{n} member(s) joined",
         "changes_from": "from:",
         "changes_mixed_sources": "various sources",
+        "changes_detected_at": "Detected",
+        "changes_days_ago": "{n}d ago",
+        "changes_recent": "within last 7 days",
+        "type3_placement": "Placement (Building)",
+        "type3_qip_position": "QIP POSITION (1ST·2ND·3RD)",
+        "type3_unassigned": "New hire — not yet assigned",
+        "type3_no_supervisor": "Supervisor not assigned",
+        "type3_ssot_note": "TYPE-3 new hires are not yet assigned a supervisor per basic_manpower SSOT (awaiting placement).",
         "link_title": "Action Links",
         # KPI labels
         "total_emp": "Total Employees", "eligible_emp": "Eligible Employees",
@@ -411,6 +427,14 @@ I18N = {
         "changes_assigned_n": "{n} ng\u01b0\u1eddi gia nh\u1eadp",
         "changes_from": "t\u1eeb:",
         "changes_mixed_sources": "nhi\u1ec1u ngu\u1ed3n",
+        "changes_detected_at": "Ph\u00e1t hi\u1ec7n",
+        "changes_days_ago": "{n} ng\u00e0y tr\u01b0\u1edbc",
+        "changes_recent": "trong 7 ng\u00e0y qua",
+        "type3_placement": "Ph\u00e2n c\u00f4ng (Building)",
+        "type3_qip_position": "QIP POSITION (1ST\u00b72ND\u00b73RD)",
+        "type3_unassigned": "Nh\u00e2n vi\u00ean m\u1edbi \u2014 ch\u01b0a ph\u00e2n c\u00f4ng",
+        "type3_no_supervisor": "Ch\u01b0a c\u00f3 c\u1ea5p tr\u00ean",
+        "type3_ssot_note": "Nh\u00e2n vi\u00ean m\u1edbi TYPE-3 ch\u01b0a \u0111\u01b0\u1ee3c ph\u00e2n c\u00f4ng c\u1ea5p tr\u00ean theo SSOT basic_manpower (ch\u1edd b\u1ed1 tr\u00ed ch\u00ednh th\u1ee9c).",
         "link_title": "Li\u00ean k\u1ebft h\u00e0nh \u0111\u1ed9ng",
         # KPI labels
         "total_emp": "T\u1ed5ng NV", "eligible_emp": "NV \u0111\u1ee7 \u0111i\u1ec1u ki\u1ec7n",
@@ -1389,30 +1413,78 @@ def _render_att_table(data, emp_list, lang="ko"):
                     emp.get("boss_name"), emp.get("boss_boss_name"), emp.get("boss_boss_position")
                 )
                 status_badge = _emp_status_badge(emp, lang)
-                rows += f'''
-                <tr>
-                  <td style="{STYLES['td']}">{emp.get('emp_no', '')}</td>
-                  <td style="{STYLES['td']}">{emp.get('name', '')}{status_badge}</td>
-                  <td style="{STYLES['td_center']}">{_fmt_pct(emp.get('attendance_rate', 0))}</td>
-                  <td style="{STYLES['td_center']}">{emp.get('unapproved_absence', 0)}</td>
-                  <td style="{STYLES['td']};font-size:12px;">{chain}</td>
-                </tr>'''
+
+                if emp_type == "TYPE-3":
+                    # TYPE-3 신입공 행: 배치 정보(Building + QIP POSITION + 부서) 노출
+                    # SSOT: TYPE-3 신입공은 basic_manpower에서도 boss 미지정 — 정상
+                    p1 = (emp.get("qip_pos_1st") or "").strip()
+                    p2 = (emp.get("qip_pos_2nd") or "").strip()
+                    p3 = (emp.get("qip_pos_3rd") or "").strip()
+                    dept = (emp.get("lab_or_qip") or "").strip()
+                    raw_bldg = (emp.get("building") or "").strip()
+                    pos_chain = " · ".join([x for x in (p1, p2, p3) if x and x.upper() != "NEW"])
+                    pos_display = pos_chain or '<span style="color:#94a3b8;font-style:italic;">' + _t(data, "type3_unassigned") + '</span>'
+                    bldg_chip = _bldg_badge(raw_bldg) if raw_bldg else '<span style="color:#94a3b8;font-size:11px;">—</span>'
+                    dept_chip = (
+                        f'<span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;'
+                        f'background:{"#fef3c7" if dept.upper()=="LAB" else "#dbeafe"};color:{"#92400e" if dept.upper()=="LAB" else "#1e40af"};letter-spacing:0.4px;margin-left:4px;">{dept}</span>'
+                        if dept else ""
+                    )
+                    # Boss SSOT-confirmed empty for TYPE-3 신입공
+                    boss_disp = '<span style="color:#94a3b8;font-style:italic;font-size:11px;">' + _t(data, "type3_no_supervisor") + '</span>'
+                    rows += f'''
+                    <tr>
+                      <td style="{STYLES['td']}">{emp.get('emp_no', '')}</td>
+                      <td style="{STYLES['td']}">{emp.get('name', '')}{status_badge}</td>
+                      <td style="{STYLES['td_center']}">{bldg_chip}{dept_chip}</td>
+                      <td style="{STYLES['td']};font-size:12px;color:#475569;">{pos_display}</td>
+                      <td style="{STYLES['td_center']}">{_fmt_pct(emp.get('attendance_rate', 0))}</td>
+                      <td style="{STYLES['td_center']}">{emp.get('unapproved_absence', 0)}</td>
+                      <td style="{STYLES['td']};font-size:11px;">{boss_disp}</td>
+                    </tr>'''
+                else:
+                    rows += f'''
+                    <tr>
+                      <td style="{STYLES['td']}">{emp.get('emp_no', '')}</td>
+                      <td style="{STYLES['td']}">{emp.get('name', '')}{status_badge}</td>
+                      <td style="{STYLES['td_center']}">{_fmt_pct(emp.get('attendance_rate', 0))}</td>
+                      <td style="{STYLES['td_center']}">{emp.get('unapproved_absence', 0)}</td>
+                      <td style="{STYLES['td']};font-size:12px;">{chain}</td>
+                    </tr>'''
 
             # Hide building badge for TYPE-3 (unassigned new hires)
             bldg_label = f"{_bldg_badge(bldg)} " if emp_type != "TYPE-3" else ""
 
-            html += f'''
-            <p style="{STYLES['subtitle']}">{bldg_label}{len(emps)}{_t(data, 'ppl')}</p>
-            <table style="{STYLES['table']}">
-              <tr>
-                <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
-                <th style="{STYLES['th']}">{_t(data, 'name')}</th>
-                <th style="{STYLES['th_center']}">{_t(data, 'att_rate')}</th>
-                <th style="{STYLES['th_center']}">{_t(data, 'unapp_abs')}</th>
-                <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
-              </tr>
-              {rows}
-            </table>'''
+            if emp_type == "TYPE-3":
+                # 신입공 표: 7개 컬럼 (배치 + QIP POSITION 노출)
+                html += f'''
+                <p style="{STYLES['subtitle']}">{len(emps)}{_t(data, 'ppl')}</p>
+                <table style="{STYLES['table']}">
+                  <tr>
+                    <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+                    <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+                    <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'type3_placement')}</th>
+                    <th style="{STYLES['th']};font-size:11px;">{_t(data, 'type3_qip_position')}</th>
+                    <th style="{STYLES['th_center']}">{_t(data, 'att_rate')}</th>
+                    <th style="{STYLES['th_center']}">{_t(data, 'unapp_abs')}</th>
+                    <th style="{STYLES['th']};font-size:11px;">{_t(data, 'boss_chain')}</th>
+                  </tr>
+                  {rows}
+                </table>
+                <p style="font-size:11px;color:#94a3b8;margin:6px 0 0 0;font-style:italic;">* {_t(data, "type3_ssot_note")}</p>'''
+            else:
+                html += f'''
+                <p style="{STYLES['subtitle']}">{bldg_label}{len(emps)}{_t(data, 'ppl')}</p>
+                <table style="{STYLES['table']}">
+                  <tr>
+                    <th style="{STYLES['th']}">{_t(data, 'emp_no')}</th>
+                    <th style="{STYLES['th']}">{_t(data, 'name')}</th>
+                    <th style="{STYLES['th_center']}">{_t(data, 'att_rate')}</th>
+                    <th style="{STYLES['th_center']}">{_t(data, 'unapp_abs')}</th>
+                    <th style="{STYLES['th']}">{_t(data, 'boss_chain')}</th>
+                  </tr>
+                  {rows}
+                </table>'''
 
         # Close TYPE inner card
         html += '''
@@ -1601,13 +1673,30 @@ def _section_changes(data):
                 else STYLES["bldg_default"])
 
     def _emp_identity_block(c):
-        """직원 사번/이름/현재상태 블록 (그룹 내 공통)."""
+        """직원 사번/이름/현재상태 블록 (그룹 내 공통).
+        QIP POSITION 1ST/2ND/3RD NAME(basic_manpower CSV) + 부서(LAB/QIP)도 노출.
+        """
         emp_no = c.get("emp_no", "")
         name = c.get("name", "—")
         curr = c.get("current", {})
         curr_type = str(curr.get("type", "") or "—")
         curr_position = str(curr.get("position", "") or "—")
         curr_building = str(curr.get("building", "") or "—")
+        # QIP POSITION 1ST/2ND/3RD (basic_manpower CSV enrichment)
+        p1 = str(curr.get("qip_pos_1st", "") or "").strip()
+        p2 = str(curr.get("qip_pos_2nd", "") or "").strip()
+        p3 = str(curr.get("qip_pos_3rd", "") or "").strip()
+        dept = str(curr.get("lab_or_qip", "") or "").strip()
+        qip_chain_html = ""
+        chain = " · ".join([x for x in (p1, p2, p3) if x and x.upper() != "NEW"])
+        if chain:
+            qip_chain_html = (
+                f'<div style="font-size:10px;color:#64748b;line-height:1.5;margin-top:4px;">'
+                f'<span style="font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">QIP</span> '
+                f'{chain}'
+                f'</div>'
+            )
+        dept_chip = f'<span style="margin-left:6px;display:inline-block;padding:0 6px;border-radius:3px;font-size:9px;font-weight:700;background:{"#fef3c7" if dept.upper()=="LAB" else "#dbeafe"};color:{"#92400e" if dept.upper()=="LAB" else "#1e40af"};letter-spacing:0.4px;">{dept}</span>' if dept else ""
         return f'''
           <div style="font-family:'SF Mono',Consolas,monospace;font-size:11px;color:#94a3b8;letter-spacing:0.3px;">{emp_no}</div>
           <div style="font-size:14px;font-weight:700;color:#0f1f3a;margin:3px 0 6px 0;">{name}</div>
@@ -1616,7 +1705,9 @@ def _section_changes(data):
             <span style="margin-left:6px;color:#475569;">{curr_position}</span>
             <span style="margin-left:6px;color:#94a3b8;">·</span>
             <span style="margin-left:4px;color:#155e75;font-weight:600;">{curr_building}</span>
-          </div>'''
+            {dept_chip}
+          </div>
+          {qip_chain_html}'''
 
     def _change_grid(changes_dict, exclude_field=None):
         """변경 사항 grid: [chip][old] ❯ [new]. exclude_field는 그룹 헤더에 이미 표시한 필드라 제외."""
@@ -1645,32 +1736,102 @@ def _section_changes(data):
             )
         return "".join(cells) or '<span style="color:#94a3b8;font-size:11px;">—</span>'
 
-    # ── GROUP 1: TYPE 변경 (개별 강조) ────────────────────────
+    # ── GROUP 1: TYPE 변경 (개별 강조 + 최근 7일 이내 super-highlight) ────
     g1_html = ""
     if type_group:
+        # Sort: 최근 변경(7일 이내) 먼저, 그 다음 days_since asc
+        def _g1_sort(c):
+            d = c.get("type_days_since")
+            return (0 if (d is not None and d <= 7) else 1, d if d is not None else 999)
+        type_group_sorted = sorted(type_group, key=_g1_sort)
+
         rows = ""
-        for c in type_group:
+        recent_count = 0
+        for c in type_group_sorted:
             type_old, type_new = c["changes"]["type"]
+            days_since = c.get("type_days_since")
+            detected_at = c.get("type_detected_at")
+            is_recent = days_since is not None and days_since <= 7
+            if is_recent:
+                recent_count += 1
+
+            # Date display
+            date_str = ""
+            if detected_at is not None:
+                try:
+                    date_str = detected_at.strftime("%Y-%m-%d")
+                except Exception:
+                    date_str = str(detected_at)[:10]
+
+            # Recent badge (빨강 박스 강조)
+            if is_recent:
+                recent_badge = (
+                    f'<span style="display:inline-block;padding:2px 8px;border-radius:3px;'
+                    f'background:#dc2626;color:#ffffff;font-size:10px;font-weight:800;'
+                    f'letter-spacing:0.6px;margin-left:8px;vertical-align:middle;">'
+                    f'NEW · {days_since}d</span>'
+                )
+                # Strong row highlight
+                row_left_border = "border-left:6px solid #dc2626;"
+                row_bg = "background:#fef2f2;"
+                row_outline = "box-shadow:inset 0 0 0 2px #fecaca;"  # double-emphasis
+                type_box_style = (
+                    "display:inline-block;padding:10px 16px;background:#ffffff;"
+                    "border:2px solid #dc2626;border-radius:4px;"
+                )
+            else:
+                recent_badge = ""
+                row_left_border = "border-left:4px solid #f59e0b;"
+                row_bg = "background:#fffbeb;"
+                row_outline = ""
+                type_box_style = (
+                    "display:inline-block;padding:8px 14px;background:#ffffff;"
+                    "border:1px solid #fecaca;border-radius:4px;"
+                )
+
+            # Date / days-since meta line
+            date_line = ""
+            if date_str:
+                date_line = (
+                    f'<div style="font-size:10px;color:#64748b;margin-top:8px;letter-spacing:0.3px;">'
+                    f'<span style="font-weight:600;color:#475569;">{t.get("changes_detected_at","Detected")}:</span> '
+                    f'{date_str} '
+                    f'<span style="color:#94a3b8;">({t.get("changes_days_ago","{n}일 전").format(n=days_since)})</span>'
+                    f'{recent_badge}'
+                    f'</div>'
+                )
+
             rows += f'''
             <tr>
-              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;border-left:4px solid #dc2626;background:#fef9f9;vertical-align:top;width:300px;">
+              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;{row_left_border}{row_bg}{row_outline}vertical-align:top;width:320px;">
                 {_emp_identity_block(c)}
+                {date_line}
               </td>
-              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;background:#fef9f9;vertical-align:middle;width:280px;">
-                <div style="display:inline-block;padding:8px 14px;background:#ffffff;border:1px solid #fecaca;border-radius:4px;">
+              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;{row_bg}vertical-align:middle;width:300px;">
+                <div style="{type_box_style}">
                   <span style="font-size:13px;color:#94a3b8;text-decoration:line-through;font-weight:600;">{type_old}</span>
                   <span style="color:#dc2626;font-size:16px;font-weight:700;margin:0 10px;">{arrow}</span>
                   <span style="font-size:15px;color:#991b1b;font-weight:800;">{type_new}</span>
                 </div>
               </td>
-              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;background:#fef9f9;vertical-align:middle;">
+              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;{row_bg}vertical-align:middle;">
                 {_change_grid(c["changes"], exclude_field="type")}
               </td>
             </tr>'''
+
+        recent_indicator = ""
+        if recent_count > 0:
+            recent_indicator = (
+                f'<span style="display:inline-block;padding:3px 10px;background:#dc2626;color:#ffffff;'
+                f'border-radius:3px;font-size:10px;font-weight:800;letter-spacing:0.6px;margin-left:10px;">'
+                f'{recent_count} {t.get("changes_recent","최근 7일 이내")}</span>'
+            )
+
         g1_html = f'''
         <h3 style="font-size:12px;font-weight:700;color:#991b1b;margin:18px 0 8px 0;letter-spacing:0.8px;text-transform:uppercase;">
           <span style="display:inline-block;width:8px;height:8px;background:#dc2626;border-radius:50%;margin-right:8px;vertical-align:middle;"></span>
           {t.get("changes_group_type", "TYPE Changes")} ({len(type_group)})
+          {recent_indicator}
         </h3>
         <table style="width:100%;border-collapse:collapse;border-top:1px solid #e5e9f0;border-bottom:1px solid #e5e9f0;">
           {rows}

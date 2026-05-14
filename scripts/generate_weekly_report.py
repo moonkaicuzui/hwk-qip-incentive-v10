@@ -20,7 +20,13 @@ from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from scripts.utils.firebase_common import init_firestore
-from scripts.send_report_email import load_firestore_data, build_action_report, load_previous_month
+from scripts.send_report_email import (
+    load_firestore_data,
+    build_action_report,
+    load_previous_month,
+    load_basic_manpower_csv,
+    merge_type_change_history,
+)
 from scripts.email_template import generate_email_html
 
 DASHBOARD_URL = "https://moonkaicuzui.github.io/hwk-qip-incentive-v10/"
@@ -69,11 +75,28 @@ def main():
         print("  ERROR: No employee data found!")
         sys.exit(1)
 
+    # Enrich employees with QIP POSITION 1ST/2ND/3RD NAME + lab/qip remark
+    # from basic_manpower CSV (Firestore에 이 필드들이 없으므로 메일 전용 join).
+    print(f"  Loading basic_manpower CSV for QIP POSITION enrichment...")
+    manpower_map = load_basic_manpower_csv(month)
+    if manpower_map:
+        for e in employees:
+            emp_no = str(e.get("emp_no", "")).strip()
+            if emp_no in manpower_map:
+                e.update(manpower_map[emp_no])
+
     # Load previous month for comparison
     print(f"  Loading previous month data...")
     prev_data = load_previous_month(db, month, year)
     if prev_data:
         firestore_data["previous"] = prev_data
+        # Enrich prev month employees too (변동 비교 안정성)
+        prev_emps = prev_data.get("employees", [])
+        if prev_emps and manpower_map:
+            for e in prev_emps:
+                emp_no = str(e.get("emp_no", "")).strip()
+                if emp_no in manpower_map:
+                    e.update(manpower_map[emp_no])
         print(f"  → Previous month loaded")
     else:
         print(f"  → No previous month data")
@@ -95,6 +118,15 @@ def main():
     # Build action report (same data structure as Korean report)
     print("\n  Building action report...")
     action_data = build_action_report(firestore_data)
+
+    # Merge TYPE 변경 history (idempotent, first-detection 시각 보존).
+    # 빨강 박스 강조 결정에 사용 — detected_at < 7일이면 "최근 변경".
+    if action_data.get("employee_changes"):
+        year_month_key = f"{year}_{month}"
+        merge_type_change_history(db, action_data["employee_changes"], year_month_key)
+        recent_count = sum(1 for c in action_data["employee_changes"]
+                           if c.get("type_days_since") is not None and c["type_days_since"] <= 7)
+        print(f"  → TYPE history merged. 최근 7일 이내 변경: {recent_count}명")
 
     # Generate HTML using the shared template
     now = datetime.now(timezone.utc)
