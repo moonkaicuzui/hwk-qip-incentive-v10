@@ -302,6 +302,16 @@ def detect_employee_changes(current_employees, prev_employees):
         ("talent_pool_member", "Talent Pool"),
     ]
 
+    def _qip_chain(e):
+        """QIP POSITION 1ST · 2ND · 3RD를 chain string으로 합성 (NEW는 제외).
+        basic_manpower CSV가 join되어야 의미 있음. 미통합 시 빈 문자열."""
+        parts = []
+        for k in ("qip_pos_1st", "qip_pos_2nd", "qip_pos_3rd"):
+            v = str(e.get(k, "") or "").strip()
+            if v and v.upper() != "NEW":
+                parts.append(v)
+        return " · ".join(parts)
+
     changes_list = []
     for emp in current_employees:
         emp_no = str(emp.get("emp_no", "")).strip()
@@ -317,6 +327,12 @@ def detect_employee_changes(current_employees, prev_employees):
             prev_str = str(prev_val).strip() if prev_val is not None else ""
             if curr_str != prev_str:
                 diffs[fld] = (prev_str, curr_str)
+        # QIP POSITION chain (1ST·2ND·3RD) 변경도 추적 — 합성 필드.
+        # basic_manpower CSV가 join되어 있을 때만 의미 있음.
+        curr_chain = _qip_chain(emp)
+        prev_chain = _qip_chain(prev)
+        if (curr_chain or prev_chain) and curr_chain != prev_chain:
+            diffs["qip_position_chain"] = (prev_chain or "—", curr_chain or "—")
         if diffs:
             changes_list.append({
                 "emp_no": emp_no,
@@ -325,8 +341,8 @@ def detect_employee_changes(current_employees, prev_employees):
                 "current": emp,
             })
 
-    # Sort: most-impactful first (type change > position > boss > building)
-    priority = {"type": 0, "position": 1, "boss_name": 2, "building": 3, "talent_pool_member": 4, "cfa_certified": 5}
+    # Sort: most-impactful first (type > position > qip chain > boss > building)
+    priority = {"type": 0, "position": 1, "qip_position_chain": 2, "boss_name": 3, "building": 4, "talent_pool_member": 5, "cfa_certified": 6}
     def _sort_key(c):
         keys = sorted(c["changes"].keys(), key=lambda k: priority.get(k, 99))
         return (priority.get(keys[0], 99), c["emp_no"]) if keys else (99, c["emp_no"])

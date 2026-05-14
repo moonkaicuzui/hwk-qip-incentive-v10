@@ -215,6 +215,7 @@ I18N = {
         "changes_field_building": "소속 Building",
         "changes_field_cfa_certified": "CFA 자격",
         "changes_field_talent_pool_member": "Talent Pool",
+        "changes_field_qip_position_chain": "QIP POSITION",
         "changes_arrow": "→",
         # Group headers (3-그룹 layout: TYPE 변경 / 직속상사 변경 / 기타)
         "changes_group_type": "TYPE 변경",
@@ -325,6 +326,7 @@ I18N = {
         "changes_field_building": "Building",
         "changes_field_cfa_certified": "CFA",
         "changes_field_talent_pool_member": "Talent Pool",
+        "changes_field_qip_position_chain": "QIP POSITION",
         "changes_arrow": "→",
         "changes_group_type": "TYPE Changes",
         "changes_group_boss": "Supervisor Reassignments",
@@ -434,6 +436,7 @@ I18N = {
         "changes_field_building": "Building",
         "changes_field_cfa_certified": "CFA",
         "changes_field_talent_pool_member": "Talent Pool",
+        "changes_field_qip_position_chain": "QIP POSITION",
         "changes_arrow": "\u2192",
         "changes_group_type": "Thay \u0111\u1ed5i TYPE",
         "changes_group_boss": "Thay \u0111\u1ed5i c\u1ea5p tr\u00ean (t\u00e1i c\u01a1 c\u1ea5u)",
@@ -1626,6 +1629,7 @@ def _section_changes(data):
     field_labels = {
         "type": t.get("changes_field_type", "TYPE"),
         "position": t.get("changes_field_position", "Position"),
+        "qip_position_chain": t.get("changes_field_qip_position_chain", "QIP POSITION"),
         "boss_name": t.get("changes_field_boss_name", "Supervisor"),
         "building": t.get("changes_field_building", "Building"),
         "cfa_certified": t.get("changes_field_cfa_certified", "CFA"),
@@ -1634,6 +1638,7 @@ def _section_changes(data):
     field_chip_style = {
         "type": STYLES["chip_type"],
         "position": STYLES["chip_position"],
+        "qip_position_chain": STYLES["chip_position"],
         "boss_name": STYLES["chip_boss"],
         "building": STYLES["chip_building"],
         "cfa_certified": STYLES["chip_cfa"],
@@ -1730,6 +1735,184 @@ def _section_changes(data):
           </div>
           {qip_chain_html}'''
 
+    # Month labels for BEFORE/AFTER column headers
+    prev_month_name = data.get("previous_month_name", "")
+    _curr_month_label = t.get("curr_month_short", "이번 달")
+    _prev_month_label = t.get("prev_month_short", "전월")
+    if prev_month_name:
+        try:
+            _idx = ["january","february","march","april","may","june",
+                    "july","august","september","october","november","december"].index(prev_month_name.lower()) + 1
+            _prev_month_label = t.get(f"m{_idx}", prev_month_name)
+        except Exception:
+            pass
+
+    def _change_compare_card(c, accent="recent_or_amber", show_date=True):
+        """공용 카드 헬퍼 — 모든 변동(TYPE/상사/기타) 그룹에서 동일한 형식:
+          헤더 (사번 + 이름 + 현재상태 + QIP chain + 변경 요약)
+          + BEFORE/AFTER 2컬럼 비교표.
+
+        accent:
+          - "recent": 7일 이내 변경 (TYPE 강조용) — 빨강 outline + 빨강 헤더
+          - "amber":  7일 초과 TYPE 변경 — amber outline
+          - "boss":   상사 변경 — 보라 outline
+          - "neutral": 기타 (직책/Building/자격) — slate outline
+          - "recent_or_amber": TYPE 변경 카드의 자동 판별
+        """
+        days_since = c.get("type_days_since")
+        detected_at = c.get("type_detected_at")
+        has_type_change = "type" in c["changes"]
+        is_recent = has_type_change and (days_since is not None and days_since <= 7)
+
+        if accent == "recent_or_amber":
+            accent = "recent" if is_recent else "amber"
+
+        # Visual tone per accent
+        if accent == "recent":
+            card_border = "border:2px solid #dc2626;"
+            header_bg = "background:linear-gradient(90deg,#fee2e2,#fef2f2);"
+            header_strip = "border-left:6px solid #dc2626;"
+            after_color = "#991b1b"
+            after_bg = "#fef2f2"
+            badge_color = "#dc2626"
+        elif accent == "amber":
+            card_border = "border:1px solid #f59e0b;"
+            header_bg = "background:#fffbeb;"
+            header_strip = "border-left:4px solid #f59e0b;"
+            after_color = "#0f1f3a"
+            after_bg = "#fffbeb"
+            badge_color = "#f59e0b"
+        elif accent == "boss":
+            card_border = "border:1px solid #c4b5fd;"
+            header_bg = "background:#f5f3ff;"
+            header_strip = "border-left:4px solid #5b21b6;"
+            after_color = "#5b21b6"
+            after_bg = "#faf5ff"
+            badge_color = "#5b21b6"
+        else:  # neutral
+            card_border = "border:1px solid #e5e9f0;"
+            header_bg = "background:#fafbfc;"
+            header_strip = "border-left:4px solid #94a3b8;"
+            after_color = "#0f1f3a"
+            after_bg = "#f8fafc"
+            badge_color = "#94a3b8"
+
+        # Recent badge (NEW · Nd) — only for TYPE 변경 within 7 days
+        badge_html = ""
+        if accent == "recent":
+            badge_html = (
+                f'<span style="display:inline-block;padding:3px 10px;border-radius:3px;'
+                f'background:#dc2626;color:#ffffff;font-size:11px;font-weight:800;'
+                f'letter-spacing:0.8px;margin-right:10px;">NEW · {days_since}d</span>'
+            )
+
+        # Current identity
+        curr = c.get("current", {}) or {}
+        emp_no = c.get("emp_no", "")
+        name = c.get("name", "—")
+        curr_type = str(curr.get("type", "") or "—")
+        curr_position = str(curr.get("position", "") or "—")
+        curr_building = str(curr.get("building", "") or "—")
+        dept = str(curr.get("lab_or_qip", "") or "").strip()
+        dept_chip = (
+            f'<span style="margin-left:6px;display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;'
+            f'background:{"#fef3c7" if dept.upper()=="LAB" else "#dbeafe"};color:{"#92400e" if dept.upper()=="LAB" else "#1e40af"};letter-spacing:0.4px;">{dept}</span>'
+            if dept else ""
+        )
+
+        # Date / change-summary line (TYPE 변경 카드만)
+        change_summary_line = ""
+        if has_type_change and detected_at is not None and show_date:
+            type_old, type_new = c["changes"]["type"]
+            try:
+                date_str = detected_at.strftime("%Y-%m-%d")
+            except Exception:
+                date_str = str(detected_at)[:10]
+            change_summary_line = (
+                f'<div style="margin-top:10px;padding:8px 12px;background:#ffffff;border-radius:3px;font-size:12px;color:#1e293b;line-height:1.6;">'
+                f'<span style="font-weight:700;color:{badge_color};">{type_old} {arrow} {type_new}</span>'
+                f'<span style="margin-left:10px;color:#475569;">'
+                f'{t.get("changes_applied_on","변경 확인일")}: <strong style="color:#0f1f3a;">{date_str}</strong> '
+                f'<span style="color:#94a3b8;">({t.get("changes_days_ago","{n}일 전").format(n=days_since)})</span>'
+                f'</span></div>'
+            )
+
+        # Sort changes (TYPE > position > qip chain > boss > building > cfa > talent)
+        change_order = {"type": 0, "position": 1, "qip_position_chain": 2, "boss_name": 3, "building": 4, "cfa_certified": 5, "talent_pool_member": 6}
+        sorted_changes = sorted(c["changes"].items(), key=lambda x: change_order.get(x[0], 99))
+
+        # Build BEFORE/AFTER rows
+        compare_rows = ""
+        for fld, (old, new) in sorted_changes:
+            label = field_labels.get(fld, fld)
+            chip_style = field_chip_style.get(fld, STYLES["change_field_chip"])
+            old_disp = old if old not in ("", "None", "False") else "—"
+            new_disp = new if new not in ("", "None", "False") else "—"
+            if fld in ("cfa_certified", "talent_pool_member"):
+                old_disp = "Yes" if str(old).lower() in ("true", "1", "yes") else "No"
+                new_disp = "Yes" if str(new).lower() in ("true", "1", "yes") else "No"
+            is_type_row = (fld == "type")
+            old_style = ("color:#94a3b8;text-decoration:line-through;font-weight:" + ("700" if is_type_row else "500")
+                         + ";font-size:" + ("14px" if is_type_row else "12px") + ";word-break:break-word;")
+            new_style = (f"color:{after_color};font-weight:" + ("800" if is_type_row else "700")
+                         + ";font-size:" + ("15px" if is_type_row else "12px") + ";word-break:break-word;")
+            row_emphasis_bg = "background:#fef9f9;" if (is_type_row and accent == "recent") else ""
+            compare_rows += f'''
+            <tr style="{row_emphasis_bg}">
+              <td style="padding:9px 14px;border-bottom:1px solid #f1f3f7;width:130px;vertical-align:middle;">
+                <span style="{chip_style}">{label}</span>
+              </td>
+              <td style="padding:9px 14px;border-bottom:1px solid #f1f3f7;border-right:2px solid #e5e9f0;vertical-align:middle;background:#fafbfc;">
+                <span style="{old_style}">{old_disp}</span>
+              </td>
+              <td style="padding:0;border-bottom:1px solid #f1f3f7;width:36px;text-align:center;vertical-align:middle;background:{after_bg};">
+                <span style="color:{after_color};font-size:16px;font-weight:800;">{arrow}</span>
+              </td>
+              <td style="padding:9px 14px;border-bottom:1px solid #f1f3f7;vertical-align:middle;background:{after_bg};">
+                <span style="{new_style}">{new_disp}</span>
+              </td>
+            </tr>'''
+
+        # Type chip style for current state line
+        type_chip = (STYLES["badge_a"] if curr_type == "TYPE-1"
+                     else STYLES["badge_b"] if curr_type == "TYPE-2"
+                     else STYLES["badge_c"] if curr_type == "TYPE-3"
+                     else STYLES["bldg_default"])
+
+        return f'''
+        <div style="margin:12px 0;{card_border}border-radius:6px;overflow:hidden;">
+          <div style="{header_bg}{header_strip}padding:12px 16px;">
+            <div style="display:block;">
+              {badge_html}<span style="font-family:'SF Mono',Consolas,monospace;font-size:11px;color:#94a3b8;letter-spacing:0.3px;">{emp_no}</span>
+              <span style="font-size:14px;font-weight:800;color:#0f1f3a;margin-left:10px;">{name}</span>
+            </div>
+            <div style="font-size:11px;color:#475569;margin-top:5px;line-height:1.6;">
+              <span style="font-weight:600;color:#64748b;">{t.get("changes_current_state","현재 상태")}:</span>
+              <span style="{type_chip}">{curr_type}</span>
+              <span style="margin-left:6px;color:#475569;">{curr_position}</span>
+              <span style="margin-left:6px;color:#94a3b8;">·</span>
+              <span style="margin-left:4px;color:#155e75;font-weight:600;">{curr_building}</span>
+              {dept_chip}
+            </div>
+            {change_summary_line}
+          </div>
+          <table style="width:100%;border-collapse:collapse;background:#ffffff;">
+            <tr style="background:#fafbfc;">
+              <th style="padding:7px 14px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.8px;text-transform:uppercase;border-bottom:1px solid #e5e9f0;">
+                {t.get("changes_field","항목")}
+              </th>
+              <th style="padding:7px 14px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.8px;text-transform:uppercase;border-right:2px solid #e5e9f0;border-bottom:1px solid #e5e9f0;background:#f8fafc;">
+                {t.get("changes_before","이전")} <span style="color:#cbd5e1;font-weight:500;text-transform:none;letter-spacing:0;">({_prev_month_label})</span>
+              </th>
+              <th style="padding:7px 0;border-bottom:1px solid #e5e9f0;background:#f8fafc;"></th>
+              <th style="padding:7px 14px;text-align:left;font-size:10px;font-weight:700;color:{after_color};letter-spacing:0.8px;text-transform:uppercase;border-bottom:1px solid #e5e9f0;background:{after_bg};">
+                {t.get("changes_after","이후")} <span style="color:#cbd5e1;font-weight:500;text-transform:none;letter-spacing:0;">({_curr_month_label})</span>
+              </th>
+            </tr>
+            {compare_rows}
+          </table>
+        </div>'''
+
     def _change_grid(changes_dict, exclude_field=None):
         """변경 사항 grid: [chip][old] ❯ [new]. exclude_field는 그룹 헤더에 이미 표시한 필드라 제외."""
         order = {"type": 0, "position": 1, "boss_name": 2, "building": 3, "cfa_certified": 4, "talent_pool_member": 5}
@@ -1757,175 +1940,17 @@ def _section_changes(data):
             )
         return "".join(cells) or '<span style="color:#94a3b8;font-size:11px;">—</span>'
 
-    # ── GROUP 1: TYPE 변경 — 카드형 (헤더 + BEFORE/AFTER 2컬럼 비교표) ───
+    # ── GROUP 1: TYPE 변경 (공용 카드 헬퍼 사용, accent="recent_or_amber") ────
     g1_html = ""
     if type_group:
-        prev_month_name = data.get("previous_month_name", "")
-        curr_month_label = t.get("curr_month_short", "이번 달")
-        prev_month_label = t.get("prev_month_short", "전월")
-        if prev_month_name:
-            try:
-                idx = ["january","february","march","april","may","june",
-                       "july","august","september","october","november","december"].index(prev_month_name.lower()) + 1
-                prev_month_label = t.get(f"m{idx}", prev_month_name)
-            except Exception:
-                pass
-
         def _g1_sort(c):
             d = c.get("type_days_since")
             return (0 if (d is not None and d <= 7) else 1, d if d is not None else 999)
         type_group_sorted = sorted(type_group, key=_g1_sort)
 
-        cards_html = ""
-        recent_count = 0
-        for c in type_group_sorted:
-            type_old, type_new = c["changes"]["type"]
-            days_since = c.get("type_days_since")
-            detected_at = c.get("type_detected_at")
-            is_recent = days_since is not None and days_since <= 7
-            if is_recent:
-                recent_count += 1
-
-            date_str = ""
-            if detected_at is not None:
-                try:
-                    date_str = detected_at.strftime("%Y-%m-%d")
-                except Exception:
-                    date_str = str(detected_at)[:10]
-
-            # Card border / header styling depending on recency
-            if is_recent:
-                card_border = "border:2px solid #dc2626;"
-                header_bg = "background:linear-gradient(90deg,#fee2e2,#fef2f2);"
-                header_strip = "border-left:6px solid #dc2626;"
-                badge_html = (
-                    f'<span style="display:inline-block;padding:3px 10px;border-radius:3px;'
-                    f'background:#dc2626;color:#ffffff;font-size:11px;font-weight:800;'
-                    f'letter-spacing:0.8px;margin-right:10px;">NEW · {days_since}d</span>'
-                )
-                after_color = "#991b1b"
-                after_bg = "#fef2f2"
-            else:
-                card_border = "border:1px solid #f59e0b;"
-                header_bg = "background:#fffbeb;"
-                header_strip = "border-left:4px solid #f59e0b;"
-                badge_html = ""
-                after_color = "#0f1f3a"
-                after_bg = "#f8fafc"
-
-            # Build identity (current) line — current state shown in header
-            curr = c.get("current", {}) or {}
-            emp_no = c.get("emp_no", "")
-            name = c.get("name", "—")
-            curr_type = str(curr.get("type", "") or "—")
-            curr_position = str(curr.get("position", "") or "—")
-            curr_building = str(curr.get("building", "") or "—")
-            p1 = str(curr.get("qip_pos_1st", "") or "").strip()
-            p2 = str(curr.get("qip_pos_2nd", "") or "").strip()
-            p3 = str(curr.get("qip_pos_3rd", "") or "").strip()
-            dept = str(curr.get("lab_or_qip", "") or "").strip()
-            qip_chain = " · ".join([x for x in (p1, p2, p3) if x and x.upper() != "NEW"])
-            qip_chain_line = (
-                f'<div style="font-size:11px;color:#64748b;margin-top:5px;line-height:1.5;">'
-                f'<span style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;">QIP</span> {qip_chain}'
-                f'</div>'
-            ) if qip_chain else ""
-            dept_chip = (
-                f'<span style="margin-left:6px;display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;'
-                f'background:{"#fef3c7" if dept.upper()=="LAB" else "#dbeafe"};color:{"#92400e" if dept.upper()=="LAB" else "#1e40af"};letter-spacing:0.4px;">{dept}</span>'
-                if dept else ""
-            )
-
-            # Sort all changed fields with priority (type first)
-            change_order = {"type": 0, "position": 1, "boss_name": 2, "building": 3, "cfa_certified": 4, "talent_pool_member": 5}
-            sorted_changes = sorted(c["changes"].items(), key=lambda x: change_order.get(x[0], 99))
-
-            # Build comparison rows (before | after) for ALL changed fields incl. TYPE
-            compare_rows = ""
-            for fld, (old, new) in sorted_changes:
-                label = field_labels.get(fld, fld)
-                chip_style = field_chip_style.get(fld, STYLES["change_field_chip"])
-                old_disp = old if old not in ("", "None", "False") else "—"
-                new_disp = new if new not in ("", "None", "False") else "—"
-                if fld in ("cfa_certified", "talent_pool_member"):
-                    old_disp = "Yes" if str(old).lower() in ("true", "1", "yes") else "No"
-                    new_disp = "Yes" if str(new).lower() in ("true", "1", "yes") else "No"
-                # TYPE 행은 더 강하게 강조
-                is_type_row = (fld == "type")
-                old_style = "color:#94a3b8;text-decoration:line-through;font-size:13px;font-weight:" + ("700" if is_type_row else "500") + ";"
-                new_style = f"color:{after_color};font-size:" + ("15px" if is_type_row else "13px") + f";font-weight:" + ("800" if is_type_row else "700") + ";"
-                row_bg = "background:#fef9f9;" if is_type_row and is_recent else ""
-                compare_rows += f'''
-                <tr style="{row_bg}">
-                  <td style="padding:10px 16px;border-bottom:1px solid #f1f3f7;width:100px;vertical-align:middle;">
-                    <span style="{chip_style}">{label}</span>
-                  </td>
-                  <td style="padding:10px 16px;border-bottom:1px solid #f1f3f7;border-right:2px solid #e5e9f0;vertical-align:middle;background:#fafbfc;">
-                    <span style="{old_style}">{old_disp}</span>
-                  </td>
-                  <td style="padding:0;border-bottom:1px solid #f1f3f7;width:36px;text-align:center;vertical-align:middle;background:{after_bg};">
-                    <span style="color:{after_color};font-size:16px;font-weight:800;">{arrow}</span>
-                  </td>
-                  <td style="padding:10px 16px;border-bottom:1px solid #f1f3f7;vertical-align:middle;background:{after_bg};">
-                    <span style="{new_style}">{new_disp}</span>
-                  </td>
-                </tr>'''
-
-            # 변경 적용일 명시 — "TYPE-1 → TYPE-2로 2026-05-14에 변경 확인"
-            change_summary_line = ""
-            if date_str:
-                change_summary_line = (
-                    f'<div style="margin-top:10px;padding:8px 12px;background:#ffffff;border-radius:3px;font-size:12px;color:#1e293b;line-height:1.6;">'
-                    f'<span style="font-weight:700;color:#991b1b;">{type_old} {arrow} {type_new}</span>'
-                    f'<span style="margin-left:10px;color:#475569;">'
-                    f'{t.get("changes_applied_on","변경 확인일")}: <strong style="color:#0f1f3a;">{date_str}</strong> '
-                    f'<span style="color:#94a3b8;">({t.get("changes_days_ago","{n}일 전").format(n=days_since)})</span>'
-                    f'</span>'
-                    f'</div>'
-                )
-
-            # Type chip style for current TYPE
-            type_chip = (STYLES["badge_a"] if curr_type == "TYPE-1"
-                         else STYLES["badge_b"] if curr_type == "TYPE-2"
-                         else STYLES["badge_c"] if curr_type == "TYPE-3"
-                         else STYLES["bldg_default"])
-
-            cards_html += f'''
-            <div style="margin:14px 0;{card_border}border-radius:6px;overflow:hidden;">
-              <!-- Header -->
-              <div style="{header_bg}{header_strip}padding:14px 18px;">
-                <div style="display:block;">
-                  {badge_html}<span style="font-family:'SF Mono',Consolas,monospace;font-size:11px;color:#94a3b8;letter-spacing:0.3px;">{emp_no}</span>
-                  <span style="font-size:15px;font-weight:800;color:#0f1f3a;margin-left:10px;">{name}</span>
-                </div>
-                <div style="font-size:11px;color:#475569;margin-top:6px;line-height:1.6;">
-                  <span style="font-weight:600;color:#64748b;">{t.get("changes_current_state","현재 상태")}:</span>
-                  <span style="{type_chip}">{curr_type}</span>
-                  <span style="margin-left:6px;color:#475569;">{curr_position}</span>
-                  <span style="margin-left:6px;color:#94a3b8;">·</span>
-                  <span style="margin-left:4px;color:#155e75;font-weight:600;">{curr_building}</span>
-                  {dept_chip}
-                </div>
-                {qip_chain_line}
-                {change_summary_line}
-              </div>
-              <!-- BEFORE / AFTER 2-column comparison table -->
-              <table style="width:100%;border-collapse:collapse;background:#ffffff;">
-                <tr style="background:#fafbfc;">
-                  <th style="padding:7px 16px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.8px;text-transform:uppercase;border-bottom:1px solid #e5e9f0;">
-                    {t.get("changes_field","항목")}
-                  </th>
-                  <th style="padding:7px 16px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.8px;text-transform:uppercase;border-right:2px solid #e5e9f0;border-bottom:1px solid #e5e9f0;background:#f8fafc;">
-                    {t.get("changes_before","이전")} <span style="color:#cbd5e1;font-weight:500;text-transform:none;letter-spacing:0;">({prev_month_label})</span>
-                  </th>
-                  <th style="padding:7px 0;border-bottom:1px solid #e5e9f0;background:#f8fafc;"></th>
-                  <th style="padding:7px 16px;text-align:left;font-size:10px;font-weight:700;color:{after_color};letter-spacing:0.8px;text-transform:uppercase;border-bottom:1px solid #e5e9f0;background:{after_bg};">
-                    {t.get("changes_after","이후")} <span style="color:#cbd5e1;font-weight:500;text-transform:none;letter-spacing:0;">({curr_month_label})</span>
-                  </th>
-                </tr>
-                {compare_rows}
-              </table>
-            </div>'''
+        recent_count = sum(1 for c in type_group_sorted
+                           if c.get("type_days_since") is not None and c["type_days_since"] <= 7)
+        cards_html = "".join(_change_compare_card(c, accent="recent_or_amber") for c in type_group_sorted)
 
         recent_indicator = ""
         if recent_count > 0:
@@ -1943,115 +1968,59 @@ def _section_changes(data):
         </h3>
         {cards_html}'''
 
-    # ── GROUP 2: Boss 변경 (Manager-clustered) ────────────────
+    # ── GROUP 2: Boss 변경 (Manager-cluster 헤더 + 카드 형식 통일) ─────
     g2_html = ""
     if boss_group:
-        # Cluster by new boss
         from collections import defaultdict
         clusters = defaultdict(list)  # new_boss -> list of (c, old_boss)
         for c in boss_group:
             old_boss, new_boss = c["changes"]["boss_name"]
             clusters[new_boss].append((c, old_boss))
 
-        # Sort clusters by size desc
         sorted_clusters = sorted(clusters.items(), key=lambda x: -len(x[1]))
 
         cluster_blocks = []
         for new_boss, members in sorted_clusters:
             new_boss_disp = new_boss if new_boss not in ("", "None", "False") else "—"
-            # Find dominant old_boss
+            n_members = len(members)
             old_boss_counts = defaultdict(int)
             for _c, ob in members:
                 old_boss_counts[ob if ob not in ("", "None", "False") else "—"] += 1
             dominant_old = max(old_boss_counts.items(), key=lambda x: x[1])
-            n_members = len(members)
-            # If single dominant old boss covers most members, show clearly
             from_label = dominant_old[0] if dominant_old[1] == n_members else t.get("changes_mixed_sources", "various")
 
-            # Member list rows
-            member_rows = ""
-            for c, ob in members:
-                emp_no = c.get("emp_no", "")
-                name = c.get("name", "—")
-                curr = c.get("current", {})
-                curr_type = str(curr.get("type", "") or "—")
-                curr_position = str(curr.get("position", "") or "—")
-                curr_building = str(curr.get("building", "") or "—")
-                # Per-member non-boss changes summary
-                extra = _change_grid(c["changes"], exclude_field="boss_name")
-                extra_html = ""
-                if "—" not in extra or "padding:0" in extra:  # has real cells
-                    if 'padding:0 8px 0 0' in extra:
-                        extra_html = f'<td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;vertical-align:middle;width:340px;">{extra}</td>'
-                if not extra_html:
-                    extra_html = '<td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;color:#cbd5e1;font-size:11px;vertical-align:middle;width:340px;">—</td>'
-
-                ob_disp = ob if ob not in ("", "None", "False") else "—"
-                src_chip = ""
-                if dominant_old[1] != n_members:
-                    src_chip = f'<div style="font-size:10px;color:#94a3b8;margin-top:2px;">← {ob_disp}</div>'
-
-                member_rows += f'''
-                <tr>
-                  <td style="padding:8px 12px;border-bottom:1px solid #f1f3f7;font-family:'SF Mono',Consolas,monospace;font-size:11px;color:#94a3b8;vertical-align:middle;width:90px;">{emp_no}</td>
-                  <td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;vertical-align:middle;">
-                    <div style="font-size:13px;font-weight:700;color:#0f1f3a;">{name}</div>
-                    {src_chip}
-                  </td>
-                  <td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;vertical-align:middle;width:80px;text-align:center;">
-                    <span style="{_type_badge(curr_type)}">{curr_type}</span>
-                  </td>
-                  <td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;vertical-align:middle;font-size:12px;color:#475569;">{curr_position}</td>
-                  <td style="padding:8px 10px;border-bottom:1px solid #f1f3f7;vertical-align:middle;font-size:12px;color:#155e75;font-weight:600;width:80px;">{curr_building}</td>
-                  {extra_html}
-                </tr>'''
-
-            # Cluster header: "New boss ← N members (from: Old boss)"
+            # Cluster header
             cluster_header = f'''
-            <tr>
-              <td colspan="6" style="padding:12px 16px;background:#f5f3ff;border-left:4px solid #5b21b6;border-bottom:1px solid #e0d4f7;">
-                <div style="font-size:14px;color:#0f1f3a;">
-                  <span style="font-size:13px;font-weight:700;color:#5b21b6;">{new_boss_disp}</span>
-                  <span style="color:#94a3b8;margin:0 8px;">{arrow}</span>
-                  <span style="font-size:13px;color:#475569;font-weight:600;">{t.get("changes_assigned_n", "{n}명 영입").format(n=n_members)}</span>
-                  <span style="font-size:11px;color:#94a3b8;margin-left:10px;">({t.get("changes_from","from")} <span style="text-decoration:line-through;">{from_label}</span>)</span>
-                </div>
-              </td>
-            </tr>'''
+            <div style="margin:14px 0 6px 0;padding:12px 16px;background:#f5f3ff;border-left:4px solid #5b21b6;border-radius:4px;">
+              <div style="font-size:13px;color:#0f1f3a;">
+                <span style="font-size:13px;font-weight:700;color:#5b21b6;">{new_boss_disp}</span>
+                <span style="color:#94a3b8;margin:0 8px;">{arrow}</span>
+                <span style="font-size:13px;color:#475569;font-weight:600;">{t.get("changes_assigned_n", "{n}명 영입").format(n=n_members)}</span>
+                <span style="font-size:11px;color:#94a3b8;margin-left:10px;">({t.get("changes_from","from")} <span style="text-decoration:line-through;">{from_label}</span>)</span>
+              </div>
+            </div>'''
 
-            cluster_blocks.append(f"{cluster_header}{member_rows}")
+            # Each member as a card with BEFORE/AFTER table (boss accent)
+            member_cards = "".join(_change_compare_card(c, accent="boss", show_date=False) for c, _ob in members)
+            cluster_blocks.append(cluster_header + member_cards)
 
         g2_html = f'''
         <h3 style="font-size:12px;font-weight:700;color:#5b21b6;margin:22px 0 8px 0;letter-spacing:0.8px;text-transform:uppercase;">
           <span style="display:inline-block;width:8px;height:8px;background:#5b21b6;border-radius:50%;margin-right:8px;vertical-align:middle;"></span>
           {t.get("changes_group_boss", "Supervisor Reassignments")} ({len(boss_group)})
         </h3>
-        <table style="width:100%;border-collapse:collapse;border:1px solid #e5e9f0;border-radius:4px;">
-          {"".join(cluster_blocks)}
-        </table>'''
+        {"".join(cluster_blocks)}'''
 
-    # ── GROUP 3: 기타 (position/building/CFA/talent only) ────
+    # ── GROUP 3: 기타 변경 (카드 + BEFORE/AFTER 표, neutral accent) ────
     g3_html = ""
     if other_group:
-        rows = ""
-        for c in other_group:
-            rows += f'''
-            <tr>
-              <td style="padding:12px 16px;border-bottom:1px solid #f1f3f7;border-left:4px solid #e5e9f0;vertical-align:top;width:280px;">
-                {_emp_identity_block(c)}
-              </td>
-              <td style="padding:12px 16px;border-bottom:1px solid #f1f3f7;vertical-align:middle;">
-                {_change_grid(c["changes"])}
-              </td>
-            </tr>'''
+        cards_html = "".join(_change_compare_card(c, accent="neutral", show_date=False) for c in other_group)
         g3_html = f'''
         <h3 style="font-size:12px;font-weight:700;color:#475569;margin:22px 0 8px 0;letter-spacing:0.8px;text-transform:uppercase;">
           <span style="display:inline-block;width:8px;height:8px;background:#94a3b8;border-radius:50%;margin-right:8px;vertical-align:middle;"></span>
           {t.get("changes_group_other", "Other Changes")} ({len(other_group)})
         </h3>
-        <table style="width:100%;border-collapse:collapse;border-top:1px solid #e5e9f0;border-bottom:1px solid #e5e9f0;">
-          {rows}
-        </table>'''
+        {cards_html}'''
 
     body = f'''
     <p style="font-size:12px;color:#64748b;margin:0 0 12px 0;">{subtitle} <span style="color:#0f1f3a;font-weight:700;">{len(changes)} {t.get("changes_total","Changes")}</span></p>
