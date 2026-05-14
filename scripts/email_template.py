@@ -224,8 +224,15 @@ I18N = {
         "changes_from": "이전:",
         "changes_mixed_sources": "여러 출처",
         "changes_detected_at": "변경 감지일",
+        "changes_applied_on": "변경 확인일",
         "changes_days_ago": "{n}일 전",
         "changes_recent": "최근 7일 이내",
+        "changes_current_state": "현재 상태",
+        "changes_field": "항목",
+        "changes_before": "이전",
+        "changes_after": "이후",
+        "prev_month_short": "전월",
+        "curr_month_short": "이번 달",
         "type3_placement": "배치(Building)",
         "type3_qip_position": "QIP POSITION (1ST·2ND·3RD)",
         "type3_unassigned": "신입공 미배치",
@@ -326,8 +333,15 @@ I18N = {
         "changes_from": "from:",
         "changes_mixed_sources": "various sources",
         "changes_detected_at": "Detected",
+        "changes_applied_on": "Change confirmed on",
         "changes_days_ago": "{n}d ago",
         "changes_recent": "within last 7 days",
+        "changes_current_state": "Current",
+        "changes_field": "Field",
+        "changes_before": "Before",
+        "changes_after": "After",
+        "prev_month_short": "prev. month",
+        "curr_month_short": "this month",
         "type3_placement": "Placement (Building)",
         "type3_qip_position": "QIP POSITION (1ST·2ND·3RD)",
         "type3_unassigned": "New hire — not yet assigned",
@@ -428,8 +442,15 @@ I18N = {
         "changes_from": "t\u1eeb:",
         "changes_mixed_sources": "nhi\u1ec1u ngu\u1ed3n",
         "changes_detected_at": "Ph\u00e1t hi\u1ec7n",
+        "changes_applied_on": "Ng\u00e0y x\u00e1c nh\u1eadn thay \u0111\u1ed5i",
         "changes_days_ago": "{n} ng\u00e0y tr\u01b0\u1edbc",
         "changes_recent": "trong 7 ng\u00e0y qua",
+        "changes_current_state": "Hi\u1ec7n t\u1ea1i",
+        "changes_field": "M\u1ee5c",
+        "changes_before": "Tr\u01b0\u1edbc",
+        "changes_after": "Sau",
+        "prev_month_short": "th\u00e1ng tr\u01b0\u1edbc",
+        "curr_month_short": "th\u00e1ng n\u00e0y",
         "type3_placement": "Ph\u00e2n c\u00f4ng (Building)",
         "type3_qip_position": "QIP POSITION (1ST\u00b72ND\u00b73RD)",
         "type3_unassigned": "Nh\u00e2n vi\u00ean m\u1edbi \u2014 ch\u01b0a ph\u00e2n c\u00f4ng",
@@ -1736,16 +1757,26 @@ def _section_changes(data):
             )
         return "".join(cells) or '<span style="color:#94a3b8;font-size:11px;">—</span>'
 
-    # ── GROUP 1: TYPE 변경 (개별 강조 + 최근 7일 이내 super-highlight) ────
+    # ── GROUP 1: TYPE 변경 — 카드형 (헤더 + BEFORE/AFTER 2컬럼 비교표) ───
     g1_html = ""
     if type_group:
-        # Sort: 최근 변경(7일 이내) 먼저, 그 다음 days_since asc
+        prev_month_name = data.get("previous_month_name", "")
+        curr_month_label = t.get("curr_month_short", "이번 달")
+        prev_month_label = t.get("prev_month_short", "전월")
+        if prev_month_name:
+            try:
+                idx = ["january","february","march","april","may","june",
+                       "july","august","september","october","november","december"].index(prev_month_name.lower()) + 1
+                prev_month_label = t.get(f"m{idx}", prev_month_name)
+            except Exception:
+                pass
+
         def _g1_sort(c):
             d = c.get("type_days_since")
             return (0 if (d is not None and d <= 7) else 1, d if d is not None else 999)
         type_group_sorted = sorted(type_group, key=_g1_sort)
 
-        rows = ""
+        cards_html = ""
         recent_count = 0
         for c in type_group_sorted:
             type_old, type_new = c["changes"]["type"]
@@ -1755,7 +1786,6 @@ def _section_changes(data):
             if is_recent:
                 recent_count += 1
 
-            # Date display
             date_str = ""
             if detected_at is not None:
                 try:
@@ -1763,61 +1793,139 @@ def _section_changes(data):
                 except Exception:
                     date_str = str(detected_at)[:10]
 
-            # Recent badge (빨강 박스 강조)
+            # Card border / header styling depending on recency
             if is_recent:
-                recent_badge = (
-                    f'<span style="display:inline-block;padding:2px 8px;border-radius:3px;'
-                    f'background:#dc2626;color:#ffffff;font-size:10px;font-weight:800;'
-                    f'letter-spacing:0.6px;margin-left:8px;vertical-align:middle;">'
-                    f'NEW · {days_since}d</span>'
+                card_border = "border:2px solid #dc2626;"
+                header_bg = "background:linear-gradient(90deg,#fee2e2,#fef2f2);"
+                header_strip = "border-left:6px solid #dc2626;"
+                badge_html = (
+                    f'<span style="display:inline-block;padding:3px 10px;border-radius:3px;'
+                    f'background:#dc2626;color:#ffffff;font-size:11px;font-weight:800;'
+                    f'letter-spacing:0.8px;margin-right:10px;">NEW · {days_since}d</span>'
                 )
-                # Strong row highlight
-                row_left_border = "border-left:6px solid #dc2626;"
-                row_bg = "background:#fef2f2;"
-                row_outline = "box-shadow:inset 0 0 0 2px #fecaca;"  # double-emphasis
-                type_box_style = (
-                    "display:inline-block;padding:10px 16px;background:#ffffff;"
-                    "border:2px solid #dc2626;border-radius:4px;"
-                )
+                after_color = "#991b1b"
+                after_bg = "#fef2f2"
             else:
-                recent_badge = ""
-                row_left_border = "border-left:4px solid #f59e0b;"
-                row_bg = "background:#fffbeb;"
-                row_outline = ""
-                type_box_style = (
-                    "display:inline-block;padding:8px 14px;background:#ffffff;"
-                    "border:1px solid #fecaca;border-radius:4px;"
-                )
+                card_border = "border:1px solid #f59e0b;"
+                header_bg = "background:#fffbeb;"
+                header_strip = "border-left:4px solid #f59e0b;"
+                badge_html = ""
+                after_color = "#0f1f3a"
+                after_bg = "#f8fafc"
 
-            # Date / days-since meta line
-            date_line = ""
+            # Build identity (current) line — current state shown in header
+            curr = c.get("current", {}) or {}
+            emp_no = c.get("emp_no", "")
+            name = c.get("name", "—")
+            curr_type = str(curr.get("type", "") or "—")
+            curr_position = str(curr.get("position", "") or "—")
+            curr_building = str(curr.get("building", "") or "—")
+            p1 = str(curr.get("qip_pos_1st", "") or "").strip()
+            p2 = str(curr.get("qip_pos_2nd", "") or "").strip()
+            p3 = str(curr.get("qip_pos_3rd", "") or "").strip()
+            dept = str(curr.get("lab_or_qip", "") or "").strip()
+            qip_chain = " · ".join([x for x in (p1, p2, p3) if x and x.upper() != "NEW"])
+            qip_chain_line = (
+                f'<div style="font-size:11px;color:#64748b;margin-top:5px;line-height:1.5;">'
+                f'<span style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;">QIP</span> {qip_chain}'
+                f'</div>'
+            ) if qip_chain else ""
+            dept_chip = (
+                f'<span style="margin-left:6px;display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;'
+                f'background:{"#fef3c7" if dept.upper()=="LAB" else "#dbeafe"};color:{"#92400e" if dept.upper()=="LAB" else "#1e40af"};letter-spacing:0.4px;">{dept}</span>'
+                if dept else ""
+            )
+
+            # Sort all changed fields with priority (type first)
+            change_order = {"type": 0, "position": 1, "boss_name": 2, "building": 3, "cfa_certified": 4, "talent_pool_member": 5}
+            sorted_changes = sorted(c["changes"].items(), key=lambda x: change_order.get(x[0], 99))
+
+            # Build comparison rows (before | after) for ALL changed fields incl. TYPE
+            compare_rows = ""
+            for fld, (old, new) in sorted_changes:
+                label = field_labels.get(fld, fld)
+                chip_style = field_chip_style.get(fld, STYLES["change_field_chip"])
+                old_disp = old if old not in ("", "None", "False") else "—"
+                new_disp = new if new not in ("", "None", "False") else "—"
+                if fld in ("cfa_certified", "talent_pool_member"):
+                    old_disp = "Yes" if str(old).lower() in ("true", "1", "yes") else "No"
+                    new_disp = "Yes" if str(new).lower() in ("true", "1", "yes") else "No"
+                # TYPE 행은 더 강하게 강조
+                is_type_row = (fld == "type")
+                old_style = "color:#94a3b8;text-decoration:line-through;font-size:13px;font-weight:" + ("700" if is_type_row else "500") + ";"
+                new_style = f"color:{after_color};font-size:" + ("15px" if is_type_row else "13px") + f";font-weight:" + ("800" if is_type_row else "700") + ";"
+                row_bg = "background:#fef9f9;" if is_type_row and is_recent else ""
+                compare_rows += f'''
+                <tr style="{row_bg}">
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f3f7;width:100px;vertical-align:middle;">
+                    <span style="{chip_style}">{label}</span>
+                  </td>
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f3f7;border-right:2px solid #e5e9f0;vertical-align:middle;background:#fafbfc;">
+                    <span style="{old_style}">{old_disp}</span>
+                  </td>
+                  <td style="padding:0;border-bottom:1px solid #f1f3f7;width:36px;text-align:center;vertical-align:middle;background:{after_bg};">
+                    <span style="color:{after_color};font-size:16px;font-weight:800;">{arrow}</span>
+                  </td>
+                  <td style="padding:10px 16px;border-bottom:1px solid #f1f3f7;vertical-align:middle;background:{after_bg};">
+                    <span style="{new_style}">{new_disp}</span>
+                  </td>
+                </tr>'''
+
+            # 변경 적용일 명시 — "TYPE-1 → TYPE-2로 2026-05-14에 변경 확인"
+            change_summary_line = ""
             if date_str:
-                date_line = (
-                    f'<div style="font-size:10px;color:#64748b;margin-top:8px;letter-spacing:0.3px;">'
-                    f'<span style="font-weight:600;color:#475569;">{t.get("changes_detected_at","Detected")}:</span> '
-                    f'{date_str} '
+                change_summary_line = (
+                    f'<div style="margin-top:10px;padding:8px 12px;background:#ffffff;border-radius:3px;font-size:12px;color:#1e293b;line-height:1.6;">'
+                    f'<span style="font-weight:700;color:#991b1b;">{type_old} {arrow} {type_new}</span>'
+                    f'<span style="margin-left:10px;color:#475569;">'
+                    f'{t.get("changes_applied_on","변경 확인일")}: <strong style="color:#0f1f3a;">{date_str}</strong> '
                     f'<span style="color:#94a3b8;">({t.get("changes_days_ago","{n}일 전").format(n=days_since)})</span>'
-                    f'{recent_badge}'
+                    f'</span>'
                     f'</div>'
                 )
 
-            rows += f'''
-            <tr>
-              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;{row_left_border}{row_bg}{row_outline}vertical-align:top;width:320px;">
-                {_emp_identity_block(c)}
-                {date_line}
-              </td>
-              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;{row_bg}vertical-align:middle;width:300px;">
-                <div style="{type_box_style}">
-                  <span style="font-size:13px;color:#94a3b8;text-decoration:line-through;font-weight:600;">{type_old}</span>
-                  <span style="color:#dc2626;font-size:16px;font-weight:700;margin:0 10px;">{arrow}</span>
-                  <span style="font-size:15px;color:#991b1b;font-weight:800;">{type_new}</span>
+            # Type chip style for current TYPE
+            type_chip = (STYLES["badge_a"] if curr_type == "TYPE-1"
+                         else STYLES["badge_b"] if curr_type == "TYPE-2"
+                         else STYLES["badge_c"] if curr_type == "TYPE-3"
+                         else STYLES["bldg_default"])
+
+            cards_html += f'''
+            <div style="margin:14px 0;{card_border}border-radius:6px;overflow:hidden;">
+              <!-- Header -->
+              <div style="{header_bg}{header_strip}padding:14px 18px;">
+                <div style="display:block;">
+                  {badge_html}<span style="font-family:'SF Mono',Consolas,monospace;font-size:11px;color:#94a3b8;letter-spacing:0.3px;">{emp_no}</span>
+                  <span style="font-size:15px;font-weight:800;color:#0f1f3a;margin-left:10px;">{name}</span>
                 </div>
-              </td>
-              <td style="padding:16px 18px;border-bottom:1px solid #f1f3f7;{row_bg}vertical-align:middle;">
-                {_change_grid(c["changes"], exclude_field="type")}
-              </td>
-            </tr>'''
+                <div style="font-size:11px;color:#475569;margin-top:6px;line-height:1.6;">
+                  <span style="font-weight:600;color:#64748b;">{t.get("changes_current_state","현재 상태")}:</span>
+                  <span style="{type_chip}">{curr_type}</span>
+                  <span style="margin-left:6px;color:#475569;">{curr_position}</span>
+                  <span style="margin-left:6px;color:#94a3b8;">·</span>
+                  <span style="margin-left:4px;color:#155e75;font-weight:600;">{curr_building}</span>
+                  {dept_chip}
+                </div>
+                {qip_chain_line}
+                {change_summary_line}
+              </div>
+              <!-- BEFORE / AFTER 2-column comparison table -->
+              <table style="width:100%;border-collapse:collapse;background:#ffffff;">
+                <tr style="background:#fafbfc;">
+                  <th style="padding:7px 16px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.8px;text-transform:uppercase;border-bottom:1px solid #e5e9f0;">
+                    {t.get("changes_field","항목")}
+                  </th>
+                  <th style="padding:7px 16px;text-align:left;font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:0.8px;text-transform:uppercase;border-right:2px solid #e5e9f0;border-bottom:1px solid #e5e9f0;background:#f8fafc;">
+                    {t.get("changes_before","이전")} <span style="color:#cbd5e1;font-weight:500;text-transform:none;letter-spacing:0;">({prev_month_label})</span>
+                  </th>
+                  <th style="padding:7px 0;border-bottom:1px solid #e5e9f0;background:#f8fafc;"></th>
+                  <th style="padding:7px 16px;text-align:left;font-size:10px;font-weight:700;color:{after_color};letter-spacing:0.8px;text-transform:uppercase;border-bottom:1px solid #e5e9f0;background:{after_bg};">
+                    {t.get("changes_after","이후")} <span style="color:#cbd5e1;font-weight:500;text-transform:none;letter-spacing:0;">({curr_month_label})</span>
+                  </th>
+                </tr>
+                {compare_rows}
+              </table>
+            </div>'''
 
         recent_indicator = ""
         if recent_count > 0:
@@ -1833,9 +1941,7 @@ def _section_changes(data):
           {t.get("changes_group_type", "TYPE Changes")} ({len(type_group)})
           {recent_indicator}
         </h3>
-        <table style="width:100%;border-collapse:collapse;border-top:1px solid #e5e9f0;border-bottom:1px solid #e5e9f0;">
-          {rows}
-        </table>'''
+        {cards_html}'''
 
     # ── GROUP 2: Boss 변경 (Manager-clustered) ────────────────
     g2_html = ""
