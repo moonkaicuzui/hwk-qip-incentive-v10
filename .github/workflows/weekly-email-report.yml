@@ -26,7 +26,7 @@ jobs:
           cache: 'pip'
 
       - name: "Step 2.1: Install dependencies"
-        run: pip install firebase-admin google-api-python-client google-auth-oauthlib
+        run: pip install firebase-admin google-api-python-client google-auth-oauthlib pandas openpyxl
 
       - name: "Step 2.5: Download data from Google Drive (basic_manpower etc.)"
         env:
