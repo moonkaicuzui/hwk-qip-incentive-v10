@@ -28,12 +28,16 @@ jobs:
       - name: "Step 2.1: Install dependencies"
         run: pip install firebase-admin google-api-python-client google-auth-oauthlib
 
-      - name: "Step 2.5: Download basic_manpower CSV from Google Drive (for QIP POSITION enrichment)"
+      - name: "Step 2.5: Download data from Google Drive (basic_manpower etc.)"
         env:
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
         run: |
-          echo "📥 Downloading basic_manpower CSV from Google Drive..."
-          python scripts/download_from_gdrive.py || echo "⚠️ gdrive download skipped (CSV will be skipped in report)"
+          echo "📥 Downloading data from Google Drive..."
+          python scripts/download_from_gdrive.py || echo "⚠️ gdrive base download skipped"
+          # enhanced_download fetches basic_manpower / attendance / 5prs per month
+          python scripts/enhanced_download.py || echo "⚠️ enhanced_download skipped"
+          echo "📂 input_files snapshot:"
+          ls -la input_files/ 2>/dev/null | grep -i manpower | head -5 || echo "  (no manpower files)"
           echo "✅ Download step complete"
 
       - name: "Step 3: Determine current month/year"
