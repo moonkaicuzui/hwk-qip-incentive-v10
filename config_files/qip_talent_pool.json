@@ -1,34 +1,11 @@
 {
-  "talent_pool": {
-    "members": [
-      {
-        "start_date": "2025-07-01",
-        "reason": "QIP Talent Pool Special Incentive",
-        "notes": "추가 인센티브 지급 대상자",
-        "monthly_bonus": 150000,
-        "currency": "VND",
-        "employee_id": "623060116",
-        "name": "Talent Pool Member 1",
-        "status": "active",
-        "end_date": "2025-12-31"
-      }
-    ],
-    "settings": {
-      "stack_with_regular": true,
-      "auto_apply": true,
-      "require_conditions": false,
-      "payment_timing": "with_regular_incentive"
-    },
-    "eligibility_rules": {
-      "minimum_attendance_rate": 0,
-      "require_active_status": true,
-      "exclude_maternity_leave": false,
-      "exclude_resigned": true
-    }
-  },
+  "version": "1.0",
   "bonus_history": {
     "2025": {
       "9": [
+        "623060116"
+      ],
+      "8": [
         "623060116"
       ],
       "11": [
@@ -42,23 +19,46 @@
       ],
       "7": [
         "623060116"
-      ],
-      "8": [
-        "623060116"
       ]
     }
   },
+  "description": "QIP Talent Pool 특별 인센티브 관리",
   "audit_trail": [
     {
-      "date": "2025-08-29",
-      "amount": 150000,
+      "action": "created",
       "employee_id": "623060116",
-      "period": "2025-07 to 2025-12",
+      "date": "2025-08-29",
       "authorized_by": "System Admin",
-      "action": "created"
+      "period": "2025-07 to 2025-12",
+      "amount": 150000
     }
   ],
-  "description": "QIP Talent Pool 특별 인센티브 관리",
-  "version": "1.0",
+  "talent_pool": {
+    "members": [
+      {
+        "notes": "추가 인센티브 지급 대상자",
+        "status": "active",
+        "name": "Talent Pool Member 1",
+        "end_date": "2025-12-31",
+        "currency": "VND",
+        "monthly_bonus": 150000,
+        "employee_id": "623060116",
+        "start_date": "2025-07-01",
+        "reason": "QIP Talent Pool Special Incentive"
+      }
+    ],
+    "settings": {
+      "stack_with_regular": true,
+      "auto_apply": true,
+      "require_conditions": false,
+      "payment_timing": "with_regular_incentive"
+    },
+    "eligibility_rules": {
+      "require_active_status": true,
+      "exclude_maternity_leave": false,
+      "exclude_resigned": true,
+      "minimum_attendance_rate": 0
+    }
+  },
   "last_updated": "2025-08-29"
 }
