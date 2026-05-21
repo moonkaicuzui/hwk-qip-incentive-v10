@@ -3,34 +3,38 @@
     "members": [
       {
         "end_date": "2025-12-31",
-        "name": "Talent Pool Member 1",
-        "reason": "QIP Talent Pool Special Incentive",
-        "start_date": "2025-07-01",
         "monthly_bonus": 150000,
-        "notes": "추가 인센티브 지급 대상자",
-        "employee_id": "623060116",
+        "reason": "QIP Talent Pool Special Incentive",
         "status": "active",
-        "currency": "VND"
+        "name": "Talent Pool Member 1",
+        "notes": "추가 인센티브 지급 대상자",
+        "start_date": "2025-07-01",
+        "currency": "VND",
+        "employee_id": "623060116"
       }
     ],
     "eligibility_rules": {
-      "require_active_status": true,
       "minimum_attendance_rate": 0,
-      "exclude_maternity_leave": false,
-      "exclude_resigned": true
+      "exclude_resigned": true,
+      "require_active_status": true,
+      "exclude_maternity_leave": false
     },
     "settings": {
-      "auto_apply": true,
       "payment_timing": "with_regular_incentive",
-      "require_conditions": false,
-      "stack_with_regular": true
+      "auto_apply": true,
+      "stack_with_regular": true,
+      "require_conditions": false
     }
   },
-  "version": "1.0",
-  "last_updated": "2025-08-29",
   "bonus_history": {
     "2025": {
       "12": [
+        "623060116"
+      ],
+      "10": [
+        "623060116"
+      ],
+      "9": [
         "623060116"
       ],
       "8": [
@@ -39,26 +43,22 @@
       "7": [
         "623060116"
       ],
-      "9": [
-        "623060116"
-      ],
       "11": [
-        "623060116"
-      ],
-      "10": [
         "623060116"
       ]
     }
   },
+  "version": "1.0",
   "description": "QIP Talent Pool 특별 인센티브 관리",
+  "last_updated": "2025-08-29",
   "audit_trail": [
     {
       "date": "2025-08-29",
-      "employee_id": "623060116",
-      "amount": 150000,
-      "period": "2025-07 to 2025-12",
       "authorized_by": "System Admin",
-      "action": "created"
+      "period": "2025-07 to 2025-12",
+      "action": "created",
+      "amount": 150000,
+      "employee_id": "623060116"
     }
   ]
 }
