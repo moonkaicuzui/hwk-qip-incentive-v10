@@ -120,6 +120,24 @@ def _fmt_pct(value):
     return f"{value:.1f}%"
 
 
+def _fmt_pct_smart(value):
+    """퍼센트 포맷 — 매우 작은 값(0 < x < 0.1)일 때 정밀하게.
+    - 0          → "0.0%"
+    - 0 < x < 0.01 → "<0.01%"
+    - 0.01 ≤ x < 0.1 → "0.04%" (2 decimal)
+    - 그 외 → "1.4%" (1 decimal)
+    AQL area_reject_rate 같은 작은 비율에서 "0.0%" 표시로 인한
+    misleading (평균 0인데 최대 1.4%?) 방지 목적.
+    """
+    if value is None or value == 0:
+        return "0.0%"
+    if value < 0.01:
+        return "&lt;0.01%"
+    if value < 0.1:
+        return f"{value:.2f}%"
+    return f"{value:.1f}%"
+
+
 def _grade_badge(reject_rate):
     """Area reject rate → 등급 배지 HTML"""
     if reject_rate == 0:
@@ -251,6 +269,7 @@ I18N = {
         "inspectors": "검수원수", "area_reject_avg": "담당영역 평균 리젝율", "area_reject_max": "최대 리젝율",
         "small_bldg_grouped": "10명 미만 건물 통합",
         "c4_note": "C4 최소근무일은 월말 누적 {threshold}일 기준 평가 항목 — 월 중간 시점에는 미충족이 정상입니다.",
+        "prev_basis_label": "전월 기준",
         "prev_recv": "전월 수령", "emp_no": "사번", "name": "이름",
         "boss_chain": "담당자 → 상사", "att_rate": "출근율",
         "unapp_abs": "무단결근", "insp_qty": "검사량",
@@ -361,6 +380,7 @@ I18N = {
         "inspectors": "Inspectors", "area_reject_avg": "Area Reject Avg", "area_reject_max": "Area Reject Max",
         "small_bldg_grouped": "Small buildings grouped (<10)",
         "c4_note": "C4 minimum working days is evaluated at month-end against a cumulative threshold of {threshold} days — unmet status is normal mid-month.",
+        "prev_basis_label": "prev. month basis",
         "prev_recv": "Prev Month", "emp_no": "Emp No", "name": "Name",
         "boss_chain": "Supervisor \u2192 Manager", "att_rate": "Attendance Rate",
         "unapp_abs": "Unapp. Absence", "insp_qty": "Insp. Qty",
@@ -471,6 +491,7 @@ I18N = {
         "inspectors": "S\u1ed1 ki\u1ec3m s\u00e1t", "area_reject_avg": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i khu v\u1ef1c TB", "area_reject_max": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i t\u1ed1i \u0111a",
         "small_bldg_grouped": "G\u1ed9p t\u00f2a nh\u00e0 <10 ng\u01b0\u1eddi",
         "c4_note": "C4 ng\u00e0y l\u00e0m vi\u1ec7c t\u1ed1i thi\u1ec3u \u0111\u01b0\u1ee3c \u0111\u00e1nh gi\u00e1 cu\u1ed1i th\u00e1ng v\u1edbi ng\u01b0\u1ee1ng t\u00edch l\u0169y {threshold} ng\u00e0y \u2014 ch\u01b0a \u0111\u1ea1t l\u00e0 b\u00ecnh th\u01b0\u1eddng v\u00e0o gi\u1eefa th\u00e1ng.",
+        "prev_basis_label": "c\u01a1 s\u1edf th\u00e1ng tr\u01b0\u1edbc",
         "prev_recv": "Nh\u1eadn th\u00e1ng tr\u01b0\u1edbc", "emp_no": "M\u00e3 NV", "name": "H\u1ecd t\u00ean",
         "boss_chain": "Ph\u1ee5 tr\u00e1ch \u2192 Qu\u1ea3n l\u00fd", "att_rate": "T\u1ef7 l\u1ec7 \u0111i l\u00e0m",
         "unapp_abs": "V\u1eafng KP", "insp_qty": "S\u1ed1 l\u01b0\u1ee3ng KT",
@@ -888,8 +909,8 @@ def _section_2_building(data):
               <td style="{STYLES['td']}">{_grade_emoji(area_avg)} {_bldg_badge(bldg)}</td>
               <td style="{STYLES['td_center']}">{count}</td>
               <td style="{STYLES['td_center']}">{area_n}</td>
-              <td style="{STYLES['td_center']};font-weight:600;">{_fmt_pct(area_avg)}</td>
-              <td style="{STYLES['td_center']};color:{'#dc2626' if area_max>=2 else '#d97706' if area_max>0 else '#94a3b8'};">{_fmt_pct(area_max)}</td>
+              <td style="{STYLES['td_center']};font-weight:600;">{_fmt_pct_smart(area_avg)}</td>
+              <td style="{STYLES['td_center']};color:{'#dc2626' if area_max>=2 else '#d97706' if area_max>0 else '#94a3b8'};">{_fmt_pct_smart(area_max)}</td>
               <td style="{STYLES['td_center']}">{_grade_badge(area_avg)}</td>
               <td style="{STYLES['td_center']};font-size:11px;color:#6b7280;">{pc}</td>
             </tr>'''
@@ -962,6 +983,12 @@ def _section_2_building(data):
     if list(bq_by_type.keys()) == ["ALL"]:
         type_order = ["ALL"]
 
+    # Prev month type breakdown — "전월 수령" 컬럼의 분모는 전월 시점 인원으로
+    # 표시해야 정합성이 맞음 (current_incentive 필드는 실제로는 전월 결과이므로
+    # 분자/분모 둘 다 전월 기준이어야 한다).
+    prev_summary_data = data.get("previous_summary", {}) or {}
+    prev_type_breakdown = prev_summary_data.get("type_breakdown", {}) or {}
+
     for type_key in type_order:
         type_bldgs = bq_by_type.get(type_key, {})
         if not type_bldgs:
@@ -969,7 +996,13 @@ def _section_2_building(data):
 
         type_emp = sum(b.get("count", 0) for b in type_bldgs.values())
         type_recv = sum(b.get("receiving", 0) for b in type_bldgs.values())
-        type_rate = (type_recv / type_emp * 100) if type_emp > 0 else 0
+        # 전월 시점의 type 인원 (분모 정합성용)
+        prev_type_info = prev_type_breakdown.get(type_key, {}) or {}
+        prev_type_emp = int(prev_type_info.get("count", 0) or 0)
+        # 분자: type_recv (current_incentive = 전월 결과)
+        # 분모: 전월 시점 type 인원 (있으면) 그렇지 않으면 현재 인원으로 fallback
+        recv_denominator = prev_type_emp if prev_type_emp > 0 else type_emp
+        type_rate = (type_recv / recv_denominator * 100) if recv_denominator > 0 else 0
 
         is_type1 = type_key in ("TYPE-1", "ALL")
         is_type2or3 = type_key in ("TYPE-2", "TYPE-3")
@@ -992,13 +1025,17 @@ def _section_2_building(data):
 
             type_header = ""
             if type_key != "ALL":
+                # 전월 수령 표시 — 분자/분모 둘 다 전월 기준 (시점 일치)
+                _denom_note = ""
+                if prev_type_emp > 0 and prev_type_emp != type_emp:
+                    _denom_note = f' <span style="font-weight:500;color:#94a3b8;font-size:11px;">({_t(data,"prev_basis_label")})</span>'
                 type_header = f'''
                 <tr style="background:linear-gradient(90deg,#f0f4f8,#ffffff);">
                   <td style="padding:10px;font-weight:700;font-size:14px;color:{type_color};border-bottom:2px solid {type_color};" colspan="{colspan_left}">
                     {type_key} ({type_emp}{_t(data, 'ppl')})
                   </td>
                   <td style="padding:10px;font-weight:700;font-size:13px;{recv_style};text-align:center;border-bottom:2px solid {type_color};" colspan="{colspan_right}">
-                    {type_recv}/{type_emp} ({type_rate:.0f}%)
+                    {type_recv}/{recv_denominator} ({type_rate:.0f}%){_denom_note}
                   </td>
                 </tr>'''
 
@@ -1066,7 +1103,7 @@ def _section_2_building(data):
                   {type_key} ({type_emp}{_t(data, 'ppl')})
                 </td>
                 <td style="padding:10px;font-weight:700;font-size:13px;{recv_style};text-align:center;border-bottom:2px solid {type_color};" colspan="2">
-                  {type_recv}/{type_emp} ({type_rate:.0f}%)
+                  {type_recv}/{recv_denominator} ({type_rate:.0f}%){' <span style="font-weight:500;color:#94a3b8;font-size:11px;">(' + _t(data,"prev_basis_label") + ')</span>' if (prev_type_emp > 0 and prev_type_emp != type_emp) else ''}
                 </td>
               </tr>
               {rows}
