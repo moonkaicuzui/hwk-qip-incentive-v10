@@ -1,18 +1,7 @@
 {
-  "default_reject_rate_threshold": 2,
   "model_master": {
+    "description": "Model Master - 전체 공장 담당",
     "employees": {
-      "618110097": {
-        "conditions": [
-          {
-            "type": "ALL",
-            "filters": []
-          }
-        ],
-        "name": "DANH THỊ ANH ĐÀO",
-        "position": "MODEL MASTER",
-        "description": "Model Master - 전체 구역"
-      },
       "620080295": {
         "conditions": [
           {
@@ -20,9 +9,9 @@
             "filters": []
           }
         ],
+        "description": "Model Master - 전체 구역",
         "name": "VÕ THỊ THÙY LINH",
-        "position_code": "QA2A",
-        "description": "Model Master - 전체 구역"
+        "position_code": "QA2A"
       },
       "618030241": {
         "conditions": [
@@ -31,9 +20,20 @@
             "filters": []
           }
         ],
+        "description": "Model Master - 전체 구역",
         "name": "TRẦN THỊ THÚY ANH",
-        "position": "MODEL MASTER",
-        "description": "Model Master - 전체 구역"
+        "position": "MODEL MASTER"
+      },
+      "618110097": {
+        "conditions": [
+          {
+            "type": "ALL",
+            "filters": []
+          }
+        ],
+        "description": "Model Master - 전체 구역",
+        "name": "DANH THỊ ANH ĐÀO",
+        "position": "MODEL MASTER"
       },
       "620120386": {
         "conditions": [
@@ -42,15 +42,21 @@
             "filters": []
           }
         ],
+        "description": "Model Master - 전체 구역",
         "name": "NGUYỄN NGỌC TUẤN",
-        "position": "MODEL MASTER",
-        "description": "Model Master - 전체 구역"
+        "position": "MODEL MASTER"
       }
-    },
-    "description": "Model Master - 전체 공장 담당"
+    }
+  },
+  "default_reject_rate_threshold": 2,
+  "notes": {
+    "description": "Auditor/Trainer 및 Model Master별 담당 구역 매핑",
+    "model_master_note": "Model Master (QA2A)는 전체 구역을 담당하며 별도 로직으로 처리",
+    "usage": "각 직원의 Employee No를 키로 사용하여 담당 구역 조건을 확인",
+    "reject_rate_calculation": "해당 조건에 맞는 AQL 데이터만 필터링하여 reject율 계산"
   },
   "auditor_trainer_areas": {
-    "620070013": {
+    "619070185": {
       "conditions": [
         {
           "type": "AND",
@@ -66,8 +72,27 @@
           ]
         }
       ],
-      "name": "NGUYỄN THANH TRÚC",
-      "description": "Building A"
+      "description": "Building D",
+      "name": "DANH THỊ KIM ANH"
+    },
+    "618060092": {
+      "conditions": [
+        {
+          "type": "AND",
+          "filters": [
+            {
+              "column": "REPACKING PO",
+              "value": "NORMAL PO"
+            },
+            {
+              "column": "BUILDING",
+              "value": "C"
+            }
+          ]
+        }
+      ],
+      "description": "Building B & Repacking BS",
+      "name": "CAO THỊ TỐ NGUYÊN"
     },
     "620070020": {
       "conditions": [
@@ -85,46 +110,8 @@
           ]
         }
       ],
-      "name": "PHẠM MỸ HUYỀN",
-      "description": "Building D"
-    },
-    "618110087": {
-      "conditions": [
-        {
-          "type": "AND",
-          "filters": [
-            {
-              "column": "REPACKING PO",
-              "value": "NORMAL PO"
-            },
-            {
-              "column": "BUILDING",
-              "value": "C"
-            }
-          ]
-        }
-      ],
-      "name": "NGUYỄN THÚY HẰNG",
-      "description": "Building C"
-    },
-    "619070185": {
-      "conditions": [
-        {
-          "type": "AND",
-          "filters": [
-            {
-              "column": "REPACKING PO",
-              "value": "NORMAL PO"
-            },
-            {
-              "column": "BUILDING",
-              "value": "A"
-            }
-          ]
-        }
-      ],
-      "name": "DANH THỊ KIM ANH",
-      "description": "Building D"
+      "description": "Building D",
+      "name": "PHẠM MỸ HUYỀN"
     },
     "623080475": {
       "conditions": [
@@ -151,10 +138,10 @@
           ]
         }
       ],
-      "name": "SẦM TRÍ THÀNH",
-      "description": "Building C"
+      "description": "Building C",
+      "name": "SẦM TRÍ THÀNH"
     },
-    "618060092": {
+    "618110087": {
       "conditions": [
         {
           "type": "AND",
@@ -170,14 +157,27 @@
           ]
         }
       ],
-      "name": "CAO THỊ TỐ NGUYÊN",
-      "description": "Building B & Repacking BS"
+      "description": "Building C",
+      "name": "NGUYỄN THÚY HẰNG"
+    },
+    "620070013": {
+      "conditions": [
+        {
+          "type": "AND",
+          "filters": [
+            {
+              "column": "REPACKING PO",
+              "value": "NORMAL PO"
+            },
+            {
+              "column": "BUILDING",
+              "value": "A"
+            }
+          ]
+        }
+      ],
+      "description": "Building A",
+      "name": "NGUYỄN THANH TRÚC"
     }
-  },
-  "notes": {
-    "usage": "각 직원의 Employee No를 키로 사용하여 담당 구역 조건을 확인",
-    "reject_rate_calculation": "해당 조건에 맞는 AQL 데이터만 필터링하여 reject율 계산",
-    "model_master_note": "Model Master (QA2A)는 전체 구역을 담당하며 별도 로직으로 처리",
-    "description": "Auditor/Trainer 및 Model Master별 담당 구역 매핑"
   }
 }
