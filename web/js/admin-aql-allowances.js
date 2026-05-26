@@ -58,6 +58,38 @@ var AdminAqlAllowances = {
         return firebase.auth().currentUser;
     },
 
+    /**
+     * T16/T33: 권한 게이트 — 모든 쓰기 작업(apply/revoke/updateActionStatus) 전 호출.
+     * 캐시 TTL 만료로 인한 silent fail 방지를 위해 강제 재검증.
+     * 실패 시 사용자에게 명확한 모달 메시지 표시 + 감사 로그.
+     *
+     * @param {string} action - 감사 추적용 작업명 (예: 'applyAllowance')
+     * @returns {Promise<{ok: boolean, user: firebase.User|null}>}
+     */
+    _assertAdmin: async function (action) {
+        var t = this._t.bind(this);
+        if (typeof window.assertAdminFresh !== 'function') {
+            console.error('[AdminAqlAllowances][' + action + '] assertAdminFresh helper unavailable — auth.js not loaded?');
+            alert(t('admin.aqlAllowances.permissionCheckFailed'));
+            return { ok: false, user: null };
+        }
+        var result = await window.assertAdminFresh();
+        if (!result.ok) {
+            var msgKey = 'admin.aqlAllowances.permissionDenied';
+            if (result.reason === 'not_authenticated') msgKey = 'admin.aqlAllowances.notAuthenticated';
+            else if (result.reason === 'check_failed') msgKey = 'admin.aqlAllowances.permissionCheckFailed';
+            // 감사 추적: 권한 거부 이벤트를 콘솔에 명시적 기록 (CF 측 로그와 매칭용)
+            console.warn('[AdminAqlAllowances][' + action + '] permission denied', {
+                reason: result.reason,
+                requesterEmail: (result.user && result.user.email) || null,
+                requesterUid: (result.user && result.user.uid) || null,
+                timestamp: new Date().toISOString(),
+            });
+            alert(t(msgKey));
+        }
+        return result;
+    },
+
     _formatVND: function (amount) {
         amount = parseFloat(amount) || 0;
         if (amount === 0) return '<span style="color:#9e9e9e;">0 VND</span>';
@@ -376,6 +408,10 @@ var AdminAqlAllowances = {
             alert(t('admin.aqlAllowances.noAffected')); return;
         }
 
+        // T16/T33: 권한 게이트 — confirm 전 사전 검증
+        var gate = await this._assertAdmin('applyAllowance');
+        if (!gate.ok) return;
+
         if (!confirm(t('admin.aqlAllowances.confirmApply'))) return;
 
         var btn = document.getElementById('aql-btn-apply');
@@ -509,6 +545,11 @@ var AdminAqlAllowances = {
 
     revoke: async function (docId) {
         var t = this._t.bind(this);
+
+        // T16/T33: 권한 게이트 — prompt 전 사전 검증
+        var gate = await this._assertAdmin('revoke');
+        if (!gate.ok) return;
+
         var revokeReason = prompt(t('admin.aqlAllowances.revokeReason'));
         if (revokeReason === null) return; // cancelled
 
@@ -619,16 +660,25 @@ var AdminAqlAllowances = {
 
     updateActionStatus: async function (docId, newStatus) {
         var t = this._t.bind(this);
+
+        // T16/T33: 권한 게이트 — Firestore write 전 사전 검증
+        var gate = await this._assertAdmin('updateActionStatus');
+        if (!gate.ok) return;
+
         try {
             var db = this._db();
             var monthYear = this._getMonthYear();
+            // 감사 추적: 누가 변경했는지 메타데이터 동봉
             await db.collection('aql_reject_pos').doc(monthYear).collection('items').doc(docId).update({
                 actionStatus: newStatus,
                 actionStatusUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                actionStatusUpdatedBy: { uid: gate.user.uid, email: gate.user.email },
             });
             this.loadActiveList();
         } catch (err) {
-            console.error('[AdminAqlAllowances] updateActionStatus error:', err);
+            console.error('[AdminAqlAllowances] updateActionStatus error:', err, {
+                requesterEmail: gate.user && gate.user.email,
+            });
             alert(t('admin.aqlAllowances.actionStatusError') + ': ' + err.message);
         }
     },

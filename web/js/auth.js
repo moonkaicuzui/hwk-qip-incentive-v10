@@ -13,10 +13,10 @@ const SESSION_KEY = 'qip_firebase_session';
 
 // Admin emails loaded from Firestore system/config doc.
 // Checked asynchronously; hardcoded fallback removed for security.
-// Cache TTL: re-fetch admin emails every 5 minutes.
+// Cache TTL: re-fetch admin emails every 30 seconds (was 5 min — too long, caused silent fails after admin list updates).
 let _adminEmails = null; // populated by _loadAdminEmails()
 let _adminEmailsLoadedAt = 0; // timestamp of last successful load
-const _ADMIN_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const _ADMIN_CACHE_TTL_MS = 30 * 1000; // 30 seconds (T16: shortened from 5min to fix silent admin-check failures)
 
 // Store onAuthStateChanged unsubscribe function for cleanup
 let _authUnsubscribe = null;
@@ -216,6 +216,34 @@ function requireAdmin() {
         });
     });
 }
+
+/**
+ * Force-refresh admin cache and verify admin privileges.
+ * Use BEFORE any write/mutate operation to prevent silent fails when cache TTL expires
+ * or when admin_emails list was updated after this session loaded.
+ *
+ * @returns {Promise<{ok: boolean, user: firebase.User|null, reason?: string}>}
+ *   ok=true → caller proceeds. ok=false → caller MUST abort and surface `reason` to user.
+ */
+function assertAdminFresh() {
+    var user = firebase.auth().currentUser;
+    if (!user || !user.email) {
+        return Promise.resolve({ ok: false, user: null, reason: 'not_authenticated' });
+    }
+    // Force cache invalidation so the next _loadAdminEmails() refetches.
+    _adminEmailsLoadedAt = 0;
+    return _loadAdminEmails().then(function (emails) {
+        var ok = Array.isArray(emails) && emails.indexOf(user.email) !== -1;
+        return { ok: ok, user: user, reason: ok ? undefined : 'not_admin' };
+    }).catch(function (err) {
+        console.warn('[Auth] assertAdminFresh failed:', err);
+        return { ok: false, user: user, reason: 'check_failed' };
+    });
+}
+
+// Expose to non-module scripts (auth.js loads before admin-aql-allowances.js).
+window.assertAdminFresh = assertAdminFresh;
+window.isAdmin = isAdmin;
 
 // Cleanup: unsubscribe onAuthStateChanged listener on page unload
 window.addEventListener('beforeunload', function() {

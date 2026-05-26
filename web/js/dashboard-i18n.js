@@ -1364,6 +1364,10 @@ const DashboardI18n = {
         'admin.aqlAllowances.revokeLabel': { ko: '철회 사유', en: 'Revoked', vi: 'Đã thu hồi' },
         'admin.aqlAllowances.revokeError': { ko: 'AQL Allowance 철회 실패', en: 'AQL Allowance revoke failed', vi: 'Thu hồi AQL Allowance thất bại' },
         'admin.aqlAllowances.actionStatusError': { ko: '액션 상태 변경 실패', en: 'Action status update failed', vi: 'Cập nhật trạng thái hành động thất bại' },
+        // T16/T33: 권한 게이트 메시지
+        'admin.aqlAllowances.permissionDenied': { ko: '관리자 권한이 필요합니다. 재로그인 후 다시 시도하세요.', en: 'Admin privileges required. Please re-login and try again.', vi: 'Yêu cầu quyền quản trị viên. Vui lòng đăng nhập lại và thử lại.' },
+        'admin.aqlAllowances.permissionCheckFailed': { ko: '권한 확인 실패. 네트워크를 확인 후 재시도하세요.', en: 'Permission check failed. Check your network and retry.', vi: 'Kiểm tra quyền thất bại. Kiểm tra mạng và thử lại.' },
+        'admin.aqlAllowances.notAuthenticated': { ko: '로그인이 필요합니다.', en: 'You must be signed in.', vi: 'Bạn phải đăng nhập.' },
 
         // 모달용 AQL Allowance 뱃지 (출결과 구분, 파란색)
         'aqlAllowance.badge': { ko: 'AQL Allowance', en: 'AQL Allowance', vi: 'AQL Allowance' },
