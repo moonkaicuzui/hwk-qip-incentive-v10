@@ -1,7 +1,18 @@
 {
+  "audit_trail": [
+    {
+      "date": "2025-08-29",
+      "amount": 150000,
+      "action": "created",
+      "authorized_by": "System Admin",
+      "employee_id": "623060116",
+      "period": "2025-07 to 2025-12"
+    }
+  ],
+  "description": "QIP Talent Pool 특별 인센티브 관리",
   "bonus_history": {
     "2025": {
-      "10": [
+      "9": [
         "623060116"
       ],
       "11": [
@@ -10,10 +21,10 @@
       "12": [
         "623060116"
       ],
-      "7": [
+      "10": [
         "623060116"
       ],
-      "9": [
+      "7": [
         "623060116"
       ],
       "8": [
@@ -22,43 +33,32 @@
     }
   },
   "version": "1.0",
-  "last_updated": "2025-08-29",
   "talent_pool": {
-    "eligibility_rules": {
-      "exclude_maternity_leave": false,
-      "minimum_attendance_rate": 0,
-      "require_active_status": true,
-      "exclude_resigned": true
-    },
     "members": [
       {
-        "reason": "QIP Talent Pool Special Incentive",
-        "start_date": "2025-07-01",
         "currency": "VND",
+        "reason": "QIP Talent Pool Special Incentive",
         "status": "active",
-        "notes": "추가 인센티브 지급 대상자",
-        "name": "Talent Pool Member 1",
-        "monthly_bonus": 150000,
         "employee_id": "623060116",
-        "end_date": "2025-12-31"
+        "notes": "추가 인센티브 지급 대상자",
+        "start_date": "2025-07-01",
+        "end_date": "2025-12-31",
+        "monthly_bonus": 150000,
+        "name": "Talent Pool Member 1"
       }
     ],
+    "eligibility_rules": {
+      "exclude_resigned": true,
+      "exclude_maternity_leave": false,
+      "minimum_attendance_rate": 0,
+      "require_active_status": true
+    },
     "settings": {
-      "payment_timing": "with_regular_incentive",
-      "auto_apply": true,
       "require_conditions": false,
-      "stack_with_regular": true
+      "stack_with_regular": true,
+      "payment_timing": "with_regular_incentive",
+      "auto_apply": true
     }
   },
-  "description": "QIP Talent Pool 특별 인센티브 관리",
-  "audit_trail": [
-    {
-      "authorized_by": "System Admin",
-      "date": "2025-08-29",
-      "amount": 150000,
-      "period": "2025-07 to 2025-12",
-      "employee_id": "623060116",
-      "action": "created"
-    }
-  ]
+  "last_updated": "2025-08-29"
 }
