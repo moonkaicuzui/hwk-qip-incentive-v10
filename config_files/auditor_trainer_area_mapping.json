@@ -2,49 +2,49 @@
   "model_master": {
     "description": "Model Master - 전체 공장 담당",
     "employees": {
-      "620120386": {
-        "name": "NGUYỄN NGỌC TUẤN",
-        "position": "MODEL MASTER",
-        "description": "Model Master - 전체 구역",
-        "conditions": [
-          {
-            "filters": [],
-            "type": "ALL"
-          }
-        ]
-      },
       "618030241": {
-        "name": "TRẦN THỊ THÚY ANH",
-        "position": "MODEL MASTER",
         "description": "Model Master - 전체 구역",
+        "position": "MODEL MASTER",
         "conditions": [
           {
-            "filters": [],
-            "type": "ALL"
+            "type": "ALL",
+            "filters": []
           }
-        ]
+        ],
+        "name": "TRẦN THỊ THÚY ANH"
       },
       "620080295": {
-        "name": "VÕ THỊ THÙY LINH",
         "description": "Model Master - 전체 구역",
-        "position_code": "QA2A",
         "conditions": [
           {
-            "filters": [],
-            "type": "ALL"
+            "type": "ALL",
+            "filters": []
           }
-        ]
+        ],
+        "position_code": "QA2A",
+        "name": "VÕ THỊ THÙY LINH"
       },
       "618110097": {
-        "name": "DANH THỊ ANH ĐÀO",
         "description": "Model Master - 전체 구역",
         "position": "MODEL MASTER",
         "conditions": [
           {
-            "filters": [],
-            "type": "ALL"
+            "type": "ALL",
+            "filters": []
           }
-        ]
+        ],
+        "name": "DANH THỊ ANH ĐÀO"
+      },
+      "620120386": {
+        "description": "Model Master - 전체 구역",
+        "position": "MODEL MASTER",
+        "conditions": [
+          {
+            "type": "ALL",
+            "filters": []
+          }
+        ],
+        "name": "NGUYỄN NGỌC TUẤN"
       }
     }
   },
@@ -55,11 +55,30 @@
     "model_master_note": "Model Master (QA2A)는 전체 구역을 담당하며 별도 로직으로 처리"
   },
   "auditor_trainer_areas": {
+    "618110087": {
+      "description": "Building C",
+      "conditions": [
+        {
+          "type": "AND",
+          "filters": [
+            {
+              "value": "NORMAL PO",
+              "column": "REPACKING PO"
+            },
+            {
+              "value": "C",
+              "column": "BUILDING"
+            }
+          ]
+        }
+      ],
+      "name": "NGUYỄN THÚY HẰNG"
+    },
     "620070020": {
-      "name": "PHẠM MỸ HUYỀN",
       "description": "Building D",
       "conditions": [
         {
+          "type": "AND",
           "filters": [
             {
               "value": "NORMAL PO",
@@ -69,16 +88,54 @@
               "value": "D",
               "column": "BUILDING"
             }
-          ],
-          "type": "AND"
+          ]
         }
-      ]
+      ],
+      "name": "PHẠM MỸ HUYỀN"
+    },
+    "618060092": {
+      "description": "Building B & Repacking BS",
+      "conditions": [
+        {
+          "type": "AND",
+          "filters": [
+            {
+              "value": "NORMAL PO",
+              "column": "REPACKING PO"
+            },
+            {
+              "value": "C",
+              "column": "BUILDING"
+            }
+          ]
+        }
+      ],
+      "name": "CAO THỊ TỐ NGUYÊN"
+    },
+    "619070185": {
+      "description": "Building D",
+      "conditions": [
+        {
+          "type": "AND",
+          "filters": [
+            {
+              "value": "NORMAL PO",
+              "column": "REPACKING PO"
+            },
+            {
+              "value": "A",
+              "column": "BUILDING"
+            }
+          ]
+        }
+      ],
+      "name": "DANH THỊ KIM ANH"
     },
     "623080475": {
-      "name": "SẦM TRÍ THÀNH",
       "description": "Building C",
       "conditions": [
         {
+          "type": "AND",
           "filters": [
             {
               "value": "NORMAL PO",
@@ -88,44 +145,25 @@
               "value": "B",
               "column": "BUILDING"
             }
-          ],
-          "type": "AND"
+          ]
         },
         {
+          "type": "AND",
           "filters": [
             {
               "value": "REPACKING PO",
               "column": "REPACKING PO"
             }
-          ],
-          "type": "AND"
+          ]
         }
-      ]
-    },
-    "618110087": {
-      "name": "NGUYỄN THÚY HẰNG",
-      "description": "Building C",
-      "conditions": [
-        {
-          "filters": [
-            {
-              "value": "NORMAL PO",
-              "column": "REPACKING PO"
-            },
-            {
-              "value": "C",
-              "column": "BUILDING"
-            }
-          ],
-          "type": "AND"
-        }
-      ]
+      ],
+      "name": "SẦM TRÍ THÀNH"
     },
     "620070013": {
-      "name": "NGUYỄN THANH TRÚC",
       "description": "Building A",
       "conditions": [
         {
+          "type": "AND",
           "filters": [
             {
               "value": "NORMAL PO",
@@ -135,48 +173,10 @@
               "value": "A",
               "column": "BUILDING"
             }
-          ],
-          "type": "AND"
+          ]
         }
-      ]
-    },
-    "618060092": {
-      "name": "CAO THỊ TỐ NGUYÊN",
-      "description": "Building B & Repacking BS",
-      "conditions": [
-        {
-          "filters": [
-            {
-              "value": "NORMAL PO",
-              "column": "REPACKING PO"
-            },
-            {
-              "value": "C",
-              "column": "BUILDING"
-            }
-          ],
-          "type": "AND"
-        }
-      ]
-    },
-    "619070185": {
-      "name": "DANH THỊ KIM ANH",
-      "description": "Building D",
-      "conditions": [
-        {
-          "filters": [
-            {
-              "value": "NORMAL PO",
-              "column": "REPACKING PO"
-            },
-            {
-              "value": "A",
-              "column": "BUILDING"
-            }
-          ],
-          "type": "AND"
-        }
-      ]
+      ],
+      "name": "NGUYỄN THANH TRÚC"
     }
   },
   "default_reject_rate_threshold": 2
