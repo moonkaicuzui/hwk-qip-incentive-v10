@@ -267,6 +267,10 @@ I18N = {
         "building": "Building", "emp_count": "직원수", "aql": "AQL",
         "fail": "실패", "reject_rate": "리젝율", "grade": "등급",
         "inspectors": "검수원수", "area_reject_avg": "담당영역 평균 리젝율", "area_reject_max": "최대 리젝율",
+        "aql_fail_col": "AQL 실패건수", "aql_fail_short": "AQL 실패",
+        "na_no_inspector": "N/A (검수원 0)",
+        "unit_ppl": "명", "unit_case": "건",
+        "type1_unit_note": "검수원수=리젝율이 집계된 검수원 인원(명), 평균/최대 리젝율=영역 품질(%), AQL 실패건수=실제 발생 불량(건). 리젝율 0%여도 AQL 실패건수가 있으면 경고 표시.",
         "small_bldg_grouped": "10명 미만 건물 통합",
         "c4_note": "C4 최소근무일은 월말 누적 {threshold}일 기준 평가 항목 — 월 중간 시점에는 미충족이 정상입니다.",
         "prev_basis_label": "전월 기준",
@@ -378,6 +382,10 @@ I18N = {
         "building": "Building", "emp_count": "Employees", "aql": "AQL",
         "fail": "Fail", "reject_rate": "Reject Rate", "grade": "Grade",
         "inspectors": "Inspectors", "area_reject_avg": "Area Reject Avg", "area_reject_max": "Area Reject Max",
+        "aql_fail_col": "AQL Fails", "aql_fail_short": "AQL fail",
+        "na_no_inspector": "N/A (0 inspectors)",
+        "unit_ppl": "ppl", "unit_case": "cases",
+        "type1_unit_note": "Inspectors = number of inspectors with a recorded reject rate (ppl); Avg/Max Reject = area quality (%); AQL Fails = actual defects found (cases). A warning is shown when reject rate is 0% but AQL fails exist.",
         "small_bldg_grouped": "Small buildings grouped (<10)",
         "c4_note": "C4 minimum working days is evaluated at month-end against a cumulative threshold of {threshold} days — unmet status is normal mid-month.",
         "prev_basis_label": "prev. month basis",
@@ -489,6 +497,10 @@ I18N = {
         "building": "Building", "emp_count": "S\u1ed1 NV", "aql": "AQL",
         "fail": "L\u1ed7i", "reject_rate": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i", "grade": "X\u1ebfp h\u1ea1ng",
         "inspectors": "S\u1ed1 ki\u1ec3m s\u00e1t", "area_reject_avg": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i khu v\u1ef1c TB", "area_reject_max": "T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i t\u1ed1i \u0111a",
+        "aql_fail_col": "S\u1ed1 l\u1ed7i AQL", "aql_fail_short": "L\u1ed7i AQL",
+        "na_no_inspector": "N/A (0 ki\u1ec3m s\u00e1t)",
+        "unit_ppl": "ng\u01b0\u1eddi", "unit_case": "l\u1ed7i",
+        "type1_unit_note": "S\u1ed1 ki\u1ec3m s\u00e1t = s\u1ed1 ki\u1ec3m s\u00e1t c\u00f3 t\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i (ng\u01b0\u1eddi); T\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i TB/t\u1ed1i \u0111a = ch\u1ea5t l\u01b0\u1ee3ng khu v\u1ef1c (%); S\u1ed1 l\u1ed7i AQL = l\u1ed7i th\u1ef1c t\u1ebf (l\u1ed7i). C\u1ea3nh b\u00e1o khi t\u1ef7 l\u1ec7 t\u1eeb ch\u1ed1i 0% nh\u01b0ng v\u1eabn c\u00f3 l\u1ed7i AQL.",
         "small_bldg_grouped": "G\u1ed9p t\u00f2a nh\u00e0 <10 ng\u01b0\u1eddi",
         "c4_note": "C4 ng\u00e0y l\u00e0m vi\u1ec7c t\u1ed1i thi\u1ec3u \u0111\u01b0\u1ee3c \u0111\u00e1nh gi\u00e1 cu\u1ed1i th\u00e1ng v\u1edbi ng\u01b0\u1ee1ng t\u00edch l\u0169y {threshold} ng\u00e0y \u2014 ch\u01b0a \u0111\u1ea1t l\u00e0 b\u00ecnh th\u01b0\u1eddng v\u00e0o gi\u1eefa th\u00e1ng.",
         "prev_basis_label": "c\u01a1 s\u1edf th\u00e1ng tr\u01b0\u1edbc",
@@ -898,18 +910,37 @@ def _section_2_building(data):
             area_avg = info.get("area_reject_avg", 0)
             area_max = info.get("area_reject_max", 0)
             area_n = info.get("area_reject_n", 0)
+            # 결함 #6 (보스 발견): auditor/trainer 만 area_reject_rate 를 채우므로
+            # 일부 building 은 area_reject_avg 0.0% 로 "양호"하게 보이지만 실제로는
+            # 그 building 에 AQL 실패 건수(fail_count)가 존재할 수 있다. 리젝율 0%
+            # 착시를 막기 위해 실제 AQL 실패 건수를 함께 노출하고, "리젝율 0% 인데
+            # 실패 존재" 인 경우 경고 배지를 표시한다.
+            fail_count = info.get("fail_count", 0)
             t_emp += count
             t_area_sum += info.get("area_reject_sum", 0)
             t_area_n += area_n
             if area_max > t_area_max:
                 t_area_max = area_max
             pc = _prev_col(bldg, prev_bldg)
+            # Area Reject Avg 셀: 검수원수(area_n)==0 이면 측정 표본이 없으므로
+            # "N/A (검수원 0)" 로 표기하여 0.00% 양호 착시를 차단.
+            if area_n <= 0:
+                area_avg_cell = f'<span style="color:#94a3b8;">{_t(data, "na_no_inspector")}</span>'
+            else:
+                area_avg_cell = _fmt_pct_smart(area_avg)
+            # 리젝율 0%(또는 검수원 0)인데 AQL 실패 건수 존재 → 경고 배지 병기
+            warn_badge = ""
+            if fail_count > 0 and area_avg == 0:
+                warn_badge = (f'<span style="display:inline-block;margin-left:4px;padding:1px 6px;border-radius:3px;'
+                              f'font-size:10px;font-weight:700;background:#fee2e2;color:#991b1b;">'
+                              f'&#x26A0; {_t(data, "aql_fail_short")} {fail_count}</span>')
             rows += f'''
             <tr>
               <td style="{STYLES['td']}">{_grade_emoji(area_avg)} {_bldg_badge(bldg)}</td>
               <td style="{STYLES['td_center']}">{count}</td>
               <td style="{STYLES['td_center']}">{area_n}</td>
-              <td style="{STYLES['td_center']};font-weight:600;">{_fmt_pct_smart(area_avg)}</td>
+              <td style="{STYLES['td_center']};font-weight:600;">{area_avg_cell}{warn_badge}</td>
+              <td style="{STYLES['td_center']};font-weight:600;color:{'#dc2626' if fail_count>0 else '#94a3b8'};">{fail_count}</td>
               <td style="{STYLES['td_center']};color:{'#dc2626' if area_max>=2 else '#d97706' if area_max>0 else '#94a3b8'};">{_fmt_pct_smart(area_max)}</td>
               <td style="{STYLES['td_center']}">{_grade_badge(area_avg)}</td>
               <td style="{STYLES['td_center']};font-size:11px;color:#6b7280;">{pc}</td>
@@ -920,7 +951,7 @@ def _section_2_building(data):
             rows += f'''
             <tr style="background:#fafbfc;">
               <td style="{STYLES['td']};color:#9ca3af;font-style:italic;" colspan="2">{_t(data, 'other_bldgs')} {other_count}{_t(data, 'bldg_unit')} ({other_emp}{_t(data, 'ppl')})</td>
-              <td style="{STYLES['td_center']};color:#9ca3af;" colspan="5">{_t(data, 'small_bldg_grouped')}</td>
+              <td style="{STYLES['td_center']};color:#9ca3af;" colspan="6">{_t(data, 'small_bldg_grouped')}</td>
             </tr>'''
         avg_overall = (t_area_sum / t_area_n) if t_area_n > 0 else 0
         return rows, t_emp, avg_overall, t_area_max
@@ -1016,11 +1047,14 @@ def _section_2_building(data):
 
         if is_type1:
             # TYPE-1: AQL table
+            # 결함 #6: "AQL 실패건수" 컬럼이 추가되어 전체 8 컬럼
+            # (Building / 직원수 / 검수원수 / 담당영역 평균 리젝율 / AQL 실패건수 /
+            #  최대 리젝율 / 등급 / 전월수령). type_header 의 좌/우 colspan 합도 8.
             if type_key != "ALL":
-                colspan_left = 5
+                colspan_left = 6
                 colspan_right = 2
             else:
-                colspan_left = 5
+                colspan_left = 6
                 colspan_right = 2
 
             type_header = ""
@@ -1045,20 +1079,24 @@ def _section_2_building(data):
             # TYPE-1 inspectors are not personally tested — show AREA reject
             # rate (avg / max) of the area they oversee instead of meaningless
             # 0/0 metrics from total_tests/failures.
+            # 결함 #8 (보스 발견): 리젝율(%) ↔ 검수원수(명) ↔ AQL 실패건수(건)
+            # 단위가 혼재되어 오독 위험. 헤더 라벨에 단위를 명시해 분리한다.
             table_html = f'''
             <table style="{STYLES['table']}">
               <tr>
                 <th style="{STYLES['th']}">{_t(data, 'building')}</th>
                 <th style="{STYLES['th_center']}">{_t(data, 'emp_count')}</th>
-                <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'inspectors')}</th>
-                <th style="{STYLES['th_center']}">{_t(data, 'area_reject_avg')}</th>
-                <th style="{STYLES['th_center']}">{_t(data, 'area_reject_max')}</th>
+                <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'inspectors')} <span style="font-weight:400;color:#94a3b8;">({_t(data, 'unit_ppl')})</span></th>
+                <th style="{STYLES['th_center']}">{_t(data, 'area_reject_avg')} <span style="font-weight:400;color:#94a3b8;">(%)</span></th>
+                <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'aql_fail_col')} <span style="font-weight:400;color:#94a3b8;">({_t(data, 'unit_case')})</span></th>
+                <th style="{STYLES['th_center']}">{_t(data, 'area_reject_max')} <span style="font-weight:400;color:#94a3b8;">(%)</span></th>
                 <th style="{STYLES['th_center']}">{_t(data, 'grade')}</th>
                 <th style="{STYLES['th_center']};font-size:11px;">{_t(data, 'prev_recv')}</th>
               </tr>
               {type_header}
               {rows}
-            </table>'''
+            </table>
+            <p style="font-size:11px;color:#94a3b8;margin:6px 0 0 0;font-style:italic;">* {_t(data, 'type1_unit_note')}</p>'''
             html_parts.append(table_html)
 
         elif is_type2or3:
