@@ -2,7 +2,12 @@
  * Incentive 월간 성과 이메일 보고서
  *
  * 매월 1일 12:00 VN 발송
- * 데이터 소스: incentiveRecords 컬렉션
+ * 데이터 소스: dashboard_summary/{monthname}_{year} 문서
+ *   (예: april_2026) — 실데이터가 존재하는 SSOT.
+ *
+ * 결함 D2 (보스 발견): 기존에는 죽은 컬렉션 incentiveRecords(empty)를 읽어
+ *   매월 snapshot.empty=true → 영구 미발송(skip). 실데이터는
+ *   dashboard_summary/{monthname}_{year} 에 존재하므로 소스를 교체.
  *
  * Design: navy header, table-based, inline CSS (Gmail/Outlook 호환)
  */
@@ -144,6 +149,31 @@ function fmt(n) {
   return Number(n).toLocaleString("en-US");
 }
 
+function fmtMoney(n) {
+  if (n == null || isNaN(n)) return "-";
+  return Number(n).toLocaleString("vi-VN") + " VND";
+}
+
+/**
+ * 수령률(%) 표시 — S1 분모0 착시 가드.
+ * 분모(denom)<=0 이면 0.00% 양호로 표시하지 않고 'N/A (대상 0명)' 로 치환.
+ * 분자/분모를 항상 병기한다.
+ */
+function fmtRate(num, denom) {
+  if (denom == null || denom <= 0) {
+    return "N/A (대상 0명)";
+  }
+  var rate = (num / denom) * 100;
+  return rate.toFixed(1) + "% (" + fmt(num) + "/" + fmt(denom) + ")";
+}
+
+function rateColor(rate) {
+  if (rate == null) return GRAY;
+  if (rate >= 85) return GREEN;
+  if (rate >= 70) return AMBER;
+  return RED;
+}
+
 function scoreColor(score) {
   if (score >= 80) return GREEN;
   if (score >= 60) return AMBER;
@@ -154,95 +184,92 @@ function scoreColor(score) {
 // Data Collection
 // ---------------------------------------------------------------------------
 
+// Lowercase month names — dashboard_summary 문서 ID 규칙: {monthname}_{year}
+// (예: april_2026). upload_to_firestore.py 가 동일 규칙으로 기록한다.
+var MONTH_NAMES = [
+  "january", "february", "march", "april", "may", "june",
+  "july", "august", "september", "october", "november", "december",
+];
+
 /**
- * Get YYYY-MM for the previous month (in VN timezone).
+ * dashboard_summary 문서 ID ({monthname}_{year}) 반환.
+ * monthsBack: 0 = 직전 달(보고 대상), 1 = 두 달 전(비교용).
  */
-function getPreviousMonth() {
+function getSummaryDocId(monthsBack) {
   var now = new Date();
   // Vietnam is UTC+7
   var vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-  var year = vnNow.getUTCFullYear();
-  var month = vnNow.getUTCMonth(); // 0-indexed, so this is already "previous month"
-  if (month === 0) {
-    year--;
-    month = 12;
-  }
-  return year + "-" + String(month).padStart(2, "0");
+  // getUTCMonth() 는 0-indexed 이므로, "직전 달"은 (현재월 - 1).
+  // 0-indexed 누적값으로 계산: 현재월 인덱스 - 1(직전) - monthsBack.
+  var idx = vnNow.getUTCFullYear() * 12 + (vnNow.getUTCMonth() - 1 - monthsBack);
+  var year = Math.floor(idx / 12);
+  var monthIdx = ((idx % 12) + 12) % 12; // 0..11
+  return MONTH_NAMES[monthIdx] + "_" + year;
+}
+
+/** 표시용 라벨 (예: "April 2026"). */
+function docIdToLabel(docId) {
+  var parts = String(docId).split("_");
+  var m = parts[0] || "";
+  var y = parts[1] || "";
+  return (m.charAt(0).toUpperCase() + m.slice(1)) + " " + y;
 }
 
 /**
- * Get YYYY-MM for two months ago (for comparison).
+ * Collect incentive data for a given dashboard_summary doc.
+ *
+ * 결함 D2: 죽은 incentiveRecords 대신 dashboard_summary/{docId} 를 읽는다.
+ * 반환 구조는 formatIncentiveMonthlyEmail 이 사용하는 정규화 형태.
  */
-function getTwoMonthsAgo() {
-  var now = new Date();
-  var vnNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-  var year = vnNow.getUTCFullYear();
-  var month = vnNow.getUTCMonth() - 1;
-  if (month <= 0) {
-    year--;
-    month = month + 12;
-  }
-  return year + "-" + String(month).padStart(2, "0");
-}
-
-/**
- * Collect incentive data for a given month.
- */
-async function collectMonthData(db, yearMonth) {
-  var snapshot = await db
-    .collection("incentiveRecords")
-    .where("month", "==", yearMonth)
-    .get();
-
-  if (snapshot.empty) {
+async function collectMonthData(db, docId) {
+  var snap = await db.collection("dashboard_summary").doc(docId).get();
+  if (!snap.exists) {
     return null;
   }
 
-  var totalScore = 0;
-  var totalQuality = 0;
-  var totalProductivity = 0;
-  var totalAttendance = 0;
-  var count = 0;
-  var lines = [];
+  var d = snap.data() || {};
 
-  snapshot.forEach(function (doc) {
-    var data = doc.data();
-    var quality = data.qualityScore || data.quality || 0;
-    var productivity = data.productivityScore || data.productivity || 0;
-    var attendance = data.attendanceScore || data.attendance || 0;
-    var total = data.totalScore || (quality + productivity + attendance);
-    var building = data.building || data.factory || "";
-    var line = data.line || data.lineNo || "";
+  var totalEmployees = Number(d.total_employees || 0);
+  var eligibleEmployees = Number(d.eligible_employees || totalEmployees || 0);
+  var receivingEmployees = Number(d.receiving_employees || 0);
+  var totalIncentive = Number(d.total_incentive || 0);
+  // payment_rate 는 upload 파이프라인이 기록 (receiving/total*100). 없으면 계산.
+  var paymentRate = (d.payment_rate != null)
+    ? Number(d.payment_rate)
+    : (totalEmployees > 0 ? (receivingEmployees / totalEmployees) * 100 : 0);
 
-    totalScore += total;
-    totalQuality += quality;
-    totalProductivity += productivity;
-    totalAttendance += attendance;
-    count++;
-
-    lines.push({
-      name: building + "-" + line,
-      building: building,
-      line: line,
-      score: total,
-      quality: quality,
-      productivity: productivity,
-      attendance: attendance,
-    });
+  // Building breakdown → 수령률/지급액 기준 정렬용 배열
+  var buildingBreakdown = d.building_breakdown || {};
+  var buildings = Object.keys(buildingBreakdown).map(function (name) {
+    var b = buildingBreakdown[name] || {};
+    var count = Number(b.count || 0);
+    var receiving = Number(b.receiving || 0);
+    var amount = Number(b.total_amount || 0);
+    return {
+      name: name,
+      count: count,
+      receiving: receiving,
+      amount: amount,
+      // 결함 S1 가드: 분모(count)<=0 이면 비율을 0% 양호로 표시하지 않고 null 처리.
+      rate: count > 0 ? (receiving / count) * 100 : null,
+    };
   });
 
-  lines.sort(function (a, b) { return b.score - a.score; });
+  // Type breakdown 그대로 보존 (TYPE-1/2/3)
+  var typeBreakdown = d.type_breakdown || {};
 
   return {
-    month: yearMonth,
-    totalLines: count,
-    avgScore: count > 0 ? Math.round((totalScore / count) * 100) / 100 : 0,
-    avgQuality: count > 0 ? Math.round((totalQuality / count) * 100) / 100 : 0,
-    avgProductivity: count > 0 ? Math.round((totalProductivity / count) * 100) / 100 : 0,
-    avgAttendance: count > 0 ? Math.round((totalAttendance / count) * 100) / 100 : 0,
-    topLines: lines.slice(0, 5),
-    bottomLines: lines.slice(-Math.min(5, lines.length)).reverse(),
-    allLines: lines,
+    docId: docId,
+    monthLabel: docIdToLabel(docId),
+    totalEmployees: totalEmployees,
+    eligibleEmployees: eligibleEmployees,
+    receivingEmployees: receivingEmployees,
+    totalIncentive: totalIncentive,
+    paymentRate: paymentRate,
+    workingDays: Number(d.working_days || 0),
+    buildings: buildings,
+    typeBreakdown: typeBreakdown,
+    conditionStats: d.condition_stats || {},
   };
 }
 
@@ -251,12 +278,19 @@ async function collectMonthData(db, yearMonth) {
 // ---------------------------------------------------------------------------
 
 function formatIncentiveMonthlyEmail(current, previous) {
-  // KPI cards
+  // KPI cards — dashboard_summary 기반.
+  // 자격/전체 카드: 분모(total)<=0 이면 비율 대신 'N/A' (S1 가드).
+  var eligibleValue = current.totalEmployees > 0
+    ? fmt(current.eligibleEmployees) + " / " + fmt(current.totalEmployees)
+    : "-";
+  var payRateValue = current.totalEmployees > 0
+    ? current.paymentRate.toFixed(1) + "%"
+    : "N/A";
   var kpis = kpiCardRow([
-    { label: "Avg Score", value: fmt(current.avgScore), color: scoreColor(current.avgScore) },
-    { label: "Total Lines", value: fmt(current.totalLines) },
-    { label: "Avg Quality", value: fmt(current.avgQuality), color: scoreColor(current.avgQuality) },
-    { label: "Avg Productivity", value: fmt(current.avgProductivity), color: scoreColor(current.avgProductivity) },
+    { label: "Payment Rate", value: payRateValue, color: rateColor(current.totalEmployees > 0 ? current.paymentRate : null) },
+    { label: "Receiving", value: fmt(current.receivingEmployees) },
+    { label: "Eligible / Total", value: eligibleValue, color: BLUE },
+    { label: "Total Incentive", value: fmtMoney(current.totalIncentive), color: AMBER },
   ]);
 
   // Month-over-month comparison
@@ -275,47 +309,83 @@ function formatIncentiveMonthlyEmail(current, previous) {
       dataTable(
         ["Metric", "Current", "Previous", "Change"],
         [
-          ["Avg Score", fmt(current.avgScore), fmt(previous.avgScore), delta(current.avgScore, previous.avgScore)],
-          ["Total Lines", fmt(current.totalLines), fmt(previous.totalLines), delta(current.totalLines, previous.totalLines)],
-          ["Avg Quality", fmt(current.avgQuality), fmt(previous.avgQuality), delta(current.avgQuality, previous.avgQuality)],
-          ["Avg Productivity", fmt(current.avgProductivity), fmt(previous.avgProductivity), delta(current.avgProductivity, previous.avgProductivity)],
-          ["Avg Attendance", fmt(current.avgAttendance), fmt(previous.avgAttendance), delta(current.avgAttendance, previous.avgAttendance)],
+          ["Payment Rate (%)", current.paymentRate.toFixed(1), previous.paymentRate.toFixed(1), delta(current.paymentRate, previous.paymentRate)],
+          ["Receiving Employees", fmt(current.receivingEmployees), fmt(previous.receivingEmployees), delta(current.receivingEmployees, previous.receivingEmployees)],
+          ["Total Employees", fmt(current.totalEmployees), fmt(previous.totalEmployees), delta(current.totalEmployees, previous.totalEmployees)],
+          ["Total Incentive (VND)", fmt(current.totalIncentive), fmt(previous.totalIncentive), delta(current.totalIncentive, previous.totalIncentive)],
         ],
         { headerBg: BLUE }
       );
   }
 
-  // Top 5 performing lines
-  var topSection = "";
-  if (current.topLines.length > 0) {
-    topSection =
-      sectionHeading("Top 5 Performing Lines") +
+  // Type breakdown (TYPE-1/2/3) — 수령/전체 항상 병기, 분모0 가드.
+  var typeKeys = Object.keys(current.typeBreakdown || {}).sort();
+  var typeSection = "";
+  if (typeKeys.length > 0) {
+    typeSection =
+      sectionHeading("Incentive by TYPE") +
       dataTable(
-        ["#", "Line", "Building", "Score"],
-        current.topLines.map(function (l, i) {
+        ["TYPE", "Receiving / Total", "Pay Rate", "Total (VND)"],
+        typeKeys.map(function (k) {
+          var t = current.typeBreakdown[k] || {};
+          var count = Number(t.count || 0);
+          var receiving = Number(t.receiving || 0);
+          var rate = count > 0 ? (receiving / count) * 100 : null;
+          var rateCell = (rate == null)
+            ? `<span style="color:${GRAY};">N/A (0)</span>`
+            : `<span style="color:${rateColor(rate)};font-weight:bold;">${rate.toFixed(1)}%</span>`;
+          return [
+            k,
+            fmt(receiving) + " / " + fmt(count),
+            rateCell,
+            fmtMoney(Number(t.total_amount || 0)),
+          ];
+        }),
+        { headerBg: BLUE }
+      );
+  }
+
+  // Top 5 buildings by total incentive amount
+  var buildings = (current.buildings || []).slice();
+  var topBuildings = buildings
+    .filter(function (b) { return b.count >= 5; })
+    .sort(function (a, b) { return b.amount - a.amount; })
+    .slice(0, 5);
+  var topSection = "";
+  if (topBuildings.length > 0) {
+    topSection =
+      sectionHeading("Top 5 Buildings (Total Incentive)") +
+      dataTable(
+        ["#", "Building", "Receiving / Total", "Total (VND)"],
+        topBuildings.map(function (b, i) {
           return [
             String(i + 1),
-            l.name,
-            l.building,
-            `<span style="color:${scoreColor(l.score)};font-weight:bold;">${fmt(l.score)}</span>`,
+            b.name,
+            fmt(b.receiving) + " / " + fmt(b.count),
+            fmtMoney(b.amount),
           ];
         })
       );
   }
 
-  // Bottom 5 lines (needs attention)
+  // Bottom 5 buildings by payment rate (5+ employees) — 분모0 가드로
+  // rate=null 인 building 은 제외(0% 착시 방지).
+  var bottomBuildings = buildings
+    .filter(function (b) { return b.count >= 5 && b.rate != null; })
+    .sort(function (a, b) { return a.rate - b.rate; })
+    .slice(0, 5);
   var bottomSection = "";
-  if (current.bottomLines.length > 0) {
+  if (bottomBuildings.length > 0) {
     bottomSection =
-      sectionHeading("Bottom 5 Lines (Needs Attention)") +
+      sectionHeading("Bottom 5 Buildings — Lowest Pay Rate (Needs Attention)") +
       dataTable(
-        ["#", "Line", "Building", "Score"],
-        current.bottomLines.map(function (l, i) {
+        ["#", "Building", "Receiving / Total", "Pay Rate"],
+        bottomBuildings.map(function (b, i) {
           return [
             String(i + 1),
-            l.name,
-            l.building,
-            `<span style="color:${scoreColor(l.score)};font-weight:bold;">${fmt(l.score)}</span>`,
+            b.name,
+            fmt(b.receiving) + " / " + fmt(b.count),
+            `<span style="color:${rateColor(b.rate)};font-weight:bold;">${b.rate.toFixed(1)}%</span>`,
           ];
         }),
         { headerBg: "#b91c1c" }
@@ -325,43 +395,41 @@ function formatIncentiveMonthlyEmail(current, previous) {
   // Action items
   var actionRows = [];
 
-  if (previous && current.avgScore < previous.avgScore - 1) {
+  if (previous && current.paymentRate < previous.paymentRate - 1) {
     actionRows.push(
       alertItem(
         "warning",
-        "Average score dropped by " +
-          (previous.avgScore - current.avgScore).toFixed(1) +
+        "Payment rate dropped by " +
+          (previous.paymentRate - current.paymentRate).toFixed(1) +
           " points vs last month — review contributing factors"
       )
     );
   }
 
-  // Check if bottom lines are unchanged for 2+ months (compare names)
-  if (previous) {
-    var prevBottomNames = previous.bottomLines.map(function (l) { return l.name; });
-    var repeatBottomLines = current.bottomLines.filter(function (l) {
-      return prevBottomNames.includes(l.name);
-    });
-    if (repeatBottomLines.length >= 2) {
-      actionRows.push(
-        alertItem(
-          "critical",
-          repeatBottomLines.length +
-            " line(s) remain in bottom 5 for 2+ months: " +
-            repeatBottomLines.map(function (l) { return l.name; }).join(", ") +
-            " — recommend intervention"
-        )
-      );
-    }
+  // TYPE-3 전원 미수령 경고 (자격 조건 점검)
+  var t3 = (current.typeBreakdown || {})["TYPE-3"];
+  if (t3 && Number(t3.count || 0) > 0 && Number(t3.receiving || 0) === 0) {
+    actionRows.push(
+      alertItem(
+        "critical",
+        "TYPE-3 (" + fmt(Number(t3.count)) + "명) 전원 미수령 — 자격 조건 점검 필요"
+      )
+    );
   }
 
-  // Lines below threshold
-  var belowThreshold = current.allLines.filter(function (l) { return l.score < 50; });
-  if (belowThreshold.length > 0) {
+  // 수령률 낮은 부서 (5명+, rate 측정 가능한 것만)
+  var lowBuildings = buildings.filter(function (b) {
+    return b.count >= 10 && b.rate != null && b.rate < 60;
+  });
+  if (lowBuildings.length > 0) {
     actionRows.push(
       alertItem(
         "warning",
-        belowThreshold.length + " line(s) scored below 50 — immediate attention required"
+        lowBuildings.length + "개 부서 수령률 60% 미만: " +
+          lowBuildings.slice(0, 3).map(function (b) {
+            return b.name + " (" + b.rate.toFixed(0) + "%)";
+          }).join(", ") +
+          (lowBuildings.length > 3 ? " 외" : "") + " — 사유 분석 필요"
       )
     );
   }
@@ -376,20 +444,27 @@ function formatIncentiveMonthlyEmail(current, previous) {
     sectionHeading("Action Items") +
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${actionRows.join("")}</table>`;
 
+  var sourceNote =
+    `<table role="presentation" width="100%"><tr><td style="padding:8px 0 0;font-size:11px;color:${TEXT_MUTED};">` +
+    `Source: dashboard_summary/${current.docId} · ${fmt(current.receivingEmployees)} receiving / ${fmt(current.totalEmployees)} total · ${fmt(current.workingDays)} working days` +
+    `</td></tr></table>`;
+
   var body = [
     kpis,
     spacer(),
     momSection,
+    typeSection,
     topSection,
     bottomSection,
     actionSection,
+    sourceNote,
   ]
     .filter(Boolean)
     .join("\n");
 
   return wrapDocument(
     "Incentive Monthly Performance Report",
-    current.month,
+    current.monthLabel,
     body
   );
 }
@@ -406,16 +481,17 @@ async function sendIncentiveMonthlyEmail() {
   logger.info("[Incentive-Email] Starting monthly email report");
 
   var db = getFirestore();
-  var targetMonth = getPreviousMonth();
-  var comparisonMonth = getTwoMonthsAgo();
+  // 결함 D2: dashboard_summary 문서 ID ({monthname}_{year}) 로 조회.
+  var targetMonth = getSummaryDocId(0);     // 직전 달 (보고 대상)
+  var comparisonMonth = getSummaryDocId(1); // 두 달 전 (비교용)
 
-  logger.info("[Incentive-Email] Target month: " + targetMonth + ", Comparison: " + comparisonMonth);
+  logger.info("[Incentive-Email] Target doc: " + targetMonth + ", Comparison: " + comparisonMonth);
 
-  // Collect data for both months
+  // Collect data for both months (dashboard_summary 기반)
   var current = await collectMonthData(db, targetMonth);
 
-  if (!current || current.totalLines === 0) {
-    logger.warn("[Incentive-Email] No incentive records for " + targetMonth + ". Skipping email.");
+  if (!current || current.totalEmployees === 0) {
+    logger.warn("[Incentive-Email] No dashboard_summary data for " + targetMonth + ". Skipping email.");
     return;
   }
 
@@ -473,7 +549,7 @@ async function sendIncentiveMonthlyEmail() {
   // Send
   var result = await sendEmail(smtpUser, smtpPassword, {
     to: recipients,
-    subject: "[Incentive] Monthly Performance Report \u2014 " + targetMonth,
+    subject: "[Incentive] Monthly Performance Report \u2014 " + current.monthLabel,
     html: html,
   });
 

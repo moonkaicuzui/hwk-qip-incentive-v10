@@ -422,11 +422,15 @@ def build_action_report(firestore_data):
         bq_typed["tests"] += tests
 
         # Track area_reject_rate separately (meaningful for TYPE-1 inspectors)
+        # 결함 #7 (보스 발견): area_reject_n 은 "실제 area_reject_rate 가 채워진
+        # 검수원 수"여야 한다. arr 은 float(default 0.0)이라 절대 None 이 아니므로
+        # `if arr is not None` 은 전 직원을 카운트 → 검수원수(분모) 부풀려 평균 희석.
+        # area_reject_rate 가 실제로 채워진(>0) 검사원만 집계한다.
         try:
             arr = float(aql.get("area_reject_rate", 0) or 0)
         except (TypeError, ValueError):
             arr = 0.0
-        if arr is not None:
+        if arr > 0:
             bq["area_reject_sum"] += arr
             bq["area_reject_n"] += 1
             if arr > bq["area_reject_max"]:
