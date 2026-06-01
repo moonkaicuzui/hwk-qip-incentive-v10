@@ -80,6 +80,63 @@ jobs:
 
           echo "✅ All reports queued in pendingNotifications"
 
+      # 이중엔진 정리 (메일 통합, 2026-06-01):
+      #   폐지된 CF 월간 메일(INC-A3, scheduledIncentiveMonthlyEmail)의 수신자는
+      #   config/email_recipients.report_recipients 에서 동적으로 로드됐다.
+      #   통합 후 정보손실 0 가드: 그 수신자 union 을 주간 EN 보고서로 흡수한다.
+      #   이미 위 Step 4 EN 대상(hwk_qa/bichlyrg/ksmoon)에 포함된 주소는 dedup.
+      - name: "Step 3.5: Fold retired CF-monthly recipients into weekly EN union"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          MONTH="${{ steps.period.outputs.month }}"
+          YEAR="${{ steps.period.outputs.year }}"
+
+          # Step 4 EN 보고서가 이미 커버하는 주소 (dedup 기준).
+          ALREADY_SENT="hwk_qa@hsvina.com,bichlyrg@hsvina.com,ksmoon@hsvina.com"
+
+          echo "🔁 Loading retired CF-monthly recipients (config/email_recipients.report_recipients)..."
+          EXTRA=$(python3 -c "
+          import os, json
+          import firebase_admin
+          from firebase_admin import credentials, firestore
+
+          sa = os.environ.get('FIREBASE_SERVICE_ACCOUNT', '')
+          if not sa:
+              print('')
+          else:
+              cred = credentials.Certificate(json.loads(sa))
+              if not firebase_admin._apps:
+                  firebase_admin.initialize_app(cred, {'projectId': 'hwk-qip-incentive-dashboard'})
+              db = firestore.client()
+              already = set(e.strip().lower() for e in '$ALREADY_SENT'.split(',') if e.strip())
+              extra = []
+              try:
+                  doc = db.collection('config').document('email_recipients').get()
+                  if doc.exists:
+                      data = doc.to_dict() or {}
+                      for e in (data.get('report_recipients') or []):
+                          if isinstance(e, str) and '@' in e and e.strip().lower() not in already:
+                              extra.append(e.strip())
+                              already.add(e.strip().lower())
+              except Exception as ex:
+                  import sys
+                  print('', end='')
+                  sys.stderr.write('config read failed: %s\n' % ex)
+              print(','.join(extra))
+          ") || EXTRA=""
+
+          if [ -n "$EXTRA" ]; then
+            echo "📧 Folding extra CF-monthly recipients into weekly EN report → $EXTRA"
+            python scripts/generate_weekly_report.py \
+              --month "$MONTH" --year "$YEAR" \
+              --to "$EXTRA" \
+              --lang en
+          else
+            echo "ℹ️ No extra CF-monthly recipients (all already covered by Step 4 union)"
+          fi
+          echo "✅ Recipient union complete"
+
       - name: "Step 4.5: Data verification — queue alert if issues found"
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}

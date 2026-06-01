@@ -360,6 +360,23 @@ exports.computeAqlPoImpact = onCall(
 );
 
 // ─── 4. Incentive 월간 성과 이메일 보고서 (매월 1일 12:00 VN) ──
+//
+// 이중엔진 정리 (2026-06-01, 메일 통합):
+//   INC-A3 (이 CF 월간 메일)  vs  INC-A4 (GitHub Actions 주간 메일,
+//   weekly-email-report.yml → generate_weekly_report.py).
+//   두 엔진 모두 동일 SSOT 인 dashboard_summary/{month}_{year} 를 읽는다.
+//   - INC-A4(주간)는 EN-only 집계인 INC-A3 의 상위호환(superset):
+//     · 직원 단위 액션 리포트 + TYPE 변경 history(빨강 박스)
+//     · 3개 언어(ko/en/vi)
+//     · KPI/Building/TYPE/MoM 집계 섹션 전부 포함(email_template.py)
+//   ∴ INC-A4(주간)를 SSOT 로 일원화하고, 이 CF 월간 메일은 중복 발송이므로
+//     no-op(가역) 으로 흡수한다. CF/스케줄/시그니처는 보존(삭제 금지).
+//   - 정보손실 0 가드: INC-A3 의 수신자(config/email_recipients.report_recipients)는
+//     weekly-email-report.yml "Step 3.5" 가 EN 보고서 union 으로 흡수한다.
+//   - Discord 월간 보고(scheduledIncentiveMonthlyDiscord)는 채널/도메인이 달라
+//     통합 대상 아님 — 그대로 유지.
+//   재활성화: EMAIL_CONSOLIDATED_INTO_WEEKLY 를 false 로 되돌리면 즉시 복원.
+const EMAIL_CONSOLIDATED_INTO_WEEKLY = true;
 
 exports.scheduledIncentiveMonthlyEmail = onSchedule(
   {
@@ -370,6 +387,14 @@ exports.scheduledIncentiveMonthlyEmail = onSchedule(
     timeoutSeconds: 120,
   },
   async () => {
+    if (EMAIL_CONSOLIDATED_INTO_WEEKLY) {
+      logger.info(
+        "[Incentive-MonthlyEmail] SKIP — consolidated into weekly GitHub Actions report (INC-A4, SSOT). " +
+        "Email send is a no-op; CF/schedule preserved for reversibility. " +
+        "Recipients are covered by weekly union (weekly-email-report.yml)."
+      );
+      return;
+    }
     logger.info("[Incentive-MonthlyEmail] Starting monthly report");
     try {
       await sendIncentiveMonthlyEmail();
