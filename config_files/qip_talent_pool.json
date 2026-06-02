@@ -1,43 +1,44 @@
 {
+  "description": "QIP Talent Pool 특별 인센티브 관리",
+  "version": "1.0",
+  "last_updated": "2025-08-29",
   "audit_trail": [
     {
-      "period": "2025-07 to 2025-12",
-      "employee_id": "623060116",
-      "amount": 150000,
-      "authorized_by": "System Admin",
       "action": "created",
-      "date": "2025-08-29"
+      "period": "2025-07 to 2025-12",
+      "amount": 150000,
+      "date": "2025-08-29",
+      "employee_id": "623060116",
+      "authorized_by": "System Admin"
     }
   ],
   "talent_pool": {
     "settings": {
-      "auto_apply": true,
       "payment_timing": "with_regular_incentive",
+      "auto_apply": true,
       "stack_with_regular": true,
       "require_conditions": false
-    },
-    "eligibility_rules": {
-      "exclude_resigned": true,
-      "minimum_attendance_rate": 0,
-      "require_active_status": true,
-      "exclude_maternity_leave": false
     },
     "members": [
       {
         "currency": "VND",
-        "end_date": "2025-12-31",
         "reason": "QIP Talent Pool Special Incentive",
-        "status": "active",
-        "monthly_bonus": 150000,
-        "employee_id": "623060116",
         "start_date": "2025-07-01",
+        "end_date": "2025-12-31",
+        "monthly_bonus": 150000,
         "name": "Talent Pool Member 1",
-        "notes": "추가 인센티브 지급 대상자"
+        "notes": "추가 인센티브 지급 대상자",
+        "employee_id": "623060116",
+        "status": "active"
       }
-    ]
+    ],
+    "eligibility_rules": {
+      "exclude_resigned": true,
+      "require_active_status": true,
+      "exclude_maternity_leave": false,
+      "minimum_attendance_rate": 0
+    }
   },
-  "last_updated": "2025-08-29",
-  "version": "1.0",
   "bonus_history": {
     "2025": {
       "11": [
@@ -46,19 +47,18 @@
       "10": [
         "623060116"
       ],
-      "8": [
+      "9": [
         "623060116"
       ],
-      "12": [
+      "8": [
         "623060116"
       ],
       "7": [
         "623060116"
       ],
-      "9": [
+      "12": [
         "623060116"
       ]
     }
-  },
-  "description": "QIP Talent Pool 특별 인센티브 관리"
+  }
 }
