@@ -3780,17 +3780,38 @@ class CompleteQIPCalculator:
         config = area_mapping['auditor_trainer_areas'][str(auditor_id)]
         area_employees = []
 
+        # [FIX 2026-06-04] 담당 구역 직원 매칭 2건 버그 수정 (Nhu 피드백: Building별 C7 오류)
+        #  ① BUILDING 필터를 세부 building(A1/A2)→워크샵(A) 정규화로 매칭한다.
+        #     (과거: BUILDING=='A' 정확매칭이 A1/A2 작업자를 누락 → Building A 담당자가
+        #      3개월 연속실패자(예: A2 소속)를 못 잡고 잘못 통과)
+        #  ② month_data에 없는 컬럼(예: 'REPACKING PO')만 가진 AND 조건은 매칭 직원 없음으로 처리.
+        #     (과거: 적용 가능한 필터가 없으면 mask가 전체 True로 남아 전 직원이 담당구역에 포함
+        #      → 해당 담당자가 모든 연속실패자를 떠안고 잘못 실패)
+        def _building_mask(series, value):
+            s = series.astype(str).str.strip().str.upper()
+            v = str(value).strip().upper()
+            # value('A')와 정확히 같거나, value 뒤에 숫자만 붙은 세부 building(A1/A2)을 매칭
+            return s.str.fullmatch(re.escape(v) + r'\d*')
+
         for condition in config.get('conditions', []):
             condition_type = condition.get('type')
             filters = condition.get('filters', [])
 
-            # AND 조건: 모든 필터를 만족하는 직원
+            # month_data에 실제 존재하는 컬럼을 가진 필터만 적용 대상
+            usable_filters = [f for f in filters if f.get('column') in self.month_data.columns]
+
+            # AND 조건: 적용 가능한 모든 필터를 만족하는 직원
             if condition_type == 'AND':
-                mask = pd.Series([True] * len(self.month_data))
-                for filter_item in filters:
+                # [FIX ②] 적용 가능한 필터가 하나도 없으면 이 조건은 매칭 직원 없음 (전체 매칭 금지)
+                if not usable_filters:
+                    continue
+                mask = pd.Series([True] * len(self.month_data), index=self.month_data.index)
+                for filter_item in usable_filters:
                     column = filter_item.get('column')
                     value = filter_item.get('value')
-                    if column in self.month_data.columns:
+                    if column == 'BUILDING':
+                        mask &= _building_mask(self.month_data[column], value)  # [FIX ①]
+                    else:
                         mask &= (self.month_data[column] == value)
 
                 matched_employees = self.month_data[mask]['Employee No'].astype(str).tolist()
@@ -3798,12 +3819,14 @@ class CompleteQIPCalculator:
 
             # OR 조건: 어느 하나라도 만족하는 직원
             elif condition_type == 'OR':
-                for filter_item in filters:
+                for filter_item in usable_filters:
                     column = filter_item.get('column')
                     value = filter_item.get('value')
-                    if column in self.month_data.columns:
+                    if column == 'BUILDING':
+                        matched = self.month_data[_building_mask(self.month_data[column], value)]['Employee No'].astype(str).tolist()
+                    else:
                         matched = self.month_data[self.month_data[column] == value]['Employee No'].astype(str).tolist()
-                        area_employees.extend(matched)
+                    area_employees.extend(matched)
 
         return list(set(area_employees))  # 중복 제거
 
