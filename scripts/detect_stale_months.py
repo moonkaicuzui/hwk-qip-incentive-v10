@@ -65,8 +65,12 @@ def parse_datetime(value):
         return None
 
     # Normalize: replace trailing Z with +00:00
+    # [FIX 2026-06-04] "+00:00Z"(오프셋+Z 중복; sync_thresholds.py 과거 버그) 처리:
+    #   Z를 떼고, 이미 ±HH:MM 오프셋이 있으면 그대로 두고 없을 때만 +00:00을 붙인다.
     if value.endswith("Z"):
-        value = value[:-1] + "+00:00"
+        value = value[:-1]
+        if not re.search(r"[+-]\d{2}:?\d{2}$", value):
+            value = value + "+00:00"
 
     # Try parsing with timezone info
     for fmt in (
@@ -161,6 +165,8 @@ def main():
             "year": year,
             "config_path": rel_config_path,
             "gdrive_time": gdrive_time,
+            # [FIX 2026-06-04] threshold drift 감지용 (admin threshold 변경 전파)
+            "thresholds_synced_at": parse_datetime(config.get("thresholds_synced_at")),
         })
 
     if not candidates:
@@ -218,8 +224,25 @@ def main():
         if gdrive_time > firestore_time:
             stale.append(f"{c['month']}:{c['year']}:{c['config_path']}")
             log(f"  STALE: {month_year} (gdrive is newer)")
+            continue
+
+        # [FIX 2026-06-04] threshold drift 감지: admin이 thresholds/{month_year}를 바꿨는데
+        # config의 thresholds_synced_at이 그보다 오래되었으면 재계산 필요 (전파 누락 방지).
+        # (Drive 데이터 변화가 없어도 admin threshold 변경만으로 stale 처리)
+        try:
+            thr_doc = db.collection("thresholds").document(month_year).get()
+            thr_updated = parse_datetime(thr_doc.to_dict().get("updated_at")) if thr_doc.exists else None
+        except Exception as e:
+            log(f"  WARN reading thresholds/{month_year}: {e}")
+            thr_updated = None
+
+        synced = c.get("thresholds_synced_at")
+        if thr_updated is not None and (synced is None or thr_updated > synced):
+            stale.append(f"{c['month']}:{c['year']}:{c['config_path']}")
+            log(f"  STALE: {month_year} (threshold updated {thr_updated.isoformat()} > synced "
+                f"{synced.isoformat() if synced else 'None'})")
         else:
-            log(f"  OK: {month_year} (firestore is up to date)")
+            log(f"  OK: {month_year} (firestore & thresholds up to date)")
 
     if stale:
         print(" ".join(stale))

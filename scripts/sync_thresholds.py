@@ -179,7 +179,9 @@ def merge_thresholds(config: dict, thresholds: dict) -> dict:
             config["thresholds"][key] = thresholds[key]
 
     # 동기화 메타 정보 추가
-    config["thresholds_synced_at"] = datetime.now(timezone.utc).isoformat() + "Z"
+    # [FIX 2026-06-04] isoformat()은 이미 '+00:00' 오프셋을 포함 → "Z"를 또 붙이면
+    #   '+00:00Z' malformed가 되어 파싱 실패. Z를 붙이지 않는다.
+    config["thresholds_synced_at"] = datetime.now(timezone.utc).isoformat()
     config["thresholds_source"] = "firestore"
 
     return config

@@ -249,6 +249,13 @@ jobs:
             # Step 6.8: Download previous incentive
             python scripts/download_previous_incentive.py --month "$TARGET_MONTH" --year "$TARGET_YEAR" || true
 
+            # Step 6.9: Sync THIS target month's thresholds from Firestore (admin 변경 반영)
+            # [FIX 2026-06-04] Step 4는 현재월만 동기화 → 과거/대상월 config_*.json의 thresholds가 stale.
+            #   admin이 과거 월(예: 5월) threshold를 바꿔도 그 달 계산에 반영되지 않던 전파 누락 수정.
+            #   대상월별로 step1 직전에 재동기화한다. (sync_thresholds는 임의 월 지원)
+            echo "🔄 Syncing thresholds for $TARGET_MONTH $TARGET_YEAR..."
+            python scripts/sync_thresholds.py --month "$TARGET_MONTH" --year "$TARGET_YEAR" || echo "⚠️ Per-month threshold sync failed, using existing config"
+
             # Step 7: Calculate incentives
             echo "🧮 Calculating incentives..."
             python src/step1_인센티브_계산.py --config "$TARGET_CONFIG" || {
