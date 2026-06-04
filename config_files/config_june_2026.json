@@ -15,19 +15,19 @@
   "file_paths": {
     "5prs": "input_files/5prs data june.csv",
     "basic_manpower": "input_files/basic manpower data june.csv",
-    "attendance": "input_files/attendance/converted/attendance data june_converted.csv",
+    "attendance": "input_files/attendance/original/attendance data june.csv",
     "aql_current": "input_files/AQL history/1.HSRG AQL REPORT-JUNE.2026.csv",
     "previous_incentive": "output_files/output_QIP_incentive_may_2026_Complete_V10.0_Complete.csv"
   },
   "files_modified_times": {
-    "5prs": "2026-06-03T05:56:10.000Z",
-    "basic_manpower": "2026-06-03T05:54:19.000Z",
-    "attendance": "2026-06-03T05:52:34.000Z",
+    "5prs": "2026-06-03T23:57:40.000Z",
+    "basic_manpower": "2026-06-03T23:56:12.000Z",
+    "attendance": "2026-06-03T23:55:02.000Z",
     "aql_current": "2026-06-03T19:00:12.902Z"
   },
-  "working_days": 2,
+  "working_days": 3,
   "working_days_source": "attendance_data",
-  "working_days_updated_at": "2026-06-03T22:19:03.111190+00:00",
+  "working_days_updated_at": "2026-06-04T01:44:23.736145+00:00",
   "previous_months": [
     "april",
     "may"
@@ -35,7 +35,7 @@
   "output_prefix": "output_QIP_incentive_june_2026",
   "data_source": "google_drive",
   "created_at": "2026-06-03T10:26:34.612050+00:00",
-  "last_updated": "2026-06-03T19:00:12.902Z",
+  "last_updated": "2026-06-03T23:57:40.000Z",
   "data_date_ranges": {
     "attendance": {
       "min": "2026-06-01",
