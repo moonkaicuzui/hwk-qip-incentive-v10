@@ -322,30 +322,35 @@ def main():
 
         os.makedirs('input_files/AQL history', exist_ok=True)
 
-        aql_downloaded_months = set()  # 이미 다운로드한 월 추적 (최신 파일만 다운로드)
+        # [FIX 2026-06-04] 기존 aql_files[:3](modifiedTime 최신 3개 파일) 제거.
+        #  Drive에 새 달 파일(예: JUNE)이 생기면 최신 3개가 JUNE/MAY/APRIL이 되어
+        #  더 오래된 필요월(MARCH)이 누락 → 5월의 3개월 연속실패 판정(3·4·5월)이 깨짐.
+        #  → 월별 최신본 dedup 후 '달력 기준' 최근 MAX_AQL_MONTHS개월을 받아 윈도우 보장.
+        import re
+        MAX_AQL_MONTHS = 6  # 최근 6개월 (detect_stale 최대 4개월 타겟 × 각 2개월 이전 윈도우 커버)
+        _month_num = {'JANUARY':1,'FEBRUARY':2,'MARCH':3,'APRIL':4,'MAY':5,'JUNE':6,
+                      'JULY':7,'AUGUST':8,'SEPTEMBER':9,'OCTOBER':10,'NOVEMBER':11,'DECEMBER':12}
 
-        for file in aql_files[:3]:  # 최근 3개월만
-            # ✅ drive_config.json 경로 매핑 (Line 48-51)
-            # Google Drive: AQL_REPORT_NOVEMBER_2025.csv
-            # Local: 1.HSRG AQL REPORT-NOVEMBER.2025.csv
-            import re
+        # 월별 최신 파일 1개만 (aql_files는 modifiedTime desc 정렬 → 먼저 본 것이 최신)
+        aql_by_month = {}  # (year, month_num) -> (file, month_upper, year_str)
+        for file in aql_files:
             match = re.search(r'AQL_REPORT_([A-Z]+)_(\d{4})', file['name'], re.IGNORECASE)
-            if match:
-                month_upper = match.group(1).upper()  # NOVEMBER
-                year_str = match.group(2)  # 2025
-                month_year_key = f"{month_upper}_{year_str}"  # 월-연도 조합으로 추적
+            if not match:
+                continue
+            month_upper = match.group(1).upper()
+            year_str = match.group(2)
+            mn = _month_num.get(month_upper)
+            if not mn:
+                continue
+            key = (int(year_str), mn)
+            if key not in aql_by_month:
+                aql_by_month[key] = (file, month_upper, year_str)
 
-                # 이미 해당 월의 파일을 다운로드했으면 건너뜀 (최신 파일 우선)
-                if month_year_key in aql_downloaded_months:
-                    print(f"  ⏭️  건너뜀: {file['name']} (이미 최신 {month_upper} {year_str} AQL 파일 다운로드됨)")
-                    continue
-
-                output_path = f"input_files/AQL history/1.HSRG AQL REPORT-{month_upper}.{year_str}.csv"
-                aql_downloaded_months.add(month_year_key)
-            else:
-                # 패턴 매칭 실패 시 원본 이름 유지
-                output_path = f"input_files/AQL history/{file['name']}"
-
+        # 달력 기준 최근 MAX_AQL_MONTHS개월 선택 (modifiedTime이 아닌 실제 연-월 기준)
+        recent_keys = sorted(aql_by_month.keys(), reverse=True)[:MAX_AQL_MONTHS]
+        for key in recent_keys:
+            file, month_upper, year_str = aql_by_month[key]
+            output_path = f"input_files/AQL history/1.HSRG AQL REPORT-{month_upper}.{year_str}.csv"
             print(f"  다운로드: {file['name']} → {output_path}")
             if download_file(service, file['id'], output_path, force=True):
                 downloaded += 1
