@@ -2,15 +2,15 @@
   "year": 2026,
   "month": "may",
   "thresholds": {
-    "attendance_rate": 88,
-    "unapproved_absence": 2,
+    "attendance_rate": 90,
+    "unapproved_absence": 1,
     "minimum_working_days": 12,
-    "area_reject_rate": 3.0,
-    "5prs_pass_rate": 95,
-    "5prs_min_qty": 100,
+    "area_reject_rate": 2,
+    "5prs_pass_rate": 97,
+    "5prs_min_qty": 150,
     "consecutive_aql_months": 3
   },
-  "thresholds_synced_at": "2026-05-01T01:29:35.012503+00:00Z",
+  "thresholds_synced_at": "2026-06-04T05:35:01.372357+00:00",
   "thresholds_source": "firestore",
   "file_paths": {
     "attendance": "input_files/attendance/converted/attendance data may_converted.csv",
@@ -27,7 +27,7 @@
   },
   "working_days": 25,
   "working_days_source": "attendance_data",
-  "working_days_updated_at": "2026-06-04T01:51:21.055071+00:00",
+  "working_days_updated_at": "2026-06-04T05:34:58.026176+00:00",
   "previous_months": [
     "march",
     "april"
