@@ -8,6 +8,23 @@
 
 const nodemailer = require("nodemailer");
 const { logger } = require("firebase-functions");
+const { getFirestore } = require("firebase-admin/firestore");
+
+// QOS V3 파일럿 스위치 — config/v3_pilot.useSharedEmail (기본 OFF, 60s 캐시)
+let _v3FlagCache = null;
+let _v3FlagTime = 0;
+async function _v3UseSharedEmail() {
+  const now = Date.now();
+  if (_v3FlagCache !== null && now - _v3FlagTime < 60000) return _v3FlagCache;
+  try {
+    const snap = await getFirestore().collection("config").doc("v3_pilot").get();
+    _v3FlagCache = snap.exists && snap.data().useSharedEmail === true;
+  } catch (e) {
+    _v3FlagCache = false;
+  }
+  _v3FlagTime = now;
+  return _v3FlagCache;
+}
 
 const MAX_RETRIES = 2;
 
@@ -28,6 +45,12 @@ function getBackoffDelay(attempt) {
  * @returns {Promise<{messageId: string}>}
  */
 async function sendEmail(smtpUser, smtpPassword, options) {
+  // ── QOS V3 파일럿 스위치 (기본 OFF — 아래 기존 코드 100% 보존) ──
+  if (await _v3UseSharedEmail()) {
+    const { incentiveSendEmail } = await import("./sharedEmailPilot.mjs");
+    return incentiveSendEmail(smtpUser, smtpPassword, options);
+  }
+
   const transporter = nodemailer.createTransport({
     host: "mail.hsvina.com",
     port: 465,
