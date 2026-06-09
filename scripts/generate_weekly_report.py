@@ -65,6 +65,19 @@ def main():
 
     db = init_firestore()
 
+    # 2026-06-09 (Firebase 기반화, KH-QOS-008): 수신자를 YAML/코드 하드코딩 대신 Firestore SSOT 에서.
+    #   config/email_recipients.incentive.weekly[lang] 우선, 비면 --to fallback (메일 절대 안 끊김).
+    try:
+        _rdoc = db.collection('config').document('email_recipients').get()
+        if _rdoc.exists:
+            _cron = (_rdoc.to_dict() or {}).get('incentive', {}).get('weekly', {})
+            _fs = _cron.get(lang) or _cron.get('all')
+            if isinstance(_fs, list) and _fs:
+                recipients = [str(e).strip() for e in _fs if str(e).strip()]
+                print(f"  -> recipients from QOS Firestore (incentive.weekly.{lang}): {recipients}")
+    except Exception as _e:
+        print(f"  -> Firestore recipients lookup failed, using --to fallback: {_e}")
+
     # Load data using the same function as send_report_email
     print(f"\n  Loading {month.capitalize()} {year} data...")
     firestore_data = load_firestore_data(db, month, year)
