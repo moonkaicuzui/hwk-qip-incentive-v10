@@ -483,6 +483,7 @@ async function loadplanSend(smtpUser, smtpPassword, msg, opts = {}) {
     subject: msg.subject,
     html: msg.html
   };
+  if (msg.cc) mailOptions.cc = msg.cc;
   if (Array.isArray(msg.attachments) && msg.attachments.length) mailOptions.attachments = msg.attachments;
   const auth = { user: smtpUser, pass: smtpPassword };
   try {
