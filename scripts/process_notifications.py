@@ -224,6 +224,24 @@ def main():
             db.collection("pendingNotifications").document(n["_id"]).update({
                 "sent": True, "sentAt": datetime.utcnow().isoformat() + "Z"
             })
+            # QOS 가시성(C-shim, 2026-06-13): 발송 결과를 email_logs 에도 기록 →
+            # QOS emailLogCollector(PROJECT_REGISTRY.INCENTIVE.sentLogCollection="email_logs")가
+            # quality_os/data/sent_emails 로 집계. 그간 pendingNotifications 에만 남겨
+            # GitHub Actions 발송(주간보고 등)이 QOS 사각지대였음. sentAt 은 datetime 객체로
+            # 기록(Firestore Timestamp 변환 → 수집기 toDate 정합). 실패해도 발송엔 영향 없음.
+            try:
+                db.collection("email_logs").add({
+                    "type": n.get("type") or ("weekly_report" if (custom_html and custom_subject) else "feedback_notification"),
+                    "status": "success",
+                    "to": to_email,
+                    "subject": subject,
+                    "sentAt": datetime.utcnow(),
+                    "lang": n.get("lang"),
+                    "source": "github-actions:process_notifications",
+                    "attachmentCount": (1 if attachment else 0) + (len(attachments) if isinstance(attachments, list) else 0),
+                })
+            except Exception as _log_e:
+                print(f"  (email_logs 기록 실패, 비치명적: {_log_e})")
             sent += 1
             print(f"  Sent successfully")
         else:
